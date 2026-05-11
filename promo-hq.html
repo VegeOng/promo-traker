@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Promo HQ — MamaVege</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0d0f14;--s1:#151820;--s2:#1c2029;--s3:#232836;
+  --b1:#252b38;--b2:#3a4560;
+  --t1:#e8ecf4;--t2:#8a94a8;--t3:#4a5568;
+  --acc:#4f8ef7;--acc-bg:rgba(79,142,247,.1);
+  --green:#22c55e;--green-bg:rgba(34,197,94,.1);
+  --amber:#f59e0b;--amber-bg:rgba(245,158,11,.1);
+  --red:#ef4444;--red-bg:rgba(239,68,68,.1);
+  --ge:#f59e0b;--island:#4f8ef7;--block:#22c55e;--sampling:#a78bfa;--promoter:#f472b6;--other:#9ca3af;
+  --r:10px;--r2:16px;
+  --font:'Plus Jakarta Sans',sans-serif;--mono:'DM Mono',monospace;
+}
+body{background:var(--bg);color:var(--t1);font-family:var(--font);min-height:100vh;}
+.topbar{display:flex;align-items:center;gap:10px;padding:13px 20px;border-bottom:1px solid var(--b1);background:var(--bg);position:sticky;top:0;z-index:20;}
+.logo-pulse{width:9px;height:9px;border-radius:50%;background:var(--acc);box-shadow:0 0 0 3px rgba(79,142,247,.2);}
+.logo-text{font-size:14px;font-weight:700;letter-spacing:.04em;}
+.logo-sub{font-size:11px;color:var(--t3);font-family:var(--mono);}
+.nav-tabs{display:flex;gap:4px;margin-left:12px;}
+.nav-tab{background:transparent;border:none;padding:6px 13px;border-radius:var(--r);font-size:12px;font-weight:600;font-family:var(--font);color:var(--t2);cursor:pointer;transition:all .2s;}
+.nav-tab.active,.nav-tab:hover{background:var(--s2);color:var(--t1);}
+.nav-tab.active{border:1px solid var(--b2);}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:8px;}
+.live-dot{width:6px;height:6px;border-radius:50%;background:var(--green);}
+.refresh-btn{background:var(--s2);border:1px solid var(--b2);border-radius:var(--r);padding:6px 13px;font-size:12px;font-weight:600;font-family:var(--font);color:var(--t2);cursor:pointer;transition:all .2s;}
+.refresh-btn:hover{color:var(--t1);border-color:var(--acc);}
+.main{padding:18px 20px;max-width:1200px;width:100%;margin:0 auto;}
+.screen{display:none;animation:fi .2s ease;}
+.screen.active{display:block;}
+@keyframes fi{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+.kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px;}
+.kpi{background:var(--s1);border:1px solid var(--b1);border-radius:var(--r2);padding:15px 17px;position:relative;overflow:hidden;}
+.kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--kc,var(--acc));}
+.kpi-label{font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--t3);margin-bottom:7px;}
+.kpi-val{font-size:26px;font-weight:700;color:var(--t1);line-height:1;font-family:var(--mono);}
+.kpi-sub{font-size:11px;color:var(--t3);margin-top:5px;}
+.card{background:var(--s1);border:1px solid var(--b1);border-radius:var(--r2);padding:16px 18px;}
+.card-title{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--t3);margin-bottom:14px;}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;}
+.alert{display:flex;align-items:flex-start;gap:8px;padding:10px 13px;border-radius:var(--r);margin-bottom:8px;font-size:12px;font-weight:500;}
+.alert-red{background:var(--red-bg);border:1px solid rgba(239,68,68,.2);color:#fca5a5;}
+.alert-amber{background:var(--amber-bg);border:1px solid rgba(245,158,11,.2);color:#fcd34d;}
+.reg-item{margin-bottom:13px;}
+.reg-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;}
+.reg-name{font-size:13px;font-weight:600;display:flex;align-items:center;gap:6px;}
+.reg-dot{width:7px;height:7px;border-radius:50%;}
+.reg-pct{font-family:var(--mono);font-size:13px;font-weight:600;}
+.reg-sub{font-size:10px;color:var(--t3);margin-bottom:4px;display:flex;gap:10px;}
+.bar-track{height:4px;background:var(--s3);border-radius:2px;overflow:hidden;}
+.bar-fill{height:100%;border-radius:2px;}
+.tbl-wrap{overflow-x:auto;}
+.tbl{width:100%;border-collapse:collapse;font-size:12px;min-width:680px;}
+.tbl th{text-align:left;padding:7px 9px;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--t3);border-bottom:1px solid var(--b1);font-weight:600;}
+.tbl td{padding:9px 9px;border-bottom:1px solid var(--b1);color:var(--t2);vertical-align:middle;}
+.tbl tr:last-child td{border-bottom:none;}
+.tbl tr:hover td{background:var(--s2);}
+.num{font-family:var(--mono);color:var(--t1)!important;}
+.badge{display:inline-flex;align-items:center;padding:2px 7px;border-radius:20px;font-size:10px;font-weight:700;font-family:var(--mono);}
+.b-green{background:var(--green-bg);color:var(--green);}
+.b-amber{background:var(--amber-bg);color:var(--amber);}
+.b-red{background:var(--red-bg);color:var(--red);}
+.type-pill{display:inline-flex;align-items:center;padding:2px 7px;border-radius:20px;font-size:10px;font-weight:700;font-family:var(--mono);}
+.filter-bar{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;}
+.filter-bar select{background:var(--s2);border:1px solid var(--b1);border-radius:var(--r);padding:6px 11px;font-size:12px;font-family:var(--font);color:var(--t2);outline:none;cursor:pointer;}
+.filter-bar select:focus{border-color:var(--acc);}
+.cost-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--b1);font-size:12px;}
+.cost-row:last-child{border-bottom:none;}
+.export-btn{background:transparent;border:1px solid var(--b2);border-radius:var(--r);padding:6px 13px;font-size:12px;font-weight:600;font-family:var(--font);color:var(--t2);cursor:pointer;transition:all .2s;}
+.export-btn:hover{color:var(--t1);border-color:var(--acc);}
+.empty{text-align:center;padding:32px;color:var(--t3);font-size:13px;}
+.spinner{display:inline-block;width:14px;height:14px;border:2px solid var(--b2);border-top-color:var(--acc);border-radius:50%;animation:spin .6s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="logo-pulse"></div>
+  <div><div class="logo-text">MamaVege Promo HQ</div><div class="logo-sub">Sales Management Dashboard</div></div>
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="nav('dashboard')">Overview</button>
+    <button class="nav-tab" onclick="nav('stores')">By Store</button>
+    <button class="nav-tab" onclick="nav('roi')">ROI</button>
+    <button class="nav-tab" onclick="nav('all')">All Records</button>
+  </div>
+  <div class="topbar-right">
+    <div class="live-dot"></div>
+    <span style="font-size:11px;color:var(--t3)" id="last-refresh">—</span>
+    <button class="refresh-btn" onclick="loadAll()">↻ Refresh</button>
+  </div>
+</div>
+
+<div class="main">
+  <!-- OVERVIEW -->
+  <div class="screen active" id="screen-dashboard">
+    <div id="alert-zone" style="margin-bottom:10px;"></div>
+    <div class="kpi-row">
+      <div class="kpi" style="--kc:var(--acc)"><div class="kpi-label">Total Records</div><div class="kpi-val" id="kpi-count">—</div><div class="kpi-sub">promo entries</div></div>
+      <div class="kpi" style="--kc:var(--green)"><div class="kpi-label">Overall Achievement</div><div class="kpi-val" id="kpi-rate">—</div><div class="kpi-sub">vs sales target</div></div>
+      <div class="kpi" style="--kc:var(--amber)"><div class="kpi-label">Overall ROI</div><div class="kpi-val" id="kpi-roi">—</div><div class="kpi-sub">sales ÷ total cost</div></div>
+      <div class="kpi" style="--kc:var(--red)"><div class="kpi-label">Needs Attention</div><div class="kpi-val" id="kpi-warn">—</div><div class="kpi-sub">regions below 60%</div></div>
+    </div>
+    <div class="grid2">
+      <div class="card"><div class="card-title">Achievement by Region</div><div id="region-bars"><div class="empty"><span class="spinner"></span></div></div></div>
+      <div class="card"><div class="card-title">Achievement by Promo Type</div><div id="type-bars"><div class="empty"><span class="spinner"></span></div></div></div>
+    </div>
+    <div class="card"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;"><div class="card-title" style="margin:0">Latest Submissions</div></div><div class="tbl-wrap" id="recent-wrap"><div class="empty"><span class="spinner"></span></div></div></div>
+  </div>
+
+  <!-- BY STORE -->
+  <div class="screen" id="screen-stores">
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;"><div class="card-title" style="margin:0">Store Summary</div></div>
+      <div class="filter-bar">
+        <select id="fs-region" onchange="renderStores()"><option value="">All Regions</option><option>Northern</option><option>Central</option><option>Southern</option><option>East Coast</option><option>East Malaysia</option></select>
+        <select id="fs-type" onchange="renderStores()"><option value="">All Types</option><option>GE</option><option>ISLAND</option><option>BLOCK</option><option>SAMPLING</option><option>PROMOTER</option><option>OTHER</option></select>
+      </div>
+      <div class="tbl-wrap" id="store-wrap"><div class="empty"><span class="spinner"></span></div></div>
+    </div>
+  </div>
+
+  <!-- ROI -->
+  <div class="screen" id="screen-roi">
+    <div class="grid2" style="margin-bottom:10px;">
+      <div class="card"><div class="card-title">ROI by Promo Type</div><div id="roi-type"></div></div>
+      <div class="card"><div class="card-title">ROI by Region</div><div id="roi-region"></div></div>
+    </div>
+    <div class="card" style="margin-bottom:10px;"><div class="card-title">Cost Breakdown</div><div id="cost-break"></div></div>
+    <div class="card"><div class="card-title">ROI Ranking — Store × Type</div><div class="tbl-wrap" id="roi-detail"></div></div>
+  </div>
+
+  <!-- ALL RECORDS -->
+  <div class="screen" id="screen-all">
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+        <div class="card-title" style="margin:0">All Records</div>
+        <button class="export-btn" onclick="exportCSV()">↓ Export CSV</button>
+      </div>
+      <div class="filter-bar">
+        <select id="fa-region" onchange="renderAll()"><option value="">All Regions</option><option>Northern</option><option>Central</option><option>Southern</option><option>East Coast</option><option>East Malaysia</option></select>
+        <select id="fa-type" onchange="renderAll()"><option value="">All Types</option><option>GE</option><option>ISLAND</option><option>BLOCK</option><option>SAMPLING</option><option>PROMOTER</option><option>OTHER</option></select>
+      </div>
+      <div class="tbl-wrap" id="all-wrap"><div class="empty"><span class="spinner"></span></div></div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const sb = supabase.createClient(
+  'https://wjhgezvrxlhpexocfsea.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndqaGdlenZyeGxocGV4b2Nmc2VhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg1MDU4NzgsImV4cCI6MjA5NDA4MTg3OH0.jENcrgEDYDlSRUCqve-T6rxYRJfz-dnZQHnXpPLJ_RE'
+);
+const TC={GE:'#f59e0b',ISLAND:'#4f8ef7',BLOCK:'#22c55e',SAMPLING:'#a78bfa',PROMOTER:'#f472b6',OTHER:'#9ca3af'};
+const RC={Northern:'#4f8ef7',Central:'#22c55e',Southern:'#f59e0b','East Coast':'#a78bfa','East Malaysia':'#f472b6'};
+let records=[];
+
+const fmt=n=>n>=10000?(n/10000).toFixed(1)+'k':n?n.toLocaleString():'—';
+const pct=(a,b)=>b===0?0:Math.round(a/b*100);
+const roiS=(a,c)=>c>0?(a/c).toFixed(1)+'×':'—';
+const pctCol=p=>p>=70?'var(--green)':p>=50?'var(--amber)':'var(--red)';
+const statusBadge=p=>p>=70?'<span class="badge b-green">On Track</span>':p>=50?'<span class="badge b-amber">Behind</span>':'<span class="badge b-red">Action Needed</span>';
+const typePill=t=>{const c=TC[t]||'#888';return`<span class="type-pill" style="background:${c}20;color:${c};border:1px solid ${c}40">${t}</span>`;};
+
+function nav(page){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(b=>b.classList.remove('active'));
+  document.getElementById('screen-'+page).classList.add('active');
+  ['dashboard','stores','roi','all'].forEach((p,i)=>document.querySelectorAll('.nav-tab')[i].classList.toggle('active',p===page));
+  if(page==='stores')renderStores();
+  if(page==='roi')renderROI();
+  if(page==='all')renderAll();
+}
+
+async function loadAll(){
+  document.getElementById('last-refresh').textContent='Loading…';
+  const {data,error}=await sb.from('promotions').select('*').order('created_at',{ascending:false});
+  records=data||[];
+  document.getElementById('last-refresh').textContent='Updated '+new Date().toLocaleTimeString('en-MY',{hour:'2-digit',minute:'2-digit'});
+  renderDashboard();
+  const active=document.querySelector('.screen.active')?.id?.replace('screen-','');
+  if(active==='stores')renderStores();
+  if(active==='roi')renderROI();
+  if(active==='all')renderAll();
+}
+
+function renderDashboard(){
+  if(!records.length){
+    ['kpi-count','kpi-rate','kpi-roi','kpi-warn'].forEach(id=>document.getElementById(id).textContent='0');
+    document.getElementById('alert-zone').innerHTML='';
+    ['region-bars','type-bars','recent-wrap'].forEach(id=>document.getElementById(id).innerHTML='<div class="empty">No data yet</div>');
+    return;
+  }
+  const totT=records.reduce((a,r)=>a+Number(r.target),0);
+  const totA=records.reduce((a,r)=>a+Number(r.actual_sales),0);
+  const totC=records.reduce((a,r)=>a+Number(r.total_cost),0);
+  document.getElementById('kpi-count').textContent=records.length;
+  document.getElementById('kpi-rate').textContent=pct(totA,totT)+'%';
+  document.getElementById('kpi-roi').textContent=totC>0?(totA/totC).toFixed(1)+'×':'—';
+
+  const regions=Object.keys(RC);
+  const warns=regions.filter(reg=>{
+    const r=records.filter(x=>x.region===reg);
+    if(!r.length)return false;
+    return pct(r.reduce((a,x)=>a+Number(x.actual_sales),0),r.reduce((a,x)=>a+Number(x.target),0))<60;
+  });
+  document.getElementById('kpi-warn').textContent=warns.length;
+
+  let alertHtml='';
+  warns.forEach(w=>alertHtml+=`<div class="alert alert-red">⚠ <strong>${w}</strong> achievement rate below 60% — immediate follow-up required</div>`);
+  const types=Object.keys(TC);
+  types.forEach(tp=>{
+    const r=records.filter(x=>x.promo_type===tp);
+    if(!r.length)return;
+    const c=r.reduce((a,x)=>a+Number(x.total_cost),0),a2=r.reduce((a,x)=>a+Number(x.actual_sales),0);
+    if(c>0&&a2/c<2)alertHtml+=`<div class="alert alert-amber">📉 <strong>${tp}</strong> ROI below 2× — review cost efficiency</div>`;
+  });
+  document.getElementById('alert-zone').innerHTML=alertHtml;
+
+  let rbHtml='';
+  regions.forEach(reg=>{
+    const r=records.filter(x=>x.region===reg);
+    const col=RC[reg];
+    if(!r.length){rbHtml+=`<div class="reg-item"><div class="reg-header"><span class="reg-name"><span class="reg-dot" style="background:${col}"></span>${reg}</span><span style="font-size:11px;color:var(--t3)">No data</span></div></div>`;return;}
+    const p2=pct(r.reduce((a,x)=>a+Number(x.actual_sales),0),r.reduce((a,x)=>a+Number(x.target),0));
+    const stores=[...new Set(r.map(x=>x.store))].length;
+    rbHtml+=`<div class="reg-item"><div class="reg-header"><span class="reg-name"><span class="reg-dot" style="background:${col}"></span>${reg}</span><span class="reg-pct" style="color:${pctCol(p2)}">${p2}%</span></div><div class="reg-sub"><span>${stores} stores</span><span>${r.length} entries</span></div><div class="bar-track"><div class="bar-fill" style="width:${Math.min(p2,100)}%;background:${pctCol(p2)}"></div></div></div>`;
+  });
+  document.getElementById('region-bars').innerHTML=rbHtml;
+
+  let tbHtml='';
+  types.forEach(tp=>{
+    const r=records.filter(x=>x.promo_type===tp);
+    if(!r.length)return;
+    const p2=pct(r.reduce((a,x)=>a+Number(x.actual_sales),0),r.reduce((a,x)=>a+Number(x.target),0));
+    const col=TC[tp];
+    tbHtml+=`<div class="reg-item"><div class="reg-header"><span class="reg-name"><span class="reg-dot" style="background:${col}"></span>${tp}</span><span class="reg-pct" style="color:${pctCol(p2)}">${p2}%</span></div><div class="bar-track"><div class="bar-fill" style="width:${Math.min(p2,100)}%;background:${col}"></div></div></div>`;
+  });
+  document.getElementById('type-bars').innerHTML=tbHtml||'<div class="empty">No data</div>';
+
+  const recent=records.slice(0,8);
+  let th=`<table class="tbl"><thead><tr><th>Date</th><th>Region</th><th>Store</th><th>Type</th><th>Activity</th><th>Products</th><th>Target (RM)</th><th>Actual (RM)</th><th>Achievement</th><th>Total Cost</th><th>Status</th></tr></thead><tbody>`;
+  recent.forEach(r=>{
+    const p2=pct(Number(r.actual_sales),Number(r.target));
+    const tl=r.promo_type==='OTHER'&&r.promo_type_other?r.promo_type_other:r.promo_type;
+    th+=`<tr><td class="num">${r.date}</td><td style="color:${RC[r.region]||'#888'};font-weight:600">${r.region}</td><td style="color:var(--t1);font-weight:500">${r.store}</td><td>${typePill(r.promo_type)}</td><td style="color:var(--t2)">${r.activity_name}</td><td style="color:var(--t2)">${r.products||'—'}</td><td class="num">${fmt(Number(r.target))}</td><td class="num">${fmt(Number(r.actual_sales))}</td><td class="num" style="color:${pctCol(p2)};font-weight:700">${p2}%</td><td class="num">${r.total_cost?fmt(Number(r.total_cost)):'—'}</td><td>${statusBadge(p2)}</td></tr>`;
+  });
+  document.getElementById('recent-wrap').innerHTML=th+'</tbody></table>';
+}
+
+function renderStores(){
+  const rr=document.getElementById('fs-region').value;
+  const rt=document.getElementById('fs-type').value;
+  const filtered=records.filter(r=>(!rr||r.region===rr)&&(!rt||r.promo_type===rt));
+  if(!filtered.length){document.getElementById('store-wrap').innerHTML='<div class="empty">No data</div>';return;}
+  const map={};
+  filtered.forEach(r=>{
+    const k=r.store+'__'+r.region;
+    if(!map[k])map[k]={store:r.store,region:r.region,target:0,actual:0,totalCost:0,rent:0,staff:0,other:0,count:0,types:new Set()};
+    map[k].target+=Number(r.target);map[k].actual+=Number(r.actual_sales);map[k].totalCost+=Number(r.total_cost);
+    map[k].rent+=Number(r.rent_cost||0);map[k].staff+=Number(r.staff_cost||0);map[k].other+=Number(r.other_cost||0);
+    map[k].count++;map[k].types.add(r.promo_type);
+  });
+  const rows=Object.values(map).sort((a,b)=>pct(b.actual,b.target)-pct(a.actual,a.target));
+  let html=`<table class="tbl"><thead><tr><th>Region</th><th>Store</th><th>Types</th><th>Entries</th><th>Total Target</th><th>Total Actual</th><th>Achievement</th><th>Total Cost</th><th>Rental</th><th>ROI</th><th>Status</th></tr></thead><tbody>`;
+  rows.forEach(s=>{
+    const p2=pct(s.actual,s.target);
+    html+=`<tr><td style="color:${RC[s.region]||'#888'};font-weight:600">${s.region}</td><td style="color:var(--t1);font-weight:600">${s.store}</td><td>${[...s.types].map(t=>typePill(t)).join(' ')}</td><td class="num">${s.count}</td><td class="num">${fmt(s.target)}</td><td class="num">${fmt(s.actual)}</td><td class="num" style="color:${pctCol(p2)};font-weight:700">${p2}%</td><td class="num">${fmt(s.totalCost)}</td><td class="num" style="color:var(--amber)">${s.rent?fmt(s.rent):'—'}</td><td class="num" style="color:var(--acc);font-weight:700">${roiS(s.actual,s.totalCost)}</td><td>${statusBadge(p2)}</td></tr>`;
+  });
+  document.getElementById('store-wrap').innerHTML=html+'</tbody></table>';
+}
+
+function renderROI(){
+  if(!records.length){['roi-type','roi-region','cost-break','roi-detail'].forEach(id=>document.getElementById(id).innerHTML='<div class="empty">No data</div>');return;}
+  const MAX=8;
+  function roiBars(groups,targetId){
+    let html='';
+    groups.forEach(([key,col])=>{
+      const r=records.filter(x=>x.region===key||x.promo_type===key);
+      if(!r.length)return;
+      const c=r.reduce((a,x)=>a+Number(x.total_cost),0),a2=r.reduce((a,x)=>a+Number(x.actual_sales),0);
+      const rv=c>0?(a2/c):0;
+      const rStr=c>0?rv.toFixed(1)+'×':'— (no cost data)';
+      const rCol=rv>=3?'var(--green)':rv>=2?'var(--amber)':'var(--red)';
+      html+=`<div class="reg-item"><div class="reg-header"><span class="reg-name"><span class="reg-dot" style="background:${col}"></span>${key}</span><span class="reg-pct" style="color:${rCol}">${rStr}</span></div><div style="font-size:10px;color:var(--t3);margin-bottom:4px">Sales ${fmt(a2)} ÷ Cost ${fmt(c)}</div><div class="bar-track"><div class="bar-fill" style="width:${Math.min(rv/MAX*100,100)}%;background:${col}"></div></div></div>`;
+    });
+    document.getElementById(targetId).innerHTML=html||'<div class="empty">No data</div>';
+  }
+  roiBars([['GE',TC.GE],['ISLAND',TC.ISLAND],['BLOCK',TC.BLOCK],['SAMPLING',TC.SAMPLING],['PROMOTER',TC.PROMOTER],['OTHER',TC.OTHER]],'roi-type');
+  roiBars(Object.entries(RC),'roi-region');
+
+  const totRent=records.reduce((a,r)=>a+Number(r.rent_cost||0),0);
+  const totStaff=records.reduce((a,r)=>a+Number(r.staff_cost||0),0);
+  const totOther=records.reduce((a,r)=>a+Number(r.other_cost||0),0);
+  document.getElementById('cost-break').innerHTML=`
+    <div class="cost-row"><span style="color:var(--t2)">🏪 Space Rental (GE / ISLAND)</span><span class="num">RM ${totRent.toLocaleString()}</span></div>
+    <div class="cost-row"><span style="color:var(--t2)">👤 Staff Cost (PROMOTER / SAMPLING)</span><span class="num">RM ${totStaff.toLocaleString()}</span></div>
+    <div class="cost-row"><span style="color:var(--t2)">🎁 Other Cost (gifts, printing, etc.)</span><span class="num">RM ${totOther.toLocaleString()}</span></div>
+    <div class="cost-row" style="font-weight:700"><span style="color:var(--t1)">Total Cost</span><span class="num" style="color:var(--acc)">RM ${(totRent+totStaff+totOther).toLocaleString()}</span></div>`;
+
+  const gMap={};
+  records.forEach(r=>{
+    const k=r.store+'||'+r.promo_type;
+    if(!gMap[k])gMap[k]={store:r.store,region:r.region,type:r.promo_type,actual:0,target:0,cost:0};
+    gMap[k].actual+=Number(r.actual_sales);gMap[k].target+=Number(r.target);gMap[k].cost+=Number(r.total_cost);
+  });
+  const rows=Object.values(gMap).map(g=>({...g,rv:g.cost>0?g.actual/g.cost:0})).sort((a,b)=>b.rv-a.rv);
+  let html=`<table class="tbl"><thead><tr><th>Region</th><th>Store</th><th>Type</th><th>Total Sales</th><th>Total Cost</th><th>ROI</th><th>Rating</th></tr></thead><tbody>`;
+  rows.forEach(r=>{
+    const badge=r.rv>=3?'<span class="badge b-green">Excellent ≥3×</span>':r.rv>=2?'<span class="badge b-amber">Acceptable ≥2×</span>':r.cost>0?'<span class="badge b-red">Review <2×</span>':'—';
+    html+=`<tr><td style="color:${RC[r.region]||'#888'};font-weight:600">${r.region}</td><td style="color:var(--t1);font-weight:500">${r.store}</td><td>${typePill(r.type)}</td><td class="num">${fmt(r.actual)}</td><td class="num">${r.cost?fmt(r.cost):'—'}</td><td class="num" style="color:var(--acc);font-weight:700">${r.cost?roiS(r.actual,r.cost):'—'}</td><td>${badge}</td></tr>`;
+  });
+  document.getElementById('roi-detail').innerHTML=html+'</tbody></table>';
+}
+
+function renderAll(){
+  const rr=document.getElementById('fa-region').value;
+  const rt=document.getElementById('fa-type').value;
+  const filtered=records.filter(r=>(!rr||r.region===rr)&&(!rt||r.promo_type===rt));
+  if(!filtered.length){document.getElementById('all-wrap').innerHTML='<div class="empty">No records found</div>';return;}
+  let html=`<table class="tbl"><thead><tr><th>Date</th><th>Region</th><th>Store</th><th>Manager</th><th>Type</th><th>Duration</th><th>Activity</th><th>Products</th><th>Target</th><th>Actual</th><th>Achievement</th><th>Rental</th><th>Staff</th><th>Other</th><th>Total Cost</th><th>ROI</th><th>Status</th></tr></thead><tbody>`;
+  filtered.forEach(r=>{
+    const p2=pct(Number(r.actual_sales),Number(r.target));
+    const tl=r.promo_type==='OTHER'&&r.promo_type_other?r.promo_type_other:r.promo_type;
+    html+=`<tr><td class="num">${r.date}</td><td style="color:${RC[r.region]||'#888'};font-weight:600">${r.region}</td><td style="color:var(--t1);font-weight:500">${r.store}</td><td style="color:var(--t2)">${r.manager||'—'}</td><td>${typePill(r.promo_type)}</td><td style="color:var(--t2)">${r.duration||'—'}</td><td style="color:var(--t2)">${r.activity_name}</td><td style="color:var(--t2)">${r.products||'—'}</td><td class="num">${fmt(Number(r.target))}</td><td class="num">${fmt(Number(r.actual_sales))}</td><td class="num" style="color:${pctCol(p2)};font-weight:700">${p2}%</td><td class="num" style="color:var(--amber)">${r.rent_cost?fmt(Number(r.rent_cost)):'—'}</td><td class="num">${r.staff_cost?fmt(Number(r.staff_cost)):'—'}</td><td class="num">${r.other_cost?fmt(Number(r.other_cost)):'—'}</td><td class="num">${r.total_cost?fmt(Number(r.total_cost)):'—'}</td><td class="num" style="color:var(--acc);font-weight:700">${roiS(Number(r.actual_sales),Number(r.total_cost))}</td><td>${statusBadge(p2)}</td></tr>`;
+  });
+  document.getElementById('all-wrap').innerHTML=html+'</tbody></table>';
+}
+
+function exportCSV(){
+  const headers=['Date','Region','Store','Manager','Promo Type','Type (Other)','Duration','Activity','Products','Target (RM)','Actual Sales (RM)','Achievement %','Rental Cost','Rental Basis','Staff Cost','Other Cost','Total Cost','ROI','Notes','Submitted At'];
+  const rows=records.map(r=>[r.date,r.region,r.store,r.manager,r.promo_type,r.promo_type_other||'',r.duration,r.activity_name,r.products||'',r.target,r.actual_sales,pct(Number(r.actual_sales),Number(r.target)),r.rent_cost||0,r.rent_basis||'',r.staff_cost||0,r.other_cost||0,r.total_cost||0,r.total_cost>0?(Number(r.actual_sales)/Number(r.total_cost)).toFixed(2):'',r.note||'',r.created_at]);
+  const csv=[headers,...rows].map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'}));
+  a.download=`mamavege_promo_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+}
+
+loadAll();
+setInterval(loadAll,60000);
+</script>
+</body>
+</html>

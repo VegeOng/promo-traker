@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Promo Fill — MamaVege</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f7f8fa;--surface:#fff;--surface2:#f0f2f6;
+  --border:#e2e5ec;--border2:#c8cdd8;
+  --text:#1a1d24;--text2:#5a6070;--text3:#9aa0b0;
+  --accent:#2563eb;--accent-light:#eff4ff;
+  --green:#16a34a;--green-light:#f0fdf4;
+  --amber:#d97706;--amber-light:#fffbeb;
+  --red:#dc2626;
+  --ge:#f59e0b;--island:#3b82f6;--block:#10b981;--sampling:#8b5cf6;--promoter:#ec4899;--other:#6b7280;
+  --r:10px;--r2:16px;
+  --font:'Plus Jakarta Sans',sans-serif;--mono:'DM Mono',monospace;
+}
+body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:100vh;padding-bottom:60px;}
+.topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:14px 20px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:10;}
+.topbar-dot{width:9px;height:9px;border-radius:50%;background:var(--accent);}
+.topbar-title{font-size:15px;font-weight:700;}
+.topbar-sub{font-size:11px;color:var(--text3);font-family:var(--mono);margin-left:auto;}
+.container{max-width:600px;margin:0 auto;padding:24px 16px 0;}
+.sec-label{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);margin-bottom:10px;display:flex;align-items:center;gap:8px;}
+.sec-label::after{content:'';flex:1;height:1px;background:var(--border);}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r2);padding:18px;margin-bottom:14px;}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.field{display:flex;flex-direction:column;gap:5px;}
+.field.full{grid-column:1/-1;}
+label{font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--text2);}
+.req{color:var(--accent);}
+input,select,textarea{background:var(--surface2);border:1.5px solid var(--border);border-radius:var(--r);padding:10px 12px;font-size:14px;font-family:var(--font);color:var(--text);outline:none;transition:border .15s;width:100%;}
+input:focus,select:focus,textarea:focus{border-color:var(--accent);background:var(--surface);}
+input::placeholder,textarea::placeholder{color:var(--text3);}
+textarea{resize:vertical;min-height:72px;line-height:1.5;}
+.type-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+.type-btn{padding:10px 6px;border-radius:var(--r);border:1.5px solid var(--border);background:var(--surface2);cursor:pointer;text-align:center;transition:all .15s;-webkit-tap-highlight-color:transparent;}
+.type-btn:hover{border-color:var(--border2);}
+.type-btn.sel{border-color:var(--tc,var(--accent));background:color-mix(in srgb,var(--tc,var(--accent)) 10%,transparent);}
+.type-dot{width:9px;height:9px;border-radius:50%;background:var(--tc);margin:0 auto 5px;}
+.type-name{font-size:11px;font-weight:700;color:var(--text);font-family:var(--mono);}
+.type-desc{font-size:10px;color:var(--text3);margin-top:2px;}
+.rent-box{background:var(--amber-light);border:1px solid #fde68a;border-radius:var(--r2);padding:14px;margin-bottom:14px;display:none;}
+.rent-box.show{display:block;}
+.rent-note{font-size:12px;color:var(--amber);font-weight:600;margin-bottom:10px;}
+.submit-btn{width:100%;padding:14px;background:var(--accent);color:#fff;border:none;border-radius:var(--r2);font-size:15px;font-weight:700;font-family:var(--font);cursor:pointer;transition:all .2s;margin-top:4px;}
+.submit-btn:hover{background:#1d4ed8;}
+.submit-btn:disabled{background:var(--text3);cursor:not-allowed;}
+.success-card{background:var(--green-light);border:1px solid #bbf7d0;border-radius:var(--r2);padding:28px;text-align:center;display:none;margin-bottom:14px;}
+.success-card.show{display:block;}
+.success-title{font-size:18px;font-weight:700;color:var(--green);margin-bottom:6px;}
+.success-sub{font-size:13px;color:#166534;}
+.again-btn{margin-top:14px;padding:9px 20px;background:var(--green);color:#fff;border:none;border-radius:var(--r);font-size:13px;font-weight:600;font-family:var(--font);cursor:pointer;}
+.err{color:var(--red);font-size:11px;margin-top:3px;display:none;}
+.err.show{display:block;}
+.has-err input,.has-err select{border-color:var(--red)!important;}
+.rec-item{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:11px 13px;margin-bottom:7px;display:flex;align-items:center;gap:10px;}
+.rec-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.rec-info{flex:1;min-width:0;}
+.rec-name{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.rec-meta{font-size:11px;color:var(--text3);margin-top:1px;font-family:var(--mono);}
+.rec-pct{font-size:13px;font-weight:700;font-family:var(--mono);flex-shrink:0;}
+.spinner{display:inline-block;width:15px;height:15px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite;vertical-align:middle;margin-right:6px;}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="topbar-dot"></div>
+  <span class="topbar-title">MamaVege Promo Fill</span>
+  <span class="topbar-sub" id="today-lbl"></span>
+</div>
+<div class="container">
+  <div class="success-card" id="success-card">
+    <div style="font-size:38px;margin-bottom:10px;">✅</div>
+    <div class="success-title">Submitted successfully!</div>
+    <div class="success-sub" id="success-msg"></div>
+    <button class="again-btn" onclick="resetForm()">Submit another entry</button>
+  </div>
+
+  <p class="sec-label">Basic Info</p>
+  <div class="card">
+    <div class="grid2">
+      <div class="field" id="w-region">
+        <label>Region <span class="req">*</span></label>
+        <select id="f-region">
+          <option value="">Select region</option>
+          <option>Northern</option><option>Central</option><option>Southern</option><option>East Coast</option><option>East Malaysia</option>
+        </select>
+        <span class="err" id="e-region">Please select a region</span>
+      </div>
+      <div class="field">
+        <label>Date <span class="req">*</span></label>
+        <input type="date" id="f-date">
+      </div>
+      <div class="field full" id="w-store">
+        <label>Store Name <span class="req">*</span></label>
+        <input type="text" id="f-store" placeholder="e.g. Aeon Bukit Mertajam, Mydin Seberang Jaya, Lotus's Kepong">
+        <span class="err" id="e-store">Please enter store name</span>
+      </div>
+      <div class="field full" id="w-manager">
+        <label>Person in Charge <span class="req">*</span></label>
+        <input type="text" id="f-manager" placeholder="Your full name">
+        <span class="err" id="e-manager">Please enter your name</span>
+      </div>
+      <div class="field full" id="w-name">
+        <label>Activity Name <span class="req">*</span></label>
+        <input type="text" id="f-name" placeholder="e.g. Raya Bundle Deal, Spring Mega Sale">
+        <span class="err" id="e-name">Please enter activity name</span>
+      </div>
+      <div class="field full">
+        <label>Products</label>
+        <input type="text" id="f-products" placeholder="e.g. Shampoo 2-for-1, Organic Veggie Box, Skincare Gift Set">
+      </div>
+    </div>
+  </div>
+
+  <p class="sec-label">Promo Type</p>
+  <div class="card">
+    <div class="type-grid">
+      <div class="type-btn" style="--tc:var(--ge)" onclick="selType('GE',this)"><div class="type-dot"></div><div class="type-name">GE</div><div class="type-desc">Entrance display</div></div>
+      <div class="type-btn" style="--tc:var(--island)" onclick="selType('ISLAND',this)"><div class="type-dot"></div><div class="type-name">ISLAND</div><div class="type-desc">Island display</div></div>
+      <div class="type-btn" style="--tc:var(--block)" onclick="selType('BLOCK',this)"><div class="type-dot"></div><div class="type-name">BLOCK</div><div class="type-desc">Block display</div></div>
+      <div class="type-btn" style="--tc:var(--sampling)" onclick="selType('SAMPLING',this)"><div class="type-dot"></div><div class="type-name">SAMPLING</div><div class="type-desc">Sampling</div></div>
+      <div class="type-btn" style="--tc:var(--promoter)" onclick="selType('PROMOTER',this)"><div class="type-dot"></div><div class="type-name">PROMOTER</div><div class="type-desc">Promoter</div></div>
+      <div class="type-btn" style="--tc:var(--other)" onclick="selType('OTHER',this)"><div class="type-dot"></div><div class="type-name">OTHER</div><div class="type-desc">Others</div></div>
+    </div>
+    <div id="other-wrap" style="display:none;margin-top:10px;">
+      <input type="text" id="f-type-other" placeholder="Please specify promo type">
+    </div>
+    <span class="err" id="e-type" style="margin-top:8px">Please select a promo type</span>
+  </div>
+
+  <p class="sec-label">Campaign Duration</p>
+  <div class="card">
+    <div class="field" id="w-dur">
+      <label>Duration <span class="req">*</span></label>
+      <input type="text" id="f-duration" placeholder="e.g. 5 days, 2 weeks, 1 month">
+      <span class="err" id="e-dur">Please enter campaign duration</span>
+    </div>
+  </div>
+
+  <div class="rent-box" id="rent-box">
+    <div class="rent-note">💰 Space rental cost required for this promo type</div>
+    <div class="grid2">
+      <div class="field"><label>Rental Cost (RM)</label><input type="number" id="f-rent" placeholder="0" min="0"></div>
+      <div class="field"><label>Billing Basis</label>
+        <select id="f-rent-basis"><option>Per campaign</option><option>Per day</option><option>Per month</option></select>
+      </div>
+    </div>
+  </div>
+
+  <p class="sec-label">Sales Data</p>
+  <div class="card">
+    <div class="grid2">
+      <div class="field" id="w-target">
+        <label>Sales Target (RM) <span class="req">*</span></label>
+        <input type="number" id="f-target" placeholder="0" min="0">
+        <span class="err" id="e-target">Please enter sales target</span>
+      </div>
+      <div class="field" id="w-actual">
+        <label>Actual Sales — Campaign Total (RM) <span class="req">*</span></label>
+        <input type="number" id="f-actual" placeholder="0" min="0">
+        <span class="err" id="e-actual">Please enter actual sales</span>
+      </div>
+      <div class="field"><label>Staff Cost (RM)</label><input type="number" id="f-staff" placeholder="0" min="0"></div>
+      <div class="field"><label>Other Cost (RM)</label><input type="number" id="f-other" placeholder="Gifts, printing, etc." min="0"></div>
+    </div>
+  </div>
+
+  <p class="sec-label">Remarks</p>
+  <div class="card" style="margin-bottom:18px;">
+    <div class="field">
+      <label>Notes / Issues</label>
+      <textarea id="f-note" placeholder="Display condition, manpower issues, competitor activity, weather impact… (optional)"></textarea>
+    </div>
+  </div>
+
+  <button class="submit-btn" id="submit-btn" onclick="submitForm()">Submit</button>
+
+  <p class="sec-label" style="margin-top:28px;">My Recent Submissions</p>
+  <div id="my-records"><div style="text-align:center;padding:20px;color:var(--text3);font-size:13px;">Loading…</div></div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const sb = supabase.createClient(
+  'https://wjhgezvrxlhpexocfsea.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndqaGdlenZyeGxocGV4b2Nmc2VhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg1MDU4NzgsImV4cCI6MjA5NDA4MTg3OH0.jENcrgEDYDlSRUCqve-T6rxYRJfz-dnZQHnXpPLJ_RE'
+);
+const TC = {GE:'#f59e0b',ISLAND:'#3b82f6',BLOCK:'#10b981',SAMPLING:'#8b5cf6',PROMOTER:'#ec4899',OTHER:'#6b7280'};
+const RENT_TYPES = ['GE','ISLAND'];
+let selPromoType = '';
+
+document.getElementById('f-date').value = new Date().toISOString().slice(0,10);
+document.getElementById('today-lbl').textContent = new Date().toLocaleDateString('en-MY',{weekday:'short',year:'numeric',month:'short',day:'numeric'});
+
+function selType(t,el){
+  selPromoType=t;
+  document.querySelectorAll('.type-btn').forEach(b=>b.classList.remove('sel'));
+  el.classList.add('sel');
+  document.getElementById('e-type').classList.remove('show');
+  document.getElementById('rent-box').classList.toggle('show',RENT_TYPES.includes(t));
+  document.getElementById('other-wrap').style.display = t==='OTHER'?'block':'none';
+}
+
+function validate(){
+  let ok=true;
+  [['f-region','e-region','w-region'],['f-store','e-store','w-store'],['f-manager','e-manager','w-manager'],
+   ['f-name','e-name','w-name'],['f-duration','e-dur','w-dur'],['f-target','e-target','w-target'],['f-actual','e-actual','w-actual']
+  ].forEach(([fid,eid,wid])=>{
+    const v=document.getElementById(fid).value.toString().trim();
+    document.getElementById(eid).classList.toggle('show',!v);
+    document.getElementById(wid).classList.toggle('has-err',!v);
+    if(!v) ok=false;
+  });
+  if(!selPromoType){document.getElementById('e-type').classList.add('show');ok=false;}
+  return ok;
+}
+
+async function submitForm(){
+  if(!validate()) return;
+  const btn=document.getElementById('submit-btn');
+  btn.disabled=true; btn.innerHTML='<span class="spinner"></span>Submitting…';
+  const g=id=>document.getElementById(id).value;
+  const rent=parseFloat(g('f-rent'))||0, staff=parseFloat(g('f-staff'))||0, other=parseFloat(g('f-other'))||0;
+  const {error} = await sb.from('promotions').insert({
+    date:g('f-date'), region:g('f-region'), store:g('f-store').trim(),
+    manager:g('f-manager').trim(), activity_name:g('f-name').trim(),
+    products:g('f-products').trim(), promo_type:selPromoType,
+    promo_type_other:selPromoType==='OTHER'?g('f-type-other').trim():'',
+    duration:g('f-duration').trim(),
+    target:parseFloat(g('f-target'))||0, actual_sales:parseFloat(g('f-actual'))||0,
+    rent_cost:rent, rent_basis:RENT_TYPES.includes(selPromoType)?g('f-rent-basis'):'',
+    staff_cost:staff, other_cost:other, total_cost:rent+staff+other,
+    note:g('f-note').trim()
+  });
+  if(error){alert('Submit failed: '+error.message);btn.disabled=false;btn.innerHTML='Submit';return;}
+  const pct=parseFloat(g('f-target'))>0?Math.round(parseFloat(g('f-actual'))/parseFloat(g('f-target'))*100):0;
+  document.getElementById('success-msg').textContent=`${g('f-store').trim()} · ${selPromoType} · Achievement ${pct}%`;
+  document.getElementById('success-card').classList.add('show');
+  btn.style.display='none';
+  window.scrollTo({top:0,behavior:'smooth'});
+  loadRecords();
+}
+
+function resetForm(){
+  document.getElementById('success-card').classList.remove('show');
+  const btn=document.getElementById('submit-btn');
+  btn.style.display='';btn.disabled=false;btn.innerHTML='Submit';
+  ['f-store','f-manager','f-name','f-products','f-duration','f-type-other','f-rent','f-staff','f-other','f-note','f-target','f-actual'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('f-region').value='';
+  document.getElementById('f-date').value=new Date().toISOString().slice(0,10);
+  selPromoType='';
+  document.querySelectorAll('.type-btn').forEach(b=>b.classList.remove('sel'));
+  document.getElementById('rent-box').classList.remove('show');
+  document.getElementById('other-wrap').style.display='none';
+}
+
+async function loadRecords(){
+  const {data}=await sb.from('promotions').select('*').order('created_at',{ascending:false}).limit(6);
+  const wrap=document.getElementById('my-records');
+  if(!data||!data.length){wrap.innerHTML='<div style="text-align:center;padding:20px;color:var(--text3);font-size:13px;">No submissions yet</div>';return;}
+  wrap.innerHTML=data.map(r=>{
+    const p=r.target>0?Math.round(r.actual_sales/r.target*100):0;
+    const col=p>=70?'var(--green)':p>=50?'var(--amber)':'var(--red)';
+    const tl=r.promo_type==='OTHER'&&r.promo_type_other?r.promo_type_other:r.promo_type;
+    return`<div class="rec-item"><div class="rec-dot" style="background:${TC[r.promo_type]||'#888'}"></div>
+    <div class="rec-info"><div class="rec-name">${r.store} · ${r.activity_name}</div>
+    <div class="rec-meta">${r.date} · ${r.region} · ${tl} · ${r.duration}</div></div>
+    <div class="rec-pct" style="color:${col}">${p}%</div></div>`;
+  }).join('');
+}
+loadRecords();
+</script>
+</body>
+</html>
