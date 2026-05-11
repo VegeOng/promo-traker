@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MamaVege Promo</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0d0f14;--s1:#151820;--s2:#1c2029;
+  --b1:#252b38;--b2:#3a4560;
+  --t1:#e8ecf4;--t2:#8a94a8;--t3:#4a5568;
+  --acc:#4f8ef7;--green:#22c55e;
+  --font:'Plus Jakarta Sans',sans-serif;
+}
+body{background:var(--bg);color:var(--t1);font-family:var(--font);min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;}
+
+.logo-wrap{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.logo-dot{width:10px;height:10px;border-radius:50%;background:var(--acc);box-shadow:0 0 0 4px rgba(79,142,247,.2);}
+.logo-text{font-size:22px;font-weight:800;letter-spacing:.02em;}
+.logo-sub{font-size:13px;color:var(--t3);margin-bottom:48px;text-align:center;}
+
+.cards{display:grid;grid-template-columns:1fr 1fr;gap:16px;width:100%;max-width:520px;}
+
+.entry-card{
+  background:var(--s1);border:1px solid var(--b1);border-radius:20px;
+  padding:28px 24px;text-decoration:none;color:inherit;
+  transition:all .2s;cursor:pointer;display:block;
+}
+.entry-card:hover{border-color:var(--b2);background:var(--s2);transform:translateY(-3px);}
+.entry-card.manager{border-color:rgba(79,142,247,.3);}
+.entry-card.manager:hover{border-color:var(--acc);}
+
+.card-icon{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;margin-bottom:16px;}
+.icon-fill{background:rgba(34,197,94,.12);}
+.icon-hq{background:rgba(79,142,247,.12);}
+
+.card-title{font-size:16px;font-weight:700;margin-bottom:6px;}
+.card-desc{font-size:12px;color:var(--t2);line-height:1.6;}
+.card-arrow{font-size:18px;color:var(--t3);margin-top:16px;transition:transform .2s;}
+.entry-card:hover .card-arrow{transform:translateX(4px);color:var(--t2);}
+
+.badge{display:inline-block;font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;margin-bottom:12px;}
+.badge-green{background:rgba(34,197,94,.12);color:var(--green);}
+.badge-blue{background:rgba(79,142,247,.12);color:var(--acc);}
+
+.footer{margin-top:40px;font-size:11px;color:var(--t3);}
+</style>
+</head>
+<body>
+
+<div class="logo-wrap">
+  <div class="logo-dot"></div>
+  <span class="logo-text">MamaVege</span>
+</div>
+<p class="logo-sub">Promotion Management System</p>
+
+<div class="cards">
+  <a class="entry-card" href="/promo-fill.html">
+    <div class="badge badge-green">For Managers</div>
+    <div class="card-icon icon-fill">✏️</div>
+    <div class="card-title">Daily Fill</div>
+    <div class="card-desc">Submit your store's daily promo data — sales, costs, and activity updates.</div>
+    <div class="card-arrow">→</div>
+  </a>
+
+  <a class="entry-card manager" href="/promo-hq.html">
+    <div class="badge badge-blue">HQ Only</div>
+    <div class="card-icon icon-hq">📊</div>
+    <div class="card-title">HQ Dashboard</div>
+    <div class="card-desc">View all regions, ROI analysis, store rankings and performance alerts.</div>
+    <div class="card-arrow">→</div>
+  </a>
+</div>
+
+<p class="footer">© 2026 MamaVege Sales Team · All regions</p>
+
+</body>
+</html>
