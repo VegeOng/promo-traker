@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Break-even Calculator — MamaVege</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#fafafa;--white:#fff;
+  --green:#166534;--gd:#14532d;--gm:#15803d;--gl:#dcfce7;--gxl:#f0fdf4;
+  --red:#dc2626;--rl:#fee2e2;
+  --border:#e5e7eb;--bd:#d1d5db;
+  --muted:#6b7280;--ml:#9ca3af;
+  --text:#111827;--t2:#374151;--t3:#4b5563;
+  --r:13px;
+}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;-webkit-font-smoothing:antialiased}
+
+/* NAV */
+nav{background:var(--green);height:52px;padding:0 1.2rem;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;box-shadow:0 2px 12px rgba(0,0,0,.2)}
+.nav-brand{display:flex;align-items:center;gap:8px}
+.nav-logo{width:29px;height:29px;border-radius:7px;background:rgba(255,255,255,.15);display:grid;place-items:center;font-family:'DM Serif Display',serif;font-size:.9rem;color:#fff;font-style:italic}
+.nav-title{color:#fff;font-size:.85rem;font-weight:600}
+.nav-back{color:rgba(255,255,255,.7);font-size:.75rem;text-decoration:none;padding:.28rem .6rem;border:1px solid rgba(255,255,255,.2);border-radius:6px;transition:all .15s}
+.nav-back:hover{color:#fff;border-color:rgba(255,255,255,.45)}
+
+/* HERO */
+.hero{background:var(--green);padding:1.65rem 1.2rem 1.35rem;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;right:-50px;top:-50px;width:200px;height:200px;border-radius:50%;background:rgba(255,255,255,.05);pointer-events:none}
+.hero-tag{display:inline-flex;align-items:center;font-size:.67rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.15);border-radius:20px;padding:3px 10px;color:rgba(255,255,255,.85);margin-bottom:.6rem}
+.hero h1{font-family:'DM Serif Display',serif;font-size:1.55rem;color:#fff;line-height:1.15;font-style:italic}
+.hero p{font-size:.78rem;color:rgba(255,255,255,.6);margin-top:.3rem;line-height:1.55}
+
+main{padding:1.05rem 1.1rem 4rem;max-width:640px;margin:0 auto}
+
+/* CARD */
+.card{background:var(--white);border:1.5px solid var(--border);border-radius:var(--r);padding:1.1rem;margin-bottom:.8rem}
+.card-hd{font-size:.67rem;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);margin-bottom:.9rem;display:flex;align-items:center;gap:5px}
+
+/* FIELDS */
+label{display:block;font-size:.76rem;font-weight:600;color:var(--t2);margin-bottom:3px}
+.req{color:var(--red)}
+.hint{font-size:.68rem;color:var(--ml);margin-top:3px;line-height:1.4}
+
+input[type=number],input[type=text]{
+  width:100%;padding:.55rem .7rem;border:1.5px solid var(--bd);border-radius:7px;
+  font-family:inherit;font-size:.85rem;color:var(--text);background:var(--white);
+  outline:none;transition:border-color .15s,box-shadow .15s;-moz-appearance:textfield
+}
+input::-webkit-outer-spin-button,input::-webkit-inner-spin-button{-webkit-appearance:none}
+input:focus{border-color:var(--green);box-shadow:0 0 0 3px rgba(22,101,52,.09)}
+input::placeholder{color:var(--ml)}
+
+.pfx{position:relative}
+.pfx .sym{position:absolute;left:.68rem;top:50%;transform:translateY(-50%);font-size:.78rem;color:var(--ml);pointer-events:none;font-weight:500}
+.pfx input{padding-left:2rem}
+.sfx{position:relative}
+.sfx .sym{position:absolute;right:.68rem;top:50%;transform:translateY(-50%);font-size:.78rem;color:var(--ml);pointer-events:none}
+.sfx input{padding-right:1.9rem}
+
+/* PRODUCT ROWS */
+.prod-section-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:.65rem}
+.prod-section-hd span{font-size:.67rem;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--muted)}
+.add-prod-btn{font-size:.76rem;font-weight:700;color:var(--green);background:var(--gxl);border:1.5px solid var(--gl);border-radius:7px;padding:.3rem .65rem;cursor:pointer;font-family:inherit;transition:all .15s}
+.add-prod-btn:hover{background:var(--gl)}
+
+.prod-list{display:flex;flex-direction:column;gap:.6rem;margin-bottom:.5rem}
+.prod-row{background:#fafafa;border:1.5px solid var(--border);border-radius:10px;padding:.75rem .8rem;position:relative}
+.prod-row-top{display:grid;grid-template-columns:1fr 90px 90px 26px;gap:.5rem;align-items:end}
+.prod-row-top label{font-size:.72rem}
+.prod-del{width:24px;height:24px;border-radius:5px;border:1.5px solid #fca5a5;background:var(--white);color:var(--red);font-size:.95rem;cursor:pointer;display:grid;place-items:center;align-self:end;transition:background .12s}
+.prod-del:hover{background:var(--rl)}
+
+.gm-bar{margin-top:.5rem;padding:.35rem .65rem;border-radius:6px;background:var(--gxl);border:1px solid var(--gl);font-size:.72rem;color:var(--gm);font-weight:600;display:none;align-items:center;gap:.5rem;flex-wrap:wrap}
+.gm-bar.warn{background:var(--rl);border-color:#fecaca;color:var(--red)}
+.gm-bar .gval{font-weight:700;font-size:.8rem}
+
+/* COST ROWS */
+.cost-list{display:flex;flex-direction:column;gap:.7rem;margin-bottom:.55rem}
+.cost-row{background:#fafafa;border:1.5px solid var(--border);border-radius:10px;padding:.7rem .8rem}
+
+.cost-row-top{display:grid;grid-template-columns:1fr 26px;gap:.5rem;align-items:start;margin-bottom:.55rem}
+.cost-row-top label{font-size:.72rem;margin-bottom:3px}
+
+/* Radio group */
+.radio-group{display:flex;gap:1rem;margin-bottom:.55rem}
+.radio-opt{display:flex;align-items:center;gap:.35rem;cursor:pointer}
+.radio-opt input[type=radio]{
+  width:15px;height:15px;
+  accent-color:var(--green);
+  cursor:pointer;margin:0;
+  flex-shrink:0
+}
+.radio-opt span{font-size:.78rem;font-weight:600;color:var(--t2)}
+.radio-opt input[type=radio]:checked + span{color:var(--green)}
+
+.cost-amt-wrap{position:relative}
+.cost-sym{position:absolute;top:50%;transform:translateY(-50%);font-size:.78rem;color:var(--ml);pointer-events:none;font-weight:500}
+.cost-sym.left{left:.68rem}
+.cost-sym.right{right:.68rem}
+.cost-inp-rm{padding-left:2rem!important}
+.cost-inp-pct{padding-right:1.9rem!important;text-align:right}
+
+.cost-hint{font-size:.68rem;color:var(--ml);margin-top:.35rem;line-height:1.4}
+.cost-hint.pct{color:var(--green);font-weight:500}
+
+.del-btn{width:24px;height:24px;border-radius:5px;border:1.5px solid #fca5a5;background:var(--white);color:var(--red);font-size:.95rem;cursor:pointer;display:grid;place-items:center;transition:background .12s;margin-top:1px}
+.del-btn:hover{background:var(--rl)}
+
+.add-cost-btn{width:100%;border:1.5px dashed var(--bd);background:transparent;border-radius:8px;padding:.46rem;font-family:inherit;font-size:.78rem;color:var(--green);font-weight:600;cursor:pointer;transition:all .15s}
+.add-cost-btn:hover{background:var(--gxl);border-color:var(--green)}
+
+/* CALC BTN */
+.calc-btn{width:100%;padding:.8rem;background:var(--green);color:#fff;border:none;border-radius:10px;font-family:inherit;font-size:.93rem;font-weight:700;cursor:pointer;transition:background .18s,transform .1s;margin:.9rem 0 .4rem;display:flex;align-items:center;justify-content:center;gap:6px}
+.calc-btn:hover{background:var(--gd)}
+.calc-btn:active{transform:scale(.985)}
+
+/* RESULTS */
+#results{display:none}
+.r-sep{display:flex;align-items:center;gap:.55rem;margin:1rem 0 .75rem;font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--ml)}
+.r-sep::before,.r-sep::after{content:'';flex:1;height:1px;background:var(--border)}
+
+.big-answers{display:grid;grid-template-columns:1fr 1fr;gap:.65rem;margin-bottom:.8rem}
+.big-card{background:var(--green);border-radius:var(--r);padding:1.1rem .95rem;position:relative;overflow:hidden}
+.big-card::after{content:'';position:absolute;right:-18px;bottom:-18px;width:80px;height:80px;border-radius:50%;background:rgba(255,255,255,.07);pointer-events:none}
+.big-card .bc-label{font-size:.65rem;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:rgba(255,255,255,.55);margin-bottom:.4rem}
+.big-card .bc-val{font-family:'DM Serif Display',serif;font-size:1.85rem;color:#fff;line-height:1;font-style:italic}
+.big-card .bc-unit{font-size:.8rem;font-weight:600;color:rgba(255,255,255,.6);margin-left:2px;font-style:normal;font-family:'DM Sans',sans-serif}
+.big-card .bc-sub{font-size:.68rem;color:rgba(255,255,255,.45);margin-top:.3rem}
+
+.breakdown{background:var(--white);border:1.5px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:.8rem}
+.bk-hd{background:var(--gxl);padding:.55rem .95rem;font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--green)}
+.bk-row{display:flex;justify-content:space-between;align-items:center;padding:.45rem .95rem;border-bottom:1px solid #f3f4f6;font-size:.8rem}
+.bk-row:last-child{border-bottom:none}
+.bk-row.total{font-weight:700;font-size:.84rem;background:#fafafa;padding:.52rem .95rem}
+.bk-name{color:var(--t3)}
+.bk-amt{font-weight:600;color:var(--red)}
+.bk-row.total .bk-amt{color:var(--green);font-size:.9rem}
+.bk-tag{font-size:.65rem;color:var(--ml);margin-left:4px;font-weight:400}
+
+.prod-result{background:var(--white);border:1.5px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:.8rem}
+.pr-hd{background:var(--gxl);padding:.55rem .95rem;font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--green)}
+.prtable{width:100%;border-collapse:collapse;font-size:.77rem}
+.prtable th{padding:.4rem .6rem;text-align:left;font-size:.63rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--green);border-bottom:1.5px solid var(--gl)}
+.prtable td{padding:.4rem .6rem;border-bottom:1px solid #f3f4f6;color:var(--t3)}
+.prtable tr:last-child td{border-bottom:none}
+.prtable td:first-child{color:var(--text);font-weight:600}
+.prtable td.hl{color:var(--green);font-weight:700}
+.prtable td.share{font-size:.7rem;color:var(--ml)}
+
+/* WHATSAPP */
+.wa-section{margin-bottom:.75rem}
+.wa-label{font-size:.67rem;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);margin-bottom:.5rem}
+.wa-btns{display:grid;grid-template-columns:1fr 1fr;gap:.55rem}
+.wa-btn{
+  display:flex;align-items:center;justify-content:center;gap:7px;
+  padding:.65rem .5rem;border-radius:9px;border:none;
+  font-family:inherit;font-size:.8rem;font-weight:700;cursor:pointer;
+  text-decoration:none;transition:all .18s
+}
+.wa-btn.summary{background:#25D366;color:#fff}
+.wa-btn.summary:hover{background:#1ebe5d}
+.wa-btn.full{background:#128C7E;color:#fff}
+.wa-btn.full:hover{background:#0f7268}
+.wa-btn svg{flex-shrink:0}
+
+.reset-btn{width:100%;padding:.58rem;background:transparent;color:var(--muted);border:1.5px solid var(--bd);border-radius:9px;font-family:inherit;font-size:.8rem;font-weight:500;cursor:pointer;transition:all .15s}
+.reset-btn:hover{border-color:var(--red);color:var(--red)}
+
+.hidden{display:none!important}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-brand">
+    <div class="nav-logo">M</div>
+    <span class="nav-title">MamaVege Management Hub</span>
+  </div>
+  <a href="index.html" class="nav-back">← Hub</a>
+</nav>
+
+<div class="hero">
+  <div class="hero-tag">💰 Sales Tool</div>
+  <h1>Break-even Calculator</h1>
+  <p>Add your products and costs to find out how many units to sell and what revenue target you need to break even.</p>
+</div>
+
+<main>
+
+  <!-- PRODUCTS -->
+  <div class="card">
+    <div class="prod-section-hd">
+      <span>📦 Products</span>
+      <button class="add-prod-btn" onclick="addProduct()">＋ Add Product</button>
+    </div>
+    <div class="prod-list" id="prod-list"></div>
+  </div>
+
+  <!-- COSTS -->
+  <div class="card">
+    <div class="card-hd">💸 Cost Items</div>
+    <div class="hint" style="margin-bottom:.8rem">Add any cost — fixed amount (RM) or percentage of selling price per unit (e.g. DC Rebate, listing fee %).</div>
+    <div class="cost-list" id="cost-list"></div>
+    <button class="add-cost-btn" onclick="addCost()">＋ Add Cost Item</button>
+  </div>
+
+  <button class="calc-btn" onclick="calculate()">
+    <span>📊</span> Calculate Break-even
+  </button>
+
+  <!-- RESULTS -->
+  <div id="results">
+    <div class="r-sep">Results</div>
+
+    <div class="big-answers">
+      <div class="big-card">
+        <div class="bc-label">Total Units to Sell</div>
+        <div class="bc-val" id="r-units">—<span class="bc-unit">units</span></div>
+        <div class="bc-sub">across all products</div>
+      </div>
+      <div class="big-card">
+        <div class="bc-label">Revenue Target</div>
+        <div class="bc-val" id="r-rev">—</div>
+        <div class="bc-sub">to break even</div>
+      </div>
+    </div>
+
+    <div class="breakdown">
+      <div class="bk-hd">💸 Cost Breakdown</div>
+      <div id="r-bk-rows"></div>
+    </div>
+
+    <div class="prod-result" id="r-prod-wrap">
+      <div class="pr-hd">📦 Per-Product Break-even Target</div>
+      <div style="overflow-x:auto">
+        <table class="prtable">
+          <thead>
+            <tr>
+              <th>Product</th>
+              <th>Net GM / Unit</th>
+              <th>Allocated Cost</th>
+              <th>Units Needed</th>
+              <th>Revenue Needed</th>
+            </tr>
+          </thead>
+          <tbody id="r-prod-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- WHATSAPP SHARE -->
+    <div class="wa-section">
+      <div class="wa-label">📤 Share via WhatsApp</div>
+      <div class="wa-btns">
+        <a class="wa-btn full" id="wa-full" href="#" target="_blank" style="grid-column:1/-1">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.127.558 4.122 1.532 5.859L0 24l6.335-1.506A11.942 11.942 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.794 9.794 0 01-5.012-1.374l-.36-.214-3.732.887.936-3.618-.235-.372A9.755 9.755 0 012.182 12C2.182 6.57 6.57 2.182 12 2.182S21.818 6.57 21.818 12 17.43 21.818 12 21.818z"/></svg>
+          WhatsApp
+        </a>
+      </div>
+    </div>
+
+    <button class="reset-btn" onclick="resetAll()">↺ Recalculate</button>
+  </div>
+
+</main>
+
+<script>
+const fmtRM = n => 'RM ' + n.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+const fmtN  = n => Math.ceil(n).toLocaleString();
+let prodCount = 0, costCount = 0;
+let lastResult = null;
+
+function buildWALinks(r) {
+  const summary = [
+    '📊 *MamaVege Break-even Report*',
+    '',
+    '✅ *Total Units to Sell:* ' + fmtN(r.totalUnits) + ' units',
+    '💰 *Revenue Target:* ' + fmtRM(r.totalRev),
+    '💸 *Total Cost:* ' + fmtRM(r.dispTotal),
+    '',
+    '_Calculated via MamaVege Management Hub_'
+  ].join('\n');
+
+  const costLines = r.costs.map(c =>
+    c.type === 'rm'
+      ? '  • ' + c.name + ': ' + fmtRM(c.val)
+      : '  • ' + c.name + ' (' + c.val + '% of selling price): ≈ ' + fmtRM(c.val / 100 * r.totalRev)
+  ).join('\n');
+
+  const prodLines = r.prodsResult.length > 1
+    ? '\n\n📦 *Per-Product Targets:*\n' + r.prodsResult.map(p =>
+        '  • ' + p.name + ': ' + fmtN(p.unitsNeeded) + ' units | ' + fmtRM(p.revNeeded)
+      ).join('\n')
+    : '';
+
+  const full = [
+    '📊 *MamaVege Break-even Report*',
+    '',
+    '✅ *Total Units to Sell:* ' + fmtN(r.totalUnits) + ' units',
+    '💰 *Revenue Target:* ' + fmtRM(r.totalRev),
+    '',
+    '💸 *Cost Breakdown:*',
+    costLines,
+    '  ─────────────',
+    '  Total: ' + fmtRM(r.dispTotal),
+    prodLines,
+    '',
+    '_Calculated via MamaVege Management Hub_'
+  ].join('\n');
+
+  document.getElementById('wa-full').href = 'https://wa.me/?text=' + encodeURIComponent(full);
+}
+
+// ── PRODUCTS ──
+function addProduct() {
+  prodCount++;
+  const id  = 'p' + prodCount;
+  const div = document.createElement('div');
+  div.className = 'prod-row';
+  div.id = 'prow-' + id;
+  div.innerHTML = `
+    <div class="prod-row-top">
+      <div>
+        <label>Product Name</label>
+        <input type="text" id="${id}-name" placeholder="e.g. MamaVege Spinach">
+      </div>
+      <div>
+        <label>Selling Price <span class="req">*</span></label>
+        <div class="pfx"><span class="sym">RM</span>
+          <input type="number" id="${id}-sell" placeholder="0.00" min="0" step="0.01" oninput="updateGM('${id}')">
+        </div>
+      </div>
+      <div>
+        <label>Cost Price <span class="req">*</span></label>
+        <div class="pfx"><span class="sym">RM</span>
+          <input type="number" id="${id}-cogs" placeholder="0.00" min="0" step="0.01" oninput="updateGM('${id}')">
+        </div>
+      </div>
+      <button class="prod-del" onclick="document.getElementById('prow-${id}').remove()" title="Remove">×</button>
+    </div>
+    <div class="gm-bar" id="${id}-gmbar">
+      <span>GM / unit</span>
+      <span class="gval" id="${id}-gmu">—</span>
+      <span style="color:var(--ml)">·</span>
+      <span>Gross Margin</span>
+      <span class="gval" id="${id}-gmpct">—</span>
+    </div>`;
+  document.getElementById('prod-list').appendChild(div);
+}
+
+function updateGM(id) {
+  const sell = parseFloat(document.getElementById(id + '-sell').value) || 0;
+  const cogs = parseFloat(document.getElementById(id + '-cogs').value) || 0;
+  const bar  = document.getElementById(id + '-gmbar');
+  if (sell > 0) {
+    const gmu = sell - cogs;
+    const pct = (gmu / sell * 100);
+    document.getElementById(id + '-gmu').textContent   = 'RM ' + gmu.toFixed(2);
+    document.getElementById(id + '-gmpct').textContent = pct.toFixed(1) + '%';
+    bar.style.display = 'flex';
+    bar.classList.toggle('warn', gmu <= 0);
+  } else {
+    bar.style.display = 'none';
+  }
+}
+
+// ── COSTS ──
+function addCost() {
+  costCount++;
+  const id  = 'c' + costCount;
+  const row = document.createElement('div');
+  row.className = 'cost-row';
+  row.id = 'crow-' + id;
+  row.innerHTML = `
+    <div class="cost-row-top">
+      <div>
+        <label>Cost Name</label>
+        <input type="text" id="${id}-name" placeholder="e.g. Listing Fee, DC Rebate, Island Display">
+      </div>
+      <button class="del-btn" onclick="document.getElementById('crow-${id}').remove()" title="Remove">×</button>
+    </div>
+
+    <div class="radio-group">
+      <label class="radio-opt">
+        <input type="radio" name="${id}-type" value="rm" checked onchange="setCostType('${id}','rm')">
+        <span>Fixed Amount (RM)</span>
+      </label>
+      <label class="radio-opt">
+        <input type="radio" name="${id}-type" value="pct" onchange="setCostType('${id}','pct')">
+        <span>% of Selling Price</span>
+      </label>
+    </div>
+
+    <div id="${id}-amtwrap" class="cost-amt-wrap">
+      <span class="cost-sym left">RM</span>
+      <input type="number" id="${id}-amt" placeholder="0.00" min="0" step="0.01" class="cost-inp-rm">
+    </div>
+    <div class="cost-hint" id="${id}-costhint">One-time or recurring fixed cost (e.g. RM 500 listing fee)</div>`;
+  document.getElementById('cost-list').appendChild(row);
+}
+
+function setCostType(id, type) {
+  const wrap  = document.getElementById(id + '-amtwrap');
+  const hint  = document.getElementById(id + '-costhint');
+  if (type === 'rm') {
+    wrap.innerHTML = `<span class="cost-sym left">RM</span><input type="number" id="${id}-amt" placeholder="0.00" min="0" step="0.01" class="cost-inp-rm">`;
+    hint.textContent = 'One-time or recurring fixed cost (e.g. RM 500 listing fee)';
+    hint.className = 'cost-hint';
+  } else {
+    wrap.innerHTML = `<span class="cost-sym right">%</span><input type="number" id="${id}-amt" placeholder="0.0" min="0" max="100" step="0.1" class="cost-inp-pct">`;
+    hint.textContent = '% deducted from selling price per unit sold (e.g. 3% DC Rebate)';
+    hint.className = 'cost-hint pct';
+  }
+}
+
+function getCostType(id) {
+  const radios = document.querySelectorAll(`input[name="${id}-type"]`);
+  for (const r of radios) { if (r.checked) return r.value; }
+  return 'rm';
+}
+
+// ── CALCULATE ──
+function calculate() {
+  const prodRows = document.querySelectorAll('.prod-row');
+  const costRows = document.querySelectorAll('.cost-row');
+
+  if (!prodRows.length) { alert('Please add at least one product.'); return; }
+  if (!costRows.length) { alert('Please add at least one cost item.'); return; }
+
+  // Parse products
+  const prods = [...prodRows].map(r => {
+    const id   = r.id.replace('prow-', '');
+    const name = document.getElementById(id + '-name').value.trim() || 'Product';
+    const sell = parseFloat(document.getElementById(id + '-sell').value) || 0;
+    const cogs = parseFloat(document.getElementById(id + '-cogs').value) || 0;
+    return { id, name, sell, cogs };
+  }).filter(p => p.sell > 0);
+
+  if (!prods.length) { alert('Please fill in the selling price for at least one product.'); return; }
+
+  // Parse costs
+  const costs = [...costRows].map(r => {
+    const id   = r.id.replace('crow-', '');
+    const name = document.getElementById(id + '-name').value.trim() || 'Cost';
+    const type = getCostType(id);
+    const val  = parseFloat(document.getElementById(id + '-amt').value) || 0;
+    return { name, type, val };
+  }).filter(c => c.val > 0);
+
+  if (!costs.length) { alert('Please fill in at least one cost amount.'); return; }
+
+  const pctCosts = costs.filter(c => c.type === 'pct');
+  const rmCosts  = costs.filter(c => c.type === 'rm');
+  const totalRM  = rmCosts.reduce((s, c) => s + c.val, 0);
+
+  // Net GM per unit = sell - cogs - sum(pct% * sell)
+  const prodsCalc = prods.map(p => {
+    const pctDeduct = pctCosts.reduce((s, c) => s + c.val / 100 * p.sell, 0);
+    const netGM     = p.sell - p.cogs - pctDeduct;
+    return { ...p, pctDeduct, netGM };
+  });
+
+  const bad = prodsCalc.filter(p => p.netGM <= 0);
+  if (bad.length) {
+    alert(`Net GM ≤ 0 for: ${bad.map(p => p.name).join(', ')}. Please check selling price and cost price.`);
+    return;
+  }
+
+  // Allocate fixed RM costs by net GM contribution (higher GM = more responsibility)
+  const totalWeight = prodsCalc.reduce((s, p) => s + p.netGM, 0);
+
+  const prodsResult = prodsCalc.map(p => {
+    const share       = totalRM > 0 ? totalRM * (p.netGM / totalWeight) : 0;
+    const unitsNeeded = share / p.netGM;
+    const revNeeded   = unitsNeeded * p.sell;
+    return { ...p, share, unitsNeeded, revNeeded };
+  });
+
+  const totalUnits = prodsResult.reduce((s, p) => s + p.unitsNeeded, 0);
+  const totalRev   = prodsResult.reduce((s, p) => s + p.revNeeded, 0);
+
+  // ── RENDER ──
+  document.getElementById('r-units').innerHTML = fmtN(totalUnits) + '<span class="bc-unit">units</span>';
+  document.getElementById('r-rev').textContent  = fmtRM(totalRev);
+
+  // Cost breakdown
+  const bkCont = document.getElementById('r-bk-rows');
+  bkCont.innerHTML = '';
+  let dispTotal = totalRM;
+
+  rmCosts.forEach(c => {
+    bkCont.innerHTML += `<div class="bk-row">
+      <span class="bk-name">${c.name}</span>
+      <span class="bk-amt">${fmtRM(c.val)}</span>
+    </div>`;
+  });
+  pctCosts.forEach(c => {
+    const est = c.val / 100 * totalRev;
+    dispTotal += est;
+    bkCont.innerHTML += `<div class="bk-row">
+      <span class="bk-name">${c.name}<span class="bk-tag">(${c.val}% of selling price)</span></span>
+      <span class="bk-amt">≈ ${fmtRM(est)}</span>
+    </div>`;
+  });
+  bkCont.innerHTML += `<div class="bk-row total">
+    <span class="bk-name">Total Cost</span>
+    <span class="bk-amt">${fmtRM(dispTotal)}</span>
+  </div>`;
+
+  // Per-product table
+  const tbody = document.getElementById('r-prod-tbody');
+  tbody.innerHTML = '';
+  prodsResult.forEach(p => {
+    const sharePct = (p.netGM / totalWeight * 100).toFixed(1);
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${p.name}</td>
+      <td>RM ${p.netGM.toFixed(2)}</td>
+      <td>${fmtRM(p.share)}<span class="share" style="margin-left:4px">(${sharePct}%)</span></td>
+      <td class="hl">${fmtN(p.unitsNeeded)} units</td>
+      <td class="hl">${fmtRM(p.revNeeded)}</td>`;
+    tbody.appendChild(tr);
+  });
+
+  // Hide per-product table if only one product
+  document.getElementById('r-prod-wrap').classList.toggle('hidden', prodsResult.length === 1);
+
+  // Store result and build WhatsApp links
+  lastResult = { totalUnits, totalRev, dispTotal, costs, prodsResult };
+  buildWALinks(lastResult);
+
+  document.getElementById('results').style.display = 'block';
+  setTimeout(() => document.getElementById('results').scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
+}
+
+function resetAll() {
+  document.getElementById('results').style.display = 'none';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// Init
+addProduct();
+addCost();
+</script>
+</body>
+</html>
