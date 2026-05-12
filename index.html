@@ -18,7 +18,7 @@
   --font:'Plus Jakarta Sans',sans-serif;--mono:'DM Mono',monospace;
 }
 body{background:var(--bg);color:var(--t1);font-family:var(--font);min-height:100vh;}
-
+ 
 .topbar{display:flex;align-items:center;justify-content:space-between;padding:14px 32px;border-bottom:1px solid var(--b1);background:var(--s1);position:sticky;top:0;z-index:20;box-shadow:0 1px 3px rgba(0,0,0,.06);}
 .logo{display:flex;align-items:center;gap:10px;}
 .logo-mark{width:32px;height:32px;background:var(--green);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800;color:#fff;}
@@ -29,29 +29,29 @@ body{background:var(--bg);color:var(--t1);font-family:var(--font);min-height:100
 .live-dot{width:5px;height:5px;border-radius:50%;background:var(--green2);animation:pulse 2s infinite;}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
 .date-txt{font-size:12px;color:var(--t3);font-family:var(--mono);}
-
+ 
 .main{max-width:1100px;margin:0 auto;padding:40px 32px;}
-
+ 
 .hero{margin-bottom:40px;}
 .hero-greeting{font-size:11px;color:var(--t3);font-family:var(--mono);margin-bottom:8px;letter-spacing:.08em;text-transform:uppercase;}
 .hero-title{font-size:30px;font-weight:800;line-height:1.25;margin-bottom:8px;color:var(--t1);}
 .hero-title span{color:var(--green);}
 .hero-sub{font-size:14px;color:var(--t2);line-height:1.6;}
-
+ 
 .stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:40px;}
 .stat{background:var(--s1);border:1px solid var(--b1);border-radius:14px;padding:16px 18px;box-shadow:0 1px 3px rgba(0,0,0,.04);}
 .stat-label{font-size:10px;color:var(--t3);letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px;font-family:var(--mono);}
 .stat-val{font-size:24px;font-weight:700;font-family:var(--mono);color:var(--green);}
 .stat-sub{font-size:11px;color:var(--t3);margin-top:3px;}
-
+ 
 .sec{margin-bottom:36px;}
 .sec-header{display:flex;align-items:center;gap:10px;margin-bottom:14px;}
 .sec-title{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--t3);}
 .sec-line{flex:1;height:1px;background:var(--b1);}
 .sec-tag{font-size:10px;font-family:var(--mono);color:var(--t3);background:var(--s2);padding:2px 8px;border-radius:20px;border:1px solid var(--b1);}
-
+ 
 .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
-
+ 
 .tool{background:var(--s1);border:1px solid var(--b1);border-radius:18px;padding:20px;text-decoration:none;color:inherit;transition:all .2s;display:block;position:relative;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.04);}
 .tool::after{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--tc,var(--green));opacity:0;transition:opacity .2s;}
 .tool:hover{border-color:var(--b2);box-shadow:0 4px 16px rgba(0,0,0,.08);transform:translateY(-2px);}
@@ -59,27 +59,27 @@ body{background:var(--bg);color:var(--t1);font-family:var(--font);min-height:100
 .tool.live{border-color:var(--green-border);}
 .tool.live::after{opacity:1;}
 .tool.off{opacity:.4;pointer-events:none;}
-
+ 
 .tool-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px;}
 .tool-icon{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:19px;}
 .tbadge{font-size:9px;font-weight:700;padding:2px 7px;border-radius:20px;font-family:var(--mono);letter-spacing:.04em;}
 .tb-live{background:var(--green-bg);color:var(--green);border:1px solid var(--green-border);}
 .tb-soon{background:var(--s2);color:var(--t3);border:1px solid var(--b1);}
-
+ 
 .tool-name{font-size:14px;font-weight:700;margin-bottom:5px;color:var(--t1);}
 .tool-desc{font-size:12px;color:var(--t2);line-height:1.6;margin-bottom:14px;}
 .tool-foot{display:flex;justify-content:space-between;align-items:center;}
 .tool-meta{font-size:10px;color:var(--t3);font-family:var(--mono);}
 .tool-arr{font-size:13px;color:var(--t3);transition:all .2s;}
 .tool:hover .tool-arr{color:var(--green);transform:translateX(3px);}
-
+ 
 .footer{border-top:1px solid var(--b1);padding:18px 32px;display:flex;justify-content:space-between;align-items:center;background:var(--s1);}
 .footer-l{font-size:11px;color:var(--t3);}
 .footer-r{font-size:11px;color:var(--t3);font-family:var(--mono);}
 </style>
 </head>
 <body>
-
+ 
 <div class="topbar">
   <div class="logo">
     <div class="logo-mark">M</div>
@@ -93,21 +93,21 @@ body{background:var(--bg);color:var(--t1);font-family:var(--font);min-height:100
     <div class="date-txt" id="date-txt"></div>
   </div>
 </div>
-
+ 
 <div class="main">
   <div class="hero">
     <div class="hero-greeting">Welcome back</div>
     <div class="hero-title">Your <span>Sales Command</span> Centre</div>
     <div class="hero-sub">All tools in one place — track promotions, monitor ROI, and manage your team across all regions.</div>
   </div>
-
+ 
   <div class="stats-row">
     <div class="stat"><div class="stat-label">This Month Sales</div><div class="stat-val" id="s-month">—</div><div class="stat-sub" id="s-month-sub">loading...</div></div>
     <div class="stat"><div class="stat-label">This Year Sales</div><div class="stat-val" id="s-year">—</div><div class="stat-sub">2026 cumulative</div></div>
     <div class="stat"><div class="stat-label">2026 Target</div><div class="stat-val">RM 6M</div><div class="stat-sub">annual target</div></div>
     <div class="stat"><div class="stat-label">Gap to Target</div><div class="stat-val" id="s-gap" style="color:var(--red)">—</div><div class="stat-sub" id="s-gap-sub">remaining</div></div>
   </div>
-
+ 
   <div class="sec">
     <div class="sec-header"><span class="sec-title">Promotion Management</span><div class="sec-line"></div><span class="sec-tag">4 live</span></div>
     <div class="grid3">
@@ -137,7 +137,7 @@ body{background:var(--bg);color:var(--t1);font-family:var(--font);min-height:100
       </a>
     </div>
   </div>
-
+ 
   <div class="sec">
     <div class="sec-header"><span class="sec-title">Team Management</span><div class="sec-line"></div><span class="sec-tag">coming soon</span></div>
     <div class="grid3">
@@ -161,7 +161,7 @@ body{background:var(--bg);color:var(--t1);font-family:var(--font);min-height:100
       </div>
     </div>
   </div>
-
+ 
   <div class="sec">
     <div class="sec-header"><span class="sec-title">Reports & Analytics</span><div class="sec-line"></div><span class="sec-tag">coming soon</span></div>
     <div class="grid3">
@@ -180,26 +180,26 @@ body{background:var(--bg);color:var(--t1);font-family:var(--font);min-height:100
     </div>
   </div>
 </div>
-
+ 
 <div class="footer">
   <div class="footer-l">© 2026 MamaVege Sales Team · All regions</div>
   <div class="footer-r" id="footer-r"></div>
 </div>
-
+ 
 <script>
 const API_URL = 'https://script.google.com/macros/s/AKfycbyRVwC3_FujVNOb1nNoffqL1UeFqrAVmgvV6BEEGFjn6_vq7eUF5rBbhqAm85ydsgL2/exec';
 const TARGET_2026 = 6000000;
 const now = new Date();
-
+ 
 document.getElementById('date-txt').textContent = now.toLocaleDateString('en-MY',{weekday:'short',year:'numeric',month:'short',day:'numeric'});
 document.getElementById('footer-r').textContent = 'Loaded at ' + now.toLocaleTimeString('en-MY',{hour:'2-digit',minute:'2-digit'});
-
+ 
 function fmtRM(n) {
   if (n >= 1000000) return 'RM ' + (n/1000000).toFixed(2) + 'M';
   if (n >= 1000) return 'RM ' + (n/1000).toFixed(1) + 'K';
   return 'RM ' + n.toFixed(2);
 }
-
+ 
 function getTotal(r) {
   for (const k of Object.keys(r)) {
     if (k.toUpperCase().indexOf('TOTAL') !== -1 && k.toUpperCase().indexOf('RM') !== -1) {
@@ -209,7 +209,7 @@ function getTotal(r) {
   }
   return 0;
 }
-
+ 
 async function loadStats() {
   try {
     const res = await fetch(API_URL);
@@ -217,7 +217,7 @@ async function loadStats() {
     const data = json.data || [];
     const curYear = now.getFullYear();
     const curMonth = now.getMonth() + 1;
-
+ 
     const yearData = data.filter(r => {
       const d = new Date(r['PO DATE']);
       return !isNaN(d) && d.getFullYear() === curYear;
@@ -226,12 +226,12 @@ async function loadStats() {
       const d = new Date(r['PO DATE']);
       return d.getMonth() + 1 === curMonth;
     });
-
+ 
     const yearTotal = yearData.reduce((s,r) => s + getTotal(r), 0);
     const monthTotal = monthData.reduce((s,r) => s + getTotal(r), 0);
     const gap = TARGET_2026 - yearTotal;
     const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-
+ 
     document.getElementById('s-month').textContent = fmtRM(monthTotal);
     document.getElementById('s-month-sub').textContent = months[curMonth-1] + ' ' + curYear;
     document.getElementById('s-year').textContent = fmtRM(yearTotal);
@@ -246,3 +246,8 @@ loadStats();
 </script>
 </body>
 </html>
+ 
+
+
+
+
