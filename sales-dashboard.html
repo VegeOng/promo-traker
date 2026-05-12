@@ -560,8 +560,8 @@ function renderKPI() {
 
 function getTotalField(r) {
   for (const k of Object.keys(r)) {
-    const clean = k.replace(/[\s\n]/g,'').toUpperCase();
-    if (clean === 'TOTAL(RM)') return parseFloat(r[k]) || 0;
+    const clean = k.replace(/[^A-Za-z]/g,'').toUpperCase();
+    if (clean === 'TOTALRM') return parseFloat(r[k]) || 0;
   }
   return 0;
 }
