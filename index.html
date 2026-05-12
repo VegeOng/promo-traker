@@ -189,8 +189,8 @@ body{background:var(--bg);color:var(--t1);font-family:var(--font);min-height:100
 <script>
 const API_URL = 'https://script.google.com/macros/s/AKfycbyRVwC3_FujVNOb1nNoffqL1UeFqrAVmgvV6BEEGFjn6_vq7eUF5rBbhqAm85ydsgL2/exec';
 const TARGET_2026 = 6000000;
-
 const now = new Date();
+
 document.getElementById('date-txt').textContent = now.toLocaleDateString('en-MY',{weekday:'short',year:'numeric',month:'short',day:'numeric'});
 document.getElementById('footer-r').textContent = 'Loaded at ' + now.toLocaleTimeString('en-MY',{hour:'2-digit',minute:'2-digit'});
 
@@ -200,10 +200,14 @@ function fmtRM(n) {
   return 'RM ' + n.toFixed(2);
 }
 
-function getTotalField(r) {
-  const t = r['TOTAL (RM)'] || r['TOTAL(RM)'] || r['TOTAL 
-(RM)'] || 0;
-  return parseFloat(t) || 0;
+function getTotal(r) {
+  for (const k of Object.keys(r)) {
+    if (k.toUpperCase().indexOf('TOTAL') !== -1 && k.toUpperCase().indexOf('RM') !== -1) {
+      const v = parseFloat(r[k]);
+      if (!isNaN(v) && v > 0) return v;
+    }
+  }
+  return 0;
 }
 
 async function loadStats() {
@@ -211,35 +215,31 @@ async function loadStats() {
     const res = await fetch(API_URL);
     const json = await res.json();
     const data = json.data || [];
-
     const curYear = now.getFullYear();
     const curMonth = now.getMonth() + 1;
 
-    // Use PO DATE to extract year/month (same as sales-dashboard)
     const yearData = data.filter(r => {
-      if (!r['PO DATE']) return false;
       const d = new Date(r['PO DATE']);
       return !isNaN(d) && d.getFullYear() === curYear;
     });
-    const monthData = data.filter(r => {
-      if (!r['PO DATE']) return false;
+    const monthData = yearData.filter(r => {
       const d = new Date(r['PO DATE']);
-      return !isNaN(d) && d.getFullYear() === curYear && d.getMonth()+1 === curMonth;
+      return d.getMonth() + 1 === curMonth;
     });
 
-    const yearTotal = yearData.reduce((s,r) => s + getTotalField(r), 0);
-    const monthTotal = monthData.reduce((s,r) => s + getTotalField(r), 0);
+    const yearTotal = yearData.reduce((s,r) => s + getTotal(r), 0);
+    const monthTotal = monthData.reduce((s,r) => s + getTotal(r), 0);
     const gap = TARGET_2026 - yearTotal;
+    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
-    const monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
     document.getElementById('s-month').textContent = fmtRM(monthTotal);
-    document.getElementById('s-month-sub').textContent = monthNames[curMonth-1] + ' ' + curYear;
+    document.getElementById('s-month-sub').textContent = months[curMonth-1] + ' ' + curYear;
     document.getElementById('s-year').textContent = fmtRM(yearTotal);
     document.getElementById('s-gap').textContent = gap > 0 ? fmtRM(gap) : '🎉 Achieved!';
     document.getElementById('s-gap').style.color = gap > 0 ? 'var(--red)' : 'var(--green)';
     document.getElementById('s-gap-sub').textContent = gap > 0 ? Math.round(yearTotal/TARGET_2026*100) + '% achieved' : 'Target met!';
   } catch(e) {
-    console.error(e);
+    console.error('Stats error:', e);
   }
 }
 loadStats();
