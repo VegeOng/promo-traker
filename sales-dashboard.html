@@ -468,7 +468,7 @@
 </div>
 
 <script>
-const API_URL = 'https://script.google.com/macros/s/AKfycbyHrWIPGdoSt12MRewyXrVi9Sbok2b-IcmfGs_tY9ZGjZ9ziz3-jMdoug53cluBGp9B/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycbyTOIMrWYOdoFLpSdGPX-OgrgNllgAwn6NC3Qh0hQP8XRIV5ejyFMjBkSMzJXi7s5lr/exec';
 const PRODUCTS = ['KPM','CLM','SHCR','SHTY','SHSS','SPM - BBQ','BBQ (BAG)','SPM - MALA','MALA (BAG)','MRBR','TYSN','TYSP','TMSP','SMTS','SMCL','SPTS','SPCL','CMBR','KETUPAT'];
 
 let allData = [];
@@ -558,9 +558,9 @@ function renderKPI() {
 }
 
 function getTotalField(r) {
-  // Try all possible key formats
   for (const k of Object.keys(r)) {
-    if (k.replace(/\s|\n/g,'').toUpperCase() === 'TOTAL(RM)') return parseFloat(r[k]) || 0;
+    const clean = k.replace(/[\s\n]/g,'').toUpperCase();
+    if (clean === 'TOTAL(RM)') return parseFloat(r[k]) || 0;
   }
   return 0;
 }
