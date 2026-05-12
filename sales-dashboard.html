@@ -325,7 +325,7 @@
 <div class="nav">
   <button class="nav-btn active" onclick="switchTab('overview', this)">📊 总览</button>
   <button class="nav-btn" onclick="switchTab('salesperson', this)">👤 业务员</button>
-  <button class="nav-btn" onclick="switchTab('outlet', this)">🏪 门店</button>
+  <button class="nav-btn" onclick="switchTab('outlet', this)">🏪 客户</button>
   <button class="nav-btn" onclick="switchTab('product', this)">📦 产品</button>
   <button class="nav-btn" onclick="switchTab('trend', this)">📈 趋势</button>
 </div>
@@ -369,7 +369,7 @@
     </div>
     <div class="grid-2">
       <div class="chart-card">
-        <div class="chart-title"><span class="dot" style="background:var(--red)"></span>Top 10 门店</div>
+        <div class="chart-title"><span class="dot" style="background:var(--red)"></span>Top 10 客户</div>
         <div class="chart-wrap"><canvas id="chartTopOutlet"></canvas></div>
       </div>
       <div class="chart-card">
@@ -390,7 +390,7 @@
       <div style="overflow-x:auto">
         <table id="spTable">
           <thead><tr>
-            <th>#</th><th>业务员</th><th>订单数</th><th>门店数</th>
+            <th>#</th><th>业务员</th><th>订单数</th><th>客户数</th>
             <th onclick="sortTable('spTable',4)">Total (RM) ↕</th>
             <th>占比</th>
           </tr></thead>
@@ -402,16 +402,16 @@
 
   <!-- OUTLET TAB -->
   <div class="tab-content" id="tab-outlet">
-    <div class="section-title">门店业绩排行</div>
+    <div class="section-title">客户业绩排行</div>
     <div class="table-card">
       <div class="table-header">
-        <span class="table-title">门店列表</span>
-        <input type="text" class="table-search" id="outletSearch" placeholder="搜索门店..." oninput="filterTable('outletSearch','outletTableBody')">
+        <span class="table-title">客户列表</span>
+        <input type="text" class="table-search" id="outletSearch" placeholder="搜索客户..." oninput="filterTable('outletSearch','outletTableBody')">
       </div>
       <div style="overflow-x:auto">
         <table id="outletTable">
           <thead><tr>
-            <th>#</th><th>公司/门店</th><th>类型</th><th>订单数</th>
+            <th>#</th><th>公司/客户</th><th>类型</th><th>订单数</th>
             <th onclick="sortTable('outletTable',4)">Total (RM) ↕</th>
             <th>业绩条</th>
           </tr></thead>
@@ -552,7 +552,7 @@ function renderKPI() {
   document.getElementById('kpiGrid').innerHTML = `
     <div class="kpi-card green"><div class="kpi-icon">💰</div><div class="kpi-label">总销售额</div><div class="kpi-value">RM ${fmt(total)}</div><div class="kpi-sub">TOTAL (RM)</div></div>
     <div class="kpi-card gold"><div class="kpi-icon">🧾</div><div class="kpi-label">订单数</div><div class="kpi-value">${orders}</div><div class="kpi-sub">条记录</div></div>
-    <div class="kpi-card blue"><div class="kpi-icon">🏪</div><div class="kpi-label">门店数</div><div class="kpi-value">${outlets}</div><div class="kpi-sub">家公司</div></div>
+    <div class="kpi-card blue"><div class="kpi-icon">🏪</div><div class="kpi-label">客户数</div><div class="kpi-value">${outlets}</div><div class="kpi-sub">家客户</div></div>
     <div class="kpi-card green"><div class="kpi-icon">👤</div><div class="kpi-label">业务员</div><div class="kpi-value">${sps}</div><div class="kpi-sub">人</div></div>
     <div class="kpi-card red"><div class="kpi-icon">📊</div><div class="kpi-label">平均订单</div><div class="kpi-value">RM ${fmt(avgOrder)}</div><div class="kpi-sub">每单平均</div></div>
   `;
@@ -735,7 +735,7 @@ function renderSPTab() {
       <div class="sp-total">RM ${fmt(d.total)}</div>
       <div class="sp-stats">
         <div class="sp-stat"><span>${d.orders}</span>订单</div>
-        <div class="sp-stat"><span>${d.outlets.size}</span>门店</div>
+        <div class="sp-stat"><span>${d.outlets.size}</span>客户</div>
         <div class="sp-stat"><span>${grandTotal>0?(d.total/grandTotal*100).toFixed(1):0}%</span>占比</div>
       </div>
       <div class="sp-bar">
