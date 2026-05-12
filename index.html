@@ -187,7 +187,7 @@ body{background:var(--bg);color:var(--t1);font-family:var(--font);min-height:100
 </div>
 
 <script>
-const API_URL = 'https://script.google.com/macros/s/AKfycbxH0xWJmm2gLjYTbDDble-SMk1LhG2GNayLtWMySrcS3WRlzVoeIcvom64ejYpuLWqj/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycbyRVwC3_FujVNOb1nNoffqL1UeFqrAVmgvV6BEEGFjn6_vq7eUF5rBbhqAm85ydsgL2/exec';
 const TARGET_2026 = 6000000;
 
 const now = new Date();
@@ -201,11 +201,9 @@ function fmtRM(n) {
 }
 
 function getTotalField(r) {
-  for (const k of Object.keys(r)) {
-    if (k.replace(/[\s
-]/g,'').toUpperCase() === 'TOTAL(RM)') return parseFloat(r[k]) || 0;
-  }
-  return 0;
+  const t = r['TOTAL (RM)'] || r['TOTAL(RM)'] || r['TOTAL 
+(RM)'] || 0;
+  return parseFloat(t) || 0;
 }
 
 async function loadStats() {
