@@ -217,8 +217,17 @@ async function loadStats() {
     const curYear = now.getFullYear();
     const curMonth = now.getMonth() + 1;
 
-    const yearData = data.filter(r => r.YEAR == curYear);
-    const monthData = data.filter(r => r.YEAR == curYear && r.MONTH == curMonth);
+    // Use PO DATE to extract year/month (same as sales-dashboard)
+    const yearData = data.filter(r => {
+      if (!r['PO DATE']) return false;
+      const d = new Date(r['PO DATE']);
+      return !isNaN(d) && d.getFullYear() === curYear;
+    });
+    const monthData = data.filter(r => {
+      if (!r['PO DATE']) return false;
+      const d = new Date(r['PO DATE']);
+      return !isNaN(d) && d.getFullYear() === curYear && d.getMonth()+1 === curMonth;
+    });
 
     const yearTotal = yearData.reduce((s,r) => s + getTotalField(r), 0);
     const monthTotal = monthData.reduce((s,r) => s + getTotalField(r), 0);
