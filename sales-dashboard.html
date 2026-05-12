@@ -494,6 +494,7 @@ async function loadData() {
     populateFilters();
     applyFilters();
   } catch(e) {
+    console.error(e);
     document.getElementById('kpiGrid').innerHTML = '<div class="empty">❌ 无法加载数据，请检查 API 连接。<br><small>' + e.message + '</small></div>';
   }
 }
@@ -813,6 +814,12 @@ function renderProductTab() {
 
 function destroyChart(id) {
   if (charts[id]) { charts[id].destroy(); delete charts[id]; }
+  // Also destroy via Chart.js registry
+  const canvas = document.getElementById(id);
+  if (canvas) {
+    const existing = Chart.getChart(canvas);
+    if (existing) existing.destroy();
+  }
 }
 
 function switchTab(tab, btn) {
