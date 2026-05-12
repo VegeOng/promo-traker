@@ -8,72 +8,82 @@
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --bg:#f7f8fa;--surface:#fff;--surface2:#f0f2f6;
-  --border:#e2e5ec;--border2:#c8cdd8;
-  --text:#1a1d24;--text2:#5a6070;--text3:#9aa0b0;
-  --accent:#2563eb;--accent-light:#eff4ff;
-  --green:#16a34a;--green-light:#f0fdf4;
-  --amber:#d97706;--amber-light:#fffbeb;
-  --red:#dc2626;
-  --ge:#f59e0b;--island:#3b82f6;--block:#10b981;--sampling:#8b5cf6;--promoter:#ec4899;--other:#6b7280;
-  --r:10px;--r2:16px;
+  --bg:#fafafa;--s1:#ffffff;--s2:#f3f4f6;
+  --b1:#e5e7eb;--b2:#d1d5db;
+  --t1:#111827;--t2:#4b5563;--t3:#9ca3af;
+  --green:#166534;--green2:#22c55e;--green-bg:#f0fdf4;--green-border:#bbf7d0;
+  --red:#dc2626;--red-bg:#fef2f2;--red-border:#fecaca;
+  --amber:#d97706;--amber-bg:#fffbeb;--amber-border:#fde68a;
   --font:'Plus Jakarta Sans',sans-serif;--mono:'DM Mono',monospace;
+  --r:10px;--r2:16px;
 }
-body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:100vh;padding-bottom:60px;}
-.topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:14px 20px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:10;}
-.topbar-dot{width:9px;height:9px;border-radius:50%;background:var(--accent);}
-.topbar-title{font-size:15px;font-weight:700;}
-.topbar-sub{font-size:11px;color:var(--text3);font-family:var(--mono);margin-left:auto;}
+body{background:var(--bg);color:var(--t1);font-family:var(--font);min-height:100vh;padding-bottom:60px;}
+.topbar{background:var(--s1);border-bottom:1px solid var(--b1);padding:13px 20px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:10;box-shadow:0 1px 3px rgba(0,0,0,.06);}
+.topbar-logo{display:flex;align-items:center;gap:8px;}
+.logo-mark{width:28px;height:28px;background:var(--green);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:#fff;}
+.topbar-title{font-size:14px;font-weight:700;color:var(--t1);}
+.topbar-back{margin-left:auto;font-size:12px;color:var(--green);text-decoration:none;font-weight:600;}
+.topbar-sub{font-size:11px;color:var(--t3);font-family:var(--mono);margin-left:auto;}
 .container{max-width:600px;margin:0 auto;padding:24px 16px 0;}
-.sec-label{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);margin-bottom:10px;display:flex;align-items:center;gap:8px;}
-.sec-label::after{content:'';flex:1;height:1px;background:var(--border);}
-.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r2);padding:18px;margin-bottom:14px;}
+.sec-label{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--t3);margin-bottom:10px;display:flex;align-items:center;gap:8px;}
+.sec-label::after{content:'';flex:1;height:1px;background:var(--b1);}
+.card{background:var(--s1);border:1px solid var(--b1);border-radius:var(--r2);padding:18px;margin-bottom:14px;box-shadow:0 1px 3px rgba(0,0,0,.04);}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
 .field{display:flex;flex-direction:column;gap:5px;}
 .field.full{grid-column:1/-1;}
-label{font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--text2);}
-.req{color:var(--accent);}
-input,select,textarea{background:var(--surface2);border:1.5px solid var(--border);border-radius:var(--r);padding:10px 12px;font-size:14px;font-family:var(--font);color:var(--text);outline:none;transition:border .15s;width:100%;}
-input:focus,select:focus,textarea:focus{border-color:var(--accent);background:var(--surface);}
-input::placeholder,textarea::placeholder{color:var(--text3);}
+label{font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--t2);}
+.req{color:var(--green);}
+input,select,textarea{background:var(--s2);border:1.5px solid var(--b1);border-radius:var(--r);padding:10px 12px;font-size:14px;font-family:var(--font);color:var(--t1);outline:none;transition:border .15s,background .15s;width:100%;}
+input:focus,select:focus,textarea:focus{border-color:var(--green);background:var(--s1);}
+input::placeholder,textarea::placeholder{color:var(--t3);}
 textarea{resize:vertical;min-height:72px;line-height:1.5;}
+
 .type-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
-.type-btn{padding:10px 6px;border-radius:var(--r);border:1.5px solid var(--border);background:var(--surface2);cursor:pointer;text-align:center;transition:all .15s;-webkit-tap-highlight-color:transparent;}
-.type-btn:hover{border-color:var(--border2);}
-.type-btn.sel{border-color:var(--tc,var(--accent));background:color-mix(in srgb,var(--tc,var(--accent)) 10%,transparent);}
-.type-dot{width:9px;height:9px;border-radius:50%;background:var(--tc);margin:0 auto 5px;}
-.type-name{font-size:11px;font-weight:700;color:var(--text);font-family:var(--mono);}
-.type-desc{font-size:10px;color:var(--text3);margin-top:2px;}
-.rent-box{background:var(--amber-light);border:1px solid #fde68a;border-radius:var(--r2);padding:14px;margin-bottom:14px;display:none;}
+.type-btn{padding:10px 6px;border-radius:var(--r);border:1.5px solid var(--b1);background:var(--s2);cursor:pointer;text-align:center;transition:all .15s;-webkit-tap-highlight-color:transparent;}
+.type-btn:hover{border-color:var(--b2);background:var(--s1);}
+.type-btn.sel{border-color:var(--green);background:var(--green-bg);}
+.type-dot{width:9px;height:9px;border-radius:50%;background:var(--green);margin:0 auto 5px;}
+.type-name{font-size:11px;font-weight:700;color:var(--t1);font-family:var(--mono);}
+.type-desc{font-size:10px;color:var(--t3);margin-top:2px;}
+
+.rent-box{background:var(--amber-bg);border:1px solid var(--amber-border);border-radius:var(--r2);padding:14px;margin-bottom:14px;display:none;}
 .rent-box.show{display:block;}
 .rent-note{font-size:12px;color:var(--amber);font-weight:600;margin-bottom:10px;}
-.submit-btn{width:100%;padding:14px;background:var(--accent);color:#fff;border:none;border-radius:var(--r2);font-size:15px;font-weight:700;font-family:var(--font);cursor:pointer;transition:all .2s;margin-top:4px;}
-.submit-btn:hover{background:#1d4ed8;}
-.submit-btn:disabled{background:var(--text3);cursor:not-allowed;}
-.success-card{background:var(--green-light);border:1px solid #bbf7d0;border-radius:var(--r2);padding:28px;text-align:center;display:none;margin-bottom:14px;}
+
+.submit-btn{width:100%;padding:14px;background:var(--green);color:#fff;border:none;border-radius:var(--r2);font-size:15px;font-weight:700;font-family:var(--font);cursor:pointer;transition:all .2s;margin-top:4px;}
+.submit-btn:hover{background:#14532d;}
+.submit-btn:disabled{background:var(--t3);cursor:not-allowed;}
+
+.success-card{background:var(--green-bg);border:1px solid var(--green-border);border-radius:var(--r2);padding:28px;text-align:center;display:none;margin-bottom:14px;}
 .success-card.show{display:block;}
 .success-title{font-size:18px;font-weight:700;color:var(--green);margin-bottom:6px;}
 .success-sub{font-size:13px;color:#166534;}
 .again-btn{margin-top:14px;padding:9px 20px;background:var(--green);color:#fff;border:none;border-radius:var(--r);font-size:13px;font-weight:600;font-family:var(--font);cursor:pointer;}
+
 .err{color:var(--red);font-size:11px;margin-top:3px;display:none;}
 .err.show{display:block;}
 .has-err input,.has-err select{border-color:var(--red)!important;}
-.rec-item{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:11px 13px;margin-bottom:7px;display:flex;align-items:center;gap:10px;}
-.rec-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+
+.rec-item{background:var(--s1);border:1px solid var(--b1);border-radius:var(--r);padding:11px 13px;margin-bottom:7px;display:flex;align-items:center;gap:10px;box-shadow:0 1px 2px rgba(0,0,0,.04);}
+.rec-dot{width:8px;height:8px;border-radius:50%;background:var(--green);flex-shrink:0;}
 .rec-info{flex:1;min-width:0;}
-.rec-name{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.rec-meta{font-size:11px;color:var(--text3);margin-top:1px;font-family:var(--mono);}
+.rec-name{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--t1);}
+.rec-meta{font-size:11px;color:var(--t3);margin-top:1px;font-family:var(--mono);}
 .rec-pct{font-size:13px;font-weight:700;font-family:var(--mono);flex-shrink:0;}
+
 .spinner{display:inline-block;width:15px;height:15px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite;vertical-align:middle;margin-right:6px;}
 @keyframes spin{to{transform:rotate(360deg)}}
 </style>
 </head>
 <body>
 <div class="topbar">
-  <div class="topbar-dot"></div>
-  <span class="topbar-title">MamaVege Promo Fill</span>
-  <span class="topbar-sub" id="today-lbl"></span>
+  <div class="topbar-logo">
+    <div class="logo-mark">M</div>
+    <span class="topbar-title">MamaVege — Daily Promo Fill</span>
+  </div>
+  <a href="/" class="topbar-back">← Hub</a>
 </div>
+
 <div class="container">
   <div class="success-card" id="success-card">
     <div style="font-size:38px;margin-bottom:10px;">✅</div>
@@ -122,12 +132,12 @@ textarea{resize:vertical;min-height:72px;line-height:1.5;}
   <p class="sec-label">Promo Type</p>
   <div class="card">
     <div class="type-grid">
-      <div class="type-btn" style="--tc:var(--ge)" onclick="selType('GE',this)"><div class="type-dot"></div><div class="type-name">GE</div><div class="type-desc">Entrance display</div></div>
-      <div class="type-btn" style="--tc:var(--island)" onclick="selType('ISLAND',this)"><div class="type-dot"></div><div class="type-name">ISLAND</div><div class="type-desc">Island display</div></div>
-      <div class="type-btn" style="--tc:var(--block)" onclick="selType('BLOCK',this)"><div class="type-dot"></div><div class="type-name">BLOCK</div><div class="type-desc">Block display</div></div>
-      <div class="type-btn" style="--tc:var(--sampling)" onclick="selType('SAMPLING',this)"><div class="type-dot"></div><div class="type-name">SAMPLING</div><div class="type-desc">Sampling</div></div>
-      <div class="type-btn" style="--tc:var(--promoter)" onclick="selType('PROMOTER',this)"><div class="type-dot"></div><div class="type-name">PROMOTER</div><div class="type-desc">Promoter</div></div>
-      <div class="type-btn" style="--tc:var(--other)" onclick="selType('OTHER',this)"><div class="type-dot"></div><div class="type-name">OTHER</div><div class="type-desc">Others</div></div>
+      <div class="type-btn" onclick="selType('GE',this)"><div class="type-dot"></div><div class="type-name">GE</div><div class="type-desc">Entrance display</div></div>
+      <div class="type-btn" onclick="selType('ISLAND',this)"><div class="type-dot"></div><div class="type-name">ISLAND</div><div class="type-desc">Island display</div></div>
+      <div class="type-btn" onclick="selType('BLOCK',this)"><div class="type-dot"></div><div class="type-name">BLOCK</div><div class="type-desc">Block display</div></div>
+      <div class="type-btn" onclick="selType('SAMPLING',this)"><div class="type-dot"></div><div class="type-name">SAMPLING</div><div class="type-desc">Sampling</div></div>
+      <div class="type-btn" onclick="selType('PROMOTER',this)"><div class="type-dot"></div><div class="type-name">PROMOTER</div><div class="type-desc">Promoter</div></div>
+      <div class="type-btn" onclick="selType('OTHER',this)"><div class="type-dot" style="background:var(--t3)"></div><div class="type-name">OTHER</div><div class="type-desc">Others</div></div>
     </div>
     <div id="other-wrap" style="display:none;margin-top:10px;">
       <input type="text" id="f-type-other" placeholder="Please specify promo type">
@@ -183,21 +193,19 @@ textarea{resize:vertical;min-height:72px;line-height:1.5;}
   <button class="submit-btn" id="submit-btn" onclick="submitForm()">Submit</button>
 
   <p class="sec-label" style="margin-top:28px;">My Recent Submissions</p>
-  <div id="my-records"><div style="text-align:center;padding:20px;color:var(--text3);font-size:13px;">Loading…</div></div>
+  <div id="my-records"><div style="text-align:center;padding:20px;color:var(--t3);font-size:13px;">Loading…</div></div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-const sb = supabase.createClient(
+const sb=supabase.createClient(
   'https://wjhgezvrxlhpexocfsea.supabase.co',
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndqaGdlenZyeGxocGV4b2Nmc2VhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg1MDU4NzgsImV4cCI6MjA5NDA4MTg3OH0.jENcrgEDYDlSRUCqve-T6rxYRJfz-dnZQHnXpPLJ_RE'
 );
-const TC = {GE:'#f59e0b',ISLAND:'#3b82f6',BLOCK:'#10b981',SAMPLING:'#8b5cf6',PROMOTER:'#ec4899',OTHER:'#6b7280'};
-const RENT_TYPES = ['GE','ISLAND'];
-let selPromoType = '';
+const RENT_TYPES=['GE','ISLAND'];
+let selPromoType='';
 
-document.getElementById('f-date').value = new Date().toISOString().slice(0,10);
-document.getElementById('today-lbl').textContent = new Date().toLocaleDateString('en-MY',{weekday:'short',year:'numeric',month:'short',day:'numeric'});
+document.getElementById('f-date').value=new Date().toISOString().slice(0,10);
 
 function selType(t,el){
   selPromoType=t;
@@ -205,7 +213,7 @@ function selType(t,el){
   el.classList.add('sel');
   document.getElementById('e-type').classList.remove('show');
   document.getElementById('rent-box').classList.toggle('show',RENT_TYPES.includes(t));
-  document.getElementById('other-wrap').style.display = t==='OTHER'?'block':'none';
+  document.getElementById('other-wrap').style.display=t==='OTHER'?'block':'none';
 }
 
 function validate(){
@@ -216,27 +224,27 @@ function validate(){
     const v=document.getElementById(fid).value.toString().trim();
     document.getElementById(eid).classList.toggle('show',!v);
     document.getElementById(wid).classList.toggle('has-err',!v);
-    if(!v) ok=false;
+    if(!v)ok=false;
   });
   if(!selPromoType){document.getElementById('e-type').classList.add('show');ok=false;}
   return ok;
 }
 
 async function submitForm(){
-  if(!validate()) return;
+  if(!validate())return;
   const btn=document.getElementById('submit-btn');
-  btn.disabled=true; btn.innerHTML='<span class="spinner"></span>Submitting…';
+  btn.disabled=true;btn.innerHTML='<span class="spinner"></span>Submitting…';
   const g=id=>document.getElementById(id).value;
-  const rent=parseFloat(g('f-rent'))||0, staff=parseFloat(g('f-staff'))||0, other=parseFloat(g('f-other'))||0;
-  const {error} = await sb.from('promotions').insert({
-    date:g('f-date'), region:g('f-region'), store:g('f-store').trim(),
-    manager:g('f-manager').trim(), activity_name:g('f-name').trim(),
-    products:g('f-products').trim(), promo_type:selPromoType,
+  const rent=parseFloat(g('f-rent'))||0,staff=parseFloat(g('f-staff'))||0,other=parseFloat(g('f-other'))||0;
+  const{error}=await sb.from('promotions').insert({
+    date:g('f-date'),region:g('f-region'),store:g('f-store').trim(),
+    manager:g('f-manager').trim(),activity_name:g('f-name').trim(),
+    products:g('f-products').trim(),promo_type:selPromoType,
     promo_type_other:selPromoType==='OTHER'?g('f-type-other').trim():'',
     duration:g('f-duration').trim(),
-    target:parseFloat(g('f-target'))||0, actual_sales:parseFloat(g('f-actual'))||0,
-    rent_cost:rent, rent_basis:RENT_TYPES.includes(selPromoType)?g('f-rent-basis'):'',
-    staff_cost:staff, other_cost:other, total_cost:rent+staff+other,
+    target:parseFloat(g('f-target'))||0,actual_sales:parseFloat(g('f-actual'))||0,
+    rent_cost:rent,rent_basis:RENT_TYPES.includes(selPromoType)?g('f-rent-basis'):'',
+    staff_cost:staff,other_cost:other,total_cost:rent+staff+other,
     note:g('f-note').trim()
   });
   if(error){alert('Submit failed: '+error.message);btn.disabled=false;btn.innerHTML='Submit';return;}
@@ -262,14 +270,14 @@ function resetForm(){
 }
 
 async function loadRecords(){
-  const {data}=await sb.from('promotions').select('*').order('created_at',{ascending:false}).limit(6);
+  const{data}=await sb.from('promotions').select('*').order('created_at',{ascending:false}).limit(6);
   const wrap=document.getElementById('my-records');
-  if(!data||!data.length){wrap.innerHTML='<div style="text-align:center;padding:20px;color:var(--text3);font-size:13px;">No submissions yet</div>';return;}
+  if(!data||!data.length){wrap.innerHTML='<div style="text-align:center;padding:20px;color:var(--t3);font-size:13px;">No submissions yet</div>';return;}
   wrap.innerHTML=data.map(r=>{
     const p=r.target>0?Math.round(r.actual_sales/r.target*100):0;
     const col=p>=70?'var(--green)':p>=50?'var(--amber)':'var(--red)';
     const tl=r.promo_type==='OTHER'&&r.promo_type_other?r.promo_type_other:r.promo_type;
-    return`<div class="rec-item"><div class="rec-dot" style="background:${TC[r.promo_type]||'#888'}"></div>
+    return`<div class="rec-item"><div class="rec-dot"></div>
     <div class="rec-info"><div class="rec-name">${r.store} · ${r.activity_name}</div>
     <div class="rec-meta">${r.date} · ${r.region} · ${tl} · ${r.duration}</div></div>
     <div class="rec-pct" style="color:${col}">${p}%</div></div>`;
