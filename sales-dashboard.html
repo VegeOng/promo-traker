@@ -1,0 +1,860 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MamaVege | Sales Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<style>
+  :root {
+    --white: #fafafa;
+    --green: #166534;
+    --green-light: #dcfce7;
+    --green-mid: #16a34a;
+    --red: #dc2626;
+    --red-light: #fee2e2;
+    --gold: #d97706;
+    --gold-light: #fef3c7;
+    --text: #1a1a1a;
+    --text-muted: #6b7280;
+    --border: #e5e7eb;
+    --card: #ffffff;
+    --bg: #f4f6f3;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  /* HEADER */
+  .header {
+    background: var(--green);
+    color: white;
+    padding: 0 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 64px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 12px rgba(22,101,52,0.3);
+  }
+  .header-left { display: flex; align-items: center; gap: 1rem; }
+  .logo { font-family: 'DM Serif Display', serif; font-size: 1.4rem; letter-spacing: 0.5px; }
+  .logo span { color: #86efac; }
+  .badge { background: rgba(255,255,255,0.15); padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 500; }
+  .header-right { display: flex; align-items: center; gap: 1rem; }
+  .last-updated { font-size: 0.75rem; opacity: 0.7; }
+  .btn-refresh {
+    background: rgba(255,255,255,0.15);
+    border: 1px solid rgba(255,255,255,0.3);
+    color: white;
+    padding: 6px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    font-family: 'DM Sans', sans-serif;
+    transition: all 0.2s;
+  }
+  .btn-refresh:hover { background: rgba(255,255,255,0.25); }
+
+  /* NAV */
+  .nav {
+    background: var(--card);
+    border-bottom: 1px solid var(--border);
+    padding: 0 2rem;
+    display: flex;
+    gap: 0;
+    overflow-x: auto;
+  }
+  .nav-btn {
+    padding: 14px 20px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--text-muted);
+    border-bottom: 3px solid transparent;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .nav-btn.active { color: var(--green); border-bottom-color: var(--green); }
+  .nav-btn:hover { color: var(--green); }
+
+  /* FILTERS */
+  .filters {
+    background: var(--card);
+    padding: 1rem 2rem;
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    flex-wrap: wrap;
+    border-bottom: 1px solid var(--border);
+  }
+  .filter-label { font-size: 0.8rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+  .filter-select {
+    padding: 7px 14px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.85rem;
+    color: var(--text);
+    background: var(--white);
+    cursor: pointer;
+    min-width: 120px;
+  }
+  .filter-select:focus { outline: none; border-color: var(--green); }
+
+  /* MAIN */
+  .main { padding: 1.5rem 2rem; max-width: 1400px; margin: 0 auto; }
+
+  /* TABS */
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  /* KPI CARDS */
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+  .kpi-card {
+    background: var(--card);
+    border-radius: 12px;
+    padding: 1.25rem;
+    border: 1px solid var(--border);
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .kpi-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.08); }
+  .kpi-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+  }
+  .kpi-card.green::before { background: var(--green); }
+  .kpi-card.red::before { background: var(--red); }
+  .kpi-card.gold::before { background: var(--gold); }
+  .kpi-card.blue::before { background: #3b82f6; }
+  .kpi-icon { font-size: 1.5rem; margin-bottom: 0.5rem; }
+  .kpi-label { font-size: 0.75rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.25rem; }
+  .kpi-value { font-size: 1.8rem; font-weight: 600; font-family: 'DM Serif Display', serif; line-height: 1; }
+  .kpi-card.green .kpi-value { color: var(--green); }
+  .kpi-card.red .kpi-value { color: var(--red); }
+  .kpi-card.gold .kpi-value { color: var(--gold); }
+  .kpi-card.blue .kpi-value { color: #3b82f6; }
+  .kpi-sub { font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem; }
+
+  /* GRID 2-COL */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem; }
+  @media (max-width: 900px) { .grid-2, .grid-3 { grid-template-columns: 1fr; } }
+
+  /* CHART CARD */
+  .chart-card {
+    background: var(--card);
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    padding: 1.25rem;
+    transition: box-shadow 0.2s;
+  }
+  .chart-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.06); }
+  .chart-title { font-size: 0.9rem; font-weight: 600; color: var(--text); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem; }
+  .chart-title .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); }
+  .chart-wrap { position: relative; height: 240px; }
+
+  /* TABLE */
+  .table-card {
+    background: var(--card);
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    overflow: hidden;
+    margin-bottom: 1.5rem;
+  }
+  .table-header {
+    padding: 1rem 1.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--border);
+  }
+  .table-title { font-size: 0.9rem; font-weight: 600; }
+  .table-search {
+    padding: 6px 12px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.8rem;
+    width: 200px;
+  }
+  .table-search:focus { outline: none; border-color: var(--green); }
+  table { width: 100%; border-collapse: collapse; }
+  th {
+    background: #f9fafb;
+    padding: 10px 14px;
+    text-align: left;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  th:hover { background: #f3f4f6; }
+  td {
+    padding: 10px 14px;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #f3f4f6;
+  }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: #fafafa; }
+  .rank { font-weight: 700; color: var(--text-muted); font-size: 0.8rem; }
+  .rank-1 { color: #d97706; }
+  .rank-2 { color: #6b7280; }
+  .rank-3 { color: #92400e; }
+  .amount { font-weight: 600; color: var(--green); font-family: 'DM Serif Display', serif; }
+  .amount-red { font-weight: 600; color: var(--red); font-family: 'DM Serif Display', serif; }
+  .progress-bar { background: #e5e7eb; border-radius: 4px; height: 6px; overflow: hidden; min-width: 80px; }
+  .progress-fill { height: 100%; border-radius: 4px; background: linear-gradient(90deg, var(--green-mid), var(--green)); transition: width 0.6s ease; }
+
+  /* LOADING */
+  .loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 4rem;
+    color: var(--text-muted);
+    gap: 1rem;
+  }
+  .spinner {
+    width: 36px; height: 36px;
+    border: 3px solid var(--border);
+    border-top-color: var(--green);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* PRODUCT TAG */
+  .tag {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.72rem;
+    font-weight: 600;
+  }
+  .tag-green { background: var(--green-light); color: var(--green); }
+  .tag-red { background: var(--red-light); color: var(--red); }
+  .tag-gold { background: var(--gold-light); color: var(--gold); }
+
+  /* SECTION TITLE */
+  .section-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.2rem;
+    color: var(--text);
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid var(--green-light);
+  }
+
+  /* EMPTY */
+  .empty { text-align: center; padding: 3rem; color: var(--text-muted); font-size: 0.9rem; }
+
+  /* SALESPERSON CARD */
+  .sp-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
+  .sp-card {
+    background: var(--card);
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    padding: 1.25rem;
+    transition: all 0.2s;
+  }
+  .sp-card:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,0,0,0.08); }
+  .sp-name { font-weight: 600; font-size: 1rem; margin-bottom: 0.25rem; }
+  .sp-total { font-family: 'DM Serif Display', serif; font-size: 1.6rem; color: var(--green); }
+  .sp-stats { display: flex; gap: 1rem; margin-top: 0.75rem; }
+  .sp-stat { font-size: 0.75rem; color: var(--text-muted); }
+  .sp-stat span { font-weight: 600; color: var(--text); display: block; }
+  .sp-bar { margin-top: 0.75rem; }
+
+  /* TOOLTIP */
+  .tooltip { position: relative; cursor: help; }
+
+  .footer-nav {
+    background: var(--card);
+    border-top: 1px solid var(--border);
+    padding: 0.75rem 2rem;
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+  }
+  .footer-nav a { color: var(--green); text-decoration: none; }
+  .footer-nav a:hover { text-decoration: underline; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-left">
+    <div class="logo">Mama<span>Vege</span></div>
+    <div class="badge">Sales Dashboard</div>
+  </div>
+  <div class="header-right">
+    <span class="last-updated" id="lastUpdated">—</span>
+    <button class="btn-refresh" onclick="loadData()">⟳ Refresh</button>
+  </div>
+</div>
+
+<div class="nav">
+  <button class="nav-btn active" onclick="switchTab('overview', this)">📊 总览</button>
+  <button class="nav-btn" onclick="switchTab('salesperson', this)">👤 业务员</button>
+  <button class="nav-btn" onclick="switchTab('outlet', this)">🏪 门店</button>
+  <button class="nav-btn" onclick="switchTab('product', this)">📦 产品</button>
+  <button class="nav-btn" onclick="switchTab('trend', this)">📈 趋势</button>
+</div>
+
+<div class="filters">
+  <span class="filter-label">筛选</span>
+  <select class="filter-select" id="filterYear" onchange="applyFilters()">
+    <option value="">全部年份</option>
+  </select>
+  <select class="filter-select" id="filterMonth" onchange="applyFilters()">
+    <option value="">全部月份</option>
+    <option value="1">1月</option><option value="2">2月</option><option value="3">3月</option>
+    <option value="4">4月</option><option value="5">5月</option><option value="6">6月</option>
+    <option value="7">7月</option><option value="8">8月</option><option value="9">9月</option>
+    <option value="10">10月</option><option value="11">11月</option><option value="12">12月</option>
+  </select>
+  <select class="filter-select" id="filterWeek" onchange="applyFilters()">
+    <option value="">全部周</option>
+  </select>
+  <select class="filter-select" id="filterType" onchange="applyFilters()">
+    <option value="">全部类型</option>
+  </select>
+  <select class="filter-select" id="filterSP" onchange="applyFilters()">
+    <option value="">全部业务员</option>
+  </select>
+</div>
+
+<div class="main">
+
+  <!-- OVERVIEW TAB -->
+  <div class="tab-content active" id="tab-overview">
+    <div class="kpi-grid" id="kpiGrid">
+      <div class="loading"><div class="spinner"></div><span>加载中...</span></div>
+    </div>
+    <div class="grid-2">
+      <div class="chart-card">
+        <div class="chart-title"><span class="dot"></span>月度销售额 (RM)</div>
+        <div class="chart-wrap"><canvas id="chartMonthly"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title"><span class="dot" style="background:var(--gold)"></span>业务员业绩占比</div>
+        <div class="chart-wrap"><canvas id="chartSPPie"></canvas></div>
+      </div>
+    </div>
+    <div class="grid-2">
+      <div class="chart-card">
+        <div class="chart-title"><span class="dot" style="background:var(--red)"></span>Top 10 门店</div>
+        <div class="chart-wrap"><canvas id="chartTopOutlet"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title"><span class="dot" style="background:#3b82f6"></span>产品销量排行</div>
+        <div class="chart-wrap"><canvas id="chartProduct"></canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SALESPERSON TAB -->
+  <div class="tab-content" id="tab-salesperson">
+    <div class="section-title">业务员业绩汇整</div>
+    <div class="sp-grid" id="spGrid"><div class="loading"><div class="spinner"></div><span>加载中...</span></div></div>
+    <div class="table-card">
+      <div class="table-header">
+        <span class="table-title">业务员详细数据</span>
+      </div>
+      <div style="overflow-x:auto">
+        <table id="spTable">
+          <thead><tr>
+            <th>#</th><th>业务员</th><th>订单数</th><th>门店数</th>
+            <th onclick="sortTable('spTable',4)">Total (RM) ↕</th>
+            <th onclick="sortTable('spTable',5)">IB (RM) ↕</th>
+            <th>占比</th>
+          </tr></thead>
+          <tbody id="spTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- OUTLET TAB -->
+  <div class="tab-content" id="tab-outlet">
+    <div class="section-title">门店业绩排行</div>
+    <div class="table-card">
+      <div class="table-header">
+        <span class="table-title">门店列表</span>
+        <input type="text" class="table-search" id="outletSearch" placeholder="搜索门店..." oninput="filterTable('outletSearch','outletTableBody')">
+      </div>
+      <div style="overflow-x:auto">
+        <table id="outletTable">
+          <thead><tr>
+            <th>#</th><th>公司/门店</th><th>类型</th><th>订单数</th>
+            <th onclick="sortTable('outletTable',4)">Total (RM) ↕</th>
+            <th>业绩条</th>
+          </tr></thead>
+          <tbody id="outletTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- PRODUCT TAB -->
+  <div class="tab-content" id="tab-product">
+    <div class="section-title">产品销量分析</div>
+    <div class="kpi-grid" id="productKpi"></div>
+    <div class="table-card">
+      <div class="table-header">
+        <span class="table-title">产品销量排行</span>
+      </div>
+      <div style="overflow-x:auto">
+        <table>
+          <thead><tr><th>#</th><th>产品</th><th>总销量</th><th>占比</th><th>销量条</th></tr></thead>
+          <tbody id="productTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- TREND TAB -->
+  <div class="tab-content" id="tab-trend">
+    <div class="section-title">销售趋势</div>
+    <div class="chart-card" style="margin-bottom:1.5rem">
+      <div class="chart-title"><span class="dot"></span>周销售额走势</div>
+      <div class="chart-wrap" style="height:300px"><canvas id="chartWeekly"></canvas></div>
+    </div>
+    <div class="grid-2">
+      <div class="chart-card">
+        <div class="chart-title"><span class="dot" style="background:var(--gold)"></span>各类型销售占比</div>
+        <div class="chart-wrap"><canvas id="chartType"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title"><span class="dot" style="background:var(--red)"></span>月度订单量</div>
+        <div class="chart-wrap"><canvas id="chartOrders"></canvas></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="footer-nav">
+  <span>MamaVege Management Hub</span>
+  <span>|</span>
+  <a href="index.html">🏠 首页</a>
+  <a href="promo-fill.html">📋 促销填报</a>
+  <a href="promo-hq.html">📊 HQ仪表板</a>
+</div>
+
+<script>
+const API_URL = 'https://script.google.com/macros/s/AKfycbzGoijL0wmY3DGbfQCu_jHmcM2EDgtS9Buzuel0Ey9KgLQBebGFslazh9dt6iJel0MW/exec';
+const PRODUCTS = ['KPM','CLM','SHCR','SHTY','SHSS','SPM - BBQ','BBQ (BAG)','SPM - MALA','MALA (BAG)','MRBR','TYSN','TYSP','TMSP','SMTS','SMCL','SPTS','SPCL','CMBR','KETUPAT'];
+
+let allData = [];
+let filteredData = [];
+let charts = {};
+
+function fmt(n) {
+  if (!n || isNaN(n)) return '0.00';
+  return Number(n).toLocaleString('en-MY', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+}
+function fmtInt(n) {
+  if (!n || isNaN(n)) return '0';
+  return Math.round(Number(n)).toLocaleString();
+}
+
+async function loadData() {
+  document.getElementById('lastUpdated').textContent = '加载中...';
+  try {
+    const res = await fetch(API_URL);
+    const json = await res.json();
+    allData = json.data || [];
+    document.getElementById('lastUpdated').textContent = '更新: ' + new Date().toLocaleTimeString('zh-MY');
+    populateFilters();
+    applyFilters();
+  } catch(e) {
+    document.getElementById('kpiGrid').innerHTML = '<div class="empty">❌ 无法加载数据，请检查 API 连接。<br><small>' + e.message + '</small></div>';
+  }
+}
+
+function populateFilters() {
+  const years = [...new Set(allData.map(r => r['YEAR']).filter(Boolean))].sort();
+  const weeks = [...new Set(allData.map(r => r['WEEK']).filter(Boolean))].sort((a,b)=>a-b);
+  const types = [...new Set(allData.map(r => r['TYPE']).filter(Boolean))].sort();
+  const sps = [...new Set(allData.map(r => r['SALES PERSON']).filter(Boolean))].sort();
+
+  const yr = document.getElementById('filterYear');
+  const cur = yr.value;
+  yr.innerHTML = '<option value="">全部年份</option>' + years.map(y=>`<option value="${y}">${y}</option>`).join('');
+  if (cur) yr.value = cur;
+
+  const wk = document.getElementById('filterWeek');
+  wk.innerHTML = '<option value="">全部周</option>' + weeks.map(w=>`<option value="${w}">第 ${w} 周</option>`).join('');
+
+  const tp = document.getElementById('filterType');
+  tp.innerHTML = '<option value="">全部类型</option>' + types.map(t=>`<option value="${t}">${t}</option>`).join('');
+
+  const sp = document.getElementById('filterSP');
+  sp.innerHTML = '<option value="">全部业务员</option>' + sps.map(s=>`<option value="${s}">${s}</option>`).join('');
+}
+
+function applyFilters() {
+  const year = document.getElementById('filterYear').value;
+  const month = document.getElementById('filterMonth').value;
+  const week = document.getElementById('filterWeek').value;
+  const type = document.getElementById('filterType').value;
+  const sp = document.getElementById('filterSP').value;
+
+  filteredData = allData.filter(r => {
+    if (year && String(r['YEAR']) !== String(year)) return false;
+    if (month && String(r['MONTH']) !== String(month)) return false;
+    if (week && String(r['WEEK']) !== String(week)) return false;
+    if (type && r['TYPE'] !== type) return false;
+    if (sp && r['SALES PERSON'] !== sp) return false;
+    return true;
+  });
+
+  renderAll();
+}
+
+function renderAll() {
+  renderKPI();
+  renderCharts();
+  renderSPTab();
+  renderOutletTab();
+  renderProductTab();
+}
+
+function renderKPI() {
+  const total = filteredData.reduce((s, r) => s + (parseFloat(r['TOTAL\n(RM)'] || r['TOTAL (RM)'] || r['TOTAL(RM)'] || 0)), 0);
+  const ib = filteredData.reduce((s, r) => s + (parseFloat(r['IB\n(RM)'] || r['IB (RM)'] || r['IB(RM)'] || 0)), 0);
+  const orders = filteredData.length;
+  const outlets = new Set(filteredData.map(r => r['COMPANY'])).size;
+  const sps = new Set(filteredData.map(r => r['SALES PERSON']).filter(Boolean)).size;
+
+  document.getElementById('kpiGrid').innerHTML = `
+    <div class="kpi-card green"><div class="kpi-icon">💰</div><div class="kpi-label">总销售额</div><div class="kpi-value">RM ${fmt(total)}</div><div class="kpi-sub">TOTAL (RM)</div></div>
+    <div class="kpi-card red"><div class="kpi-icon">📦</div><div class="kpi-label">IB 销售额</div><div class="kpi-value">RM ${fmt(ib)}</div><div class="kpi-sub">IB (RM)</div></div>
+    <div class="kpi-card gold"><div class="kpi-icon">🧾</div><div class="kpi-label">订单数</div><div class="kpi-value">${orders}</div><div class="kpi-sub">条记录</div></div>
+    <div class="kpi-card blue"><div class="kpi-icon">🏪</div><div class="kpi-label">门店数</div><div class="kpi-value">${outlets}</div><div class="kpi-sub">家公司</div></div>
+    <div class="kpi-card green"><div class="kpi-icon">👤</div><div class="kpi-label">业务员</div><div class="kpi-value">${sps}</div><div class="kpi-sub">人</div></div>
+  `;
+}
+
+function getTotalField(r) {
+  return parseFloat(r['TOTAL\n(RM)'] || r['TOTAL (RM)'] || r['TOTAL(RM)'] || 0);
+}
+function getIBField(r) {
+  return parseFloat(r['IB\n(RM)'] || r['IB (RM)'] || r['IB(RM)'] || 0);
+}
+
+function renderCharts() {
+  // Monthly chart
+  const monthData = {};
+  filteredData.forEach(r => {
+    const m = r['MONTH'];
+    if (!m) return;
+    monthData[m] = (monthData[m] || 0) + getTotalField(r);
+  });
+  const months = Object.keys(monthData).sort((a,b)=>a-b);
+  const monthNames = ['','1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
+  destroyChart('chartMonthly');
+  charts.monthly = new Chart(document.getElementById('chartMonthly'), {
+    type: 'bar',
+    data: {
+      labels: months.map(m => monthNames[m]),
+      datasets: [{
+        label: 'Total (RM)',
+        data: months.map(m => monthData[m]),
+        backgroundColor: '#166534cc',
+        borderColor: '#166534',
+        borderWidth: 1,
+        borderRadius: 6
+      }]
+    },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { callback: v => 'RM '+fmtInt(v) } } } }
+  });
+
+  // SP Pie
+  const spData = {};
+  filteredData.forEach(r => {
+    const sp = r['SALES PERSON'] || 'Unknown';
+    spData[sp] = (spData[sp] || 0) + getTotalField(r);
+  });
+  const spSorted = Object.entries(spData).sort((a,b)=>b[1]-a[1]);
+  destroyChart('chartSPPie');
+  charts.spPie = new Chart(document.getElementById('chartSPPie'), {
+    type: 'doughnut',
+    data: {
+      labels: spSorted.map(s=>s[0]),
+      datasets: [{ data: spSorted.map(s=>s[1]), backgroundColor: ['#166534','#16a34a','#22c55e','#4ade80','#86efac','#dc2626','#f87171','#d97706','#fbbf24','#3b82f6'] }]
+    },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { font: { size: 11 } } } } }
+  });
+
+  // Top outlets
+  const outletData = {};
+  filteredData.forEach(r => {
+    const o = r['COMPANY'] || 'Unknown';
+    outletData[o] = (outletData[o] || 0) + getTotalField(r);
+  });
+  const outletSorted = Object.entries(outletData).sort((a,b)=>b[1]-a[1]).slice(0,10);
+  destroyChart('chartTopOutlet');
+  charts.outlet = new Chart(document.getElementById('chartTopOutlet'), {
+    type: 'bar',
+    data: {
+      labels: outletSorted.map(o=>o[0].length>20?o[0].substring(0,18)+'...':o[0]),
+      datasets: [{ label: 'RM', data: outletSorted.map(o=>o[1]), backgroundColor: '#dc262699', borderColor: '#dc2626', borderWidth: 1, borderRadius: 4 }]
+    },
+    options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { beginAtZero: true, ticks: { callback: v => 'RM '+fmtInt(v) } } } }
+  });
+
+  // Product chart
+  const prodData = {};
+  PRODUCTS.forEach(p => {
+    prodData[p] = filteredData.reduce((s,r)=>s+(parseFloat(r[p])||0),0);
+  });
+  const prodSorted = Object.entries(prodData).filter(p=>p[1]>0).sort((a,b)=>b[1]-a[1]).slice(0,10);
+  destroyChart('chartProduct');
+  charts.product = new Chart(document.getElementById('chartProduct'), {
+    type: 'bar',
+    data: {
+      labels: prodSorted.map(p=>p[0]),
+      datasets: [{ label: '数量', data: prodSorted.map(p=>p[1]), backgroundColor: '#3b82f699', borderColor: '#3b82f6', borderWidth: 1, borderRadius: 4 }]
+    },
+    options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { beginAtZero: true } } }
+  });
+
+  // Weekly trend
+  const weekData = {};
+  filteredData.forEach(r => {
+    const key = `Y${r['YEAR']}-W${String(r['WEEK']).padStart(2,'0')}`;
+    weekData[key] = (weekData[key] || 0) + getTotalField(r);
+  });
+  const weeks = Object.keys(weekData).sort();
+  destroyChart('chartWeekly');
+  charts.weekly = new Chart(document.getElementById('chartWeekly'), {
+    type: 'line',
+    data: {
+      labels: weeks,
+      datasets: [{
+        label: 'Total (RM)',
+        data: weeks.map(w=>weekData[w]),
+        borderColor: '#166534',
+        backgroundColor: '#16653420',
+        fill: true,
+        tension: 0.4,
+        pointBackgroundColor: '#166534',
+        pointRadius: 4
+      }]
+    },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { callback: v=>'RM '+fmtInt(v) } } } }
+  });
+
+  // Type pie
+  const typeData = {};
+  filteredData.forEach(r => {
+    const t = r['TYPE'] || 'Unknown';
+    typeData[t] = (typeData[t] || 0) + getTotalField(r);
+  });
+  const typeSorted = Object.entries(typeData).sort((a,b)=>b[1]-a[1]);
+  destroyChart('chartType');
+  charts.type = new Chart(document.getElementById('chartType'), {
+    type: 'pie',
+    data: {
+      labels: typeSorted.map(t=>t[0]),
+      datasets: [{ data: typeSorted.map(t=>t[1]), backgroundColor: ['#166534','#dc2626','#d97706','#3b82f6','#8b5cf6'] }]
+    },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
+  });
+
+  // Orders by month
+  const ordersData = {};
+  filteredData.forEach(r => {
+    const m = r['MONTH'];
+    if (!m) return;
+    ordersData[m] = (ordersData[m] || 0) + 1;
+  });
+  const oMonths = Object.keys(ordersData).sort((a,b)=>a-b);
+  destroyChart('chartOrders');
+  charts.orders = new Chart(document.getElementById('chartOrders'), {
+    type: 'bar',
+    data: {
+      labels: oMonths.map(m=>monthNames[m]),
+      datasets: [{ label: '订单数', data: oMonths.map(m=>ordersData[m]), backgroundColor: '#dc262699', borderColor: '#dc2626', borderWidth: 1, borderRadius: 4 }]
+    },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+  });
+}
+
+function renderSPTab() {
+  const spMap = {};
+  filteredData.forEach(r => {
+    const sp = r['SALES PERSON'] || 'Unknown';
+    if (!spMap[sp]) spMap[sp] = { orders: 0, total: 0, ib: 0, outlets: new Set() };
+    spMap[sp].orders++;
+    spMap[sp].total += getTotalField(r);
+    spMap[sp].ib += getIBField(r);
+    if (r['COMPANY']) spMap[sp].outlets.add(r['COMPANY']);
+  });
+
+  const sorted = Object.entries(spMap).sort((a,b)=>b[1].total-a[1].total);
+  const maxTotal = sorted.length ? sorted[0][1].total : 1;
+  const grandTotal = sorted.reduce((s,e)=>s+e[1].total,0);
+
+  // SP Cards
+  const colors = ['#166534','#dc2626','#d97706','#3b82f6','#8b5cf6','#0891b2'];
+  document.getElementById('spGrid').innerHTML = sorted.map(([name, d], i) => `
+    <div class="sp-card">
+      <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:0.75rem">
+        <div style="width:40px;height:40px;border-radius:50%;background:${colors[i%colors.length]}20;color:${colors[i%colors.length]};display:flex;align-items:center;justify-content:center;font-weight:700;font-size:1rem">${name.charAt(0)}</div>
+        <div>
+          <div class="sp-name">${name}</div>
+          <div style="font-size:0.75rem;color:var(--text-muted)">#${i+1} 排名</div>
+        </div>
+      </div>
+      <div class="sp-total">RM ${fmt(d.total)}</div>
+      <div class="sp-stats">
+        <div class="sp-stat"><span>${d.orders}</span>订单</div>
+        <div class="sp-stat"><span>${d.outlets.size}</span>门店</div>
+        <div class="sp-stat"><span>RM ${fmt(d.ib)}</span>IB</div>
+        <div class="sp-stat"><span>${grandTotal>0?(d.total/grandTotal*100).toFixed(1):0}%</span>占比</div>
+      </div>
+      <div class="sp-bar">
+        <div class="progress-bar"><div class="progress-fill" style="width:${(d.total/maxTotal*100).toFixed(1)}%;background:${colors[i%colors.length]}"></div></div>
+      </div>
+    </div>
+  `).join('') || '<div class="empty">暂无数据</div>';
+
+  // SP Table
+  document.getElementById('spTableBody').innerHTML = sorted.map(([name,d],i) => `
+    <tr>
+      <td class="rank rank-${i+1}">${i===0?'🥇':i===1?'🥈':i===2?'🥉':i+1}</td>
+      <td><strong>${name}</strong></td>
+      <td>${d.orders}</td>
+      <td>${d.outlets.size}</td>
+      <td class="amount">RM ${fmt(d.total)}</td>
+      <td class="amount-red">RM ${fmt(d.ib)}</td>
+      <td><span class="tag tag-green">${grandTotal>0?(d.total/grandTotal*100).toFixed(1):0}%</span></td>
+    </tr>
+  `).join('') || '<tr><td colspan="7" class="empty">暂无数据</td></tr>';
+}
+
+function renderOutletTab() {
+  const outMap = {};
+  filteredData.forEach(r => {
+    const key = r['COMPANY'] || 'Unknown';
+    if (!outMap[key]) outMap[key] = { orders: 0, total: 0, type: r['TYPE'] || '' };
+    outMap[key].orders++;
+    outMap[key].total += getTotalField(r);
+  });
+  const sorted = Object.entries(outMap).sort((a,b)=>b[1].total-a[1].total);
+  const maxTotal = sorted.length ? sorted[0][1].total : 1;
+
+  document.getElementById('outletTableBody').innerHTML = sorted.map(([name,d],i) => `
+    <tr>
+      <td class="rank rank-${i+1}">${i+1}</td>
+      <td><strong>${name}</strong></td>
+      <td><span class="tag tag-gold">${d.type}</span></td>
+      <td>${d.orders}</td>
+      <td class="amount">RM ${fmt(d.total)}</td>
+      <td><div class="progress-bar" style="min-width:120px"><div class="progress-fill" style="width:${(d.total/maxTotal*100).toFixed(1)}%"></div></div></td>
+    </tr>
+  `).join('') || '<tr><td colspan="6" class="empty">暂无数据</td></tr>';
+}
+
+function renderProductTab() {
+  const prodData = {};
+  PRODUCTS.forEach(p => {
+    const qty = filteredData.reduce((s,r)=>s+(parseFloat(r[p])||0),0);
+    if (qty > 0) prodData[p] = qty;
+  });
+  const sorted = Object.entries(prodData).sort((a,b)=>b[1]-a[1]);
+  const total = sorted.reduce((s,e)=>s+e[1],0);
+  const maxQty = sorted.length ? sorted[0][1] : 1;
+
+  // Top 3 KPI
+  const top3 = sorted.slice(0,3);
+  document.getElementById('productKpi').innerHTML = top3.map((p,i) => `
+    <div class="kpi-card ${['green','gold','red'][i]}">
+      <div class="kpi-icon">${['🥇','🥈','🥉'][i]}</div>
+      <div class="kpi-label">#${i+1} 产品</div>
+      <div class="kpi-value">${fmtInt(p[1])}</div>
+      <div class="kpi-sub">${p[0]}</div>
+    </div>
+  `).join('');
+
+  document.getElementById('productTableBody').innerHTML = sorted.map(([name,qty],i) => `
+    <tr>
+      <td class="rank rank-${i+1}">${i+1}</td>
+      <td><strong>${name}</strong></td>
+      <td>${fmtInt(qty)}</td>
+      <td><span class="tag tag-green">${total>0?(qty/total*100).toFixed(1):0}%</span></td>
+      <td><div class="progress-bar" style="min-width:120px"><div class="progress-fill" style="width:${(qty/maxQty*100).toFixed(1)}%"></div></div></td>
+    </tr>
+  `).join('') || '<tr><td colspan="5" class="empty">暂无数据</td></tr>';
+}
+
+function destroyChart(id) {
+  if (charts[id]) { charts[id].destroy(); delete charts[id]; }
+}
+
+function switchTab(tab, btn) {
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + tab).classList.add('active');
+  btn.classList.add('active');
+}
+
+function filterTable(inputId, tbodyId) {
+  const q = document.getElementById(inputId).value.toLowerCase();
+  document.getElementById(tbodyId).querySelectorAll('tr').forEach(tr => {
+    tr.style.display = tr.textContent.toLowerCase().includes(q) ? '' : 'none';
+  });
+}
+
+function sortTable(tableId, colIdx) {
+  const tbody = document.getElementById(tableId).querySelector('tbody') || document.getElementById(tableId + 'Body');
+  if (!tbody) return;
+  const rows = Array.from(tbody.querySelectorAll('tr'));
+  const asc = tbody.dataset.sortCol === String(colIdx) && tbody.dataset.sortDir !== 'asc';
+  tbody.dataset.sortCol = colIdx;
+  tbody.dataset.sortDir = asc ? 'asc' : 'desc';
+  rows.sort((a,b) => {
+    const av = parseFloat(a.cells[colIdx]?.textContent.replace(/[^0-9.]/g,'')) || 0;
+    const bv = parseFloat(b.cells[colIdx]?.textContent.replace(/[^0-9.]/g,'')) || 0;
+    return asc ? av - bv : bv - av;
+  });
+  rows.forEach(r => tbody.appendChild(r));
+}
+
+// Init
+loadData();
+</script>
+</body>
+</html>
