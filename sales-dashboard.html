@@ -395,7 +395,6 @@
           <thead><tr>
             <th>#</th><th>业务员</th><th>订单数</th><th>门店数</th>
             <th onclick="sortTable('spTable',4)">Total (RM) ↕</th>
-            <th onclick="sortTable('spTable',5)">IB (RM) ↕</th>
             <th>占比</th>
           </tr></thead>
           <tbody id="spTableBody"></tbody>
@@ -551,27 +550,29 @@ function renderAll() {
 }
 
 function renderKPI() {
-  const total = filteredData.reduce((s, r) => s + (parseFloat(r['TOTAL\n(RM)'] || r['TOTAL (RM)'] || r['TOTAL(RM)'] || 0)), 0);
-  const ib = filteredData.reduce((s, r) => s + (parseFloat(r['IB\n(RM)'] || r['IB (RM)'] || r['IB(RM)'] || 0)), 0);
+  const total = filteredData.reduce((s, r) => s + getTotalField(r), 0);
   const orders = filteredData.length;
   const outlets = new Set(filteredData.map(r => r['COMPANY'])).size;
   const sps = new Set(filteredData.map(r => r['SALES PERSON']).filter(Boolean)).size;
+  const avgOrder = orders > 0 ? total / orders : 0;
 
   document.getElementById('kpiGrid').innerHTML = `
     <div class="kpi-card green"><div class="kpi-icon">💰</div><div class="kpi-label">总销售额</div><div class="kpi-value">RM ${fmt(total)}</div><div class="kpi-sub">TOTAL (RM)</div></div>
-    <div class="kpi-card red"><div class="kpi-icon">📦</div><div class="kpi-label">IB 销售额</div><div class="kpi-value">RM ${fmt(ib)}</div><div class="kpi-sub">IB (RM)</div></div>
     <div class="kpi-card gold"><div class="kpi-icon">🧾</div><div class="kpi-label">订单数</div><div class="kpi-value">${orders}</div><div class="kpi-sub">条记录</div></div>
     <div class="kpi-card blue"><div class="kpi-icon">🏪</div><div class="kpi-label">门店数</div><div class="kpi-value">${outlets}</div><div class="kpi-sub">家公司</div></div>
     <div class="kpi-card green"><div class="kpi-icon">👤</div><div class="kpi-label">业务员</div><div class="kpi-value">${sps}</div><div class="kpi-sub">人</div></div>
+    <div class="kpi-card red"><div class="kpi-icon">📊</div><div class="kpi-label">平均订单</div><div class="kpi-value">RM ${fmt(avgOrder)}</div><div class="kpi-sub">每单平均</div></div>
   `;
 }
 
 function getTotalField(r) {
-  return parseFloat(r['TOTAL\n(RM)'] || r['TOTAL (RM)'] || r['TOTAL(RM)'] || 0);
+  // Try all possible key formats
+  for (const k of Object.keys(r)) {
+    if (k.replace(/\s|\n/g,'').toUpperCase() === 'TOTAL(RM)') return parseFloat(r[k]) || 0;
+  }
+  return 0;
 }
-function getIBField(r) {
-  return parseFloat(r['IB\n(RM)'] || r['IB (RM)'] || r['IB(RM)'] || 0);
-}
+function getIBField(r) { return 0; }
 
 function renderCharts() {
   // Monthly chart
@@ -742,7 +743,6 @@ function renderSPTab() {
       <div class="sp-stats">
         <div class="sp-stat"><span>${d.orders}</span>订单</div>
         <div class="sp-stat"><span>${d.outlets.size}</span>门店</div>
-        <div class="sp-stat"><span>RM ${fmt(d.ib)}</span>IB</div>
         <div class="sp-stat"><span>${grandTotal>0?(d.total/grandTotal*100).toFixed(1):0}%</span>占比</div>
       </div>
       <div class="sp-bar">
@@ -759,10 +759,9 @@ function renderSPTab() {
       <td>${d.orders}</td>
       <td>${d.outlets.size}</td>
       <td class="amount">RM ${fmt(d.total)}</td>
-      <td class="amount-red">RM ${fmt(d.ib)}</td>
       <td><span class="tag tag-green">${grandTotal>0?(d.total/grandTotal*100).toFixed(1):0}%</span></td>
     </tr>
-  `).join('') || '<tr><td colspan="7" class="empty">暂无数据</td></tr>';
+  `).join('') || '<tr><td colspan="6" class="empty">暂无数据</td></tr>';
 }
 
 function renderOutletTab() {
