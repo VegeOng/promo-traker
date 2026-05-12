@@ -102,10 +102,10 @@ body{background:var(--bg);color:var(--t1);font-family:var(--font);min-height:100
   </div>
 
   <div class="stats-row">
-    <div class="stat"><div class="stat-label">Total Promo Entries</div><div class="stat-val" id="s-count">—</div><div class="stat-sub">records submitted</div></div>
-    <div class="stat"><div class="stat-label">Overall Achievement</div><div class="stat-val" id="s-rate">—</div><div class="stat-sub">vs sales target</div></div>
-    <div class="stat"><div class="stat-label">Overall ROI</div><div class="stat-val" id="s-roi">—</div><div class="stat-sub">sales ÷ total cost</div></div>
-    <div class="stat"><div class="stat-label">Active Regions</div><div class="stat-val" id="s-reg">—</div><div class="stat-sub">with submissions</div></div>
+    <div class="stat"><div class="stat-label">This Month Sales</div><div class="stat-val" id="s-month">—</div><div class="stat-sub" id="s-month-sub">loading...</div></div>
+    <div class="stat"><div class="stat-label">This Year Sales</div><div class="stat-val" id="s-year">—</div><div class="stat-sub">2026 cumulative</div></div>
+    <div class="stat"><div class="stat-label">2026 Target</div><div class="stat-val">RM 6M</div><div class="stat-sub">annual target</div></div>
+    <div class="stat"><div class="stat-label">Gap to Target</div><div class="stat-val" id="s-gap" style="color:var(--red)">—</div><div class="stat-sub" id="s-gap-sub">remaining</div></div>
   </div>
 
   <div class="sec">
@@ -186,25 +186,54 @@ body{background:var(--bg);color:var(--t1);font-family:var(--font);min-height:100
   <div class="footer-r" id="footer-r"></div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-const sb=supabase.createClient(
-  'https://wjhgezvrxlhpexocfsea.supabase.co',
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndqaGdlenZyeGxocGV4b2Nmc2VhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg1MDU4NzgsImV4cCI6MjA5NDA4MTg3OH0.jENcrgEDYDlSRUCqve-T6rxYRJfz-dnZQHnXpPLJ_RE'
-);
-const now=new Date();
-document.getElementById('date-txt').textContent=now.toLocaleDateString('en-MY',{weekday:'short',year:'numeric',month:'short',day:'numeric'});
-document.getElementById('footer-r').textContent='Loaded at '+now.toLocaleTimeString('en-MY',{hour:'2-digit',minute:'2-digit'});
-async function loadStats(){
-  const{data}=await sb.from('promotions').select('target,actual_sales,total_cost,region');
-  if(!data||!data.length)return;
-  const tT=data.reduce((a,r)=>a+Number(r.target),0);
-  const tA=data.reduce((a,r)=>a+Number(r.actual_sales),0);
-  const tC=data.reduce((a,r)=>a+Number(r.total_cost),0);
-  document.getElementById('s-count').textContent=data.length;
-  document.getElementById('s-rate').textContent=tT>0?Math.round(tA/tT*100)+'%':'—';
-  document.getElementById('s-roi').textContent=tC>0?(tA/tC).toFixed(1)+'×':'—';
-  document.getElementById('s-reg').textContent=[...new Set(data.map(r=>r.region))].length;
+const API_URL = 'https://script.google.com/macros/s/AKfycbxH0xWJmm2gLjYTbDDble-SMk1LhG2GNayLtWMySrcS3WRlzVoeIcvom64ejYpuLWqj/exec';
+const TARGET_2026 = 6000000;
+
+const now = new Date();
+document.getElementById('date-txt').textContent = now.toLocaleDateString('en-MY',{weekday:'short',year:'numeric',month:'short',day:'numeric'});
+document.getElementById('footer-r').textContent = 'Loaded at ' + now.toLocaleTimeString('en-MY',{hour:'2-digit',minute:'2-digit'});
+
+function fmtRM(n) {
+  if (n >= 1000000) return 'RM ' + (n/1000000).toFixed(2) + 'M';
+  if (n >= 1000) return 'RM ' + (n/1000).toFixed(1) + 'K';
+  return 'RM ' + n.toFixed(2);
+}
+
+function getTotalField(r) {
+  for (const k of Object.keys(r)) {
+    if (k.replace(/[\s
+]/g,'').toUpperCase() === 'TOTAL(RM)') return parseFloat(r[k]) || 0;
+  }
+  return 0;
+}
+
+async function loadStats() {
+  try {
+    const res = await fetch(API_URL);
+    const json = await res.json();
+    const data = json.data || [];
+
+    const curYear = now.getFullYear();
+    const curMonth = now.getMonth() + 1;
+
+    const yearData = data.filter(r => r.YEAR == curYear);
+    const monthData = data.filter(r => r.YEAR == curYear && r.MONTH == curMonth);
+
+    const yearTotal = yearData.reduce((s,r) => s + getTotalField(r), 0);
+    const monthTotal = monthData.reduce((s,r) => s + getTotalField(r), 0);
+    const gap = TARGET_2026 - yearTotal;
+
+    const monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    document.getElementById('s-month').textContent = fmtRM(monthTotal);
+    document.getElementById('s-month-sub').textContent = monthNames[curMonth-1] + ' ' + curYear;
+    document.getElementById('s-year').textContent = fmtRM(yearTotal);
+    document.getElementById('s-gap').textContent = gap > 0 ? fmtRM(gap) : '🎉 Achieved!';
+    document.getElementById('s-gap').style.color = gap > 0 ? 'var(--red)' : 'var(--green)';
+    document.getElementById('s-gap-sub').textContent = gap > 0 ? Math.round(yearTotal/TARGET_2026*100) + '% achieved' : 'Target met!';
+  } catch(e) {
+    console.error(e);
+  }
 }
 loadStats();
 </script>
