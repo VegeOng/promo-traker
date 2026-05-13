@@ -8,7 +8,7 @@
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --bg:#fafafa;--s1:#ffffff;--s2:#f3f4f6;
+  --bg:#fafafa;--s1:#fff;--s2:#f3f4f6;
   --b1:#e5e7eb;--b2:#d1d5db;
   --t1:#111827;--t2:#4b5563;--t3:#9ca3af;
   --green:#166534;--green2:#22c55e;--green-bg:#f0fdf4;--green-border:#bbf7d0;
@@ -19,12 +19,10 @@
 }
 body{background:var(--bg);color:var(--t1);font-family:var(--font);min-height:100vh;padding-bottom:60px;}
 .topbar{background:var(--s1);border-bottom:1px solid var(--b1);padding:13px 20px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:10;box-shadow:0 1px 3px rgba(0,0,0,.06);}
-.topbar-logo{display:flex;align-items:center;gap:8px;}
 .logo-mark{width:28px;height:28px;background:var(--green);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:#fff;}
-.topbar-title{font-size:14px;font-weight:700;color:var(--t1);}
+.topbar-title{font-size:14px;font-weight:700;}
 .topbar-back{margin-left:auto;font-size:12px;color:var(--green);text-decoration:none;font-weight:600;}
-.topbar-sub{font-size:11px;color:var(--t3);font-family:var(--mono);margin-left:auto;}
-.container{max-width:600px;margin:0 auto;padding:24px 16px 0;}
+.container{max-width:640px;margin:0 auto;padding:24px 16px 0;}
 .sec-label{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--t3);margin-bottom:10px;display:flex;align-items:center;gap:8px;}
 .sec-label::after{content:'';flex:1;height:1px;background:var(--b1);}
 .card{background:var(--s1);border:1px solid var(--b1);border-radius:var(--r2);padding:18px;margin-bottom:14px;box-shadow:0 1px 3px rgba(0,0,0,.04);}
@@ -33,23 +31,47 @@ body{background:var(--bg);color:var(--t1);font-family:var(--font);min-height:100
 .field.full{grid-column:1/-1;}
 label{font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--t2);}
 .req{color:var(--green);}
-input,select,textarea{background:var(--s2);border:1.5px solid var(--b1);border-radius:var(--r);padding:10px 12px;font-size:14px;font-family:var(--font);color:var(--t1);outline:none;transition:border .15s,background .15s;width:100%;}
+input,select,textarea{background:var(--s2);border:1.5px solid var(--b1);border-radius:var(--r);padding:10px 12px;font-size:14px;font-family:var(--font);color:var(--t1);outline:none;transition:border .15s;width:100%;}
 input:focus,select:focus,textarea:focus{border-color:var(--green);background:var(--s1);}
 input::placeholder,textarea::placeholder{color:var(--t3);}
 textarea{resize:vertical;min-height:72px;line-height:1.5;}
 
-.type-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
-.type-btn{padding:10px 6px;border-radius:var(--r);border:1.5px solid var(--b1);background:var(--s2);cursor:pointer;text-align:center;transition:all .15s;-webkit-tap-highlight-color:transparent;}
-.type-btn:hover{border-color:var(--b2);background:var(--s1);}
-.type-btn.sel{border-color:var(--green);background:var(--green-bg);}
-.type-dot{width:9px;height:9px;border-radius:50%;background:var(--green);margin:0 auto 5px;}
-.type-name{font-size:11px;font-weight:700;color:var(--t1);font-family:var(--mono);}
-.type-desc{font-size:10px;color:var(--t3);margin-top:2px;}
+/* Product table */
+.prod-table{width:100%;border-collapse:collapse;font-size:13px;margin-bottom:10px;}
+.prod-table th{text-align:left;padding:7px 8px;font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--t3);border-bottom:1px solid var(--b1);font-weight:600;background:var(--s2);}
+.prod-table td{padding:6px 4px;border-bottom:1px solid var(--b1);vertical-align:middle;}
+.prod-table tr:last-child td{border-bottom:none;}
+.prod-table input{padding:7px 9px;font-size:13px;border-radius:8px;}
+.sold-cell{font-family:var(--mono);font-size:13px;font-weight:700;color:var(--green);padding:0 8px;}
+.ach-cell{font-family:var(--mono);font-size:12px;font-weight:700;padding:0 4px;}
+.del-btn{background:none;border:none;color:var(--t3);cursor:pointer;font-size:16px;padding:4px 8px;border-radius:6px;transition:all .15s;}
+.del-btn:hover{background:var(--red-bg);color:var(--red);}
+.add-prod-btn{display:flex;align-items:center;gap:6px;padding:8px 14px;background:var(--green-bg);border:1px dashed var(--green-border);border-radius:var(--r);font-size:13px;font-weight:600;color:var(--green);cursor:pointer;transition:all .15s;width:100%;justify-content:center;}
+.add-prod-btn:hover{background:#dcfce7;}
 
-.rent-box{background:var(--amber-bg);border:1px solid var(--amber-border);border-radius:var(--r2);padding:14px;margin-bottom:14px;display:none;}
-.rent-box.show{display:block;}
-.rent-note{font-size:12px;color:var(--amber);font-weight:600;margin-bottom:10px;}
+/* Summary bar */
+.summary-bar{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:12px;}
+.sum-item{background:var(--s2);border-radius:var(--r);padding:10px 12px;text-align:center;}
+.sum-label{font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;}
+.sum-val{font-size:18px;font-weight:700;font-family:var(--mono);color:var(--t1);}
+.sum-val.green{color:var(--green);}
+.sum-val.amber{color:var(--amber);}
+.sum-val.red{color:var(--red);}
 
+/* Photo upload */
+.photo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:10px;}
+.photo-slot{aspect-ratio:1;border:2px dashed var(--b1);border-radius:var(--r2);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;transition:all .2s;position:relative;overflow:hidden;background:var(--s2);}
+.photo-slot:hover{border-color:var(--green);background:var(--green-bg);}
+.photo-slot.has-photo{border-style:solid;border-color:var(--green-border);}
+.photo-slot img{width:100%;height:100%;object-fit:cover;position:absolute;top:0;left:0;}
+.photo-slot .slot-label{font-size:11px;color:var(--t3);text-align:center;padding:8px;}
+.photo-slot .slot-icon{font-size:24px;margin-bottom:4px;}
+.photo-slot .remove-photo{position:absolute;top:4px;right:4px;background:rgba(0,0,0,.5);color:#fff;border:none;border-radius:50%;width:22px;height:22px;font-size:12px;cursor:pointer;display:none;align-items:center;justify-content:center;}
+.photo-slot.has-photo .remove-photo{display:flex;}
+.photo-slot input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;}
+.upload-status{font-size:11px;color:var(--t3);text-align:center;}
+
+/* Submit */
 .submit-btn{width:100%;padding:14px;background:var(--green);color:#fff;border:none;border-radius:var(--r2);font-size:15px;font-weight:700;font-family:var(--font);cursor:pointer;transition:all .2s;margin-top:4px;}
 .submit-btn:hover{background:#14532d;}
 .submit-btn:disabled{background:var(--t3);cursor:not-allowed;}
@@ -57,30 +79,30 @@ textarea{resize:vertical;min-height:72px;line-height:1.5;}
 .success-card{background:var(--green-bg);border:1px solid var(--green-border);border-radius:var(--r2);padding:28px;text-align:center;display:none;margin-bottom:14px;}
 .success-card.show{display:block;}
 .success-title{font-size:18px;font-weight:700;color:var(--green);margin-bottom:6px;}
-.success-sub{font-size:13px;color:#166534;}
+.success-sub{font-size:13px;color:#166534;line-height:1.6;}
 .again-btn{margin-top:14px;padding:9px 20px;background:var(--green);color:#fff;border:none;border-radius:var(--r);font-size:13px;font-weight:600;font-family:var(--font);cursor:pointer;}
 
 .err{color:var(--red);font-size:11px;margin-top:3px;display:none;}
 .err.show{display:block;}
 .has-err input,.has-err select{border-color:var(--red)!important;}
 
-.rec-item{background:var(--s1);border:1px solid var(--b1);border-radius:var(--r);padding:11px 13px;margin-bottom:7px;display:flex;align-items:center;gap:10px;box-shadow:0 1px 2px rgba(0,0,0,.04);}
+.rec-item{background:var(--s1);border:1px solid var(--b1);border-radius:var(--r);padding:11px 13px;margin-bottom:7px;display:flex;align-items:center;gap:10px;}
 .rec-dot{width:8px;height:8px;border-radius:50%;background:var(--green);flex-shrink:0;}
 .rec-info{flex:1;min-width:0;}
-.rec-name{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--t1);}
+.rec-name{font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .rec-meta{font-size:11px;color:var(--t3);margin-top:1px;font-family:var(--mono);}
 .rec-pct{font-size:13px;font-weight:700;font-family:var(--mono);flex-shrink:0;}
 
 .spinner{display:inline-block;width:15px;height:15px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite;vertical-align:middle;margin-right:6px;}
 @keyframes spin{to{transform:rotate(360deg)}}
+.prog-bar{height:4px;background:var(--b1);border-radius:2px;overflow:hidden;margin-top:8px;}
+.prog-fill{height:100%;background:var(--green);border-radius:2px;transition:width .3s;}
 </style>
 </head>
 <body>
 <div class="topbar">
-  <div class="topbar-logo">
-    <div class="logo-mark">M</div>
-    <span class="topbar-title">MamaVege — Daily Promo Fill</span>
-  </div>
+  <div class="logo-mark">M</div>
+  <span class="topbar-title">MamaVege — Daily Promo Fill</span>
   <a href="/" class="topbar-back">← Hub</a>
 </div>
 
@@ -92,6 +114,7 @@ textarea{resize:vertical;min-height:72px;line-height:1.5;}
     <button class="again-btn" onclick="resetForm()">Submit another entry</button>
   </div>
 
+  <!-- Basic Info -->
   <p class="sec-label">Basic Info</p>
   <div class="card">
     <div class="grid2">
@@ -113,75 +136,108 @@ textarea{resize:vertical;min-height:72px;line-height:1.5;}
         <span class="err" id="e-store">Please enter store name</span>
       </div>
       <div class="field full" id="w-manager">
-        <label>Person in Charge <span class="req">*</span></label>
+        <label>Promoter Name <span class="req">*</span></label>
         <input type="text" id="f-manager" placeholder="Your full name">
         <span class="err" id="e-manager">Please enter your name</span>
       </div>
       <div class="field full" id="w-name">
         <label>Activity Name <span class="req">*</span></label>
-        <input type="text" id="f-name" placeholder="e.g. Raya Bundle Deal, Spring Mega Sale">
+        <input type="text" id="f-name" placeholder="e.g. Raya Bundle Deal, Merdeka Promo">
         <span class="err" id="e-name">Please enter activity name</span>
       </div>
-      <div class="field full">
-        <label>Products</label>
-        <input type="text" id="f-products" placeholder="e.g. Shampoo 2-for-1, Organic Veggie Box, Skincare Gift Set">
+      <div class="field full" id="w-dur">
+        <label>Duration <span class="req">*</span></label>
+        <input type="text" id="f-duration" placeholder="e.g. 5 days, 2 weeks, 1 month">
+        <span class="err" id="e-dur">Please enter duration</span>
       </div>
     </div>
   </div>
 
-  <p class="sec-label">Promo Type</p>
+  <!-- Products -->
+  <p class="sec-label">Products & Stock</p>
   <div class="card">
-    <div class="type-grid">
-      <div class="type-btn" onclick="selType('GE',this)"><div class="type-dot"></div><div class="type-name">GE</div><div class="type-desc">Entrance display</div></div>
-      <div class="type-btn" onclick="selType('ISLAND',this)"><div class="type-dot"></div><div class="type-name">ISLAND</div><div class="type-desc">Island display</div></div>
-      <div class="type-btn" onclick="selType('BLOCK',this)"><div class="type-dot"></div><div class="type-name">BLOCK</div><div class="type-desc">Block display</div></div>
-      <div class="type-btn" onclick="selType('SAMPLING',this)"><div class="type-dot"></div><div class="type-name">SAMPLING</div><div class="type-desc">Sampling</div></div>
-      <div class="type-btn" onclick="selType('PROMOTER',this)"><div class="type-dot"></div><div class="type-name">PROMOTER</div><div class="type-desc">Promoter</div></div>
-      <div class="type-btn" onclick="selType('OTHER',this)"><div class="type-dot" style="background:var(--t3)"></div><div class="type-name">OTHER</div><div class="type-desc">Others</div></div>
+    <div style="overflow-x:auto;">
+      <table class="prod-table" id="prod-table">
+        <thead>
+          <tr>
+            <th style="min-width:140px">Product Name</th>
+            <th style="min-width:90px">Target Qty</th>
+            <th style="min-width:90px">Opening Stock</th>
+            <th style="min-width:90px">Closing Stock</th>
+            <th style="min-width:60px">Sold</th>
+            <th style="min-width:70px">Achievement</th>
+            <th style="width:40px"></th>
+          </tr>
+        </thead>
+        <tbody id="prod-body"></tbody>
+      </table>
     </div>
-    <div id="other-wrap" style="display:none;margin-top:10px;">
-      <input type="text" id="f-type-other" placeholder="Please specify promo type">
+    <button class="add-prod-btn" onclick="addProduct()">+ Add Product</button>
+    <span class="err" id="e-prod" style="margin-top:8px;">Please add at least one product</span>
+
+    <div class="summary-bar" id="summary-bar" style="display:none;">
+      <div class="sum-item">
+        <div class="sum-label">Total Target</div>
+        <div class="sum-val" id="sum-target">0</div>
+      </div>
+      <div class="sum-item">
+        <div class="sum-label">Total Sold</div>
+        <div class="sum-val green" id="sum-sold">0</div>
+      </div>
+      <div class="sum-item">
+        <div class="sum-label">Overall Achievement</div>
+        <div class="sum-val" id="sum-ach">—</div>
+      </div>
     </div>
-    <span class="err" id="e-type" style="margin-top:8px">Please select a promo type</span>
   </div>
 
-  <p class="sec-label">Campaign Duration</p>
+  <!-- Sampling -->
+  <p class="sec-label">Sampling</p>
   <div class="card">
-    <div class="field" id="w-dur">
-      <label>Duration <span class="req">*</span></label>
-      <input type="text" id="f-duration" placeholder="e.g. 5 days, 2 weeks, 1 month">
-      <span class="err" id="e-dur">Please enter campaign duration</span>
+    <div class="field">
+      <label>Sampling Qty Used</label>
+      <input type="number" id="f-sampling" placeholder="0" min="0">
     </div>
   </div>
 
-  <div class="rent-box" id="rent-box">
-    <div class="rent-note">💰 Space rental cost required for this promo type</div>
-    <div class="grid2">
-      <div class="field"><label>Rental Cost (RM)</label><input type="number" id="f-rent" placeholder="0" min="0"></div>
-      <div class="field"><label>Billing Basis</label>
-        <select id="f-rent-basis"><option>Per campaign</option><option>Per day</option><option>Per month</option></select>
-      </div>
-    </div>
-  </div>
-
-  <p class="sec-label">Sales Data</p>
+  <!-- Other Cost -->
+  <p class="sec-label">Other Cost</p>
   <div class="card">
-    <div class="grid2">
-      <div class="field" id="w-target">
-        <label>Sales Target (RM) <span class="req">*</span></label>
-        <input type="number" id="f-target" placeholder="0" min="0">
-        <span class="err" id="e-target">Please enter sales target</span>
-      </div>
-      <div class="field" id="w-actual">
-        <label>Actual Sales — Campaign Total (RM) <span class="req">*</span></label>
-        <input type="number" id="f-actual" placeholder="0" min="0">
-        <span class="err" id="e-actual">Please enter actual sales</span>
-      </div>
-      <div class="field"><label>Staff Cost (RM)</label><input type="number" id="f-staff" placeholder="0" min="0"></div>
-      <div class="field"><label>Other Cost (RM)</label><input type="number" id="f-other" placeholder="Gifts, printing, etc." min="0"></div>
+    <div class="field">
+      <label>Other Cost (RM)</label>
+      <input type="number" id="f-other-cost" placeholder="e.g. transportation, printing, misc" min="0">
     </div>
   </div>
 
+  <!-- Photos -->
+  <p class="sec-label">Site Photos</p>
+  <div class="card">
+    <p style="font-size:12px;color:var(--t2);margin-bottom:12px;">Upload up to 3 photos — setup, during activity, end of day</p>
+    <div class="photo-grid">
+      <div class="photo-slot" id="slot-0" onclick="triggerUpload(0)">
+        <div class="slot-icon">📷</div>
+        <div class="slot-label">Setup / Before</div>
+        <input type="file" id="file-0" accept="image/*" capture="environment" onchange="handlePhoto(0,this)">
+        <button class="remove-photo" onclick="removePhoto(event,0)">✕</button>
+      </div>
+      <div class="photo-slot" id="slot-1" onclick="triggerUpload(1)">
+        <div class="slot-icon">📷</div>
+        <div class="slot-label">During Activity</div>
+        <input type="file" id="file-1" accept="image/*" capture="environment" onchange="handlePhoto(1,this)">
+        <button class="remove-photo" onclick="removePhoto(event,1)">✕</button>
+      </div>
+      <div class="photo-slot" id="slot-2" onclick="triggerUpload(2)">
+        <div class="slot-icon">📷</div>
+        <div class="slot-label">End of Day</div>
+        <input type="file" id="file-2" accept="image/*" capture="environment" onchange="handlePhoto(2,this)">
+        <button class="remove-photo" onclick="removePhoto(event,2)">✕</button>
+      </div>
+    </div>
+    <div class="upload-status" id="upload-status"></div>
+    <div class="prog-bar" id="prog-bar" style="display:none;"><div class="prog-fill" id="prog-fill" style="width:0%"></div></div>
+  </div>
+
+  <!-- Notes -->
   <p class="sec-label">Remarks</p>
   <div class="card" style="margin-bottom:18px;">
     <div class="field">
@@ -202,54 +258,222 @@ const sb=supabase.createClient(
   'https://wjhgezvrxlhpexocfsea.supabase.co',
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndqaGdlenZyeGxocGV4b2Nmc2VhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg1MDU4NzgsImV4cCI6MjA5NDA4MTg3OH0.jENcrgEDYDlSRUCqve-T6rxYRJfz-dnZQHnXpPLJ_RE'
 );
-const RENT_TYPES=['GE','ISLAND'];
-let selPromoType='';
 
+// Init
 document.getElementById('f-date').value=new Date().toISOString().slice(0,10);
+let photoFiles=[null,null,null];
+let photoURLs=[null,null,null];
 
-function selType(t,el){
-  selPromoType=t;
-  document.querySelectorAll('.type-btn').forEach(b=>b.classList.remove('sel'));
-  el.classList.add('sel');
-  document.getElementById('e-type').classList.remove('show');
-  document.getElementById('rent-box').classList.toggle('show',RENT_TYPES.includes(t));
-  document.getElementById('other-wrap').style.display=t==='OTHER'?'block':'none';
+// ── Products ─────────────────────────────────────────────
+let prodRows=[];
+let prodId=0;
+
+function addProduct(){
+  const id=prodId++;
+  prodRows.push({id});
+  renderProducts();
+  document.getElementById('e-prod').classList.remove('show');
 }
 
+function removeProduct(id){
+  prodRows=prodRows.filter(r=>r.id!==id);
+  renderProducts();
+  updateSummary();
+}
+
+function renderProducts(){
+  const tbody=document.getElementById('prod-body');
+  if(!prodRows.length){tbody.innerHTML='';document.getElementById('summary-bar').style.display='none';return;}
+  document.getElementById('summary-bar').style.display='grid';
+  tbody.innerHTML=prodRows.map(r=>`
+    <tr id="prod-row-${r.id}">
+      <td><input type="text" placeholder="e.g. Kampua Mee" onchange="updateSummary()" id="pname-${r.id}"></td>
+      <td><input type="number" placeholder="0" min="0" oninput="calcSold(${r.id})" id="ptarget-${r.id}"></td>
+      <td><input type="number" placeholder="0" min="0" oninput="calcSold(${r.id})" id="popening-${r.id}"></td>
+      <td><input type="number" placeholder="0" min="0" oninput="calcSold(${r.id})" id="pclosing-${r.id}"></td>
+      <td class="sold-cell" id="psold-${r.id}">—</td>
+      <td class="ach-cell" id="pach-${r.id}" style="color:var(--t3)">—</td>
+      <td><button class="del-btn" onclick="removeProduct(${r.id})">✕</button></td>
+    </tr>`).join('');
+}
+
+function calcSold(id){
+  const opening=parseFloat(document.getElementById(`popening-${id}`)?.value)||0;
+  const closing=parseFloat(document.getElementById(`pclosing-${id}`)?.value)||0;
+  const target=parseFloat(document.getElementById(`ptarget-${id}`)?.value)||0;
+  const sold=Math.max(0,opening-closing);
+  const soldEl=document.getElementById(`psold-${id}`);
+  const achEl=document.getElementById(`pach-${id}`);
+  if(soldEl)soldEl.textContent=sold;
+  if(achEl){
+    if(target>0){
+      const ach=Math.round(sold/target*100);
+      achEl.textContent=ach+'%';
+      achEl.style.color=ach>=70?'var(--green)':ach>=50?'var(--amber)':'var(--red)';
+    } else {achEl.textContent='—';achEl.style.color='var(--t3)';}
+  }
+  updateSummary();
+}
+
+function updateSummary(){
+  let totTarget=0,totSold=0;
+  prodRows.forEach(r=>{
+    const opening=parseFloat(document.getElementById(`popening-${r.id}`)?.value)||0;
+    const closing=parseFloat(document.getElementById(`pclosing-${r.id}`)?.value)||0;
+    const target=parseFloat(document.getElementById(`ptarget-${r.id}`)?.value)||0;
+    totTarget+=target;
+    totSold+=Math.max(0,opening-closing);
+  });
+  document.getElementById('sum-target').textContent=totTarget;
+  document.getElementById('sum-sold').textContent=totSold;
+  const achEl=document.getElementById('sum-ach');
+  if(totTarget>0){
+    const ach=Math.round(totSold/totTarget*100);
+    achEl.textContent=ach+'%';
+    achEl.className='sum-val '+(ach>=70?'green':ach>=50?'amber':'red');
+  } else {achEl.textContent='—';achEl.className='sum-val';}
+}
+
+function getProductsData(){
+  return prodRows.map(r=>({
+    name:document.getElementById(`pname-${r.id}`)?.value.trim()||'',
+    target_qty:parseFloat(document.getElementById(`ptarget-${r.id}`)?.value)||0,
+    opening_stock:parseFloat(document.getElementById(`popening-${r.id}`)?.value)||0,
+    closing_stock:parseFloat(document.getElementById(`pclosing-${r.id}`)?.value)||0,
+    sold:Math.max(0,(parseFloat(document.getElementById(`popening-${r.id}`)?.value)||0)-(parseFloat(document.getElementById(`pclosing-${r.id}`)?.value)||0))
+  }));
+}
+
+// ── Photos ────────────────────────────────────────────────
+function triggerUpload(idx){
+  if(!document.getElementById(`slot-${idx}`).classList.contains('has-photo')){
+    document.getElementById(`file-${idx}`).click();
+  }
+}
+
+async function compressImage(file,maxKB=500){
+  return new Promise(resolve=>{
+    const img=new Image();
+    const url=URL.createObjectURL(file);
+    img.onload=()=>{
+      const canvas=document.createElement('canvas');
+      let w=img.width,h=img.height;
+      const maxDim=1200;
+      if(w>maxDim||h>maxDim){const r=Math.min(maxDim/w,maxDim/h);w=Math.round(w*r);h=Math.round(h*r);}
+      canvas.width=w;canvas.height=h;
+      canvas.getContext('2d').drawImage(img,0,0,w,h);
+      canvas.toBlob(blob=>resolve(new File([blob],file.name,{type:'image/jpeg'})),'image/jpeg',0.7);
+      URL.revokeObjectURL(url);
+    };
+    img.src=url;
+  });
+}
+
+async function handlePhoto(idx,input){
+  if(!input.files[0])return;
+  const compressed=await compressImage(input.files[0]);
+  photoFiles[idx]=compressed;
+  const slot=document.getElementById(`slot-${idx}`);
+  const reader=new FileReader();
+  reader.onload=e=>{
+    let img=slot.querySelector('img');
+    if(!img){img=document.createElement('img');slot.appendChild(img);}
+    img.src=e.target.result;
+    slot.classList.add('has-photo');
+  };
+  reader.readAsDataURL(compressed);
+}
+
+function removePhoto(e,idx){
+  e.stopPropagation();
+  photoFiles[idx]=null;
+  photoURLs[idx]=null;
+  const slot=document.getElementById(`slot-${idx}`);
+  const img=slot.querySelector('img');
+  if(img)img.remove();
+  slot.classList.remove('has-photo');
+  document.getElementById(`file-${idx}`).value='';
+}
+
+async function uploadPhotos(entryId){
+  const urls=[];
+  let uploaded=0;
+  const toUpload=photoFiles.filter(f=>f!==null);
+  if(!toUpload.length)return[];
+  document.getElementById('prog-bar').style.display='block';
+  for(let i=0;i<3;i++){
+    if(!photoFiles[i])continue;
+    const path=`${entryId}/photo-${i}-${Date.now()}.jpg`;
+    const{data,error}=await sb.storage.from('Promo Photo').upload(path,photoFiles[i],{contentType:'image/jpeg',upsert:true});
+    if(!error){
+      const{data:urlData}=sb.storage.from('Promo Photo').getPublicUrl(path);
+      urls.push(urlData.publicUrl);
+    }
+    uploaded++;
+    document.getElementById('prog-fill').style.width=Math.round(uploaded/toUpload.length*100)+'%';
+    document.getElementById('upload-status').textContent=`Uploading photos… ${uploaded}/${toUpload.length}`;
+  }
+  document.getElementById('prog-bar').style.display='none';
+  document.getElementById('upload-status').textContent=urls.length+' photo(s) uploaded';
+  return urls;
+}
+
+// ── Validate ──────────────────────────────────────────────
 function validate(){
   let ok=true;
-  [['f-region','e-region','w-region'],['f-store','e-store','w-store'],['f-manager','e-manager','w-manager'],
-   ['f-name','e-name','w-name'],['f-duration','e-dur','w-dur'],['f-target','e-target','w-target'],['f-actual','e-actual','w-actual']
+  [['f-region','e-region','w-region'],['f-store','e-store','w-store'],
+   ['f-manager','e-manager','w-manager'],['f-name','e-name','w-name'],
+   ['f-duration','e-dur','w-dur']
   ].forEach(([fid,eid,wid])=>{
     const v=document.getElementById(fid).value.toString().trim();
     document.getElementById(eid).classList.toggle('show',!v);
     document.getElementById(wid).classList.toggle('has-err',!v);
     if(!v)ok=false;
   });
-  if(!selPromoType){document.getElementById('e-type').classList.add('show');ok=false;}
+  if(!prodRows.length){document.getElementById('e-prod').classList.add('show');ok=false;}
   return ok;
 }
 
+// ── Submit ────────────────────────────────────────────────
 async function submitForm(){
   if(!validate())return;
   const btn=document.getElementById('submit-btn');
   btn.disabled=true;btn.innerHTML='<span class="spinner"></span>Submitting…';
+
   const g=id=>document.getElementById(id).value;
-  const rent=parseFloat(g('f-rent'))||0,staff=parseFloat(g('f-staff'))||0,other=parseFloat(g('f-other'))||0;
-  const{error}=await sb.from('promotions').insert({
+  const prods=getProductsData();
+  const totTarget=prods.reduce((a,p)=>a+p.target_qty,0);
+  const totSold=prods.reduce((a,p)=>a+p.sold,0);
+
+  // Upload photos first
+  const tempId=Date.now().toString();
+  const photoUrlsArr=await uploadPhotos(tempId);
+
+  const{data,error}=await sb.from('promotions').insert({
     date:g('f-date'),region:g('f-region'),store:g('f-store').trim(),
     manager:g('f-manager').trim(),activity_name:g('f-name').trim(),
-    products:g('f-products').trim(),promo_type:selPromoType,
-    promo_type_other:selPromoType==='OTHER'?g('f-type-other').trim():'',
     duration:g('f-duration').trim(),
-    target:parseFloat(g('f-target'))||0,actual_sales:parseFloat(g('f-actual'))||0,
-    rent_cost:rent,rent_basis:RENT_TYPES.includes(selPromoType)?g('f-rent-basis'):'',
-    staff_cost:staff,other_cost:other,total_cost:rent+staff+other,
-    note:g('f-note').trim()
-  });
+    products_data:prods,
+    total_target_qty:totTarget,
+    total_sold_qty:totSold,
+    sampling_qty:parseInt(g('f-sampling'))||0,
+    other_cost:parseFloat(g('f-other-cost'))||0,
+    photo_urls:photoUrlsArr,
+    note:g('f-note').trim(),
+    // keep legacy fields with defaults
+    promo_type:'PROMOTER',
+    target:totTarget,
+    actual_sales:totSold,
+    total_cost:parseFloat(g('f-other-cost'))||0,
+  }).select();
+
   if(error){alert('Submit failed: '+error.message);btn.disabled=false;btn.innerHTML='Submit';return;}
-  const pct=parseFloat(g('f-target'))>0?Math.round(parseFloat(g('f-actual'))/parseFloat(g('f-target'))*100):0;
-  document.getElementById('success-msg').textContent=`${g('f-store').trim()} · ${selPromoType} · Achievement ${pct}%`;
+
+  const ach=totTarget>0?Math.round(totSold/totTarget*100):0;
+  document.getElementById('success-msg').innerHTML=
+    `<strong>${g('f-store').trim()}</strong> · ${g('f-name').trim()}<br>
+     Total Sold: ${totSold} / ${totTarget} &nbsp;·&nbsp; Achievement: ${ach}%<br>
+     ${photoUrlsArr.length>0?'📷 '+photoUrlsArr.length+' photo(s) uploaded':''}`;
   document.getElementById('success-card').classList.add('show');
   btn.style.display='none';
   window.scrollTo({top:0,behavior:'smooth'});
@@ -260,26 +484,34 @@ function resetForm(){
   document.getElementById('success-card').classList.remove('show');
   const btn=document.getElementById('submit-btn');
   btn.style.display='';btn.disabled=false;btn.innerHTML='Submit';
-  ['f-store','f-manager','f-name','f-products','f-duration','f-type-other','f-rent','f-staff','f-other','f-note','f-target','f-actual'].forEach(id=>document.getElementById(id).value='');
+  ['f-store','f-manager','f-name','f-duration','f-sampling','f-other-cost','f-note'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('f-region').value='';
   document.getElementById('f-date').value=new Date().toISOString().slice(0,10);
-  selPromoType='';
-  document.querySelectorAll('.type-btn').forEach(b=>b.classList.remove('sel'));
-  document.getElementById('rent-box').classList.remove('show');
-  document.getElementById('other-wrap').style.display='none';
+  prodRows=[];prodId=0;renderProducts();
+  photoFiles=[null,null,null];photoURLs=[null,null,null];
+  for(let i=0;i<3;i++){
+    const slot=document.getElementById(`slot-${i}`);
+    const img=slot?.querySelector('img');if(img)img.remove();
+    slot?.classList.remove('has-photo');
+    const fi=document.getElementById(`file-${i}`);if(fi)fi.value='';
+  }
+  document.getElementById('upload-status').textContent='';
 }
 
+// ── Recent Records ────────────────────────────────────────
 async function loadRecords(){
-  const{data}=await sb.from('promotions').select('*').order('created_at',{ascending:false}).limit(6);
+  const{data}=await sb.from('promotions').select('*').order('created_at',{ascending:false}).limit(5);
   const wrap=document.getElementById('my-records');
   if(!data||!data.length){wrap.innerHTML='<div style="text-align:center;padding:20px;color:var(--t3);font-size:13px;">No submissions yet</div>';return;}
   wrap.innerHTML=data.map(r=>{
-    const p=r.target>0?Math.round(r.actual_sales/r.target*100):0;
+    const totT=r.total_target_qty||r.target||0;
+    const totS=r.total_sold_qty||r.actual_sales||0;
+    const p=totT>0?Math.round(totS/totT*100):0;
     const col=p>=70?'var(--green)':p>=50?'var(--amber)':'var(--red)';
-    const tl=r.promo_type==='OTHER'&&r.promo_type_other?r.promo_type_other:r.promo_type;
+    const photos=r.photo_urls&&r.photo_urls.length>0?` · 📷${r.photo_urls.length}`:'';
     return`<div class="rec-item"><div class="rec-dot"></div>
     <div class="rec-info"><div class="rec-name">${r.store} · ${r.activity_name}</div>
-    <div class="rec-meta">${r.date} · ${r.region} · ${tl} · ${r.duration}</div></div>
+    <div class="rec-meta">${r.date} · ${r.region} · ${r.duration}${photos}</div></div>
     <div class="rec-pct" style="color:${col}">${p}%</div></div>`;
   }).join('');
 }
