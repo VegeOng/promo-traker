@@ -272,9 +272,10 @@ let members = [];
 
 async function db(path, opts = {}) {
   const r = await fetch(SUPA_URL + '/rest/v1/' + path, { headers, ...opts });
-  if (!r.ok) { let e; try { e = await r.json(); } catch { e = r.status; } throw e; }
-  if (r.status === 204 || r.status === 201) return null;
-  return r.json();
+  const text = await r.text();
+  if (!r.ok) { try { throw JSON.parse(text); } catch { throw text || r.status; } }
+  if (!text || text.trim() === '') return null;
+  try { return JSON.parse(text); } catch { return null; }
 }
 
 async function loadMembers() {
