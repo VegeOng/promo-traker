@@ -422,6 +422,7 @@ async function loadDailyReports() {
           </div>
           <div class="rh-right">
             <span class="badge daily">Daily</span>
+            <button class="btn-del" onclick="event.stopPropagation();deleteReport('daily_reports',${r.id},'daily')">🗑</button>
             <span class="chevron" id="chev-dr-${i}">▼</span>
           </div>
         </div>
@@ -456,6 +457,7 @@ async function loadWeeklyReports() {
           </div>
           <div class="rh-right">
             <span class="badge weekly">Weekly</span>
+            <button class="btn-del" onclick="event.stopPropagation();deleteReport('weekly_reports',${r.id},'weekly')">🗑</button>
             <span class="chevron" id="chev-wr-${i}">▼</span>
           </div>
         </div>
@@ -472,6 +474,15 @@ function toggleReport(id) {
   const chev = document.getElementById('chev-' + id);
   const open = body.classList.toggle('open');
   chev.textContent = open ? '▲' : '▼';
+}
+
+async function deleteReport(table, id, type) {
+  if (!confirm('Delete this report? This cannot be undone.')) return;
+  try {
+    await fetch(SUPA_URL + '/rest/v1/' + table + '?id=eq.' + id, { method: 'DELETE', headers: H });
+    if (type === 'daily') loadDailyReports();
+    else loadWeeklyReports();
+  } catch(e) { alert('Failed to delete.'); }
 }
 
 async function loadMissStats() {
