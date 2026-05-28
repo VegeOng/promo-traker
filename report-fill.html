@@ -346,7 +346,7 @@ async function submitDaily() {
       })
     });
     showSuccess('Daily report submitted!');
-    loadRecent('daily');
+    loadRecent('daily').catch(()=>{});
   } catch(e) {
     alert('Submission failed. Please try again.');
     console.error(e);
@@ -374,7 +374,7 @@ async function submitWeekly() {
       })
     });
     showSuccess('Weekly report submitted!');
-    loadRecent('weekly');
+    loadRecent('weekly').catch(()=>{});
   } catch(e) {
     alert('Submission failed. Please try again.');
     console.error(e);
