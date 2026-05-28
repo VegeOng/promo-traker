@@ -31,6 +31,31 @@
   .header-back { color: rgba(255,255,255,0.8); text-decoration: none; font-size: 13px; }
   .header-back:hover { color: white; }
 
+  /* Password overlay */
+  .pw-overlay { position: fixed; inset: 0; background: var(--green); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 24px; }
+  .pw-box { background: white; border-radius: 16px; padding: 32px 28px; width: 100%; max-width: 360px; text-align: center; }
+  .pw-logo { width: 52px; height: 52px; background: var(--green); border-radius: 14px; display: flex; align-items: center; justify-content: center; font-weight: 900; color: white; font-size: 22px; margin: 0 auto 16px; }
+  .pw-title { font-size: 20px; font-weight: 900; color: var(--text); margin-bottom: 4px; }
+  .pw-sub { font-size: 13px; color: var(--muted); margin-bottom: 24px; }
+  .pw-input { width: 100%; padding: 13px 16px; border: 1.5px solid var(--border); border-radius: 10px; font-size: 15px; font-family: inherit; text-align: center; letter-spacing: 0.1em; margin-bottom: 12px; }
+  .pw-input:focus { outline: none; border-color: var(--green); }
+  .pw-input.error { border-color: var(--red); animation: shake 0.3s; }
+  @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-6px)} 75%{transform:translateX(6px)} }
+  .pw-btn { width: 100%; padding: 13px; background: var(--green); color: white; border: none; border-radius: 10px; font-size: 15px; font-weight: 700; cursor: pointer; }
+  .pw-btn:hover { background: var(--green-mid); }
+  .pw-error { font-size: 13px; color: var(--red); margin-top: 8px; display: none; }
+  .pw-error.visible { display: block; }
+
+  /* Change password */
+  .chpw-row { display: flex; gap: 10px; margin-top: 12px; }
+  .chpw-row input { flex: 1; padding: 10px 14px; border: 1.5px solid var(--border); border-radius: 8px; font-size: 14px; font-family: inherit; }
+  .chpw-row input:focus { outline: none; border-color: var(--green); }
+  .btn-chpw { padding: 10px 16px; background: var(--green); color: white; border: none; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; white-space: nowrap; }
+  .btn-chpw:hover { background: var(--green-mid); }
+  .chpw-msg { font-size: 13px; margin-top: 8px; display: none; }
+  .chpw-msg.ok { color: var(--green); display: block; }
+  .chpw-msg.fail { color: var(--red); display: block; }
+
   /* Tabs */
   .tabs { background: white; border-bottom: 1px solid var(--border); display: flex; overflow-x: auto; position: sticky; top: 64px; z-index: 99; }
   .tab { padding: 14px 20px; font-size: 14px; font-weight: 600; color: var(--muted); cursor: pointer; border-bottom: 2px solid transparent; white-space: nowrap; transition: all 0.2s; }
@@ -126,6 +151,18 @@
 </head>
 <body>
 
+<!-- Password Overlay -->
+<div class="pw-overlay" id="pwOverlay">
+  <div class="pw-box">
+    <div class="pw-logo">M</div>
+    <div class="pw-title">Report HQ</div>
+    <div class="pw-sub">Enter password to access HQ dashboard</div>
+    <input type="password" class="pw-input" id="pwInput" placeholder="Password" onkeydown="if(event.key==='Enter')checkPw()">
+    <button class="pw-btn" onclick="checkPw()">Enter</button>
+    <div class="pw-error" id="pwError">Incorrect password. Please try again.</div>
+  </div>
+</div>
+
 <div class="header">
   <div class="header-logo">M</div>
   <div class="header-info">
@@ -220,6 +257,18 @@
         <button class="btn-add" onclick="addMember()">+ Add</button>
       </div>
     </div>
+
+    <div class="card">
+      <div class="card-title">🔒 Change HQ Password</div>
+      <div style="font-size:13px;color:var(--muted);margin-bottom:8px;">Enter a new password for HQ access.</div>
+      <div class="chpw-row">
+        <input type="password" id="new-pw" placeholder="New password">
+        <input type="password" id="new-pw2" placeholder="Confirm">
+        <button class="btn-chpw" onclick="changePassword()">Save</button>
+      </div>
+      <div class="chpw-msg" id="chpw-msg"></div>
+    </div>
+
   </div>
 
 </div>
@@ -505,11 +554,61 @@ function setDefaultFilters() {
 
 // Init
 (async () => {
+  await checkPasswordGate();
   populateMonthSelector();
   setDefaultFilters();
   await loadMembers();
   loadOverview();
 })();
+
+async function checkPasswordGate() {
+  // Check session
+  if (sessionStorage.getItem('hq_auth') === '1') {
+    document.getElementById('pwOverlay').style.display = 'none';
+    return;
+  }
+  // Show overlay, wait for correct password
+  return new Promise(resolve => {
+    window._pwResolve = resolve;
+  });
+}
+
+async function checkPw() {
+  const inp = document.getElementById('pwInput');
+  const pw = inp.value.trim();
+  if (!pw) return;
+  try {
+    const data = await db("settings?key=eq.hq_password&select=value");
+    if (data.length && data[0].value === pw) {
+      sessionStorage.setItem('hq_auth', '1');
+      document.getElementById('pwOverlay').style.display = 'none';
+      if (window._pwResolve) window._pwResolve();
+    } else {
+      inp.classList.add('error');
+      document.getElementById('pwError').classList.add('visible');
+      inp.value = '';
+      setTimeout(() => inp.classList.remove('error'), 400);
+    }
+  } catch(e) { alert('Connection error. Please try again.'); }
+}
+
+async function changePassword() {
+  const p1 = document.getElementById('new-pw').value.trim();
+  const p2 = document.getElementById('new-pw2').value.trim();
+  const msg = document.getElementById('chpw-msg');
+  msg.className = 'chpw-msg';
+  if (!p1 || !p2) { msg.textContent = 'Please fill in both fields.'; msg.className = 'chpw-msg fail'; return; }
+  if (p1 !== p2) { msg.textContent = 'Passwords do not match.'; msg.className = 'chpw-msg fail'; return; }
+  try {
+    await fetch(SUPA_URL + '/rest/v1/settings?key=eq.hq_password', {
+      method: 'PATCH', headers: H, body: JSON.stringify({ value: p1 })
+    });
+    document.getElementById('new-pw').value = '';
+    document.getElementById('new-pw2').value = '';
+    msg.textContent = '✅ Password updated successfully!';
+    msg.className = 'chpw-msg ok';
+  } catch(e) { msg.textContent = 'Failed to update password.'; msg.className = 'chpw-msg fail'; }
+}
 </script>
 </body>
 </html>
