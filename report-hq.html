@@ -584,7 +584,10 @@ async function checkPw() {
       inp.value = '';
       setTimeout(() => inp.classList.remove('error'), 400);
     }
-  } catch(e) { alert('Connection error. Please try again.'); }
+  } catch(e) {
+    document.getElementById('pwError').textContent = 'Connection error. Please try again.';
+    document.getElementById('pwError').classList.add('visible');
+  }
   btn.disabled = false; btn.textContent = 'Enter';
 }
 
@@ -608,3 +611,4 @@ async function changePassword() {
 </script>
 </body>
 </html>
+
