@@ -1,0 +1,926 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Outlet Stock Check & Return — MamaVege</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #fafafa;
+    --green: #166534;
+    --green-light: #dcfce7;
+    --green-mid: #22c55e;
+    --red: #dc2626;
+    --red-light: #fee2e2;
+    --amber: #d97706;
+    --amber-light: #fef3c7;
+    --orange: #ea580c;
+    --orange-light: #ffedd5;
+    --yellow: #ca8a04;
+    --yellow-light: #fefce8;
+    --ink: #1a1a1a;
+    --ink-muted: #6b7280;
+    --border: #e5e7eb;
+    --surface: #ffffff;
+    --surface-2: #f3f4f6;
+    --radius: 12px;
+    --radius-sm: 8px;
+    --shadow: 0 1px 3px rgba(0,0,0,.08), 0 4px 12px rgba(0,0,0,.06);
+    --shadow-lg: 0 8px 32px rgba(0,0,0,.12);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    min-height: 100vh;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  /* ── Header ── */
+  .header {
+    background: var(--green);
+    color: #fff;
+    padding: 0 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 56px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 8px rgba(22,101,52,.35);
+  }
+  .header-brand {
+    font-family: 'DM Serif Display', serif;
+    font-size: 18px;
+    letter-spacing: .3px;
+  }
+  .header-sub { font-size: 12px; opacity: .75; margin-top: 1px; }
+  .header-left { display: flex; flex-direction: column; }
+
+  /* ── Tabs ── */
+  .tabs {
+    display: flex;
+    gap: 2px;
+    background: var(--surface-2);
+    border-bottom: 1px solid var(--border);
+    padding: 0 16px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .tabs::-webkit-scrollbar { display: none; }
+  .tab {
+    padding: 14px 18px 12px;
+    border: none;
+    background: none;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--ink-muted);
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    white-space: nowrap;
+    transition: color .18s, border-color .18s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .tab:hover { color: var(--green); }
+  .tab.active { color: var(--green); border-bottom-color: var(--green); font-weight: 600; }
+  .tab-badge {
+    background: var(--red);
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
+    min-width: 18px;
+    height: 18px;
+    border-radius: 9px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 5px;
+  }
+
+  /* ── Panel ── */
+  .panel { display: none; padding: 20px 16px; max-width: 900px; margin: 0 auto; }
+  .panel.active { display: block; }
+
+  /* ── Card ── */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 20px;
+    margin-bottom: 16px;
+  }
+  .card-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 16px;
+    color: var(--green);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  /* ── Form ── */
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .form-grid.cols-3 { grid-template-columns: 1fr 1fr 1fr; }
+  .form-group { display: flex; flex-direction: column; gap: 5px; }
+  .form-group.full { grid-column: 1 / -1; }
+  label { font-size: 12px; font-weight: 600; color: var(--ink-muted); text-transform: uppercase; letter-spacing: .5px; }
+  input, select, textarea {
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 9px 12px;
+    font-family: inherit;
+    font-size: 14px;
+    background: var(--bg);
+    color: var(--ink);
+    transition: border-color .15s, box-shadow .15s;
+    width: 100%;
+  }
+  input:focus, select:focus, textarea:focus {
+    outline: none;
+    border-color: var(--green);
+    box-shadow: 0 0 0 3px rgba(22,101,52,.1);
+  }
+  .select-with-add { display: flex; gap: 6px; align-items: flex-end; }
+  .select-with-add select { flex: 1; }
+
+  /* ── Buttons ── */
+  .btn {
+    border: none;
+    border-radius: var(--radius-sm);
+    padding: 9px 18px;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: filter .15s, transform .1s;
+    white-space: nowrap;
+  }
+  .btn:active { transform: scale(.97); }
+  .btn-primary { background: var(--green); color: #fff; }
+  .btn-primary:hover { filter: brightness(1.1); }
+  .btn-red { background: var(--red); color: #fff; }
+  .btn-red:hover { filter: brightness(1.1); }
+  .btn-ghost { background: var(--surface-2); color: var(--ink); border: 1.5px solid var(--border); }
+  .btn-ghost:hover { background: var(--border); }
+  .btn-sm { padding: 6px 12px; font-size: 12px; }
+  .btn-icon { padding: 7px 8px; }
+
+  /* ── Product rows ── */
+  .products-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 12px; }
+  .product-row {
+    background: var(--bg);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 14px;
+    position: relative;
+    transition: border-color .15s;
+  }
+  .product-row.has-return { border-color: var(--red); background: #fff9f9; }
+  .product-row-header { display: grid; grid-template-columns: 2fr 1.5fr 1.5fr 1fr auto; gap: 10px; align-items: end; }
+  .product-row-return {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px dashed var(--red);
+    display: grid;
+    grid-template-columns: 1fr 1fr 2fr;
+    gap: 10px;
+    align-items: end;
+  }
+  .return-toggle { display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 12px; color: var(--red); font-weight: 600; }
+  .return-toggle input[type=checkbox] { accent-color: var(--red); width: 15px; height: 15px; cursor: pointer; }
+  .del-btn { color: var(--ink-muted); background: none; border: none; cursor: pointer; font-size: 16px; line-height: 1; padding: 4px; border-radius: 4px; }
+  .del-btn:hover { color: var(--red); background: var(--red-light); }
+
+  /* ── Submit row ── */
+  .submit-row { display: flex; gap: 10px; justify-content: flex-end; padding-top: 8px; }
+
+  /* ── Toast ── */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: var(--green);
+    color: #fff;
+    padding: 12px 20px;
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    font-weight: 500;
+    box-shadow: var(--shadow-lg);
+    z-index: 999;
+    transform: translateY(80px);
+    opacity: 0;
+    transition: transform .3s, opacity .3s;
+    max-width: 300px;
+  }
+  .toast.show { transform: translateY(0); opacity: 1; }
+  .toast.error { background: var(--red); }
+
+  /* ── Overview table ── */
+  .outlet-grid { display: flex; flex-direction: column; gap: 8px; }
+  .outlet-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 14px 16px;
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    transition: box-shadow .15s, border-color .15s;
+  }
+  .outlet-card:hover { box-shadow: var(--shadow); border-color: #d1d5db; }
+  .outlet-name { font-weight: 600; font-size: 14px; }
+  .outlet-meta { font-size: 12px; color: var(--ink-muted); margin-top: 2px; }
+  .outlet-badges { display: flex; gap: 6px; align-items: center; justify-content: flex-end; flex-wrap: wrap; }
+  .badge {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: 99px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .badge-days { background: var(--surface-2); color: var(--ink-muted); }
+  .badge-return { background: var(--red-light); color: var(--red); }
+  .badge-ok { background: var(--green-light); color: var(--green); }
+
+  /* expiry badges */
+  .exp-30 { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
+  .exp-90 { background: #ffedd5; color: #9a3412; border: 1px solid #fdba74; }
+  .exp-120 { background: #fef3c7; color: #92400e; border: 1px solid #fcd34d; }
+  .exp-180 { background: #fefce8; color: #713f12; border: 1px solid #fde68a; }
+
+  .expiry-dot {
+    width: 8px; height: 8px; border-radius: 50%; display: inline-block; flex-shrink: 0;
+  }
+  .dot-30 { background: #dc2626; }
+  .dot-90 { background: #ea580c; }
+  .dot-120 { background: #d97706; }
+  .dot-180 { background: #ca8a04; }
+
+  /* ── Stats charts ── */
+  .stat-section { margin-bottom: 24px; }
+  .stat-title { font-size: 13px; font-weight: 700; color: var(--ink-muted); text-transform: uppercase; letter-spacing: .6px; margin-bottom: 12px; }
+  .bar-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+    font-size: 13px;
+  }
+  .bar-label { width: 160px; flex-shrink: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 500; }
+  .bar-wrap { flex: 1; background: var(--surface-2); border-radius: 4px; height: 20px; overflow: hidden; }
+  .bar-fill { height: 100%; border-radius: 4px; background: var(--green); transition: width .6s cubic-bezier(.22,1,.36,1); }
+  .bar-val { width: 36px; text-align: right; font-weight: 600; color: var(--green); font-size: 13px; }
+
+  /* ── Alert list ── */
+  .alert-section { margin-bottom: 20px; }
+  .alert-header {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 14px;
+    border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+    font-weight: 700;
+    font-size: 13px;
+    border: 1px solid transparent;
+  }
+  .ah-30 { background: #fee2e2; color: #991b1b; border-color: #fca5a5; }
+  .ah-90 { background: #ffedd5; color: #9a3412; border-color: #fdba74; }
+  .ah-120 { background: #fef3c7; color: #92400e; border-color: #fcd34d; }
+  .ah-180 { background: #fefce8; color: #713f12; border-color: #fde68a; }
+  .alert-body { border: 1px solid var(--border); border-top: none; border-radius: 0 0 var(--radius-sm) var(--radius-sm); overflow: hidden; }
+  .alert-row {
+    display: grid;
+    grid-template-columns: 2fr 1.2fr 1.4fr 1.2fr 1fr;
+    gap: 8px;
+    padding: 10px 14px;
+    font-size: 12.5px;
+    border-bottom: 1px solid var(--border);
+    align-items: center;
+  }
+  .alert-row:last-child { border-bottom: none; }
+  .alert-row:hover { background: var(--surface-2); }
+  .alert-row-head { font-weight: 600; color: var(--ink-muted); font-size: 11px; text-transform: uppercase; letter-spacing: .4px; background: var(--surface-2); }
+  .lot-tag { font-family: monospace; font-size: 11px; background: var(--surface-2); padding: 2px 6px; border-radius: 4px; color: var(--ink-muted); }
+
+  /* ── Loader ── */
+  .loader { display: flex; align-items: center; justify-content: center; padding: 40px; color: var(--ink-muted); font-size: 13px; gap: 10px; }
+  .spinner { width: 18px; height: 18px; border: 2px solid var(--border); border-top-color: var(--green); border-radius: 50%; animation: spin .7s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .empty { text-align: center; padding: 40px; color: var(--ink-muted); font-size: 13px; }
+
+  /* ── Modal ── */
+  .modal-backdrop {
+    position: fixed; inset: 0; background: rgba(0,0,0,.4); z-index: 200;
+    display: none; align-items: center; justify-content: center; padding: 20px;
+  }
+  .modal-backdrop.open { display: flex; }
+  .modal {
+    background: var(--surface); border-radius: var(--radius); padding: 24px;
+    width: 100%; max-width: 400px; box-shadow: var(--shadow-lg);
+  }
+  .modal h3 { font-family: 'DM Serif Display', serif; font-size: 18px; color: var(--green); margin-bottom: 16px; }
+  .modal-footer { display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px; }
+
+  /* ── Detail modal ── */
+  .detail-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .detail-table th { text-align: left; padding: 8px 10px; font-size: 11px; text-transform: uppercase; letter-spacing: .4px; color: var(--ink-muted); font-weight: 600; background: var(--surface-2); }
+  .detail-table td { padding: 9px 10px; border-top: 1px solid var(--border); vertical-align: top; }
+  .detail-modal { max-width: 700px; }
+  .detail-modal .modal { max-width: 700px; }
+
+  /* ── Responsive ── */
+  @media(max-width: 600px) {
+    .form-grid { grid-template-columns: 1fr; }
+    .form-grid.cols-3 { grid-template-columns: 1fr 1fr; }
+    .product-row-header { grid-template-columns: 1fr 1fr; }
+    .product-row-return { grid-template-columns: 1fr 1fr; }
+    .alert-row { grid-template-columns: 2fr 1fr 1fr; }
+    .alert-row > *:nth-child(4), .alert-row > *:nth-child(5) { display: none; }
+    .outlet-card { grid-template-columns: 1fr auto; }
+    .outlet-card > .outlet-badges { grid-column: 1 / -1; }
+    .bar-label { width: 100px; }
+  }
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="header-left">
+    <div class="header-brand">🥬 MamaVege</div>
+    <div class="header-sub">Outlet Stock Check & Return</div>
+  </div>
+</header>
+
+<div class="tabs" id="tabBar">
+  <button class="tab active" data-tab="fill" onclick="switchTab('fill')">📋 Check-In Form</button>
+  <button class="tab" data-tab="overview" onclick="switchTab('overview')">🏪 Outlet Overview</button>
+  <button class="tab" data-tab="stats" onclick="switchTab('stats')">📊 Return Stats</button>
+  <button class="tab" data-tab="alerts" onclick="switchTab('alerts')">⚠️ Expiry Alerts <span class="tab-badge" id="alertBadge">0</span></button>
+</div>
+
+<!-- ═══════════════ TAB 1: FILL ═══════════════ -->
+<div class="panel active" id="tab-fill">
+
+  <div class="card">
+    <div class="card-title">🗓 Check-In Details</div>
+    <div class="form-grid">
+      <div class="form-group">
+        <label>Area / Region</label>
+        <input type="text" id="f-region" placeholder="e.g. Penang North">
+      </div>
+      <div class="form-group">
+        <label>Date</label>
+        <input type="date" id="f-date">
+      </div>
+      <div class="form-group">
+        <label>Outlet</label>
+        <div class="select-with-add">
+          <select id="f-outlet">
+            <option value="">— Select Outlet —</option>
+          </select>
+          <button class="btn btn-ghost btn-sm btn-icon" onclick="openAddOutletModal()" title="Add new outlet">＋</button>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Agent Name</label>
+        <input type="text" id="f-agent" placeholder="Enter agent name">
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">📦 Product List</div>
+    <div class="products-list" id="productsList"></div>
+    <button class="btn btn-ghost btn-sm" onclick="addProductRow()">＋ Add Product</button>
+  </div>
+
+  <div class="submit-row">
+    <button class="btn btn-ghost" onclick="resetForm()">Reset</button>
+    <button class="btn btn-primary" onclick="submitForm()">✅ Submit Check Record</button>
+  </div>
+</div>
+
+<!-- ═══════════════ TAB 2: OVERVIEW ═══════════════ -->
+<div class="panel" id="tab-overview">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+    <div style="font-family:'DM Serif Display',serif;font-size:18px;color:var(--green)">Outlet Overview</div>
+    <button class="btn btn-ghost btn-sm" onclick="openAddOutletModal()">＋ Add new outlet</button>
+  </div>
+  <div id="outletGrid" class="outlet-grid">
+    <div class="loader"><div class="spinner"></div>Loading…</div>
+  </div>
+</div>
+
+<!-- ═══════════════ TAB 3: STATS ═══════════════ -->
+<div class="panel" id="tab-stats">
+  <div class="card">
+    <div class="card-title">📊 Return Stats（Last 12 Months）</div>
+    <div class="stat-section">
+      <div class="stat-title">🏆 Top Returned Products</div>
+      <div id="productRank"><div class="loader"><div class="spinner"></div>Loading…</div></div>
+    </div>
+    <hr style="border:none;border-top:1px solid var(--border);margin:20px 0">
+    <div class="stat-section">
+      <div class="stat-title">🏪 Top Returning Outlets</div>
+      <div id="outletRank"><div class="loader"><div class="spinner"></div>Loading…</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ TAB 4: ALERTS ═══════════════ -->
+<div class="panel" id="tab-alerts">
+  <div style="font-family:'DM Serif Display',serif;font-size:18px;color:var(--green);margin-bottom:16px;">Expiry Alerts</div>
+  <div id="alertsContent"><div class="loader"><div class="spinner"></div>Loading…</div></div>
+</div>
+
+<!-- ═══════ Modal: Add Outlet ═══════ -->
+<div class="modal-backdrop" id="addOutletModal">
+  <div class="modal">
+    <h3>＋ Add new outlet</h3>
+    <div class="form-group">
+      <label>Outlet Name</label>
+      <input type="text" id="newOutletName" placeholder="Enter full outlet name">
+    </div>
+    <div class="form-group" style="margin-top:10px">
+      <label>Area / Region（optional）</label>
+      <input type="text" id="newOutletRegion" placeholder="e.g. Penang North">
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('addOutletModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveNewOutlet()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════ Modal: Outlet Detail ═══════ -->
+<div class="modal-backdrop" id="detailModal">
+  <div class="modal detail-modal" style="max-width:720px">
+    <h3 id="detailTitle">Outlet Detail</h3>
+    <div id="detailContent"></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('detailModal')">Close</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const SB_URL = 'https://wjhgezvrxlhpexocfsea.supabase.co';
+const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndqaGdlenZyeGxocGV4b2Nmc2VhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg1MDU4NzgsImV4cCI6MjA5NDA4MTg3OH0.jENcrgEDYDlSRUCqve-T6rxYRJfz-dnZQHnXpPLJ_RE';
+
+const H = { 'Content-Type': 'application/json', 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY, 'Prefer': 'return=representation' };
+
+async function sbGet(path) {
+  const r = await fetch(SB_URL + '/rest/v1/' + path, { headers: H });
+  return r.json();
+}
+async function sbPost(table, body) {
+  const r = await fetch(SB_URL + '/rest/v1/' + table, { method: 'POST', headers: H, body: JSON.stringify(body) });
+  return r.json();
+}
+
+// ── Init ──
+let outlets = [];
+let productRowId = 0;
+
+window.addEventListener('DOMContentLoaded', async () => {
+  document.getElementById('f-date').value = new Date().toISOString().split('T')[0];
+  await loadOutlets();
+  addProductRow();
+  // pre-load alerts badge
+  loadAlerts(true);
+});
+
+// ── Outlets ──
+async function loadOutlets() {
+  outlets = await sbGet('outlets?select=*&order=name.asc');
+  if (!Array.isArray(outlets)) outlets = [];
+  populateOutletSelect();
+}
+
+function populateOutletSelect() {
+  const sel = document.getElementById('f-outlet');
+  const cur = sel.value;
+  sel.innerHTML = '<option value="">— Select Outlet —</option>';
+  outlets.forEach(o => {
+    const opt = document.createElement('option');
+    opt.value = o.id;
+    opt.textContent = o.name + (o.region ? ` (${o.region})` : '');
+    sel.appendChild(opt);
+  });
+  if (cur) sel.value = cur;
+}
+
+// ── Tabs ──
+function switchTab(t) {
+  document.querySelectorAll('.tab').forEach(b => b.classList.toggle('active', b.dataset.tab === t));
+  document.querySelectorAll('.panel').forEach(p => p.classList.toggle('active', p.id === 'tab-' + t));
+  if (t === 'overview') loadOverview();
+  if (t === 'stats') loadStats();
+  if (t === 'alerts') loadAlerts(false);
+}
+
+// ── Product rows ──
+function addProductRow() {
+  const id = ++productRowId;
+  const div = document.createElement('div');
+  div.className = 'product-row';
+  div.id = 'pr-' + id;
+  div.innerHTML = `
+    <div class="product-row-header">
+      <div class="form-group">
+        <label>Product Name</label>
+        <input type="text" placeholder="e.g. Cauliflower" id="pn-${id}">
+      </div>
+      <div class="form-group">
+        <label>LOT No.</label>
+        <input type="text" placeholder="e.g. A240101" id="pl-${id}">
+      </div>
+      <div class="form-group">
+        <label>ExpiryDate</label>
+        <input type="date" id="pe-${id}">
+      </div>
+      <div class="form-group">
+        <label>Qty (pcs)</label>
+        <input type="number" min="0" placeholder="0" id="pq-${id}">
+      </div>
+      <button class="del-btn" onclick="removeRow(${id})" title="Remove">✕</button>
+    </div>
+    <div style="margin-top:10px;display:flex;align-items:center;gap:8px;">
+      <label class="return-toggle">
+        <input type="checkbox" id="rc-${id}" onchange="toggleReturn(${id})">
+        ↩ Return Required
+      </label>
+    </div>
+    <div id="rr-${id}" style="display:none" class="product-row-return">
+      <div class="form-group">
+        <label>ReturnQty (pcs)</label>
+        <input type="number" min="0" placeholder="0" id="rq-${id}">
+      </div>
+      <div class="form-group">
+        <label>Return Destination</label>
+        <input type="text" placeholder="e.g. Penang Warehouse" id="rd-${id}">
+      </div>
+    </div>
+  `;
+  document.getElementById('productsList').appendChild(div);
+}
+
+function toggleReturn(id) {
+  const checked = document.getElementById('rc-' + id).checked;
+  document.getElementById('rr-' + id).style.display = checked ? 'grid' : 'none';
+  document.getElementById('pr-' + id).classList.toggle('has-return', checked);
+}
+
+function removeRow(id) {
+  document.getElementById('pr-' + id)?.remove();
+}
+
+function resetForm() {
+  document.getElementById('f-region').value = '';
+  document.getElementById('f-agent').value = '';
+  document.getElementById('f-outlet').value = '';
+  document.getElementById('f-date').value = new Date().toISOString().split('T')[0];
+  document.getElementById('productsList').innerHTML = '';
+  productRowId = 0;
+  addProductRow();
+}
+
+// ── Submit ──
+async function submitForm() {
+  const region = document.getElementById('f-region').value.trim();
+  const date = document.getElementById('f-date').value;
+  const outletId = document.getElementById('f-outlet').value;
+  const agent = document.getElementById('f-agent').value.trim();
+
+  if (!outletId || !agent || !date) { showToast('Please fill in Outlet, Date and Agent Name.', true); return; }
+
+  // Collect products
+  const rows = document.querySelectorAll('#productsList .product-row');
+  const products = [];
+  for (const row of rows) {
+    const rid = row.id.split('-')[1];
+    const name = document.getElementById('pn-' + rid)?.value.trim();
+    const lot = document.getElementById('pl-' + rid)?.value.trim();
+    const expiry = document.getElementById('pe-' + rid)?.value;
+    const qty = parseInt(document.getElementById('pq-' + rid)?.value) || 0;
+    const needReturn = document.getElementById('rc-' + rid)?.checked;
+    const retQty = parseInt(document.getElementById('rq-' + rid)?.value) || 0;
+    const retDest = document.getElementById('rd-' + rid)?.value.trim();
+    if (!name) continue;
+    products.push({ product_name: name, lot_number: lot, expiry_date: expiry || null, quantity: qty, need_return: needReturn, return_quantity: needReturn ? retQty : 0, return_destination: needReturn ? retDest : '' });
+  }
+
+  if (products.length === 0) { showToast('Please add at least one product.', true); return; }
+
+  const outlet = outlets.find(o => o.id == outletId);
+  const payload = products.map(p => ({
+    outlet_id: outletId,
+    outlet_name: outlet?.name || '',
+    region: region,
+    check_date: date,
+    agent_name: agent,
+    ...p
+  }));
+
+  try {
+    const res = await sbPost('outlet_stock_checks', payload);
+    if (Array.isArray(res) && res.length > 0) {
+      showToast(`✅ Submitted! ${products.length} product(s) recorded.`);
+      resetForm();
+    } else {
+      showToast('Submission failed. Check that Supabase tables exist.', true);
+      console.error(res);
+    }
+  } catch (e) {
+    showToast('Network error. Please try again.', true);
+    console.error(e);
+  }
+}
+
+// ── Overview ──
+async function loadOverview() {
+  const grid = document.getElementById('outletGrid');
+  grid.innerHTML = '<div class="loader"><div class="spinner"></div>Loading…</div>';
+
+  const [checks, outletList] = await Promise.all([
+    sbGet('outlet_stock_checks?select=outlet_id,outlet_name,check_date,expiry_date,need_return&order=check_date.desc'),
+    sbGet('outlets?select=*&order=name.asc')
+  ]);
+
+  if (!Array.isArray(checks) || !Array.isArray(outletList)) {
+    grid.innerHTML = '<div class="empty">No data available.</div>'; return;
+  }
+
+  const today = new Date(); today.setHours(0,0,0,0);
+
+  // Group by outlet
+  const map = {};
+  checks.forEach(c => {
+    if (!map[c.outlet_id]) map[c.outlet_id] = { name: c.outlet_name, dates: [], expiries: [], hasReturn: false };
+    map[c.outlet_id].dates.push(c.check_date);
+    if (c.expiry_date) map[c.outlet_id].expiries.push(c.expiry_date);
+    if (c.need_return) map[c.outlet_id].hasReturn = true;
+  });
+
+  // Also include outlets with no checks
+  outletList.forEach(o => {
+    if (!map[o.id]) map[o.id] = { name: o.name, dates: [], expiries: [], hasReturn: false };
+    else if (!map[o.id].name) map[o.id].name = o.name;
+  });
+
+  function daysUntil(dateStr) {
+    const d = new Date(dateStr); d.setHours(0,0,0,0);
+    return Math.ceil((d - today) / 86400000);
+  }
+  function expiryLevel(days) {
+    if (days <= 30) return 4;
+    if (days <= 90) return 3;
+    if (days <= 120) return 2;
+    if (days <= 180) return 1;
+    return 0;
+  }
+  function expiryBadge(level) {
+    const map2 = { 4: ['exp-30','⛔ ≤30 days'], 3: ['exp-90','🔴 ≤90 days'], 2: ['exp-120','🟠 ≤120 days'], 1: ['exp-180','🟡 ≤180 days'] };
+    return map2[level] || null;
+  }
+
+  const entries = Object.entries(map).map(([id, v]) => {
+    const lastDate = v.dates.sort().reverse()[0] || null;
+    const daysSince = lastDate ? Math.ceil((today - new Date(lastDate)) / 86400000) : null;
+    const minDays = v.expiries.length ? Math.min(...v.expiries.map(daysUntil)) : null;
+    const level = minDays !== null ? expiryLevel(minDays) : 0;
+    return { id, ...v, lastDate, daysSince, minDays, level };
+  }).sort((a, b) => b.level - a.level || (a.daysSince ?? 9999) - (b.daysSince ?? 9999));
+
+  if (entries.length === 0) { grid.innerHTML = '<div class="empty">No outlets found.</div>'; return; }
+
+  grid.innerHTML = entries.map(e => {
+    const badge = e.level > 0 ? expiryBadge(e.level) : null;
+    return `
+      <div class="outlet-card" onclick="openDetail('${e.id}','${escH(e.name)}')">
+        <div>
+          <div class="outlet-name">${escH(e.name)}</div>
+          <div class="outlet-meta">${e.lastDate ? `Last checked: ${e.lastDate}` : 'Not yet checked'}</div>
+        </div>
+        <div>
+          ${e.daysSince !== null ? `<span class="badge badge-days">📅 ${e.daysSince}d ago</span>` : '<span class="badge badge-days">—</span>'}
+        </div>
+        <div class="outlet-badges">
+          ${badge ? `<span class="badge ${badge[0]}">${badge[1]}</span>` : '<span class="badge badge-ok">✓ OK</span>'}
+          ${e.hasReturn ? '<span class="badge badge-return">↩ Pending Return</span>' : ''}
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+async function openDetail(outletId, outletName) {
+  document.getElementById('detailTitle').textContent = '🏪 ' + outletName;
+  document.getElementById('detailContent').innerHTML = '<div class="loader"><div class="spinner"></div>Loading…</div>';
+  document.getElementById('detailModal').classList.add('open');
+
+  const data = await sbGet(`outlet_stock_checks?outlet_id=eq.${outletId}&order=check_date.desc,expiry_date.asc`);
+  if (!Array.isArray(data) || data.length === 0) {
+    document.getElementById('detailContent').innerHTML = '<div class="empty">No records found.</div>';
+    return;
+  }
+
+  const today = new Date(); today.setHours(0,0,0,0);
+  function daysUntil(d) { const dt=new Date(d); dt.setHours(0,0,0,0); return Math.ceil((dt-today)/86400000); }
+  function expiryClass(d) {
+    if (!d) return '';
+    const days = daysUntil(d);
+    if (days <= 30) return 'exp-30';
+    if (days <= 90) return 'exp-90';
+    if (days <= 120) return 'exp-120';
+    if (days <= 180) return 'exp-180';
+    return '';
+  }
+
+  document.getElementById('detailContent').innerHTML = `
+    <table class="detail-table">
+      <tr><th>Product</th><th>LOT</th><th>Expiry</th><th>Qty</th><th>Return</th><th>Destination</th><th>Agent</th><th>Date</th></tr>
+      ${data.map(r => `
+        <tr class="${expiryClass(r.expiry_date)}">
+          <td>${escH(r.product_name||'')}</td>
+          <td><span class="lot-tag">${escH(r.lot_number||'—')}</span></td>
+          <td>${r.expiry_date||'—'}</td>
+          <td>${r.quantity||0}</td>
+          <td>${r.need_return?`<span style="color:var(--red);font-weight:600">↩ ${r.return_quantity||0} pcs</span>`:'—'}</td>
+          <td>${r.return_destination||'—'}</td>
+          <td>${escH(r.agent_name||'')}</td>
+          <td>${r.check_date||''}</td>
+        </tr>
+      `).join('')}
+    </table>
+  `;
+}
+
+// ── Stats ──
+async function loadStats() {
+  const since = new Date(); since.setMonth(since.getMonth() - 12);
+  const sinceStr = since.toISOString().split('T')[0];
+  const data = await sbGet(`outlet_stock_checks?need_return=eq.true&check_date=gte.${sinceStr}&select=product_name,outlet_name,return_quantity`);
+
+  if (!Array.isArray(data)) return;
+
+  function renderRank(containerId, key) {
+    const totals = {};
+    data.forEach(r => { totals[r[key]] = (totals[r[key]] || 0) + (r.return_quantity || 0); });
+    const sorted = Object.entries(totals).sort((a,b) => b[1]-a[1]);
+    const max = sorted[0]?.[1] || 1;
+    const el = document.getElementById(containerId);
+    if (sorted.length === 0) { el.innerHTML = '<div class="empty">No return records found.</div>'; return; }
+    el.innerHTML = sorted.map(([name, val]) => `
+      <div class="bar-row">
+        <div class="bar-label" title="${escH(name)}">${escH(name)}</div>
+        <div class="bar-wrap"><div class="bar-fill" style="width:${(val/max*100).toFixed(1)}%"></div></div>
+        <div class="bar-val">${val}</div>
+      </div>
+    `).join('');
+  }
+
+  renderRank('productRank', 'product_name');
+  renderRank('outletRank', 'outlet_name');
+}
+
+// ── Alerts ──
+async function loadAlerts(badgeOnly) {
+  const data = await sbGet('outlet_stock_checks?expiry_date=not.is.null&select=product_name,lot_number,expiry_date,outlet_name,agent_name,check_date&order=expiry_date.asc');
+  if (!Array.isArray(data)) return;
+
+  const today = new Date(); today.setHours(0,0,0,0);
+  function days(d) { const dt=new Date(d); dt.setHours(0,0,0,0); return Math.ceil((dt-today)/86400000); }
+
+  const zones = { z30: [], z90: [], z120: [], z180: [] };
+  data.forEach(r => {
+    const d = days(r.expiry_date);
+    if (d <= 30) zones.z30.push({...r, days:d});
+    else if (d <= 90) zones.z90.push({...r, days:d});
+    else if (d <= 120) zones.z120.push({...r, days:d});
+    else if (d <= 180) zones.z180.push({...r, days:d});
+  });
+
+  const total = zones.z30.length + zones.z90.length;
+  document.getElementById('alertBadge').textContent = total > 0 ? total : '0';
+  if (badgeOnly) return;
+
+  function renderZone(items, cls, label) {
+    if (items.length === 0) return '';
+    return `
+      <div class="alert-section">
+        <div class="alert-header ${cls}">${label} <span style="font-weight:400;font-size:12px">(${items.length} item${items.length>1?'s':''})</span></div>
+        <div class="alert-body">
+          <div class="alert-row alert-row-head"><div>Product</div><div>LOT</div><div>Outlet</div><div>Agent</div><div>Expiry / Days</div></div>
+          ${items.map(r => `
+            <div class="alert-row">
+              <div>${escH(r.product_name||'')}</div>
+              <div><span class="lot-tag">${escH(r.lot_number||'—')}</span></div>
+              <div>${escH(r.outlet_name||'')}</div>
+              <div>${escH(r.agent_name||'')}</div>
+              <div>${r.expiry_date}<br><small style="color:var(--ink-muted)">${r.days<=0?`Expired ${Math.abs(r.days)}d ago`:r.days+' days left'}</small></div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `;
+  }
+
+  const html = renderZone(zones.z30, 'ah-30', '⛔ Critical — Expired or ≤30 days')
+    + renderZone(zones.z90, 'ah-90', '🔴 High — 31–90 days to expiry')
+    + renderZone(zones.z120, 'ah-120', '🟠 Medium — 91–120 days to expiry')
+    + renderZone(zones.z180, 'ah-180', '🟡 Low — 121–180 days to expiry');
+
+  document.getElementById('alertsContent').innerHTML = html || '<div class="empty">✅ No products expiring within 180 days.</div>';
+}
+
+// ── Add Outlet Modal ──
+function openAddOutletModal() {
+  document.getElementById('newOutletName').value = '';
+  document.getElementById('newOutletRegion').value = '';
+  document.getElementById('addOutletModal').classList.add('open');
+}
+async function saveNewOutlet() {
+  const name = document.getElementById('newOutletName').value.trim();
+  const region = document.getElementById('newOutletRegion').value.trim();
+  if (!name) { showToast('Please enter an outlet name.', true); return; }
+  const res = await sbPost('outlets', { name, region: region || null });
+  if (Array.isArray(res) && res.length > 0) {
+    outlets.push(res[0]);
+    populateOutletSelect();
+    closeModal('addOutletModal');
+    showToast('✅ Outlet added: ' + name);
+    // refresh overview if on that tab
+    if (document.getElementById('tab-overview').classList.contains('active')) loadOverview();
+  } else {
+    showToast('Save failed. Check database setup.', true);
+    console.error(res);
+  }
+}
+
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.modal-backdrop').forEach(m => m.addEventListener('click', e => { if (e.target === m) m.classList.remove('open'); }));
+
+function escH(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+function showToast(msg, err=false) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show' + (err ? ' error' : '');
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => t.classList.remove('show'), 3000);
+}
+</script>
+
+<!-- Supabase SQL hint (run once in Supabase SQL editor):
+CREATE TABLE IF NOT EXISTS outlets (
+  id BIGSERIAL PRIMARY KEY,
+  name TEXT NOT NULL,
+  region TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS outlet_stock_checks (
+  id BIGSERIAL PRIMARY KEY,
+  outlet_id BIGINT REFERENCES outlets(id),
+  outlet_name TEXT,
+  region TEXT,
+  check_date DATE NOT NULL,
+  agent_name TEXT NOT NULL,
+  product_name TEXT NOT NULL,
+  lot_number TEXT,
+  expiry_date DATE,
+  quantity INT DEFAULT 0,
+  need_return BOOLEAN DEFAULT FALSE,
+  return_quantity INT DEFAULT 0,
+  return_destination TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Enable RLS + anon insert/select
+ALTER TABLE outlets ENABLE ROW LEVEL SECURITY;
+ALTER TABLE outlet_stock_checks ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "anon all" ON outlets FOR ALL TO anon USING (true) WITH CHECK (true);
+CREATE POLICY "anon all" ON outlet_stock_checks FOR ALL TO anon USING (true) WITH CHECK (true);
+-->
+
+</body>
+</html>
