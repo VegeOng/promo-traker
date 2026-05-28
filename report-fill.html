@@ -265,15 +265,16 @@
 <script>
 const SUPA_URL = 'https://wjhgezvrxlhpexocfsea.supabase.co';
 const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndqaGdlenZyeGxocGV4b2Nmc2VhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg1MDU4NzgsImV4cCI6MjA5NDA4MTg3OH0.jENcrgEDYDlSRUCqve-T6rxYRJfz-dnZQHnXpPLJ_RE';
-const headers = { 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY, 'Content-Type': 'application/json' };
+const headers = { 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' };
 
 let currentMode = null;
 let members = [];
 
 async function db(path, opts = {}) {
   const r = await fetch(SUPA_URL + '/rest/v1/' + path, { headers, ...opts });
-  if (!r.ok) throw await r.json();
-  return r.status === 204 ? null : r.json();
+  if (!r.ok) { let e; try { e = await r.json(); } catch { e = r.status; } throw e; }
+  if (r.status === 204 || r.status === 201) return null;
+  return r.json();
 }
 
 async function loadMembers() {
