@@ -554,35 +554,30 @@ function setDefaultFilters() {
 
 // Init
 (async () => {
-  await checkPasswordGate();
-  populateMonthSelector();
-  setDefaultFilters();
-  await loadMembers();
-  loadOverview();
-})();
-
-async function checkPasswordGate() {
-  // Check session
   if (sessionStorage.getItem('hq_auth') === '1') {
     document.getElementById('pwOverlay').style.display = 'none';
-    return;
+    populateMonthSelector();
+    setDefaultFilters();
+    await loadMembers();
+    loadOverview();
   }
-  // Show overlay, wait for correct password
-  return new Promise(resolve => {
-    window._pwResolve = resolve;
-  });
-}
+})();
 
 async function checkPw() {
   const inp = document.getElementById('pwInput');
   const pw = inp.value.trim();
   if (!pw) return;
+  const btn = document.querySelector('.pw-btn');
+  btn.disabled = true; btn.textContent = '...';
   try {
     const data = await db("settings?key=eq.hq_password&select=value");
     if (data.length && data[0].value === pw) {
       sessionStorage.setItem('hq_auth', '1');
       document.getElementById('pwOverlay').style.display = 'none';
-      if (window._pwResolve) window._pwResolve();
+      populateMonthSelector();
+      setDefaultFilters();
+      await loadMembers();
+      loadOverview();
     } else {
       inp.classList.add('error');
       document.getElementById('pwError').classList.add('visible');
@@ -590,6 +585,7 @@ async function checkPw() {
       setTimeout(() => inp.classList.remove('error'), 400);
     }
   } catch(e) { alert('Connection error. Please try again.'); }
+  btn.disabled = false; btn.textContent = 'Enter';
 }
 
 async function changePassword() {
