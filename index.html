@@ -65,6 +65,7 @@ body{background:var(--bg);color:var(--t1);font-family:var(--font);min-height:100
 .tbadge{font-size:9px;font-weight:700;padding:2px 7px;border-radius:20px;font-family:var(--mono);letter-spacing:.04em;}
 .tb-live{background:var(--green-bg);color:var(--green);border:1px solid var(--green-border);}
 .tb-soon{background:var(--s2);color:var(--t3);border:1px solid var(--b1);}
+.tb-new{background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe;}
 
 .tool-name{font-size:14px;font-weight:700;margin-bottom:5px;color:var(--t1);}
 .tool-desc{font-size:12px;color:var(--t2);line-height:1.6;margin-bottom:14px;}
@@ -108,6 +109,7 @@ body{background:var(--bg);color:var(--t1);font-family:var(--font);min-height:100
     <div class="stat"><div class="stat-label">Gap to Target</div><div class="stat-val" id="s-gap" style="color:var(--red)">—</div><div class="stat-sub" id="s-gap-sub">remaining</div></div>
   </div>
 
+  <!-- Promotion Management -->
   <div class="sec">
     <div class="sec-header"><span class="sec-title">Promotion Management</span><div class="sec-line"></div><span class="sec-tag">4 live</span></div>
     <div class="grid3">
@@ -138,16 +140,17 @@ body{background:var(--bg);color:var(--t1);font-family:var(--font);min-height:100
     </div>
   </div>
 
+  <!-- Team Reporting -->
   <div class="sec">
     <div class="sec-header"><span class="sec-title">Team Reporting</span><div class="sec-line"></div><span class="sec-tag" style="background:var(--green-bg);color:var(--green);border:1px solid var(--green-border);">NEW</span></div>
     <div class="grid3">
-      <a class="tool" href="report-fill.html">
+      <a class="tool live" href="report-fill.html" style="--tc:var(--green)">
         <div class="tool-top"><div class="tool-icon" style="background:var(--green-bg)">📝</div><span class="tbadge tb-live">LIVE</span></div>
         <div class="tool-name">Daily &amp; Weekly Report</div>
         <div class="tool-desc">Sales &amp; Marketing team — submit daily work report and weekly targets.</div>
         <div class="tool-foot"><span class="tool-meta">Daily · Weekly · Task Tracking</span><span class="tool-arr">→</span></div>
       </a>
-      <a class="tool" href="report-hq.html">
+      <a class="tool live" href="report-hq.html" style="--tc:var(--green)">
         <div class="tool-top"><div class="tool-icon" style="background:var(--green-bg)">🗂️</div><span class="tbadge tb-live">LIVE</span></div>
         <div class="tool-name">Report HQ Dashboard</div>
         <div class="tool-desc">HQ view — monitor missing submissions, review all reports and monthly stats.</div>
@@ -156,6 +159,20 @@ body{background:var(--bg);color:var(--t1);font-family:var(--font);min-height:100
     </div>
   </div>
 
+  <!-- Outlet Operations — NEW SECTION -->
+  <div class="sec">
+    <div class="sec-header"><span class="sec-title">Outlet Operations</span><div class="sec-line"></div><span class="sec-tag" style="background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe;">NEW</span></div>
+    <div class="grid3">
+      <a class="tool live" href="/outlet-stock-check.html" style="--tc:var(--green)">
+        <div class="tool-top"><div class="tool-icon" style="background:var(--green-bg)">📦</div><span class="tbadge tb-new">NEW</span></div>
+        <div class="tool-name">Outlet Stock Check &amp; Return</div>
+        <div class="tool-desc">Check outlet stock by LOT &amp; expiry date, flag items for return, and monitor expiry alerts across all stores.</div>
+        <div class="tool-foot"><span class="tool-meta">Stock · Expiry · Returns · Alerts</span><span class="tool-arr">→</span></div>
+      </a>
+    </div>
+  </div>
+
+  <!-- Team Management -->
   <div class="sec">
     <div class="sec-header"><span class="sec-title">Team Management</span><div class="sec-line"></div><span class="sec-tag">coming soon</span></div>
     <div class="grid3">
@@ -166,12 +183,6 @@ body{background:var(--bg);color:var(--t1);font-family:var(--font);min-height:100
         <div class="tool-foot"><span class="tool-meta">Daily attendance log</span><span class="tool-arr">→</span></div>
       </div>
       <div class="tool off">
-        <div class="tool-top"><div class="tool-icon" style="background:var(--s2)">📦</div><span class="tbadge tb-soon">COMING SOON</span></div>
-        <div class="tool-name">Stock Monitor</div>
-        <div class="tool-desc">Monitor promotional stock levels and replenishment status per store.</div>
-        <div class="tool-foot"><span class="tool-meta">Real-time stock status</span><span class="tool-arr">→</span></div>
-      </div>
-      <div class="tool off">
         <div class="tool-top"><div class="tool-icon" style="background:var(--s2)">🕵️</div><span class="tbadge tb-soon">COMING SOON</span></div>
         <div class="tool-name">Competitor Watch</div>
         <div class="tool-desc">Log and monitor competitor promotions and pricing activities across regions.</div>
@@ -180,8 +191,9 @@ body{background:var(--bg);color:var(--t1);font-family:var(--font);min-height:100
     </div>
   </div>
 
+  <!-- Reports & Analytics -->
   <div class="sec">
-    <div class="sec-header"><span class="sec-title">Reports & Analytics</span><div class="sec-line"></div><span class="sec-tag">coming soon</span></div>
+    <div class="sec-header"><span class="sec-title">Reports &amp; Analytics</span><div class="sec-line"></div><span class="sec-tag">coming soon</span></div>
     <div class="grid3">
       <div class="tool off">
         <div class="tool-top"><div class="tool-icon" style="background:var(--s2)">📄</div><span class="tbadge tb-soon">COMING SOON</span></div>
@@ -197,6 +209,7 @@ body{background:var(--bg);color:var(--t1);font-family:var(--font);min-height:100
       </div>
     </div>
   </div>
+
 </div>
 
 <div class="footer">
