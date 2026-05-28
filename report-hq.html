@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Report HQ — MamaVege</title>
+<style>
+  :root {
+    --bg: #fafafa;
+    --green: #166534;
+    --green-light: #dcfce7;
+    --green-mid: #15803d;
+    --red: #dc2626;
+    --red-light: #fee2e2;
+    --amber: #d97706;
+    --amber-light: #fef3c7;
+    --text: #1a1a1a;
+    --muted: #6b7280;
+    --border: #e5e7eb;
+    --card: #ffffff;
+    --radius: 12px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; min-height: 100vh; }
+
+  .header { background: var(--green); color: white; padding: 16px 20px; display: flex; align-items: center; gap: 12px; position: sticky; top: 0; z-index: 100; }
+  .header-logo { width: 32px; height: 32px; background: white; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: 900; color: var(--green); font-size: 14px; flex-shrink: 0; }
+  .header-info { flex: 1; }
+  .header-title { font-size: 16px; font-weight: 700; }
+  .header-sub { font-size: 12px; opacity: 0.75; }
+  .header-back { color: rgba(255,255,255,0.8); text-decoration: none; font-size: 13px; }
+  .header-back:hover { color: white; }
+
+  /* Tabs */
+  .tabs { background: white; border-bottom: 1px solid var(--border); display: flex; overflow-x: auto; position: sticky; top: 64px; z-index: 99; }
+  .tab { padding: 14px 20px; font-size: 14px; font-weight: 600; color: var(--muted); cursor: pointer; border-bottom: 2px solid transparent; white-space: nowrap; transition: all 0.2s; }
+  .tab.active { color: var(--green); border-bottom-color: var(--green); }
+  .tab:hover { color: var(--green); background: #f0fdf4; }
+
+  .container { max-width: 800px; margin: 0 auto; padding: 24px 16px 60px; }
+  .section { display: none; }
+  .section.active { display: block; }
+
+  /* Cards */
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; margin-bottom: 16px; }
+  .card-title { font-size: 15px; font-weight: 800; color: var(--text); margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+
+  /* Stat grid */
+  .stat-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 20px; }
+  @media (min-width: 500px) { .stat-grid { grid-template-columns: repeat(4, 1fr); } }
+  .stat-box { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 16px; text-align: center; }
+  .stat-box .s-val { font-size: 28px; font-weight: 900; line-height: 1; }
+  .stat-box .s-label { font-size: 11px; color: var(--muted); margin-top: 4px; text-transform: uppercase; letter-spacing: 0.04em; }
+  .stat-box.red .s-val { color: var(--red); }
+  .stat-box.green .s-val { color: var(--green); }
+  .stat-box.amber .s-val { color: var(--amber); }
+
+  /* Missing list */
+  .missing-list { display: flex; flex-direction: column; gap: 8px; }
+  .missing-item { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; background: var(--red-light); border-radius: 8px; border: 1px solid #fca5a5; }
+  .missing-item .mi-name { font-size: 14px; font-weight: 600; color: var(--red); }
+  .missing-item .mi-badge { font-size: 11px; background: var(--red); color: white; padding: 2px 8px; border-radius: 20px; font-weight: 700; }
+  .all-good { text-align: center; padding: 20px; color: var(--green); font-weight: 600; font-size: 14px; }
+
+  /* Report list */
+  .report-item { border: 1px solid var(--border); border-radius: 10px; margin-bottom: 10px; overflow: hidden; }
+  .report-header { padding: 12px 16px; background: #f9fafb; display: flex; align-items: center; justify-content: space-between; cursor: pointer; }
+  .report-header:hover { background: #f0fdf4; }
+  .rh-left .rh-name { font-size: 14px; font-weight: 700; }
+  .rh-left .rh-date { font-size: 12px; color: var(--muted); }
+  .rh-right { display: flex; align-items: center; gap: 8px; }
+  .badge { font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 20px; }
+  .badge.daily { background: #dbeafe; color: #1d4ed8; }
+  .badge.weekly { background: var(--amber-light); color: #92400e; }
+  .chevron { color: var(--muted); transition: transform 0.2s; font-size: 12px; }
+  .report-body { display: none; padding: 14px 16px; border-top: 1px solid var(--border); }
+  .report-body.open { display: block; }
+  .rb-field { margin-bottom: 10px; }
+  .rb-field .rf-label { font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 3px; }
+  .rb-field .rf-val { font-size: 13px; color: var(--text); white-space: pre-wrap; line-height: 1.6; }
+
+  /* Filter bar */
+  .filter-bar { display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; }
+  .filter-bar select, .filter-bar input {
+    padding: 8px 12px; border: 1.5px solid var(--border); border-radius: 8px;
+    font-size: 13px; font-family: inherit; background: white; color: var(--text);
+    appearance: none; cursor: pointer;
+  }
+  .filter-bar select:focus, .filter-bar input:focus { outline: none; border-color: var(--green); }
+
+  /* Members management */
+  .member-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; background: #f9fafb; border: 1px solid var(--border); border-radius: 8px; margin-bottom: 8px; }
+  .member-row .m-name { font-size: 14px; font-weight: 600; }
+  .btn-del { background: none; border: 1px solid var(--red); color: var(--red); padding: 4px 12px; border-radius: 6px; font-size: 12px; cursor: pointer; font-weight: 600; }
+  .btn-del:hover { background: var(--red); color: white; }
+  .add-member-row { display: flex; gap: 10px; margin-top: 12px; }
+  .add-member-row input { flex: 1; padding: 10px 14px; border: 1.5px solid var(--border); border-radius: 8px; font-size: 14px; font-family: inherit; }
+  .add-member-row input:focus { outline: none; border-color: var(--green); }
+  .btn-add { padding: 10px 18px; background: var(--green); color: white; border: none; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer; }
+  .btn-add:hover { background: var(--green-mid); }
+
+  /* Miss stats table */
+  .miss-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .miss-table th { text-align: left; padding: 8px 12px; background: #f3f4f6; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); }
+  .miss-table td { padding: 10px 12px; border-bottom: 1px solid var(--border); }
+  .miss-table tr:last-child td { border-bottom: none; }
+  .miss-count { font-weight: 800; }
+  .miss-count.bad { color: var(--red); }
+  .miss-count.ok { color: var(--green); }
+
+  /* Date filters */
+  .date-filter { display: flex; gap: 8px; align-items: center; margin-bottom: 16px; flex-wrap: wrap; }
+  .date-filter label { font-size: 12px; font-weight: 700; color: var(--muted); }
+  .date-filter input { padding: 7px 10px; border: 1.5px solid var(--border); border-radius: 8px; font-size: 13px; font-family: inherit; }
+  .date-filter input:focus { outline: none; border-color: var(--green); }
+  .btn-filter { padding: 7px 14px; background: var(--green); color: white; border: none; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; }
+
+  .loading-text { text-align: center; padding: 24px; color: var(--muted); font-size: 13px; }
+  .empty-text { text-align: center; padding: 24px; color: var(--muted); font-size: 13px; }
+
+  /* Month selector */
+  .month-row { display: flex; gap: 8px; align-items: center; margin-bottom: 16px; }
+  .month-row select { padding: 8px 12px; border: 1.5px solid var(--border); border-radius: 8px; font-size: 13px; font-family: inherit; appearance: none; }
+  .month-row select:focus { outline: none; border-color: var(--green); }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-logo">M</div>
+  <div class="header-info">
+    <div class="header-title">Report HQ Dashboard</div>
+    <div class="header-sub">Daily & Weekly Report Management</div>
+  </div>
+  <a href="index.html" class="header-back">← Hub</a>
+</div>
+
+<div class="tabs">
+  <div class="tab active" onclick="switchTab('overview')">📊 Overview</div>
+  <div class="tab" onclick="switchTab('daily')">📋 Daily Reports</div>
+  <div class="tab" onclick="switchTab('weekly')">📅 Weekly Reports</div>
+  <div class="tab" onclick="switchTab('stats')">📈 Miss Stats</div>
+  <div class="tab" onclick="switchTab('members')">👥 Members</div>
+</div>
+
+<div class="container">
+
+  <!-- Overview -->
+  <div class="section active" id="sec-overview">
+    <div class="stat-grid" id="overviewStats">
+      <div class="stat-box red"><div class="s-val" id="ov-daily-miss">—</div><div class="s-label">Missing Daily Today</div></div>
+      <div class="stat-box green"><div class="s-val" id="ov-daily-ok">—</div><div class="s-label">Daily Submitted</div></div>
+      <div class="stat-box amber"><div class="s-val" id="ov-weekly-miss">—</div><div class="s-label">Missing Weekly This Week</div></div>
+      <div class="stat-box green"><div class="s-val" id="ov-weekly-ok">—</div><div class="s-label">Weekly Submitted</div></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">🚨 Missing Daily Report — Today</div>
+      <div class="missing-list" id="missing-daily-today"><div class="loading-text">Loading…</div></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">⚠️ Missing Weekly Report — This Week</div>
+      <div class="missing-list" id="missing-weekly-week"><div class="loading-text">Loading…</div></div>
+    </div>
+  </div>
+
+  <!-- Daily Reports -->
+  <div class="section" id="sec-daily">
+    <div class="filter-bar">
+      <select id="filter-daily-name" onchange="loadDailyReports()">
+        <option value="">All Members</option>
+      </select>
+      <input type="date" id="filter-daily-from" onchange="loadDailyReports()">
+      <input type="date" id="filter-daily-to" onchange="loadDailyReports()">
+    </div>
+    <div id="daily-report-list"><div class="loading-text">Loading…</div></div>
+  </div>
+
+  <!-- Weekly Reports -->
+  <div class="section" id="sec-weekly">
+    <div class="filter-bar">
+      <select id="filter-weekly-name" onchange="loadWeeklyReports()">
+        <option value="">All Members</option>
+      </select>
+      <input type="date" id="filter-weekly-from" onchange="loadWeeklyReports()">
+      <input type="date" id="filter-weekly-to" onchange="loadWeeklyReports()">
+    </div>
+    <div id="weekly-report-list"><div class="loading-text">Loading…</div></div>
+  </div>
+
+  <!-- Miss Stats -->
+  <div class="section" id="sec-stats">
+    <div class="card">
+      <div class="card-title">📈 Monthly Missing Report Count</div>
+      <div class="month-row">
+        <select id="stats-month" onchange="loadMissStats()"></select>
+      </div>
+      <table class="miss-table">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Daily Missing</th>
+            <th>Weekly Missing</th>
+            <th>Total</th>
+          </tr>
+        </thead>
+        <tbody id="miss-stats-body"><tr><td colspan="4" class="loading-text">Loading…</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Members -->
+  <div class="section" id="sec-members">
+    <div class="card">
+      <div class="card-title">👥 Team Members</div>
+      <div id="member-list"><div class="loading-text">Loading…</div></div>
+      <div class="add-member-row">
+        <input type="text" id="new-member-name" placeholder="Enter English name" maxlength="50">
+        <button class="btn-add" onclick="addMember()">+ Add</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const SUPA_URL = 'https://wjhgezvrxlhpexocfsea.supabase.co';
+const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndqaGdlenZyeGxocGV4b2Nmc2VhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg1MDU4NzgsImV4cCI6MjA5NDA4MTg3OH0.jENcrgEDYDlSRUCqve-T6rxYRJfz-dnZQHnXpPLJ_RE';
+const H = { 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY, 'Content-Type': 'application/json', 'Prefer': 'return=representation' };
+
+let members = [];
+let currentTab = 'overview';
+
+async function db(path, opts = {}) {
+  const r = await fetch(SUPA_URL + '/rest/v1/' + path, { headers: H, ...opts });
+  if (!r.ok) { const e = await r.json(); throw e; }
+  return r.status === 204 ? null : r.json();
+}
+
+function today() { return new Date().toISOString().split('T')[0]; }
+function weekStart() {
+  const d = new Date();
+  const day = d.getDay();
+  const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+  return new Date(d.setDate(diff)).toISOString().split('T')[0];
+}
+function weekEnd() {
+  const d = new Date();
+  const day = d.getDay();
+  const diff = d.getDate() - day + (day === 0 ? 0 : 7);
+  return new Date(d.setDate(diff)).toISOString().split('T')[0];
+}
+
+function switchTab(tab) {
+  currentTab = tab;
+  document.querySelectorAll('.tab').forEach((t, i) => {
+    const tabs = ['overview','daily','weekly','stats','members'];
+    t.classList.toggle('active', tabs[i] === tab);
+  });
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.getElementById('sec-' + tab).classList.add('active');
+  if (tab === 'overview') loadOverview();
+  else if (tab === 'daily') loadDailyReports();
+  else if (tab === 'weekly') loadWeeklyReports();
+  else if (tab === 'stats') loadMissStats();
+  else if (tab === 'members') renderMembers();
+}
+
+async function loadMembers() {
+  try {
+    members = await db('members?select=*&order=name');
+    // Populate filter dropdowns
+    ['filter-daily-name', 'filter-weekly-name'].forEach(id => {
+      const sel = document.getElementById(id);
+      const cur = sel.value;
+      sel.innerHTML = '<option value="">All Members</option>';
+      members.forEach(m => {
+        const o = document.createElement('option');
+        o.value = m.name; o.textContent = m.name;
+        sel.appendChild(o);
+      });
+      sel.value = cur;
+    });
+  } catch(e) { console.error('Load members error', e); }
+}
+
+function renderMembers() {
+  const list = document.getElementById('member-list');
+  if (!members.length) { list.innerHTML = '<div class="empty-text">No members yet. Add one below.</div>'; return; }
+  list.innerHTML = members.map(m => `
+    <div class="member-row">
+      <span class="m-name">${m.name}</span>
+      <button class="btn-del" onclick="deleteMember(${m.id}, '${m.name}')">Remove</button>
+    </div>`).join('');
+}
+
+async function addMember() {
+  const inp = document.getElementById('new-member-name');
+  const name = inp.value.trim();
+  if (!name) { inp.style.borderColor = 'var(--red)'; return; }
+  inp.style.borderColor = '';
+  try {
+    await db('members', { method: 'POST', body: JSON.stringify({ name }) });
+    inp.value = '';
+    await loadMembers();
+    renderMembers();
+  } catch(e) { alert('Failed to add member.'); }
+}
+
+async function deleteMember(id, name) {
+  if (!confirm(`Remove "${name}" from team?`)) return;
+  try {
+    await fetch(SUPA_URL + '/rest/v1/members?id=eq.' + id, { method: 'DELETE', headers: H });
+    await loadMembers();
+    renderMembers();
+  } catch(e) { alert('Failed to remove.'); }
+}
+
+async function loadOverview() {
+  const t = today();
+  const ws = weekStart();
+  const we = weekEnd();
+
+  try {
+    const [dailyToday, weeklyWeek] = await Promise.all([
+      db(`daily_reports?select=name&date=eq.${t}`),
+      db(`weekly_reports?select=name&date=gte.${ws}&date=lte.${we}`)
+    ]);
+
+    const submittedDaily = new Set(dailyToday.map(r => r.name));
+    const submittedWeekly = new Set(weeklyWeek.map(r => r.name));
+    const missingDaily = members.filter(m => !submittedDaily.has(m.name));
+    const missingWeekly = members.filter(m => !submittedWeekly.has(m.name));
+
+    document.getElementById('ov-daily-miss').textContent = missingDaily.length;
+    document.getElementById('ov-daily-ok').textContent = submittedDaily.size;
+    document.getElementById('ov-weekly-miss').textContent = missingWeekly.length;
+    document.getElementById('ov-weekly-ok').textContent = submittedWeekly.size;
+
+    const mdEl = document.getElementById('missing-daily-today');
+    mdEl.innerHTML = missingDaily.length
+      ? missingDaily.map(m => `<div class="missing-item"><span class="mi-name">${m.name}</span><span class="mi-badge">NOT SUBMITTED</span></div>`).join('')
+      : '<div class="all-good">✅ Everyone has submitted today!</div>';
+
+    const mwEl = document.getElementById('missing-weekly-week');
+    mwEl.innerHTML = missingWeekly.length
+      ? missingWeekly.map(m => `<div class="missing-item"><span class="mi-name">${m.name}</span><span class="mi-badge">NOT SUBMITTED</span></div>`).join('')
+      : '<div class="all-good">✅ Everyone has submitted this week!</div>';
+
+  } catch(e) { console.error('Overview error', e); }
+}
+
+async function loadDailyReports() {
+  const list = document.getElementById('daily-report-list');
+  list.innerHTML = '<div class="loading-text">Loading…</div>';
+  const name = document.getElementById('filter-daily-name').value;
+  const from = document.getElementById('filter-daily-from').value;
+  const to = document.getElementById('filter-daily-to').value;
+  let q = 'daily_reports?select=*&order=date.desc,created_at.desc&limit=100';
+  if (name) q += `&name=eq.${encodeURIComponent(name)}`;
+  if (from) q += `&date=gte.${from}`;
+  if (to) q += `&date=lte.${to}`;
+  try {
+    const data = await db(q);
+    if (!data.length) { list.innerHTML = '<div class="empty-text">No reports found.</div>'; return; }
+    list.innerHTML = data.map((r, i) => `
+      <div class="report-item">
+        <div class="report-header" onclick="toggleReport('dr-${i}')">
+          <div class="rh-left">
+            <div class="rh-name">${r.name}</div>
+            <div class="rh-date">${r.date}</div>
+          </div>
+          <div class="rh-right">
+            <span class="badge daily">Daily</span>
+            <span class="chevron" id="chev-dr-${i}">▼</span>
+          </div>
+        </div>
+        <div class="report-body" id="dr-${i}">
+          <div class="rb-field"><div class="rf-label">Today's Task</div><div class="rf-val">${escHtml(r.today_task)}</div></div>
+          <div class="rb-field"><div class="rf-label">Tomorrow's Task</div><div class="rf-val">${escHtml(r.tomorrow_task)}</div></div>
+          <div class="rb-field"><div class="rf-label">Assistance Required</div><div class="rf-val">${escHtml(r.assistance || 'None.')}</div></div>
+        </div>
+      </div>`).join('');
+  } catch(e) { list.innerHTML = '<div class="empty-text">Failed to load reports.</div>'; }
+}
+
+async function loadWeeklyReports() {
+  const list = document.getElementById('weekly-report-list');
+  list.innerHTML = '<div class="loading-text">Loading…</div>';
+  const name = document.getElementById('filter-weekly-name').value;
+  const from = document.getElementById('filter-weekly-from').value;
+  const to = document.getElementById('filter-weekly-to').value;
+  let q = 'weekly_reports?select=*&order=date.desc,created_at.desc&limit=100';
+  if (name) q += `&name=eq.${encodeURIComponent(name)}`;
+  if (from) q += `&date=gte.${from}`;
+  if (to) q += `&date=lte.${to}`;
+  try {
+    const data = await db(q);
+    if (!data.length) { list.innerHTML = '<div class="empty-text">No reports found.</div>'; return; }
+    list.innerHTML = data.map((r, i) => `
+      <div class="report-item">
+        <div class="report-header" onclick="toggleReport('wr-${i}')">
+          <div class="rh-left">
+            <div class="rh-name">${r.name}</div>
+            <div class="rh-date">${r.date}</div>
+          </div>
+          <div class="rh-right">
+            <span class="badge weekly">Weekly</span>
+            <span class="chevron" id="chev-wr-${i}">▼</span>
+          </div>
+        </div>
+        <div class="report-body" id="wr-${i}">
+          <div class="rb-field"><div class="rf-label">Next Week Targets</div><div class="rf-val">${escHtml(r.next_week_target)}</div></div>
+          <div class="rb-field"><div class="rf-label">Assistance Required</div><div class="rf-val">${escHtml(r.assistance || 'None.')}</div></div>
+        </div>
+      </div>`).join('');
+  } catch(e) { list.innerHTML = '<div class="empty-text">Failed to load reports.</div>'; }
+}
+
+function toggleReport(id) {
+  const body = document.getElementById(id);
+  const chev = document.getElementById('chev-' + id);
+  const open = body.classList.toggle('open');
+  chev.textContent = open ? '▲' : '▼';
+}
+
+async function loadMissStats() {
+  const tbody = document.getElementById('miss-stats-body');
+  tbody.innerHTML = '<tr><td colspan="4" class="loading-text">Loading…</td></tr>';
+  const monthVal = document.getElementById('stats-month').value;
+  if (!monthVal) return;
+  const [year, month] = monthVal.split('-');
+  const firstDay = `${year}-${month}-01`;
+  const lastDay = new Date(year, month, 0).toDate ? new Date(year, month, 0).toISOString().split('T')[0] : `${year}-${month}-${new Date(year, month, 0).getDate()}`;
+
+  // Count working days in month
+  const workDays = countWorkDays(new Date(year, month - 1, 1), new Date(year, month - 1, new Date(year, month, 0).getDate()));
+  // Count weeks in month
+  const weekCount = Math.ceil(new Date(year, month, 0).getDate() / 7);
+
+  try {
+    const [dailyData, weeklyData] = await Promise.all([
+      db(`daily_reports?select=name,date&date=gte.${firstDay}&date=lte.${lastDay}`),
+      db(`weekly_reports?select=name,date&date=gte.${firstDay}&date=lte.${lastDay}`)
+    ]);
+
+    const dailyByName = {};
+    const weeklyByName = {};
+    members.forEach(m => { dailyByName[m.name] = 0; weeklyByName[m.name] = 0; });
+    dailyData.forEach(r => { if (dailyByName[r.name] !== undefined) dailyByName[r.name]++; });
+    weeklyData.forEach(r => { if (weeklyByName[r.name] !== undefined) weeklyByName[r.name]++; });
+
+    tbody.innerHTML = members.map(m => {
+      const dMiss = Math.max(0, workDays - dailyByName[m.name]);
+      const wMiss = Math.max(0, weekCount - weeklyByName[m.name]);
+      const total = dMiss + wMiss;
+      return `<tr>
+        <td><strong>${m.name}</strong></td>
+        <td><span class="miss-count ${dMiss > 0 ? 'bad' : 'ok'}">${dMiss}</span></td>
+        <td><span class="miss-count ${wMiss > 0 ? 'bad' : 'ok'}">${wMiss}</span></td>
+        <td><span class="miss-count ${total > 0 ? 'bad' : 'ok'}">${total}</span></td>
+      </tr>`;
+    }).join('');
+  } catch(e) { tbody.innerHTML = '<tr><td colspan="4" class="empty-text">Failed to load stats.</td></tr>'; }
+}
+
+function countWorkDays(start, end) {
+  let count = 0;
+  const cur = new Date(start);
+  while (cur <= end) {
+    const d = cur.getDay();
+    if (d !== 0 && d !== 6) count++;
+    cur.setDate(cur.getDate() + 1);
+  }
+  return count;
+}
+
+function populateMonthSelector() {
+  const sel = document.getElementById('stats-month');
+  const now = new Date();
+  for (let i = 0; i < 6; i++) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const val = d.toISOString().slice(0, 7);
+    const label = d.toLocaleString('en', { year: 'numeric', month: 'long' });
+    const o = document.createElement('option');
+    o.value = val; o.textContent = label;
+    sel.appendChild(o);
+  }
+}
+
+function escHtml(s) {
+  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// Set default date filters
+function setDefaultFilters() {
+  const t = today();
+  const ws = weekStart();
+  document.getElementById('filter-daily-from').value = ws;
+  document.getElementById('filter-daily-to').value = t;
+  document.getElementById('filter-weekly-from').value = weekStart();
+  document.getElementById('filter-weekly-to').value = weekEnd();
+}
+
+// Init
+(async () => {
+  populateMonthSelector();
+  setDefaultFilters();
+  await loadMembers();
+  loadOverview();
+})();
+</script>
+</body>
+</html>

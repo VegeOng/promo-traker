@@ -4,245 +4,268 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>MamaVege Management Hub</title>
-<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-*{box-sizing:border-box;margin:0;padding:0}
-:root{
-  --bg:#fafafa;--s1:#ffffff;--s2:#f3f4f6;--s3:#e9f5ee;
-  --b1:#e5e7eb;--b2:#d1d5db;
-  --t1:#111827;--t2:#4b5563;--t3:#9ca3af;
-  --green:#166534;--green2:#22c55e;--green-bg:#f0fdf4;--green-border:#bbf7d0;
-  --red:#dc2626;--red-bg:#fef2f2;--red-border:#fecaca;
-  --amber:#d97706;--amber-bg:#fffbeb;
-  --acc:#166534;
-  --font:'Plus Jakarta Sans',sans-serif;--mono:'DM Mono',monospace;
-}
-body{background:var(--bg);color:var(--t1);font-family:var(--font);min-height:100vh;}
+  :root {
+    --bg: #fafafa;
+    --green: #166534;
+    --green-light: #dcfce7;
+    --green-mid: #15803d;
+    --red: #dc2626;
+    --text: #1a1a1a;
+    --muted: #6b7280;
+    --border: #e5e7eb;
+    --card: #ffffff;
+    --radius: 14px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; min-height: 100vh; }
 
-.topbar{display:flex;align-items:center;justify-content:space-between;padding:14px 32px;border-bottom:1px solid var(--b1);background:var(--s1);position:sticky;top:0;z-index:20;box-shadow:0 1px 3px rgba(0,0,0,.06);}
-.logo{display:flex;align-items:center;gap:10px;}
-.logo-mark{width:32px;height:32px;background:var(--green);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800;color:#fff;}
-.logo-name{font-size:16px;font-weight:800;color:var(--t1);}
-.logo-tag{font-size:11px;color:var(--t3);font-family:var(--mono);}
-.topbar-right{display:flex;align-items:center;gap:12px;}
-.live-badge{display:flex;align-items:center;gap:5px;background:var(--green-bg);border:1px solid var(--green-border);border-radius:20px;padding:4px 10px;font-size:11px;color:var(--green);font-weight:600;}
-.live-dot{width:5px;height:5px;border-radius:50%;background:var(--green2);animation:pulse 2s infinite;}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
-.date-txt{font-size:12px;color:var(--t3);font-family:var(--mono);}
+  .header {
+    background: var(--green);
+    color: white;
+    padding: 28px 24px 24px;
+  }
+  .header-top { display: flex; align-items: center; gap: 14px; margin-bottom: 16px; }
+  .logo { width: 44px; height: 44px; background: white; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: 900; color: var(--green); font-size: 18px; flex-shrink: 0; }
+  .brand { font-size: 22px; font-weight: 900; letter-spacing: -0.02em; }
+  .sub { font-size: 13px; opacity: 0.8; margin-top: 2px; }
+  .status-pill { margin-left: auto; background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); color: white; font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 20px; display: flex; align-items: center; gap: 5px; white-space: nowrap; }
+  .status-dot { width: 6px; height: 6px; background: #4ade80; border-radius: 50%; animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.5;} }
 
-.main{max-width:1100px;margin:0 auto;padding:40px 32px;}
+  .header-welcome { font-size: 14px; opacity: 0.85; margin-bottom: 4px; }
+  .header-tagline { font-size: 20px; font-weight: 800; line-height: 1.3; }
 
-.hero{margin-bottom:40px;}
-.hero-greeting{font-size:11px;color:var(--t3);font-family:var(--mono);margin-bottom:8px;letter-spacing:.08em;text-transform:uppercase;}
-.hero-title{font-size:30px;font-weight:800;line-height:1.25;margin-bottom:8px;color:var(--t1);}
-.hero-title span{color:var(--green);}
-.hero-sub{font-size:14px;color:var(--t2);line-height:1.6;}
+  /* Stats */
+  .stats-bar { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; padding: 20px 16px; background: white; border-bottom: 1px solid var(--border); }
+  @media(min-width:500px) { .stats-bar { grid-template-columns: repeat(4, 1fr); } }
+  .stat-item { text-align: center; padding: 12px; background: var(--bg); border-radius: 10px; border: 1px solid var(--border); }
+  .stat-val { font-size: 20px; font-weight: 900; color: var(--green); }
+  .stat-label { font-size: 11px; color: var(--muted); margin-top: 2px; text-transform: uppercase; letter-spacing: 0.04em; }
 
-.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:40px;}
-.stat{background:var(--s1);border:1px solid var(--b1);border-radius:14px;padding:16px 18px;box-shadow:0 1px 3px rgba(0,0,0,.04);}
-.stat-label{font-size:10px;color:var(--t3);letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px;font-family:var(--mono);}
-.stat-val{font-size:24px;font-weight:700;font-family:var(--mono);color:var(--green);}
-.stat-sub{font-size:11px;color:var(--t3);margin-top:3px;}
+  .container { max-width: 700px; margin: 0 auto; padding: 24px 16px 60px; }
 
-.sec{margin-bottom:36px;}
-.sec-header{display:flex;align-items:center;gap:10px;margin-bottom:14px;}
-.sec-title{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--t3);}
-.sec-line{flex:1;height:1px;background:var(--b1);}
-.sec-tag{font-size:10px;font-family:var(--mono);color:var(--t3);background:var(--s2);padding:2px 8px;border-radius:20px;border:1px solid var(--b1);}
+  /* Section */
+  .section-header { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; margin-top: 28px; }
+  .section-header h2 { font-size: 14px; font-weight: 800; color: var(--text); text-transform: uppercase; letter-spacing: 0.06em; }
+  .section-badge { font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 20px; }
+  .badge-live { background: var(--green-light); color: var(--green); }
+  .badge-new { background: #fef3c7; color: #92400e; }
+  .badge-soon { background: #f3f4f6; color: var(--muted); }
 
-.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
+  /* Tool Cards */
+  .tool-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 18px 20px;
+    margin-bottom: 12px;
+    display: block;
+    text-decoration: none;
+    color: var(--text);
+    transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+  .tool-card:hover { border-color: var(--green); transform: translateY(-1px); box-shadow: 0 4px 16px rgba(22,101,52,0.1); }
+  .tool-card.coming-soon { opacity: 0.6; pointer-events: none; }
+  .tc-header { display: flex; align-items: flex-start; gap: 14px; }
+  .tc-icon { font-size: 26px; flex-shrink: 0; margin-top: 2px; }
+  .tc-body { flex: 1; }
+  .tc-top { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+  .tc-name { font-size: 15px; font-weight: 800; }
+  .tc-live { font-size: 10px; font-weight: 800; padding: 2px 7px; border-radius: 12px; text-transform: uppercase; letter-spacing: 0.05em; }
+  .tc-live.live { background: var(--green-light); color: var(--green); }
+  .tc-live.new { background: #fef3c7; color: #92400e; }
+  .tc-live.soon { background: #f3f4f6; color: var(--muted); }
+  .tc-desc { font-size: 13px; color: var(--muted); line-height: 1.5; }
+  .tc-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+  .tc-tag { font-size: 11px; color: var(--muted); background: #f3f4f6; padding: 2px 8px; border-radius: 6px; }
+  .tc-arrow { color: var(--muted); font-size: 18px; margin-left: auto; align-self: center; transition: transform 0.2s; }
+  .tool-card:hover .tc-arrow { transform: translateX(3px); color: var(--green); }
 
-.tool{background:var(--s1);border:1px solid var(--b1);border-radius:18px;padding:20px;text-decoration:none;color:inherit;transition:all .2s;display:block;position:relative;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.04);}
-.tool::after{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--tc,var(--green));opacity:0;transition:opacity .2s;}
-.tool:hover{border-color:var(--b2);box-shadow:0 4px 16px rgba(0,0,0,.08);transform:translateY(-2px);}
-.tool:hover::after{opacity:1;}
-.tool.live{border-color:var(--green-border);}
-.tool.live::after{opacity:1;}
-.tool.off{opacity:.4;pointer-events:none;}
-
-.tool-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px;}
-.tool-icon{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:19px;}
-.tbadge{font-size:9px;font-weight:700;padding:2px 7px;border-radius:20px;font-family:var(--mono);letter-spacing:.04em;}
-.tb-live{background:var(--green-bg);color:var(--green);border:1px solid var(--green-border);}
-.tb-soon{background:var(--s2);color:var(--t3);border:1px solid var(--b1);}
-
-.tool-name{font-size:14px;font-weight:700;margin-bottom:5px;color:var(--t1);}
-.tool-desc{font-size:12px;color:var(--t2);line-height:1.6;margin-bottom:14px;}
-.tool-foot{display:flex;justify-content:space-between;align-items:center;}
-.tool-meta{font-size:10px;color:var(--t3);font-family:var(--mono);}
-.tool-arr{font-size:13px;color:var(--t3);transition:all .2s;}
-.tool:hover .tool-arr{color:var(--green);transform:translateX(3px);}
-
-.footer{border-top:1px solid var(--b1);padding:18px 32px;display:flex;justify-content:space-between;align-items:center;background:var(--s1);}
-.footer-l{font-size:11px;color:var(--t3);}
-.footer-r{font-size:11px;color:var(--t3);font-family:var(--mono);}
+  footer { text-align: center; padding: 20px; font-size: 12px; color: var(--muted); }
 </style>
 </head>
 <body>
 
-<div class="topbar">
-  <div class="logo">
-    <div class="logo-mark">M</div>
+<div class="header">
+  <div class="header-top">
+    <div class="logo">M</div>
     <div>
-      <div class="logo-name">MamaVege</div>
-      <div class="logo-tag">Management Hub</div>
+      <div class="brand">MamaVege</div>
+      <div class="sub">Management Hub</div>
     </div>
+    <div class="status-pill"><span class="status-dot"></span> System Live</div>
   </div>
-  <div class="topbar-right">
-    <div class="live-badge"><div class="live-dot"></div>System Live</div>
-    <div class="date-txt" id="date-txt"></div>
+  <div class="header-welcome">Welcome back</div>
+  <div class="header-tagline">Your Sales Command Centre</div>
+</div>
+
+<div class="stats-bar">
+  <div class="stat-item">
+    <div class="stat-val" id="stat-monthly">—</div>
+    <div class="stat-label">This Month Sales</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-val" id="stat-yearly">—</div>
+    <div class="stat-label">This Year Sales</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-val">RM 6M</div>
+    <div class="stat-label">2026 Target</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-val" id="stat-gap">—</div>
+    <div class="stat-label">Gap to Target</div>
   </div>
 </div>
 
-<div class="main">
-  <div class="hero">
-    <div class="hero-greeting">Welcome back</div>
-    <div class="hero-title">Your <span>Sales Command</span> Centre</div>
-    <div class="hero-sub">All tools in one place — track promotions, monitor ROI, and manage your team across all regions.</div>
+<div class="container">
+
+  <!-- Promotion Management -->
+  <div class="section-header">
+    <h2>Promotion Management</h2>
+    <span class="section-badge badge-live">4 live</span>
   </div>
 
-  <div class="stats-row">
-    <div class="stat"><div class="stat-label">This Month Sales</div><div class="stat-val" id="s-month">—</div><div class="stat-sub" id="s-month-sub">loading...</div></div>
-    <div class="stat"><div class="stat-label">This Year Sales</div><div class="stat-val" id="s-year">—</div><div class="stat-sub">2026 cumulative</div></div>
-    <div class="stat"><div class="stat-label">2026 Target</div><div class="stat-val">RM 6M</div><div class="stat-sub">annual target</div></div>
-    <div class="stat"><div class="stat-label">Gap to Target</div><div class="stat-val" id="s-gap" style="color:var(--red)">—</div><div class="stat-sub" id="s-gap-sub">remaining</div></div>
+  <a class="tool-card" href="promo-fill.html">
+    <div class="tc-header">
+      <div class="tc-icon">✏️</div>
+      <div class="tc-body">
+        <div class="tc-top"><span class="tc-name">Daily Promo Fill</span><span class="tc-live live">LIVE</span></div>
+        <div class="tc-desc">For store managers — submit daily promo data including sales, costs, and activity updates.</div>
+        <div class="tc-tags"><span class="tc-tag">GE</span><span class="tc-tag">ISLAND</span><span class="tc-tag">BLOCK</span><span class="tc-tag">SAMPLING</span><span class="tc-tag">PROMOTER</span></div>
+      </div>
+      <div class="tc-arrow">→</div>
+    </div>
+  </a>
+
+  <a class="tool-card" href="promo-hq.html">
+    <div class="tc-header">
+      <div class="tc-icon">📊</div>
+      <div class="tc-body">
+        <div class="tc-top"><span class="tc-name">Promo HQ Dashboard</span><span class="tc-live live">LIVE</span></div>
+        <div class="tc-desc">HQ view — all regions, ROI analysis, store rankings, cost breakdown and performance alerts.</div>
+        <div class="tc-tags"><span class="tc-tag">Northern</span><span class="tc-tag">Central</span><span class="tc-tag">Southern</span><span class="tc-tag">East</span></div>
+      </div>
+      <div class="tc-arrow">→</div>
+    </div>
+  </a>
+
+  <a class="tool-card" href="sales-dashboard.html">
+    <div class="tc-header">
+      <div class="tc-icon">📈</div>
+      <div class="tc-body">
+        <div class="tc-top"><span class="tc-name">Sales Dashboard</span><span class="tc-live live">LIVE</span></div>
+        <div class="tc-desc">Full sales overview — salesperson rankings, customer analysis, product performance and trend charts, synced live from Google Sheet.</div>
+        <div class="tc-tags"><span class="tc-tag">Salesperson</span><span class="tc-tag">Customer</span><span class="tc-tag">Product</span><span class="tc-tag">Trend</span></div>
+      </div>
+      <div class="tc-arrow">→</div>
+    </div>
+  </a>
+
+  <a class="tool-card" href="roi-calculator.html">
+    <div class="tc-header">
+      <div class="tc-icon">💰</div>
+      <div class="tc-body">
+        <div class="tc-top"><span class="tc-name">Break-even Calculator</span><span class="tc-live live">LIVE</span></div>
+        <div class="tc-desc">Calculate how many units to sell and what revenue target is needed to recover your investment costs.</div>
+        <div class="tc-tags"><span class="tc-tag">Listing fee</span><span class="tc-tag">DC Rebate</span><span class="tc-tag">Island Display</span></div>
+      </div>
+      <div class="tc-arrow">→</div>
+    </div>
+  </a>
+
+  <!-- Team Reporting -->
+  <div class="section-header" style="margin-top:32px;">
+    <h2>Team Reporting</h2>
+    <span class="section-badge badge-new">NEW</span>
   </div>
 
-  <div class="sec">
-    <div class="sec-header"><span class="sec-title">Promotion Management</span><div class="sec-line"></div><span class="sec-tag">4 live</span></div>
-    <div class="grid3">
-      <a class="tool live" href="/promo-fill.html" style="--tc:var(--green2)">
-        <div class="tool-top"><div class="tool-icon" style="background:var(--green-bg)">✏️</div><span class="tbadge tb-live">LIVE</span></div>
-        <div class="tool-name">Daily Promo Fill</div>
-        <div class="tool-desc">For store managers — submit daily promo data including sales, costs, and activity updates.</div>
-        <div class="tool-foot"><span class="tool-meta">GE · ISLAND · BLOCK · SAMPLING · PROMOTER</span><span class="tool-arr">→</span></div>
-      </a>
-      <a class="tool live" href="/promo-hq.html" style="--tc:var(--green)">
-        <div class="tool-top"><div class="tool-icon" style="background:var(--green-bg)">📊</div><span class="tbadge tb-live">LIVE</span></div>
-        <div class="tool-name">Promo HQ Dashboard</div>
-        <div class="tool-desc">HQ view — all regions, ROI analysis, store rankings, cost breakdown and performance alerts.</div>
-        <div class="tool-foot"><span class="tool-meta">Northern · Central · Southern · East</span><span class="tool-arr">→</span></div>
-      </a>
-      <a class="tool live" href="/sales-dashboard.html" style="--tc:var(--red)">
-        <div class="tool-top"><div class="tool-icon" style="background:var(--red-bg)">📈</div><span class="tbadge tb-live">LIVE</span></div>
-        <div class="tool-name">Sales Dashboard</div>
-        <div class="tool-desc">Full sales overview — salesperson rankings, customer analysis, product performance and trend charts, synced live from Google Sheet.</div>
-        <div class="tool-foot"><span class="tool-meta">Salesperson · Customer · Product · Trend</span><span class="tool-arr">→</span></div>
-      </a>
-      <a class="tool live" href="/roi-calculator.html" style="--tc:var(--green)">
-        <div class="tool-top"><div class="tool-icon" style="background:var(--green-bg)">💰</div><span class="tbadge tb-live">LIVE</span></div>
-        <div class="tool-name">Break-even Calculator</div>
-        <div class="tool-desc">Calculate how many units to sell and what revenue target is needed to recover your investment costs.</div>
-        <div class="tool-foot"><span class="tool-meta">Listing fee · DC Rebate · Island Display</span><span class="tool-arr">→</span></div>
-      </a>
+  <a class="tool-card" href="report-fill.html">
+    <div class="tc-header">
+      <div class="tc-icon">📝</div>
+      <div class="tc-body">
+        <div class="tc-top"><span class="tc-name">Daily & Weekly Report</span><span class="tc-live new">NEW</span></div>
+        <div class="tc-desc">Sales & Marketing team — submit daily work report and weekly targets. Complete before 18:00 daily / Friday 18:00 weekly.</div>
+        <div class="tc-tags"><span class="tc-tag">Daily Report</span><span class="tc-tag">Weekly Report</span><span class="tc-tag">Task Tracking</span></div>
+      </div>
+      <div class="tc-arrow">→</div>
+    </div>
+  </a>
+
+  <a class="tool-card" href="report-hq.html">
+    <div class="tc-header">
+      <div class="tc-icon">🗂️</div>
+      <div class="tc-body">
+        <div class="tc-top"><span class="tc-name">Report HQ Dashboard</span><span class="tc-live new">NEW</span></div>
+        <div class="tc-desc">HQ view — monitor who hasn't submitted, review all reports, and track monthly missing submission statistics.</div>
+        <div class="tc-tags"><span class="tc-tag">Missing Alert</span><span class="tc-tag">All Reports</span><span class="tc-tag">Monthly Stats</span><span class="tc-tag">Members</span></div>
+      </div>
+      <div class="tc-arrow">→</div>
+    </div>
+  </a>
+
+  <!-- Team Management -->
+  <div class="section-header" style="margin-top:32px;">
+    <h2>Team Management</h2>
+    <span class="section-badge badge-soon">coming soon</span>
+  </div>
+
+  <div class="tool-card coming-soon">
+    <div class="tc-header">
+      <div class="tc-icon">👤</div>
+      <div class="tc-body">
+        <div class="tc-top"><span class="tc-name">Promoter Attendance</span><span class="tc-live soon">COMING SOON</span></div>
+        <div class="tc-desc">Track promoter check-in, check-out, and daily deployment across all stores.</div>
+        <div class="tc-tags"><span class="tc-tag">Daily attendance log</span></div>
+      </div>
     </div>
   </div>
 
-  <div class="sec">
-    <div class="sec-header"><span class="sec-title">Team Management</span><div class="sec-line"></div><span class="sec-tag">coming soon</span></div>
-    <div class="grid3">
-      <div class="tool off">
-        <div class="tool-top"><div class="tool-icon" style="background:var(--s2)">👤</div><span class="tbadge tb-soon">COMING SOON</span></div>
-        <div class="tool-name">Promoter Attendance</div>
-        <div class="tool-desc">Track promoter check-in, check-out, and daily deployment across all stores.</div>
-        <div class="tool-foot"><span class="tool-meta">Daily attendance log</span><span class="tool-arr">→</span></div>
-      </div>
-      <div class="tool off">
-        <div class="tool-top"><div class="tool-icon" style="background:var(--s2)">📦</div><span class="tbadge tb-soon">COMING SOON</span></div>
-        <div class="tool-name">Stock Monitor</div>
-        <div class="tool-desc">Monitor promotional stock levels and replenishment status per store.</div>
-        <div class="tool-foot"><span class="tool-meta">Real-time stock status</span><span class="tool-arr">→</span></div>
-      </div>
-      <div class="tool off">
-        <div class="tool-top"><div class="tool-icon" style="background:var(--s2)">🕵️</div><span class="tbadge tb-soon">COMING SOON</span></div>
-        <div class="tool-name">Competitor Watch</div>
-        <div class="tool-desc">Log and monitor competitor promotions and pricing activities across regions.</div>
-        <div class="tool-foot"><span class="tool-meta">Market intelligence</span><span class="tool-arr">→</span></div>
+  <div class="tool-card coming-soon">
+    <div class="tc-header">
+      <div class="tc-icon">📦</div>
+      <div class="tc-body">
+        <div class="tc-top"><span class="tc-name">Stock Monitor</span><span class="tc-live soon">COMING SOON</span></div>
+        <div class="tc-desc">Monitor promotional stock levels and replenishment status per store.</div>
+        <div class="tc-tags"><span class="tc-tag">Real-time stock status</span></div>
       </div>
     </div>
   </div>
 
-  <div class="sec">
-    <div class="sec-header"><span class="sec-title">Reports & Analytics</span><div class="sec-line"></div><span class="sec-tag">coming soon</span></div>
-    <div class="grid3">
-      <div class="tool off">
-        <div class="tool-top"><div class="tool-icon" style="background:var(--s2)">📄</div><span class="tbadge tb-soon">COMING SOON</span></div>
-        <div class="tool-name">Weekly Report</div>
-        <div class="tool-desc">Auto-generated weekly summary — achievement, ROI, top stores and action items.</div>
-        <div class="tool-foot"><span class="tool-meta">Auto PDF export</span><span class="tool-arr">→</span></div>
-      </div>
-      <div class="tool off">
-        <div class="tool-top"><div class="tool-icon" style="background:var(--s2)">📈</div><span class="tbadge tb-soon">COMING SOON</span></div>
-        <div class="tool-name">Monthly Analysis</div>
-        <div class="tool-desc">Deep dive into monthly trends, cost efficiency and regional comparison.</div>
-        <div class="tool-foot"><span class="tool-meta">Trend analysis</span><span class="tool-arr">→</span></div>
+  <div class="tool-card coming-soon">
+    <div class="tc-header">
+      <div class="tc-icon">🕵️</div>
+      <div class="tc-body">
+        <div class="tc-top"><span class="tc-name">Competitor Watch</span><span class="tc-live soon">COMING SOON</span></div>
+        <div class="tc-desc">Log and monitor competitor promotions and pricing activities across regions.</div>
+        <div class="tc-tags"><span class="tc-tag">Market intelligence</span></div>
       </div>
     </div>
   </div>
+
+  <!-- Reports & Analytics -->
+  <div class="section-header" style="margin-top:32px;">
+    <h2>Reports & Analytics</h2>
+    <span class="section-badge badge-soon">coming soon</span>
+  </div>
+
+  <div class="tool-card coming-soon">
+    <div class="tc-header">
+      <div class="tc-icon">📄</div>
+      <div class="tc-body">
+        <div class="tc-top"><span class="tc-name">Monthly Analysis</span><span class="tc-live soon">COMING SOON</span></div>
+        <div class="tc-desc">Deep dive into monthly trends, cost efficiency and regional comparison.</div>
+        <div class="tc-tags"><span class="tc-tag">Trend analysis</span></div>
+      </div>
+    </div>
+  </div>
+
 </div>
 
-<div class="footer">
-  <div class="footer-l">© 2026 MamaVege Sales Team · All regions</div>
-  <div class="footer-r" id="footer-r"></div>
-</div>
+<footer>© 2026 MamaVege Sales Team · All regions</footer>
 
-<script>
-const API_URL = 'https://script.google.com/macros/s/AKfycbyRVwC3_FujVNOb1nNoffqL1UeFqrAVmgvV6BEEGFjn6_vq7eUF5rBbhqAm85ydsgL2/exec';
-const TARGET_2026 = 6000000;
-const now = new Date();
-
-document.getElementById('date-txt').textContent = now.toLocaleDateString('en-MY',{weekday:'short',year:'numeric',month:'short',day:'numeric'});
-document.getElementById('footer-r').textContent = 'Loaded at ' + now.toLocaleTimeString('en-MY',{hour:'2-digit',minute:'2-digit'});
-
-function fmtRM(n) {
-  if (n >= 1000000) return 'RM ' + (n/1000000).toFixed(2) + 'M';
-  if (n >= 1000) return 'RM ' + (n/1000).toFixed(1) + 'K';
-  return 'RM ' + n.toFixed(2);
-}
-
-function getTotal(r) {
-  for (const k of Object.keys(r)) {
-    if (k.toUpperCase().indexOf('TOTAL') !== -1 && k.toUpperCase().indexOf('RM') !== -1) {
-      const v = parseFloat(r[k]);
-      if (!isNaN(v) && v > 0) return v;
-    }
-  }
-  return 0;
-}
-
-async function loadStats() {
-  try {
-    const res = await fetch(API_URL);
-    const json = await res.json();
-    const data = json.data || [];
-    const curYear = now.getFullYear();
-    const curMonth = now.getMonth() + 1;
-
-    const yearData = data.filter(r => {
-      const d = new Date(r['PO DATE']);
-      return !isNaN(d) && d.getFullYear() === curYear;
-    });
-    const monthData = yearData.filter(r => {
-      const d = new Date(r['PO DATE']);
-      return d.getMonth() + 1 === curMonth;
-    });
-
-    const yearTotal = yearData.reduce((s,r) => s + getTotal(r), 0);
-    const monthTotal = monthData.reduce((s,r) => s + getTotal(r), 0);
-    const gap = TARGET_2026 - yearTotal;
-    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-
-    document.getElementById('s-month').textContent = fmtRM(monthTotal);
-    document.getElementById('s-month-sub').textContent = months[curMonth-1] + ' ' + curYear;
-    document.getElementById('s-year').textContent = fmtRM(yearTotal);
-    document.getElementById('s-gap').textContent = gap > 0 ? fmtRM(gap) : '🎉 Achieved!';
-    document.getElementById('s-gap').style.color = gap > 0 ? 'var(--red)' : 'var(--green)';
-    document.getElementById('s-gap-sub').textContent = gap > 0 ? Math.round(yearTotal/TARGET_2026*100) + '% achieved' : 'Target met!';
-  } catch(e) {
-    console.error('Stats error:', e);
-  }
-}
-loadStats();
-</script>
 </body>
 </html>
