@@ -110,8 +110,11 @@
   .pw-badge { font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.04em; }
   .pw-badge.set { background: var(--green-light); color: var(--green); }
   .pw-badge.unset { background: var(--amber-light); color: var(--amber); }
+  .kpi-badge { font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 20px; background: #fef3c7; color: #92400e; }
   .btn-setpw { background: var(--green); border: none; color: white; padding: 5px 12px; border-radius: 6px; font-size: 12px; cursor: pointer; font-weight: 600; }
   .btn-setpw:hover { background: var(--green-mid); }
+  .btn-kpi { background: #d97706; border: none; color: white; padding: 5px 12px; border-radius: 6px; font-size: 12px; cursor: pointer; font-weight: 600; }
+  .btn-kpi:hover { background: #b45309; }
   .btn-del { background: none; border: 1px solid var(--red); color: var(--red); padding: 4px 12px; border-radius: 6px; font-size: 12px; cursor: pointer; font-weight: 600; }
   .btn-del:hover { background: var(--red); color: white; }
 
@@ -240,10 +243,10 @@
   <div class="section" id="sec-members">
     <div class="card">
       <div class="card-title">👥 Team Members</div>
-      <div style="font-size:12px;color:var(--muted);margin-bottom:12px;">Each member needs a password to login at the Hub. Click <strong>Set Password</strong> to assign or reset.</div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:12px;">⚠️ Member name must match the <strong>SALES PERSON</strong> column in Google Sheet exactly (case-sensitive) for sales data to show.</div>
       <div id="member-list"><div class="loading-text">Loading…</div></div>
       <div class="add-member-row">
-        <input type="text" id="new-member-name" placeholder="English name" maxlength="50">
+        <input type="text" id="new-member-name" placeholder="English name (match Sheet)" maxlength="50">
         <input type="text" id="new-member-pw" placeholder="Initial password" maxlength="50">
         <button class="btn-add" onclick="addMember()">+ Add</button>
       </div>
@@ -330,13 +333,20 @@ function renderMembers() {
   list.innerHTML = members.map(m => `
     <div class="member-row" id="mrow-${m.id}">
       <span class="m-name">${m.name}</span>
-      <span class="pw-badge ${m.password ? 'set' : 'unset'}">${m.password ? '✓ Password set' : '⚠ No password'}</span>
-      <button class="btn-setpw" onclick="togglePwEdit(${m.id})">Set Password</button>
+      <span class="pw-badge ${m.password ? 'set' : 'unset'}">${m.password ? '✓ Password' : '⚠ No password'}</span>
+      <span class="kpi-badge">KPI: RM ${Number(m.monthly_kpi || 0).toLocaleString()}</span>
+      <button class="btn-setpw" onclick="togglePwEdit(${m.id})">Password</button>
+      <button class="btn-kpi" onclick="toggleKpiEdit(${m.id})">KPI</button>
       <button class="btn-del" onclick="deleteMember(${m.id}, '${m.name.replace(/'/g,"\\'")}')">Remove</button>
       <div class="pw-edit-row" id="pwedit-${m.id}">
         <input type="text" id="pwval-${m.id}" placeholder="New password">
         <button class="btn-save" onclick="savePassword(${m.id})">Save</button>
         <button class="btn-cancel" onclick="togglePwEdit(${m.id})">Cancel</button>
+      </div>
+      <div class="pw-edit-row" id="kpiedit-${m.id}">
+        <input type="number" id="kpival-${m.id}" placeholder="Monthly KPI (RM)" value="${m.monthly_kpi || ''}" min="0">
+        <button class="btn-save" onclick="saveKpi(${m.id})">Save</button>
+        <button class="btn-cancel" onclick="toggleKpiEdit(${m.id})">Cancel</button>
       </div>
     </div>`).join('');
 }
@@ -360,6 +370,25 @@ async function savePassword(id) {
   } catch(e) { alert('Failed to save password.'); }
 }
 
+function toggleKpiEdit(id) {
+  const row = document.getElementById('kpiedit-' + id);
+  row.classList.toggle('open');
+  if (row.classList.contains('open')) document.getElementById('kpival-' + id).focus();
+}
+
+async function saveKpi(id) {
+  const inp = document.getElementById('kpival-' + id);
+  const kpi = parseFloat(inp.value) || 0;
+  if (kpi < 0) { inp.style.borderColor = 'var(--red)'; return; }
+  try {
+    await fetch(SUPA_URL + '/rest/v1/members?id=eq.' + id, {
+      method: 'PATCH', headers: H, body: JSON.stringify({ monthly_kpi: kpi })
+    });
+    await loadMembers();
+    renderMembers();
+  } catch(e) { alert('Failed to save KPI.'); }
+}
+
 async function addMember() {
   const inp = document.getElementById('new-member-name');
   const pwInp = document.getElementById('new-member-pw');
@@ -368,7 +397,7 @@ async function addMember() {
   if (!name) { inp.style.borderColor = 'var(--red)'; return; }
   inp.style.borderColor = '';
   try {
-    await db('members', { method: 'POST', body: JSON.stringify({ name, password: pw || null }) });
+    await db('members', { method: 'POST', body: JSON.stringify({ name, password: pw || null, monthly_kpi: 0 }) });
     inp.value = '';
     pwInp.value = '';
     await loadMembers();
@@ -581,7 +610,6 @@ function logoutHQ() {
 }
 
 (async () => {
-  // 如果是 HQ 已通过 index.html 登入，自动跳过密码
   if (sessionStorage.getItem('userRole') === 'hq' || sessionStorage.getItem('hq_auth') === '1') {
     sessionStorage.setItem('hq_auth', '1');
     document.getElementById('pwOverlay').style.display = 'none';
