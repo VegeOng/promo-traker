@@ -15,26 +15,16 @@
     color: #1f2937;
   }
   .header {
-    background: white;
-    padding: 16px 20px;
+    background: white; padding: 16px 20px;
     box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    position: sticky;
-    top: 0;
-    z-index: 10;
+    display: flex; justify-content: space-between; align-items: center;
+    position: sticky; top: 0; z-index: 10;
   }
   .header h1 { color: #166534; font-size: 18px; }
   .header .user { font-size: 13px; color: #6b7280; }
   .logout {
-    background: none;
-    border: 1px solid #e5e7eb;
-    padding: 6px 12px;
-    border-radius: 8px;
-    font-size: 13px;
-    color: #dc2626;
-    cursor: pointer;
+    background: none; border: 1px solid #e5e7eb; padding: 6px 12px;
+    border-radius: 8px; font-size: 13px; color: #dc2626; cursor: pointer;
   }
   .logout:hover { background: #fef2f2; }
   .container { max-width: 900px; margin: 0 auto; padding: 20px; }
@@ -48,7 +38,6 @@
   .sec-title::after { content:''; flex:1; height:1px; background:#e5e7eb; }
   .sec-title:first-child { margin-top: 0; }
 
-  /* Tool grid */
   .tools-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
@@ -68,7 +57,6 @@
   .tool-name { font-size: 12px; font-weight: 700; color: #111827; line-height: 1.35; }
   .tbadge { font-size: 9px; font-weight: 700; padding: 2px 6px; border-radius: 20px; background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; letter-spacing: 0.03em; }
 
-  /* Tabs */
   .tabs {
     display: flex; background: white; border-radius: 12px;
     padding: 4px; margin-bottom: 16px;
@@ -99,12 +87,10 @@
   }
   .loading { text-align: center; padding: 20px; color: #6b7280; font-size: 14px; }
 
-  /* Sales KPI */
   .kpi-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-    gap: 10px;
-    margin-bottom: 16px;
+    gap: 10px; margin-bottom: 16px;
   }
   .kpi-card {
     background: white; border: 1px solid #e5e7eb; border-radius: 12px;
@@ -126,6 +112,13 @@
   .chart-card { background: white; border: 1px solid #e5e7eb; border-radius: 12px; padding: 16px; margin-bottom: 12px; }
   .chart-title { font-size: 13px; font-weight: 700; color: #374151; margin-bottom: 12px; }
   .chart-wrap { position: relative; height: 220px; }
+
+  /* Period switcher */
+  .period-bar { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-bottom: 1px solid #e5e7eb; flex-wrap: wrap; gap: 8px; }
+  .period-title { font-size: 13px; font-weight: 700; color: #374151; }
+  .period-btns { display: flex; gap: 4px; background: #f3f4f6; border-radius: 8px; padding: 3px; }
+  .period-btn { padding: 5px 12px; font-size: 11px; font-weight: 600; border: none; background: none; border-radius: 6px; cursor: pointer; color: #6b7280; transition: all 0.15s; }
+  .period-btn.active { background: white; color: #166534; box-shadow: 0 1px 2px rgba(0,0,0,0.08); }
 
   .data-table { width: 100%; border-collapse: collapse; font-size: 13px; }
   .data-table th { background: #f9fafb; padding: 9px 12px; text-align: left; font-size: 11px; font-weight: 700; color: #6b7280; text-transform: uppercase; letter-spacing: 0.04em; border-bottom: 1px solid #e5e7eb; }
@@ -199,12 +192,19 @@
         <div class="kpi-grid" id="kpi-grid"></div>
 
         <div class="chart-card">
-          <div class="chart-title">📈 月度销售趋势</div>
+          <div class="chart-title">📈 月度销售趋势（当年）</div>
           <div class="chart-wrap"><canvas id="chartMonthly"></canvas></div>
         </div>
 
         <div class="card" style="padding:0">
-          <div style="padding:14px 16px;font-size:13px;font-weight:700;color:#374151;border-bottom:1px solid #e5e7eb;">🏆 Top 10 客户</div>
+          <div class="period-bar">
+            <div class="period-title">🏆 Top 10 客户</div>
+            <div class="period-btns" id="outlet-period">
+              <button class="period-btn active" data-period="month" onclick="setOutletPeriod('month', this)">本月</button>
+              <button class="period-btn" data-period="year" onclick="setOutletPeriod('year', this)">本年</button>
+              <button class="period-btn" data-period="all" onclick="setOutletPeriod('all', this)">全部</button>
+            </div>
+          </div>
           <div style="overflow-x:auto">
             <table class="data-table" id="topOutletTable">
               <thead><tr><th>#</th><th>客户</th><th>订单</th><th>销售额</th></tr></thead>
@@ -214,7 +214,14 @@
         </div>
 
         <div class="card" style="padding:0">
-          <div style="padding:14px 16px;font-size:13px;font-weight:700;color:#374151;border-bottom:1px solid #e5e7eb;">📦 SKU 销量排行</div>
+          <div class="period-bar">
+            <div class="period-title">📦 SKU 销量排行</div>
+            <div class="period-btns" id="sku-period">
+              <button class="period-btn active" data-period="month" onclick="setSkuPeriod('month', this)">本月</button>
+              <button class="period-btn" data-period="year" onclick="setSkuPeriod('year', this)">本年</button>
+              <button class="period-btn" data-period="all" onclick="setSkuPeriod('all', this)">全部</button>
+            </div>
+          </div>
           <div style="overflow-x:auto">
             <table class="data-table" id="topSkuTable">
               <thead><tr><th>#</th><th>产品</th><th>数量</th><th>占比</th></tr></thead>
@@ -236,20 +243,18 @@
 
   const userName = sessionStorage.getItem('userName');
   const userRole = sessionStorage.getItem('userRole');
-  const userId = sessionStorage.getItem('userId');
 
-  if (!userName || userRole !== 'member') {
-    location.href = 'index.html';
-  }
-
+  if (!userName || userRole !== 'member') { location.href = 'index.html'; }
   document.getElementById('userLabel').textContent = `欢迎回来，${userName}`;
 
-  function logout() {
-    sessionStorage.clear();
-    location.href = 'index.html';
-  }
+  function logout() { sessionStorage.clear(); location.href = 'index.html'; }
 
   let salesLoaded = false;
+  let myData = [];         // 自己的全部数据
+  let curYear = new Date().getFullYear();
+  let curMonth = new Date().getMonth() + 1;
+  let outletPeriod = 'month';
+  let skuPeriod = 'month';
 
   function switchTab(name, ev) {
     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
@@ -263,7 +268,6 @@
     const { data, error } = await supa
       .from('daily_reports').select('*')
       .eq('name', userName).order('date', { ascending: false });
-
     document.getElementById('loading-daily').style.display = 'none';
     const list = document.getElementById('list-daily');
     if (error || !data || data.length === 0) {
@@ -282,7 +286,6 @@
     const { data, error } = await supa
       .from('weekly_reports').select('*')
       .eq('name', userName).order('date', { ascending: false });
-
     document.getElementById('loading-weekly').style.display = 'none';
     const list = document.getElementById('list-weekly');
     if (error || !data || data.length === 0) {
@@ -314,23 +317,76 @@
     return 0;
   }
 
+  function filterByPeriod(period) {
+    if (period === 'month') return myData.filter(r => parseInt(r['YEAR']) === curYear && parseInt(r['MONTH']) === curMonth);
+    if (period === 'year') return myData.filter(r => parseInt(r['YEAR']) === curYear);
+    return myData;
+  }
+
+  function setOutletPeriod(p, btn) {
+    outletPeriod = p;
+    document.querySelectorAll('#outlet-period .period-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    renderTopOutlets();
+  }
+
+  function setSkuPeriod(p, btn) {
+    skuPeriod = p;
+    document.querySelectorAll('#sku-period .period-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    renderTopSkus();
+  }
+
+  function renderTopOutlets() {
+    const data = filterByPeriod(outletPeriod);
+    const outletMap = {};
+    data.forEach(r => {
+      const o = r['COMPANY'] || 'Unknown';
+      if (!outletMap[o]) outletMap[o] = { orders: 0, total: 0 };
+      outletMap[o].orders++;
+      outletMap[o].total += getTotalField(r);
+    });
+    const topOutlets = Object.entries(outletMap).sort((a,b) => b[1].total - a[1].total).slice(0, 10);
+    document.querySelector('#topOutletTable tbody').innerHTML = topOutlets.length ? topOutlets.map(([name, d], i) => `
+      <tr>
+        <td class="rank">${i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : i+1}</td>
+        <td><strong>${escapeHtml(name)}</strong></td>
+        <td>${d.orders}</td>
+        <td class="amount">${fmtRM(d.total)}</td>
+      </tr>`).join('') : '<tr><td colspan="4" style="text-align:center;color:#9ca3af;padding:20px;">本期间暂无数据</td></tr>';
+  }
+
+  function renderTopSkus() {
+    const data = filterByPeriod(skuPeriod);
+    const skuMap = {};
+    PRODUCTS.forEach(p => {
+      const qty = data.reduce((s, r) => s + (parseFloat(r[p]) || 0), 0);
+      if (qty > 0) skuMap[p] = qty;
+    });
+    const sortedSku = Object.entries(skuMap).sort((a,b) => b[1] - a[1]);
+    const totalSku = sortedSku.reduce((s, e) => s + e[1], 0);
+    document.querySelector('#topSkuTable tbody').innerHTML = sortedSku.length ? sortedSku.map(([name, qty], i) => `
+      <tr>
+        <td class="rank">${i+1}</td>
+        <td><strong>${escapeHtml(name)}</strong></td>
+        <td class="qty">${fmt(qty)}</td>
+        <td>${totalSku > 0 ? (qty/totalSku*100).toFixed(1) : 0}%</td>
+      </tr>`).join('') : '<tr><td colspan="4" style="text-align:center;color:#9ca3af;padding:20px;">本期间暂无数据</td></tr>';
+  }
+
   async function loadSales() {
     salesLoaded = true;
     const loadEl = document.getElementById('loading-sales');
     const contentEl = document.getElementById('sales-content');
 
     try {
-      // 拿 KPI 设置
       const { data: memberInfo } = await supa.from('members').select('monthly_kpi').eq('name', userName).maybeSingle();
       const kpiTarget = memberInfo?.monthly_kpi || 0;
 
-      // 拿 Google Sheet 数据
       const res = await fetch(SALES_API);
       const json = await res.json();
       const allData = json.data || [];
-
-      // 只看自己的
-      const myData = allData.filter(r => (r['SALES PERSON'] || '').trim() === userName.trim());
+      myData = allData.filter(r => (r['SALES PERSON'] || '').trim() === userName.trim());
 
       if (myData.length === 0) {
         loadEl.style.display = 'none';
@@ -339,21 +395,15 @@
         return;
       }
 
-      const now = new Date();
-      const curYear = now.getFullYear();
-      const curMonth = now.getMonth() + 1;
-
       const yearData = myData.filter(r => parseInt(r['YEAR']) === curYear);
       const monthData = yearData.filter(r => parseInt(r['MONTH']) === curMonth);
 
       const yearTotal = yearData.reduce((s, r) => s + getTotalField(r), 0);
       const monthTotal = monthData.reduce((s, r) => s + getTotalField(r), 0);
       const achPct = kpiTarget > 0 ? Math.round(monthTotal / kpiTarget * 100) : 0;
-      const totalOrders = myData.length;
       const monthOrders = monthData.length;
       const myOutlets = new Set(myData.map(r => r['COMPANY']).filter(Boolean)).size;
 
-      // KPI 卡片
       document.getElementById('kpi-grid').innerHTML = `
         <div class="kpi-card green">
           <div class="kpi-label">本月销售额</div>
@@ -385,7 +435,7 @@
       loadEl.style.display = 'none';
       contentEl.style.display = 'block';
 
-      // 月度趋势图（当年）
+      // 月度趋势图
       const monthMap = {};
       yearData.forEach(r => {
         const m = parseInt(r['MONTH']);
@@ -411,47 +461,15 @@
           }]
         },
         options: {
-          responsive: true,
-          maintainAspectRatio: false,
+          responsive: true, maintainAspectRatio: false,
           plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => 'RM ' + fmt(ctx.parsed.y) } } },
           scales: { y: { beginAtZero: true, ticks: { callback: v => 'RM ' + fmt(v) } } }
         }
       });
 
-      // Top 10 客户
-      const outletMap = {};
-      myData.forEach(r => {
-        const o = r['COMPANY'] || 'Unknown';
-        if (!outletMap[o]) outletMap[o] = { orders: 0, total: 0 };
-        outletMap[o].orders++;
-        outletMap[o].total += getTotalField(r);
-      });
-      const topOutlets = Object.entries(outletMap).sort((a,b) => b[1].total - a[1].total).slice(0, 10);
-      document.querySelector('#topOutletTable tbody').innerHTML = topOutlets.map(([name, d], i) => `
-        <tr>
-          <td class="rank">${i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : i+1}</td>
-          <td><strong>${escapeHtml(name)}</strong></td>
-          <td>${d.orders}</td>
-          <td class="amount">${fmtRM(d.total)}</td>
-        </tr>
-      `).join('') || '<tr><td colspan="4" style="text-align:center;color:#9ca3af;padding:20px;">暂无数据</td></tr>';
-
-      // SKU 销量排行
-      const skuMap = {};
-      PRODUCTS.forEach(p => {
-        const qty = myData.reduce((s, r) => s + (parseFloat(r[p]) || 0), 0);
-        if (qty > 0) skuMap[p] = qty;
-      });
-      const sortedSku = Object.entries(skuMap).sort((a,b) => b[1] - a[1]);
-      const totalSku = sortedSku.reduce((s, e) => s + e[1], 0);
-      document.querySelector('#topSkuTable tbody').innerHTML = sortedSku.map(([name, qty], i) => `
-        <tr>
-          <td class="rank">${i+1}</td>
-          <td><strong>${escapeHtml(name)}</strong></td>
-          <td class="qty">${fmt(qty)}</td>
-          <td>${totalSku > 0 ? (qty/totalSku*100).toFixed(1) : 0}%</td>
-        </tr>
-      `).join('') || '<tr><td colspan="4" style="text-align:center;color:#9ca3af;padding:20px;">暂无数据</td></tr>';
+      // 初始渲染（默认本月）
+      renderTopOutlets();
+      renderTopSkus();
 
     } catch(e) {
       console.error(e);
