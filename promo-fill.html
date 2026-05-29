@@ -34,9 +34,9 @@ label{font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:upperca
 input,select,textarea{background:var(--s2);border:1.5px solid var(--b1);border-radius:var(--r);padding:10px 12px;font-size:14px;font-family:var(--font);color:var(--t1);outline:none;transition:border .15s;width:100%;}
 input:focus,select:focus,textarea:focus{border-color:var(--green);background:var(--s1);}
 input::placeholder,textarea::placeholder{color:var(--t3);}
+input[readonly]{background:#e5e7eb;color:#6b7280;cursor:not-allowed;}
 textarea{resize:vertical;min-height:72px;line-height:1.5;}
 
-/* Product table */
 .prod-table{width:100%;border-collapse:collapse;font-size:13px;margin-bottom:10px;}
 .prod-table th{text-align:left;padding:7px 8px;font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--t3);border-bottom:1px solid var(--b1);font-weight:600;background:var(--s2);}
 .prod-table td{padding:6px 4px;border-bottom:1px solid var(--b1);vertical-align:middle;}
@@ -49,7 +49,6 @@ textarea{resize:vertical;min-height:72px;line-height:1.5;}
 .add-prod-btn{display:flex;align-items:center;gap:6px;padding:8px 14px;background:var(--green-bg);border:1px dashed var(--green-border);border-radius:var(--r);font-size:13px;font-weight:600;color:var(--green);cursor:pointer;transition:all .15s;width:100%;justify-content:center;}
 .add-prod-btn:hover{background:#dcfce7;}
 
-/* Summary bar */
 .summary-bar{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:12px;}
 .sum-item{background:var(--s2);border-radius:var(--r);padding:10px 12px;text-align:center;}
 .sum-label{font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;}
@@ -58,7 +57,6 @@ textarea{resize:vertical;min-height:72px;line-height:1.5;}
 .sum-val.amber{color:var(--amber);}
 .sum-val.red{color:var(--red);}
 
-/* Photo upload */
 .photo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:10px;}
 .photo-slot{aspect-ratio:1;border:2px dashed var(--b1);border-radius:var(--r2);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;transition:all .2s;position:relative;overflow:hidden;background:var(--s2);}
 .photo-slot:hover{border-color:var(--green);background:var(--green-bg);}
@@ -71,7 +69,6 @@ textarea{resize:vertical;min-height:72px;line-height:1.5;}
 .photo-slot input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;}
 .upload-status{font-size:11px;color:var(--t3);text-align:center;}
 
-/* Submit */
 .submit-btn{width:100%;padding:14px;background:var(--green);color:#fff;border:none;border-radius:var(--r2);font-size:15px;font-weight:700;font-family:var(--font);cursor:pointer;transition:all .2s;margin-top:4px;}
 .submit-btn:hover{background:#14532d;}
 .submit-btn:disabled{background:var(--t3);cursor:not-allowed;}
@@ -103,7 +100,7 @@ textarea{resize:vertical;min-height:72px;line-height:1.5;}
 <div class="topbar">
   <div class="logo-mark">M</div>
   <span class="topbar-title">MamaVege — Daily Promo Fill</span>
-  <a href="/" class="topbar-back">← Hub</a>
+  <a href="#" id="back-link" class="topbar-back">← Back</a>
 </div>
 
 <div class="container">
@@ -248,7 +245,7 @@ textarea{resize:vertical;min-height:72px;line-height:1.5;}
 
   <button class="submit-btn" id="submit-btn" onclick="submitForm()">Submit</button>
 
-  <p class="sec-label" style="margin-top:28px;">My Recent Submissions</p>
+  <p class="sec-label" style="margin-top:28px;" id="rec-title">My Recent Submissions</p>
   <div id="my-records"><div style="text-align:center;padding:20px;color:var(--t3);font-size:13px;">Loading…</div></div>
 </div>
 
@@ -258,6 +255,27 @@ const sb=supabase.createClient(
   'https://wjhgezvrxlhpexocfsea.supabase.co',
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndqaGdlenZyeGxocGV4b2Nmc2VhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg1MDU4NzgsImV4cCI6MjA5NDA4MTg3OH0.jENcrgEDYDlSRUCqve-T6rxYRJfz-dnZQHnXpPLJ_RE'
 );
+
+// ── Auth ─────────────────────────────────────────────────
+const loggedUser = sessionStorage.getItem('userName');
+const userRole = sessionStorage.getItem('userRole');
+if (!loggedUser) { location.href = 'index.html'; }
+
+// Back link
+const back = document.getElementById('back-link');
+back.href = userRole === 'hq' ? 'index.html' : 'my-dashboard.html';
+back.textContent = userRole === 'hq' ? '← Hub' : '← My Dashboard';
+
+// Lock promoter name for sales role
+if (userRole === 'member') {
+  const m = document.getElementById('f-manager');
+  m.value = loggedUser;
+  m.setAttribute('readonly', 'readonly');
+  m.placeholder = '';
+}
+
+// Recent title
+document.getElementById('rec-title').textContent = userRole === 'member' ? 'My Recent Submissions' : 'Recent Submissions (All)';
 
 // Init
 document.getElementById('f-date').value=new Date().toISOString().slice(0,10);
@@ -445,7 +463,6 @@ async function submitForm(){
   const totTarget=prods.reduce((a,p)=>a+p.target_qty,0);
   const totSold=prods.reduce((a,p)=>a+p.sold,0);
 
-  // Upload photos first
   const tempId=Date.now().toString();
   const photoUrlsArr=await uploadPhotos(tempId);
 
@@ -460,7 +477,6 @@ async function submitForm(){
     other_cost:parseFloat(g('f-other-cost'))||0,
     photo_urls:photoUrlsArr,
     note:g('f-note').trim(),
-    // keep legacy fields with defaults
     promo_type:'PROMOTER',
     target:totTarget,
     actual_sales:totSold,
@@ -484,7 +500,9 @@ function resetForm(){
   document.getElementById('success-card').classList.remove('show');
   const btn=document.getElementById('submit-btn');
   btn.style.display='';btn.disabled=false;btn.innerHTML='Submit';
-  ['f-store','f-manager','f-name','f-duration','f-sampling','f-other-cost','f-note'].forEach(id=>document.getElementById(id).value='');
+  ['f-store','f-name','f-duration','f-sampling','f-other-cost','f-note'].forEach(id=>document.getElementById(id).value='');
+  // 销售员名字保持锁定，HQ 清空
+  if (userRole !== 'member') document.getElementById('f-manager').value='';
   document.getElementById('f-region').value='';
   document.getElementById('f-date').value=new Date().toISOString().slice(0,10);
   prodRows=[];prodId=0;renderProducts();
@@ -500,7 +518,9 @@ function resetForm(){
 
 // ── Recent Records ────────────────────────────────────────
 async function loadRecords(){
-  const{data}=await sb.from('promotions').select('*').order('created_at',{ascending:false}).limit(5);
+  let q = sb.from('promotions').select('*').order('created_at',{ascending:false}).limit(5);
+  if (userRole === 'member') q = q.eq('manager', loggedUser);
+  const{data}=await q;
   const wrap=document.getElementById('my-records');
   if(!data||!data.length){wrap.innerHTML='<div style="text-align:center;padding:20px;color:var(--t3);font-size:13px;">No submissions yet</div>';return;}
   wrap.innerHTML=data.map(r=>{

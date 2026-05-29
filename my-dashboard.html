@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Dashboard - MamaVege</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: #fafafa;
+    min-height: 100vh;
+    color: #1f2937;
+  }
+  .header {
+    background: white;
+    padding: 16px 20px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+  .header h1 { color: #166534; font-size: 18px; }
+  .header .user { font-size: 13px; color: #6b7280; }
+  .logout {
+    background: none;
+    border: 1px solid #e5e7eb;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 13px;
+    color: #dc2626;
+    cursor: pointer;
+  }
+  .logout:hover { background: #fef2f2; }
+  .container { max-width: 900px; margin: 0 auto; padding: 20px; }
+
+  .quick-actions {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-bottom: 24px;
+  }
+  .action-btn {
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 14px 8px;
+    text-align: center;
+    text-decoration: none;
+    color: #166534;
+    font-weight: 600;
+    font-size: 13px;
+    transition: all 0.2s;
+  }
+  .action-btn:hover { background: #166534; color: white; }
+
+  .tabs {
+    display: flex;
+    background: white;
+    border-radius: 12px;
+    padding: 4px;
+    margin-bottom: 16px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  }
+  .tab {
+    flex: 1;
+    padding: 10px;
+    text-align: center;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    color: #6b7280;
+    transition: all 0.2s;
+  }
+  .tab.active { background: #166534; color: white; }
+
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  .card {
+    background: white;
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 12px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  }
+  .card-date {
+    font-size: 12px;
+    color: #166534;
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+  .card-row {
+    margin-bottom: 8px;
+    font-size: 14px;
+  }
+  .card-row strong { color: #374151; display: block; margin-bottom: 2px; font-size: 12px; }
+  .card-row p { color: #1f2937; white-space: pre-wrap; }
+  .empty {
+    text-align: center;
+    color: #9ca3af;
+    padding: 40px 20px;
+    background: white;
+    border-radius: 12px;
+    font-size: 14px;
+  }
+  .loading { text-align: center; padding: 20px; color: #6b7280; font-size: 14px; }
+</style>
+</head>
+<body>
+  <div class="header">
+    <div>
+      <h1>🥬 My Dashboard</h1>
+      <div class="user" id="userLabel"></div>
+    </div>
+    <button class="logout" onclick="logout()">登出</button>
+  </div>
+
+  <div class="container">
+    <div class="quick-actions">
+      <a href="report-fill.html" class="action-btn">📝 填日报</a>
+      <a href="report-fill.html?type=weekly" class="action-btn">📊 填周报</a>
+      <a href="promo-fill.html" class="action-btn">🏷️ 填促销</a>
+    </div>
+
+    <div class="tabs">
+      <div class="tab active" onclick="switchTab('daily')">日报</div>
+      <div class="tab" onclick="switchTab('weekly')">周报</div>
+      <div class="tab" onclick="switchTab('sales')">销售数据</div>
+    </div>
+
+    <div class="panel active" id="panel-daily">
+      <div class="loading" id="loading-daily">加载中...</div>
+      <div id="list-daily"></div>
+    </div>
+
+    <div class="panel" id="panel-weekly">
+      <div class="loading" id="loading-weekly">加载中...</div>
+      <div id="list-weekly"></div>
+    </div>
+
+    <div class="panel" id="panel-sales">
+      <div class="empty">销售数据功能即将推出 🚧</div>
+    </div>
+  </div>
+
+<script>
+  const SUPABASE_URL = 'https://wjhgezvrxlhpexocfsea.supabase.co';
+  const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndqaGdlenZyeGxocGV4b2Nmc2VhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg1MDU4NzgsImV4cCI6MjA5NDA4MTg3OH0.jENcrgEDYDlSRUCqve-T6rxYRJfz-dnZQHnXpPLJ_RE';
+  const supa = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  const userName = sessionStorage.getItem('userName');
+  const userRole = sessionStorage.getItem('userRole');
+
+  if (!userName || userRole !== 'member') {
+    location.href = 'index.html';
+  }
+
+  document.getElementById('userLabel').textContent = `欢迎回来，${userName}`;
+
+  function logout() {
+    sessionStorage.clear();
+    location.href = 'index.html';
+  }
+
+  function switchTab(name) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    event.target.classList.add('active');
+    document.getElementById('panel-' + name).classList.add('active');
+  }
+
+  async function loadDaily() {
+    const { data, error } = await supa
+      .from('daily_reports')
+      .select('*')
+      .eq('name', userName)
+      .order('date', { ascending: false });
+
+    document.getElementById('loading-daily').style.display = 'none';
+    const list = document.getElementById('list-daily');
+
+    if (error || !data || data.length === 0) {
+      list.innerHTML = '<div class="empty">还没有日报记录</div>';
+      return;
+    }
+
+    list.innerHTML = data.map(r => `
+      <div class="card">
+        <div class="card-date">${r.date}</div>
+        <div class="card-row"><strong>今日任务</strong><p>${escapeHtml(r.today_task || '-')}</p></div>
+        <div class="card-row"><strong>明日任务</strong><p>${escapeHtml(r.tomorrow_task || '-')}</p></div>
+        <div class="card-row"><strong>需要协助</strong><p>${escapeHtml(r.assistance || '-')}</p></div>
+      </div>
+    `).join('');
+  }
+
+  async function loadWeekly() {
+    const { data, error } = await supa
+      .from('weekly_reports')
+      .select('*')
+      .eq('name', userName)
+      .order('date', { ascending: false });
+
+    document.getElementById('loading-weekly').style.display = 'none';
+    const list = document.getElementById('list-weekly');
+
+    if (error || !data || data.length === 0) {
+      list.innerHTML = '<div class="empty">还没有周报记录</div>';
+      return;
+    }
+
+    list.innerHTML = data.map(r => `
+      <div class="card">
+        <div class="card-date">${r.date}</div>
+        <div class="card-row"><strong>下周目标</strong><p>${escapeHtml(r.next_week_target || '-')}</p></div>
+        <div class="card-row"><strong>需要协助</strong><p>${escapeHtml(r.assistance || '-')}</p></div>
+      </div>
+    `).join('');
+  }
+
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+
+  loadDaily();
+  loadWeekly();
+</script>
+</body>
+</html>

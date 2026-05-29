@@ -20,7 +20,6 @@
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; min-height: 100vh; }
 
-  /* Header */
   .header { background: var(--green); color: white; padding: 16px 20px; display: flex; align-items: center; gap: 12px; position: sticky; top: 0; z-index: 100; }
   .header-logo { width: 32px; height: 32px; background: white; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: 900; color: var(--green); font-size: 14px; flex-shrink: 0; }
   .header-title { font-size: 16px; font-weight: 700; }
@@ -29,7 +28,6 @@
 
   .container { max-width: 600px; margin: 0 auto; padding: 24px 16px 60px; }
 
-  /* Mode Selector */
   .mode-select-section { margin-bottom: 28px; }
   .mode-label { font-size: 13px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 12px; }
   .mode-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
@@ -50,7 +48,6 @@
   .mode-card .mode-sub { font-size: 12px; color: var(--muted); margin-top: 4px; }
   .mode-card.active .mode-name { color: var(--green); }
 
-  /* Form */
   .form-card { background: var(--card); border-radius: var(--radius); border: 1px solid var(--border); padding: 24px; margin-bottom: 16px; display: none; }
   .form-card.visible { display: block; }
   .form-title { font-size: 18px; font-weight: 800; color: var(--green); margin-bottom: 4px; }
@@ -77,16 +74,19 @@
     border-color: var(--green);
     background: white;
   }
+  .field input:disabled, .field input[readonly] {
+    background: #f3f4f6;
+    color: #6b7280;
+    cursor: not-allowed;
+  }
   .field textarea { resize: vertical; min-height: 90px; }
   .field .error-msg { font-size: 12px; color: var(--red); margin-top: 4px; display: none; }
   .field.has-error input, .field.has-error select, .field.has-error textarea { border-color: var(--red); }
   .field.has-error .error-msg { display: block; }
 
-  /* Select wrapper */
   .select-wrap { position: relative; }
   .select-wrap::after { content: '▾'; position: absolute; right: 14px; top: 50%; transform: translateY(-50%); pointer-events: none; color: var(--muted); font-size: 12px; }
 
-  /* Submit */
   .btn-submit {
     width: 100%;
     padding: 15px;
@@ -104,7 +104,6 @@
   .btn-submit:active { transform: scale(0.98); }
   .btn-submit:disabled { background: #9ca3af; cursor: not-allowed; }
 
-  /* Success */
   .success-banner {
     display: none;
     background: var(--green-light);
@@ -120,7 +119,6 @@
   .success-banner p { color: var(--muted); font-size: 13px; margin-top: 4px; }
   .btn-another { margin-top: 12px; padding: 10px 20px; background: var(--green); color: white; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; }
 
-  /* Recent */
   .recent-section { margin-top: 28px; display: none; }
   .recent-section.visible { display: block; }
   .section-title { font-size: 14px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 12px; }
@@ -139,12 +137,11 @@
 <div class="header">
   <div class="header-logo">M</div>
   <div class="header-title">Work Report</div>
-  <a href="index.html" class="header-back">← Hub</a>
+  <a href="#" id="backLink" class="header-back">← Back</a>
 </div>
 
 <div class="container">
 
-  <!-- Mode Select -->
   <div class="mode-select-section">
     <div class="mode-label">Select Report Type</div>
     <div class="mode-cards">
@@ -161,7 +158,6 @@
     </div>
   </div>
 
-  <!-- Success Banner -->
   <div class="success-banner" id="successBanner">
     <div class="icon">✅</div>
     <h3>Submitted Successfully!</h3>
@@ -176,12 +172,13 @@
 
     <div class="field" id="f-daily-name">
       <label>Name <span class="req">*</span></label>
-      <div class="hint">Your English name</div>
-      <div class="select-wrap">
+      <div class="hint" id="daily-name-hint">Your English name</div>
+      <div class="select-wrap" id="daily-name-select-wrap">
         <select id="daily-name">
           <option value="">Select your name</option>
         </select>
       </div>
+      <input type="text" id="daily-name-locked" style="display:none" readonly>
       <div class="error-msg">Please select your name</div>
     </div>
 
@@ -223,11 +220,12 @@
     <div class="field" id="f-weekly-name">
       <label>Name <span class="req">*</span></label>
       <div class="hint">Your English name</div>
-      <div class="select-wrap">
+      <div class="select-wrap" id="weekly-name-select-wrap">
         <select id="weekly-name">
           <option value="">Select your name</option>
         </select>
       </div>
+      <input type="text" id="weekly-name-locked" style="display:none" readonly>
       <div class="error-msg">Please select your name</div>
     </div>
 
@@ -254,9 +252,8 @@
     <button class="btn-submit" id="btn-weekly" onclick="submitWeekly()">Submit Weekly Report</button>
   </div>
 
-  <!-- Recent Submissions -->
   <div class="recent-section" id="recentSection">
-    <div class="section-title">My Recent Submissions</div>
+    <div class="section-title" id="recentTitle">My Recent Submissions</div>
     <div id="recentList"><div class="loading-text">Loading…</div></div>
   </div>
 
@@ -266,6 +263,15 @@
 const SUPA_URL = 'https://wjhgezvrxlhpexocfsea.supabase.co';
 const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndqaGdlenZyeGxocGV4b2Nmc2VhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg1MDU4NzgsImV4cCI6MjA5NDA4MTg3OH0.jENcrgEDYDlSRUCqve-T6rxYRJfz-dnZQHnXpPLJ_RE';
 const headers = { 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' };
+
+// Auth check
+const loggedUser = sessionStorage.getItem('userName');
+const userRole = sessionStorage.getItem('userRole');
+if (!loggedUser) { location.href = 'index.html'; }
+
+// Back link target
+document.getElementById('backLink').href = userRole === 'hq' ? 'index.html' : 'my-dashboard.html';
+document.getElementById('backLink').textContent = userRole === 'hq' ? '← Hub' : '← My Dashboard';
 
 let currentMode = null;
 let members = [];
@@ -279,6 +285,22 @@ async function db(path, opts = {}) {
 }
 
 async function loadMembers() {
+  // Members 只在 HQ 模式下从 DB 载入；销售员锁定名字
+  if (userRole === 'member') {
+    ['daily', 'weekly'].forEach(prefix => {
+      document.getElementById(prefix + '-name-select-wrap').style.display = 'none';
+      const locked = document.getElementById(prefix + '-name-locked');
+      locked.style.display = 'block';
+      locked.value = loggedUser;
+      // 隐藏的 select 也设值，让提交时拿得到
+      const sel = document.getElementById(prefix + '-name');
+      const o = document.createElement('option');
+      o.value = loggedUser; o.textContent = loggedUser; o.selected = true;
+      sel.appendChild(o);
+    });
+    document.getElementById('daily-name-hint').textContent = 'Logged in as ' + loggedUser;
+    return;
+  }
   try {
     members = await db('members?select=name&order=name');
     ['daily-name', 'weekly-name'].forEach(id => {
@@ -308,7 +330,6 @@ function selectMode(mode) {
   document.getElementById('recentSection').classList.add('visible');
   document.getElementById('successBanner').classList.remove('visible');
   loadRecent(mode);
-  // Scroll to form
   setTimeout(() => document.getElementById('form-' + mode).scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
 }
 
@@ -395,7 +416,6 @@ function resetForm() {
   document.getElementById('successBanner').classList.remove('visible');
   if (currentMode) {
     document.getElementById('form-' + currentMode).classList.add('visible');
-    // Clear fields
     if (currentMode === 'daily') {
       ['daily-today', 'daily-tomorrow', 'daily-assist'].forEach(id => document.getElementById(id).value = '');
     } else {
@@ -406,10 +426,16 @@ function resetForm() {
 
 async function loadRecent(mode) {
   const list = document.getElementById('recentList');
+  const title = document.getElementById('recentTitle');
+  title.textContent = userRole === 'member' ? 'My Recent Submissions' : 'Recent Submissions (All)';
   list.innerHTML = '<div class="loading-text">Loading…</div>';
   try {
     const table = mode === 'daily' ? 'daily_reports' : 'weekly_reports';
-    const data = await db(`${table}?select=*&order=created_at.desc&limit=5`);
+    let query = `${table}?select=*&order=created_at.desc&limit=5`;
+    if (userRole === 'member') {
+      query = `${table}?select=*&name=eq.${encodeURIComponent(loggedUser)}&order=created_at.desc&limit=5`;
+    }
+    const data = await db(query);
     if (!data.length) { list.innerHTML = '<div class="loading-text">No submissions yet.</div>'; return; }
     list.innerHTML = data.map(r => `
       <div class="recent-item">
@@ -424,6 +450,14 @@ async function loadRecent(mode) {
 
 loadMembers();
 setToday();
+
+// Support ?type=weekly from dashboard quick action
+const params = new URLSearchParams(location.search);
+if (params.get('type') === 'weekly') {
+  setTimeout(() => selectMode('weekly'), 100);
+} else if (params.get('type') === 'daily') {
+  setTimeout(() => selectMode('daily'), 100);
+}
 </script>
 </body>
 </html>

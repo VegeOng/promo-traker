@@ -1,268 +1,177 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>MamaVege Management Hub</title>
-<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-*{box-sizing:border-box;margin:0;padding:0}
-:root{
-  --bg:#fafafa;--s1:#ffffff;--s2:#f3f4f6;
-  --b1:#e5e7eb;--b2:#d1d5db;
-  --t1:#111827;--t2:#4b5563;--t3:#9ca3af;
-  --green:#166534;--green2:#22c55e;--green-bg:#f0fdf4;--green-border:#bbf7d0;
-  --red:#dc2626;--red-bg:#fef2f2;
-  --font:'Plus Jakarta Sans',sans-serif;--mono:'DM Mono',monospace;
-}
-body{background:var(--bg);color:var(--t1);font-family:var(--font);min-height:100vh;}
- 
-.topbar{display:flex;align-items:center;justify-content:space-between;padding:14px 32px;border-bottom:1px solid var(--b1);background:var(--s1);position:sticky;top:0;z-index:20;box-shadow:0 1px 3px rgba(0,0,0,.06);}
-.logo{display:flex;align-items:center;gap:10px;}
-.logo-mark{width:32px;height:32px;background:var(--green);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800;color:#fff;}
-.logo-name{font-size:16px;font-weight:800;color:var(--t1);}
-.logo-tag{font-size:11px;color:var(--t3);font-family:var(--mono);}
-.topbar-right{display:flex;align-items:center;gap:12px;}
-.live-badge{display:flex;align-items:center;gap:5px;background:var(--green-bg);border:1px solid var(--green-border);border-radius:20px;padding:4px 10px;font-size:11px;color:var(--green);font-weight:600;}
-.live-dot{width:5px;height:5px;border-radius:50%;background:var(--green2);animation:pulse 2s infinite;}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
-.date-txt{font-size:12px;color:var(--t3);font-family:var(--mono);}
- 
-.main{max-width:1000px;margin:0 auto;padding:40px 24px;}
- 
-.hero{margin-bottom:36px;}
-.hero-greeting{font-size:11px;color:var(--t3);font-family:var(--mono);margin-bottom:8px;letter-spacing:.08em;text-transform:uppercase;}
-.hero-title{font-size:28px;font-weight:800;line-height:1.25;margin-bottom:6px;}
-.hero-title span{color:var(--green);}
-.hero-sub{font-size:13px;color:var(--t2);}
- 
-.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:36px;}
-.stat{background:var(--s1);border:1px solid var(--b1);border-radius:12px;padding:14px 16px;}
-.stat-label{font-size:10px;color:var(--t3);letter-spacing:.06em;text-transform:uppercase;margin-bottom:4px;font-family:var(--mono);}
-.stat-val{font-size:22px;font-weight:700;font-family:var(--mono);color:var(--green);}
-.stat-sub{font-size:11px;color:var(--t3);margin-top:2px;}
- 
-.sec{margin-bottom:32px;}
-.sec-header{display:flex;align-items:center;gap:10px;margin-bottom:12px;}
-.sec-title{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--t3);}
-.sec-line{flex:1;height:1px;background:var(--b1);}
-.sec-tag{font-size:10px;font-family:var(--mono);color:var(--t3);background:var(--s2);padding:2px 8px;border-radius:20px;border:1px solid var(--b1);}
- 
-/* ── Tool grid: compact icon cards ── */
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;}
- 
-.tool{
-  background:var(--s1);
-  border:1px solid var(--b1);
-  border-radius:14px;
-  padding:18px 14px 14px;
-  text-decoration:none;
-  color:inherit;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  gap:10px;
-  position:relative;
-  transition:all .18s;
-  box-shadow:0 1px 3px rgba(0,0,0,.04);
-  text-align:center;
-}
-.tool::after{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:14px 14px 0 0;background:var(--tc,var(--green));opacity:0;transition:opacity .18s;}
-.tool:hover{border-color:var(--b2);box-shadow:0 4px 14px rgba(0,0,0,.08);transform:translateY(-2px);}
-.tool:hover::after{opacity:1;}
-.tool.live{border-color:var(--green-border);}
-.tool.live::after{opacity:1;}
-.tool.off{opacity:.38;pointer-events:none;}
- 
-.tool-icon{font-size:28px;line-height:1;}
-.tool-name{font-size:12px;font-weight:700;color:var(--t1);line-height:1.35;}
-.tbadge{font-size:9px;font-weight:700;padding:2px 6px;border-radius:20px;font-family:var(--mono);letter-spacing:.03em;}
-.tb-live{background:var(--green-bg);color:var(--green);border:1px solid var(--green-border);}
-.tb-soon{background:var(--s2);color:var(--t3);border:1px solid var(--b1);}
-.tb-new{background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe;}
- 
-.footer{border-top:1px solid var(--b1);padding:16px 32px;display:flex;justify-content:space-between;align-items:center;background:var(--s1);}
-.footer-l{font-size:11px;color:var(--t3);}
-.footer-r{font-size:11px;color:var(--t3);font-family:var(--mono);}
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: #fafafa;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .card {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    padding: 40px 32px;
+    width: 100%;
+    max-width: 400px;
+  }
+  .logo {
+    text-align: center;
+    margin-bottom: 8px;
+  }
+  .logo h1 {
+    color: #166534;
+    font-size: 24px;
+    font-weight: 700;
+  }
+  .subtitle {
+    text-align: center;
+    color: #6b7280;
+    font-size: 14px;
+    margin-bottom: 32px;
+  }
+  .form-group { margin-bottom: 16px; }
+  label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 6px;
+  }
+  input {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    font-size: 15px;
+    background: #fafafa;
+    transition: border-color 0.2s;
+  }
+  input:focus {
+    outline: none;
+    border-color: #166534;
+    background: white;
+  }
+  button {
+    width: 100%;
+    padding: 13px;
+    background: #166534;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 8px;
+    transition: background 0.2s;
+  }
+  button:hover { background: #14532d; }
+  button:disabled { opacity: 0.5; cursor: not-allowed; }
+  .error {
+    background: #fef2f2;
+    color: #dc2626;
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 13px;
+    margin-top: 14px;
+    display: none;
+  }
+  .error.show { display: block; }
 </style>
 </head>
 <body>
- 
-<div class="topbar">
-  <div class="logo">
-    <div class="logo-mark">M</div>
-    <div>
-      <div class="logo-name">MamaVege</div>
-      <div class="logo-tag">Management Hub</div>
+  <div class="card">
+    <div class="logo"><h1>🥬 MamaVege</h1></div>
+    <p class="subtitle">Management Hub</p>
+
+    <div class="form-group">
+      <label>名字 / Name</label>
+      <input type="text" id="name" placeholder="输入你的名字" autocomplete="off">
     </div>
-  </div>
-  <div class="topbar-right">
-    <div class="live-badge"><div class="live-dot"></div>System Live</div>
-    <div class="date-txt" id="date-txt"></div>
-  </div>
-</div>
- 
-<div class="main">
-  <div class="hero">
-    <div class="hero-greeting">Welcome back</div>
-    <div class="hero-title">Your <span>Sales Command</span> Centre</div>
-    <div class="hero-sub">All tools in one place — track promotions, monitor ROI, and manage your team across all regions.</div>
-  </div>
- 
-  <div class="stats-row">
-    <div class="stat"><div class="stat-label">This Month Sales</div><div class="stat-val" id="s-month">—</div><div class="stat-sub" id="s-month-sub">loading...</div></div>
-    <div class="stat"><div class="stat-label">This Year Sales</div><div class="stat-val" id="s-year">—</div><div class="stat-sub">2026 cumulative</div></div>
-    <div class="stat"><div class="stat-label">2026 Target</div><div class="stat-val">RM 6M</div><div class="stat-sub">annual target</div></div>
-    <div class="stat"><div class="stat-label">Gap to Target</div><div class="stat-val" id="s-gap" style="color:var(--red)">—</div><div class="stat-sub" id="s-gap-sub">remaining</div></div>
-  </div>
- 
-  <!-- Promotion Management -->
-  <div class="sec">
-    <div class="sec-header"><span class="sec-title">Promotion Management</span><div class="sec-line"></div><span class="sec-tag">4 live</span></div>
-    <div class="grid">
-      <a class="tool live" href="/promo-fill.html" style="--tc:var(--green2)">
-        <div class="tool-icon">✏️</div>
-        <div class="tool-name">Daily Promo Fill</div>
-        <span class="tbadge tb-live">LIVE</span>
-      </a>
-      <a class="tool live" href="/promo-hq.html" style="--tc:var(--green)">
-        <div class="tool-icon">📊</div>
-        <div class="tool-name">Promo HQ Dashboard</div>
-        <span class="tbadge tb-live">LIVE</span>
-      </a>
-      <a class="tool live" href="/sales-dashboard.html" style="--tc:var(--red)">
-        <div class="tool-icon">📈</div>
-        <div class="tool-name">Sales Dashboard</div>
-        <span class="tbadge tb-live">LIVE</span>
-      </a>
-      <a class="tool live" href="/roi-calculator.html" style="--tc:var(--green)">
-        <div class="tool-icon">💰</div>
-        <div class="tool-name">Break-even Calculator</div>
-        <span class="tbadge tb-live">LIVE</span>
-      </a>
+    <div class="form-group">
+      <label>密码 / Password</label>
+      <input type="password" id="password" placeholder="输入密码">
     </div>
+
+    <button id="loginBtn" onclick="login()">登入 Login</button>
+    <div class="error" id="errorMsg"></div>
   </div>
- 
-  <!-- Team Reporting -->
-  <div class="sec">
-    <div class="sec-header"><span class="sec-title">Team Reporting</span><div class="sec-line"></div><span class="sec-tag" style="background:var(--green-bg);color:var(--green);border:1px solid var(--green-border);">2 live</span></div>
-    <div class="grid">
-      <a class="tool live" href="/report-fill.html" style="--tc:var(--green)">
-        <div class="tool-icon">📝</div>
-        <div class="tool-name">Daily &amp; Weekly Report</div>
-        <span class="tbadge tb-live">LIVE</span>
-      </a>
-      <a class="tool live" href="/report-hq.html" style="--tc:var(--green)">
-        <div class="tool-icon">🗂️</div>
-        <div class="tool-name">Report HQ Dashboard</div>
-        <span class="tbadge tb-live">LIVE</span>
-      </a>
-    </div>
-  </div>
- 
-  <!-- Outlet Operations -->
-  <div class="sec">
-    <div class="sec-header"><span class="sec-title">Outlet Operations</span><div class="sec-line"></div><span class="sec-tag" style="background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe;">NEW</span></div>
-    <div class="grid">
-      <a class="tool live" href="/outlet-stock-check.html" style="--tc:var(--green)">
-        <div class="tool-icon">📦</div>
-        <div class="tool-name">Outlet Stock Check &amp; Return</div>
-        <span class="tbadge tb-new">NEW</span>
-      </a>
-    </div>
-  </div>
- 
-  <!-- Team Management -->
-  <div class="sec">
-    <div class="sec-header"><span class="sec-title">Team Management</span><div class="sec-line"></div><span class="sec-tag">coming soon</span></div>
-    <div class="grid">
-      <div class="tool off">
-        <div class="tool-icon">👤</div>
-        <div class="tool-name">Promoter Attendance</div>
-        <span class="tbadge tb-soon">SOON</span>
-      </div>
-      <div class="tool off">
-        <div class="tool-icon">📦</div>
-        <div class="tool-name">Stock Monitor</div>
-        <span class="tbadge tb-soon">SOON</span>
-      </div>
-      <div class="tool off">
-        <div class="tool-icon">🕵️</div>
-        <div class="tool-name">Competitor Watch</div>
-        <span class="tbadge tb-soon">SOON</span>
-      </div>
-    </div>
-  </div>
- 
-  <!-- Reports & Analytics -->
-  <div class="sec">
-    <div class="sec-header"><span class="sec-title">Reports &amp; Analytics</span><div class="sec-line"></div><span class="sec-tag">coming soon</span></div>
-    <div class="grid">
-      <div class="tool off">
-        <div class="tool-icon">📄</div>
-        <div class="tool-name">Weekly Report</div>
-        <span class="tbadge tb-soon">SOON</span>
-      </div>
-      <div class="tool off">
-        <div class="tool-icon">📈</div>
-        <div class="tool-name">Monthly Analysis</div>
-        <span class="tbadge tb-soon">SOON</span>
-      </div>
-    </div>
-  </div>
- 
-</div>
- 
-<div class="footer">
-  <div class="footer-l">© 2026 MamaVege Sales Team · All regions</div>
-  <div class="footer-r" id="footer-r"></div>
-</div>
- 
+
 <script>
-const API_URL = 'https://script.google.com/macros/s/AKfycbwxt23ZB0od7EeBSNvjurKTbkDcM7HLgrWhuoqHc3meKWmhbB0XQzfOdB-X2Pj5O_MY/exec';
-const TARGET_2026 = 6000000;
-const now = new Date();
- 
-document.getElementById('date-txt').textContent = now.toLocaleDateString('en-MY',{weekday:'short',year:'numeric',month:'short',day:'numeric'});
-document.getElementById('footer-r').textContent = 'Loaded at ' + now.toLocaleTimeString('en-MY',{hour:'2-digit',minute:'2-digit'});
- 
-function fmtRM(n){
-  if(n>=1000000) return 'RM '+(n/1000000).toFixed(2)+'M';
-  if(n>=1000) return 'RM '+(n/1000).toFixed(1)+'K';
-  return 'RM '+n.toFixed(2);
-}
-function getTotal(r){
-  for(const k of Object.keys(r)){
-    if(k.toUpperCase().indexOf('TOTAL')!==-1&&k.toUpperCase().indexOf('RM')!==-1){
-      const v=parseFloat(r[k]); if(!isNaN(v)&&v>0) return v;
-    }
+  const SUPABASE_URL = 'https://wjhgezvrxlhpexocfsea.supabase.co';
+  const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndqaGdlenZyeGxocGV4b2Nmc2VhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg1MDU4NzgsImV4cCI6MjA5NDA4MTg3OH0.jENcrgEDYDlSRUCqve-T6rxYRJfz-dnZQHnXpPLJ_RE';
+  const supa = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  // 已登入则自动跳转
+  if (sessionStorage.getItem('userName')) {
+    const role = sessionStorage.getItem('userRole');
+    location.href = role === 'hq' ? 'report-hq.html' : 'my-dashboard.html';
   }
-  return 0;
-}
-async function loadStats(){
-  try{
-    const res=await fetch(API_URL);
-    const json=await res.json();
-    const data=json.data||[];
-    const curYear=now.getFullYear(), curMonth=now.getMonth()+1;
-    const yearData=data.filter(r=>{const d=new Date(r['PO DATE']);return !isNaN(d)&&d.getFullYear()===curYear;});
-    const monthData=yearData.filter(r=>{const d=new Date(r['PO DATE']);return d.getMonth()+1===curMonth;});
-    const yearTotal=yearData.reduce((s,r)=>s+getTotal(r),0);
-    const monthTotal=monthData.reduce((s,r)=>s+getTotal(r),0);
-    const gap=TARGET_2026-yearTotal;
-    const months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-    document.getElementById('s-month').textContent=fmtRM(monthTotal);
-    document.getElementById('s-month-sub').textContent=months[curMonth-1]+' '+curYear;
-    document.getElementById('s-year').textContent=fmtRM(yearTotal);
-    document.getElementById('s-gap').textContent=gap>0?fmtRM(gap):'🎉 Achieved!';
-    document.getElementById('s-gap').style.color=gap>0?'var(--red)':'var(--green)';
-    document.getElementById('s-gap-sub').textContent=gap>0?Math.round(yearTotal/TARGET_2026*100)+'% achieved':'Target met!';
-  }catch(e){console.error('Stats error:',e);}
-}
-loadStats();
+
+  document.getElementById('password').addEventListener('keydown', e => {
+    if (e.key === 'Enter') login();
+  });
+
+  async function login() {
+    const name = document.getElementById('name').value.trim();
+    const password = document.getElementById('password').value;
+    const btn = document.getElementById('loginBtn');
+    const err = document.getElementById('errorMsg');
+    err.classList.remove('show');
+
+    if (!name || !password) {
+      err.textContent = '请填写名字和密码';
+      err.classList.add('show');
+      return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = '登入中...';
+
+    // 1. 先检查是不是 HQ（名字 + HQ 密码）
+    const { data: hqRow } = await supa
+      .from('settings')
+      .select('value')
+      .eq('key', 'hq_password')
+      .single();
+
+    if (hqRow && password === hqRow.value) {
+      // HQ 登入成功（任何名字 + HQ 密码都算 HQ）
+      sessionStorage.setItem('userName', name);
+      sessionStorage.setItem('userRole', 'hq');
+      location.href = 'report-hq.html';
+      return;
+    }
+
+    // 2. 检查是不是销售员
+    const { data: member } = await supa
+      .from('members')
+      .select('id, name, password')
+      .eq('name', name)
+      .single();
+
+    if (member && member.password === password) {
+      sessionStorage.setItem('userName', member.name);
+      sessionStorage.setItem('userRole', 'member');
+      sessionStorage.setItem('userId', member.id);
+      location.href = 'my-dashboard.html';
+      return;
+    }
+
+    err.textContent = '名字或密码错误';
+    err.classList.add('show');
+    btn.disabled = false;
+    btn.textContent = '登入 Login';
+  }
 </script>
 </body>
 </html>
- 
-
-
