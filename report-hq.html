@@ -1141,7 +1141,7 @@ function populateMonthSelectors(){
   ['stats-month','perf-month'].forEach(selId=>{
     const sel=document.getElementById(selId);
     const months=[];
-    for(let i=-2;i<=12;i++){
+    for(let i=-6;i<=12;i++){
       const yr=now.getFullYear();
       const mo=now.getMonth()-i;
       const d=new Date(yr,mo,1);
