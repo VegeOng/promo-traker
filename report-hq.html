@@ -1140,13 +1140,21 @@ function populateMonthSelectors(){
   const now=new Date();
   ['stats-month','perf-month'].forEach(selId=>{
     const sel=document.getElementById(selId);
-    for(let i=-1;i<14;i++){
-      const d=new Date(now.getFullYear(),now.getMonth()-i,1);
-      const o=document.createElement('option');
-      o.value=d.toISOString().slice(0,7);
-      o.textContent=d.toLocaleString('en',{year:'numeric',month:'long'});
-      sel.appendChild(o);
+    const months=[];
+    for(let i=-2;i<=12;i++){
+      const yr=now.getFullYear();
+      const mo=now.getMonth()-i;
+      const d=new Date(yr,mo,1);
+      const val=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
+      const label=d.toLocaleString('en',{year:'numeric',month:'long'});
+      months.push({val,label});
     }
+    months.forEach(m=>{
+      const o=document.createElement('option');
+      o.value=m.val;
+      o.textContent=m.label;
+      sel.appendChild(o);
+    });
   });
 }
 
