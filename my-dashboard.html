@@ -434,7 +434,7 @@
                   <button class="btn-done" onclick="markTaskDone('${t.task_id}')">✅ Mark as Done</button>
                   <button class="btn-reply" onclick="saveReply('${t.task_id}')">💬 Save Reply</button>
                   <button class="btn-escalate" onclick="escalateTask('${t.task_id}')">⚠️ Need Help</button>
-                </div>` : `<div style="font-size:13px;color:#9ca3af;padding:4px 0">⏳ Awaiting manager confirmation…</div>`}
+                </div>` : t.status === 'awaiting_confirm' ? `<div style="font-size:13px;color:#9ca3af;padding:4px 0">⏳ Awaiting manager confirmation…</div>` : `<div style="font-size:13px;color:#166534;padding:4px 0">✅ Completed — confirmed by manager</div>`}
             </div>
           </div>
         </div>`;
