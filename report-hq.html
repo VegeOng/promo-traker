@@ -14,6 +14,8 @@
     --red-light: #fee2e2;
     --amber: #d97706;
     --amber-light: #fef3c7;
+    --blue: #3b82f6;
+    --blue-light: #eff6ff;
     --text: #1a1a1a;
     --muted: #6b7280;
     --border: #e5e7eb;
@@ -111,25 +113,30 @@
   .pw-badge.set { background: var(--green-light); color: var(--green); }
   .pw-badge.unset { background: var(--amber-light); color: var(--amber); }
   .kpi-badge { font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 20px; background: #fef3c7; color: #92400e; }
+  .role-badge { font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.04em; }
+  .role-badge.sales { background: var(--blue-light); color: var(--blue); }
+  .role-badge.marketing { background: #fdf4ff; color: #7e22ce; }
   .btn-editname { background: #3b82f6; border: none; color: white; padding: 5px 10px; border-radius: 6px; font-size: 12px; cursor: pointer; font-weight: 600; }
   .btn-editname:hover { background: #2563eb; }
   .btn-setpw { background: var(--green); border: none; color: white; padding: 5px 10px; border-radius: 6px; font-size: 12px; cursor: pointer; font-weight: 600; }
   .btn-setpw:hover { background: var(--green-mid); }
   .btn-kpi { background: #d97706; border: none; color: white; padding: 5px 10px; border-radius: 6px; font-size: 12px; cursor: pointer; font-weight: 600; }
   .btn-kpi:hover { background: #b45309; }
+  .btn-role { background: #7e22ce; border: none; color: white; padding: 5px 10px; border-radius: 6px; font-size: 12px; cursor: pointer; font-weight: 600; }
+  .btn-role:hover { background: #6b21a8; }
   .btn-del { background: none; border: 1px solid var(--red); color: var(--red); padding: 4px 10px; border-radius: 6px; font-size: 12px; cursor: pointer; font-weight: 600; }
   .btn-del:hover { background: var(--red); color: white; }
 
   .pw-edit-row { width: 100%; display: none; gap: 8px; margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--border); }
-  .pw-edit-row.open { display: flex; }
-  .pw-edit-row input { flex: 1; padding: 8px 12px; border: 1.5px solid var(--border); border-radius: 6px; font-size: 13px; font-family: inherit; }
-  .pw-edit-row input:focus { outline: none; border-color: var(--green); }
+  .pw-edit-row.open { display: flex; flex-wrap: wrap; }
+  .pw-edit-row input, .pw-edit-row select { flex: 1; min-width: 120px; padding: 8px 12px; border: 1.5px solid var(--border); border-radius: 6px; font-size: 13px; font-family: inherit; }
+  .pw-edit-row input:focus, .pw-edit-row select:focus { outline: none; border-color: var(--green); }
   .btn-save { padding: 8px 14px; background: var(--green); color: white; border: none; border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer; }
   .btn-cancel { padding: 8px 14px; background: #e5e7eb; color: var(--text); border: none; border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer; }
 
   .add-member-row { display: flex; gap: 10px; margin-top: 12px; flex-wrap: wrap; }
-  .add-member-row input { flex: 1; min-width: 120px; padding: 10px 14px; border: 1.5px solid var(--border); border-radius: 8px; font-size: 14px; font-family: inherit; }
-  .add-member-row input:focus { outline: none; border-color: var(--green); }
+  .add-member-row input, .add-member-row select { flex: 1; min-width: 120px; padding: 10px 14px; border: 1.5px solid var(--border); border-radius: 8px; font-size: 14px; font-family: inherit; }
+  .add-member-row input:focus, .add-member-row select:focus { outline: none; border-color: var(--green); }
   .btn-add { padding: 10px 18px; background: var(--green); color: white; border: none; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer; }
   .btn-add:hover { background: var(--green-mid); }
 
@@ -182,18 +189,16 @@
 <div class="container">
 
   <div class="section active" id="sec-overview">
-    <div class="stat-grid" id="overviewStats">
+    <div class="stat-grid">
       <div class="stat-box red"><div class="s-val" id="ov-daily-miss">—</div><div class="s-label">Missing Daily Today</div></div>
       <div class="stat-box green"><div class="s-val" id="ov-daily-ok">—</div><div class="s-label">Daily Submitted</div></div>
       <div class="stat-box amber"><div class="s-val" id="ov-weekly-miss">—</div><div class="s-label">Missing Weekly This Week</div></div>
       <div class="stat-box green"><div class="s-val" id="ov-weekly-ok">—</div><div class="s-label">Weekly Submitted</div></div>
     </div>
-
     <div class="card">
       <div class="card-title">🚨 Missing Daily Report — Today</div>
       <div class="missing-list" id="missing-daily-today"><div class="loading-text">Loading…</div></div>
     </div>
-
     <div class="card">
       <div class="card-title">⚠️ Missing Weekly Report — This Week</div>
       <div class="missing-list" id="missing-weekly-week"><div class="loading-text">Loading…</div></div>
@@ -202,9 +207,7 @@
 
   <div class="section" id="sec-daily">
     <div class="filter-bar">
-      <select id="filter-daily-name" onchange="loadDailyReports()">
-        <option value="">All Members</option>
-      </select>
+      <select id="filter-daily-name" onchange="loadDailyReports()"><option value="">All Members</option></select>
       <input type="date" id="filter-daily-from" onchange="loadDailyReports()">
       <input type="date" id="filter-daily-to" onchange="loadDailyReports()">
     </div>
@@ -213,9 +216,7 @@
 
   <div class="section" id="sec-weekly">
     <div class="filter-bar">
-      <select id="filter-weekly-name" onchange="loadWeeklyReports()">
-        <option value="">All Members</option>
-      </select>
+      <select id="filter-weekly-name" onchange="loadWeeklyReports()"><option value="">All Members</option></select>
       <input type="date" id="filter-weekly-from" onchange="loadWeeklyReports()">
       <input type="date" id="filter-weekly-to" onchange="loadWeeklyReports()">
     </div>
@@ -225,18 +226,9 @@
   <div class="section" id="sec-stats">
     <div class="card">
       <div class="card-title">📈 Monthly Missing Report Count</div>
-      <div class="month-row">
-        <select id="stats-month" onchange="loadMissStats()"></select>
-      </div>
+      <div class="month-row"><select id="stats-month" onchange="loadMissStats()"></select></div>
       <table class="miss-table">
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Daily Missing</th>
-            <th>Weekly Missing</th>
-            <th>Total</th>
-          </tr>
-        </thead>
+        <thead><tr><th>Name</th><th>Daily Missing</th><th>Weekly Missing</th><th>Total</th></tr></thead>
         <tbody id="miss-stats-body"><tr><td colspan="4" class="loading-text">Loading…</td></tr></tbody>
       </table>
     </div>
@@ -248,8 +240,12 @@
       <div style="font-size:12px;color:var(--muted);margin-bottom:12px;">⚠️ Member name must match the <strong>SALES PERSON</strong> column in Google Sheet exactly (case-sensitive) for sales data to show.</div>
       <div id="member-list"><div class="loading-text">Loading…</div></div>
       <div class="add-member-row">
-        <input type="text" id="new-member-name" placeholder="English name (match Sheet)" maxlength="50">
+        <input type="text" id="new-member-name" placeholder="Full name" maxlength="50">
         <input type="text" id="new-member-pw" placeholder="Initial password" maxlength="50">
+        <select id="new-member-role">
+          <option value="sales">Sales</option>
+          <option value="marketing">Marketing</option>
+        </select>
         <button class="btn-add" onclick="addMember()">+ Add</button>
       </div>
     </div>
@@ -264,7 +260,6 @@
       </div>
       <div class="chpw-msg" id="chpw-msg"></div>
     </div>
-
   </div>
 
 </div>
@@ -275,7 +270,6 @@ const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsI
 const H = { 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY, 'Content-Type': 'application/json', 'Prefer': 'return=representation' };
 
 let members = [];
-let currentTab = 'overview';
 
 async function db(path, opts = {}) {
   const r = await fetch(SUPA_URL + '/rest/v1/' + path, { headers: H, ...opts });
@@ -285,20 +279,17 @@ async function db(path, opts = {}) {
 
 function today() { return new Date().toISOString().split('T')[0]; }
 function weekStart() {
-  const d = new Date();
-  const day = d.getDay();
+  const d = new Date(); const day = d.getDay();
   const diff = d.getDate() - day + (day === 0 ? -6 : 1);
   return new Date(d.setDate(diff)).toISOString().split('T')[0];
 }
 function weekEnd() {
-  const d = new Date();
-  const day = d.getDay();
+  const d = new Date(); const day = d.getDay();
   const diff = d.getDate() - day + (day === 0 ? 0 : 7);
   return new Date(d.setDate(diff)).toISOString().split('T')[0];
 }
 
 function switchTab(tab) {
-  currentTab = tab;
   document.querySelectorAll('.tab').forEach((t, i) => {
     const tabs = ['overview','daily','weekly','stats','members'];
     t.classList.toggle('active', tabs[i] === tab);
@@ -315,7 +306,7 @@ function switchTab(tab) {
 async function loadMembers() {
   try {
     members = await db('members?select=*&order=name');
-    ['filter-daily-name', 'filter-weekly-name'].forEach(id => {
+    ['filter-daily-name','filter-weekly-name'].forEach(id => {
       const sel = document.getElementById(id);
       const cur = sel.value;
       sel.innerHTML = '<option value="">All Members</option>';
@@ -326,25 +317,35 @@ async function loadMembers() {
       });
       sel.value = cur;
     });
-  } catch(e) { console.error('Load members error', e); }
+  } catch(e) { console.error(e); }
 }
 
 function renderMembers() {
   const list = document.getElementById('member-list');
-  if (!members.length) { list.innerHTML = '<div class="empty-text">No members yet. Add one below.</div>'; return; }
+  if (!members.length) { list.innerHTML = '<div class="empty-text">No members yet.</div>'; return; }
   list.innerHTML = members.map(m => `
     <div class="member-row" id="mrow-${m.id}">
       <span class="m-name">${m.name}</span>
+      <span class="role-badge ${m.role || 'sales'}">${m.role === 'marketing' ? 'Marketing' : 'Sales'}</span>
       <span class="pw-badge ${m.password ? 'set' : 'unset'}">${m.password ? '✓ Password' : '⚠ No password'}</span>
       <span class="kpi-badge">KPI: RM ${Number(m.monthly_kpi || 0).toLocaleString()}</span>
-      <button class="btn-editname" onclick="toggleNameEdit(${m.id})">Edit Name</button>
+      <button class="btn-editname" onclick="toggleNameEdit(${m.id})">Name</button>
+      <button class="btn-role" onclick="toggleRoleEdit(${m.id})">Role</button>
       <button class="btn-setpw" onclick="togglePwEdit(${m.id})">Password</button>
       <button class="btn-kpi" onclick="toggleKpiEdit(${m.id})">KPI</button>
       <button class="btn-del" onclick="deleteMember(${m.id}, '${m.name.replace(/'/g,"\\'")}')">Remove</button>
       <div class="pw-edit-row" id="nameedit-${m.id}">
-        <input type="text" id="nameval-${m.id}" placeholder="New name (match Google Sheet)" value="${m.name.replace(/"/g,'&quot;')}">
+        <input type="text" id="nameval-${m.id}" value="${m.name.replace(/"/g,'&quot;')}" placeholder="New name">
         <button class="btn-save" onclick="saveName(${m.id})">Save</button>
         <button class="btn-cancel" onclick="toggleNameEdit(${m.id})">Cancel</button>
+      </div>
+      <div class="pw-edit-row" id="roleedit-${m.id}">
+        <select id="roleval-${m.id}">
+          <option value="sales" ${(m.role||'sales')==='sales'?'selected':''}>Sales</option>
+          <option value="marketing" ${m.role==='marketing'?'selected':''}>Marketing</option>
+        </select>
+        <button class="btn-save" onclick="saveRole(${m.id})">Save</button>
+        <button class="btn-cancel" onclick="toggleRoleEdit(${m.id})">Cancel</button>
       </div>
       <div class="pw-edit-row" id="pwedit-${m.id}">
         <input type="text" id="pwval-${m.id}" placeholder="New password">
@@ -359,128 +360,99 @@ function renderMembers() {
     </div>`).join('');
 }
 
-function togglePwEdit(id) {
-  const row = document.getElementById('pwedit-' + id);
-  row.classList.toggle('open');
-  if (row.classList.contains('open')) document.getElementById('pwval-' + id).focus();
+function toggleNameEdit(id) { const r = document.getElementById('nameedit-'+id); r.classList.toggle('open'); if(r.classList.contains('open')) document.getElementById('nameval-'+id).focus(); }
+function toggleRoleEdit(id) { const r = document.getElementById('roleedit-'+id); r.classList.toggle('open'); }
+function togglePwEdit(id) { const r = document.getElementById('pwedit-'+id); r.classList.toggle('open'); if(r.classList.contains('open')) document.getElementById('pwval-'+id).focus(); }
+function toggleKpiEdit(id) { const r = document.getElementById('kpiedit-'+id); r.classList.toggle('open'); if(r.classList.contains('open')) document.getElementById('kpival-'+id).focus(); }
+
+async function saveName(id) {
+  const inp = document.getElementById('nameval-'+id);
+  const newName = inp.value.trim();
+  if (!newName) { inp.style.borderColor='var(--red)'; return; }
+  const oldName = members.find(m=>m.id===id)?.name;
+  if (newName === oldName) { toggleNameEdit(id); return; }
+  if (!confirm(`Change name from "${oldName}" to "${newName}"?\n\n⚠️ All past reports will be updated.`)) return;
+  try {
+    await fetch(SUPA_URL+'/rest/v1/members?id=eq.'+id, { method:'PATCH', headers:H, body:JSON.stringify({name:newName}) });
+    await fetch(SUPA_URL+'/rest/v1/daily_reports?name=eq.'+encodeURIComponent(oldName), { method:'PATCH', headers:H, body:JSON.stringify({name:newName}) });
+    await fetch(SUPA_URL+'/rest/v1/weekly_reports?name=eq.'+encodeURIComponent(oldName), { method:'PATCH', headers:H, body:JSON.stringify({name:newName}) });
+    await loadMembers(); renderMembers();
+  } catch(e) { alert('Failed to rename.'); }
+}
+
+async function saveRole(id) {
+  const val = document.getElementById('roleval-'+id).value;
+  try {
+    await fetch(SUPA_URL+'/rest/v1/members?id=eq.'+id, { method:'PATCH', headers:H, body:JSON.stringify({role:val}) });
+    await loadMembers(); renderMembers();
+  } catch(e) { alert('Failed to save role.'); }
 }
 
 async function savePassword(id) {
-  const inp = document.getElementById('pwval-' + id);
+  const inp = document.getElementById('pwval-'+id);
   const pw = inp.value.trim();
-  if (!pw) { inp.style.borderColor = 'var(--red)'; return; }
+  if (!pw) { inp.style.borderColor='var(--red)'; return; }
   try {
-    await fetch(SUPA_URL + '/rest/v1/members?id=eq.' + id, {
-      method: 'PATCH', headers: H, body: JSON.stringify({ password: pw })
-    });
-    await loadMembers();
-    renderMembers();
+    await fetch(SUPA_URL+'/rest/v1/members?id=eq.'+id, { method:'PATCH', headers:H, body:JSON.stringify({password:pw}) });
+    await loadMembers(); renderMembers();
   } catch(e) { alert('Failed to save password.'); }
 }
 
-function toggleKpiEdit(id) {
-  const row = document.getElementById('kpiedit-' + id);
-  row.classList.toggle('open');
-  if (row.classList.contains('open')) document.getElementById('kpival-' + id).focus();
-}
-
 async function saveKpi(id) {
-  const inp = document.getElementById('kpival-' + id);
-  const kpi = parseFloat(inp.value) || 0;
-  if (kpi < 0) { inp.style.borderColor = 'var(--red)'; return; }
+  const inp = document.getElementById('kpival-'+id);
+  const kpi = parseFloat(inp.value)||0;
   try {
-    await fetch(SUPA_URL + '/rest/v1/members?id=eq.' + id, {
-      method: 'PATCH', headers: H, body: JSON.stringify({ monthly_kpi: kpi })
-    });
-    await loadMembers();
-    renderMembers();
+    await fetch(SUPA_URL+'/rest/v1/members?id=eq.'+id, { method:'PATCH', headers:H, body:JSON.stringify({monthly_kpi:kpi}) });
+    await loadMembers(); renderMembers();
   } catch(e) { alert('Failed to save KPI.'); }
-}
-
-function toggleNameEdit(id) {
-  const row = document.getElementById('nameedit-' + id);
-  row.classList.toggle('open');
-  if (row.classList.contains('open')) document.getElementById('nameval-' + id).focus();
-}
-
-async function saveName(id) {
-  const inp = document.getElementById('nameval-' + id);
-  const newName = inp.value.trim();
-  if (!newName) { inp.style.borderColor = 'var(--red)'; return; }
-  const oldName = members.find(m => m.id === id)?.name;
-  if (newName === oldName) { toggleNameEdit(id); return; }
-
-  if (!confirm(`Change name from "${oldName}" to "${newName}"?\n\n⚠️ Make sure this matches the SALES PERSON in Google Sheet exactly.\nAll past daily/weekly reports will be updated to the new name.`)) return;
-
-  try {
-    await fetch(SUPA_URL + '/rest/v1/members?id=eq.' + id, {
-      method: 'PATCH', headers: H, body: JSON.stringify({ name: newName })
-    });
-    await fetch(SUPA_URL + '/rest/v1/daily_reports?name=eq.' + encodeURIComponent(oldName), {
-      method: 'PATCH', headers: H, body: JSON.stringify({ name: newName })
-    });
-    await fetch(SUPA_URL + '/rest/v1/weekly_reports?name=eq.' + encodeURIComponent(oldName), {
-      method: 'PATCH', headers: H, body: JSON.stringify({ name: newName })
-    });
-    await loadMembers();
-    renderMembers();
-  } catch(e) { alert('Failed to rename.'); console.error(e); }
 }
 
 async function addMember() {
   const inp = document.getElementById('new-member-name');
   const pwInp = document.getElementById('new-member-pw');
+  const roleInp = document.getElementById('new-member-role');
   const name = inp.value.trim();
   const pw = pwInp.value.trim();
-  if (!name) { inp.style.borderColor = 'var(--red)'; return; }
-  inp.style.borderColor = '';
+  const role = roleInp.value;
+  if (!name) { inp.style.borderColor='var(--red)'; return; }
+  inp.style.borderColor='';
   try {
-    await db('members', { method: 'POST', body: JSON.stringify({ name, password: pw || null, monthly_kpi: 0 }) });
-    inp.value = '';
-    pwInp.value = '';
-    await loadMembers();
-    renderMembers();
+    await db('members', { method:'POST', body:JSON.stringify({name, password:pw||null, monthly_kpi:0, role}) });
+    inp.value=''; pwInp.value=''; roleInp.value='sales';
+    await loadMembers(); renderMembers();
   } catch(e) { alert('Failed to add member.'); }
 }
 
 async function deleteMember(id, name) {
   if (!confirm(`Remove "${name}" from team?`)) return;
   try {
-    await fetch(SUPA_URL + '/rest/v1/members?id=eq.' + id, { method: 'DELETE', headers: H });
-    await loadMembers();
-    renderMembers();
+    await fetch(SUPA_URL+'/rest/v1/members?id=eq.'+id, { method:'DELETE', headers:H });
+    await loadMembers(); renderMembers();
   } catch(e) { alert('Failed to remove.'); }
 }
 
 async function loadOverview() {
-  const t = today();
-  const ws = weekStart();
-  const we = weekEnd();
+  const t = today(), ws = weekStart(), we = weekEnd();
   try {
     const [dailyToday, weeklyWeek] = await Promise.all([
       db(`daily_reports?select=name&date=eq.${t}`),
       db(`weekly_reports?select=name&date=gte.${ws}&date=lte.${we}`)
     ]);
-    const submittedDaily = new Set(dailyToday.map(r => r.name));
-    const submittedWeekly = new Set(weeklyWeek.map(r => r.name));
-    const missingDaily = members.filter(m => !submittedDaily.has(m.name));
-    const missingWeekly = members.filter(m => !submittedWeekly.has(m.name));
-
+    const submittedDaily = new Set(dailyToday.map(r=>r.name));
+    const submittedWeekly = new Set(weeklyWeek.map(r=>r.name));
+    const missingDaily = members.filter(m=>!submittedDaily.has(m.name));
+    const missingWeekly = members.filter(m=>!submittedWeekly.has(m.name));
     document.getElementById('ov-daily-miss').textContent = missingDaily.length;
     document.getElementById('ov-daily-ok').textContent = submittedDaily.size;
     document.getElementById('ov-weekly-miss').textContent = missingWeekly.length;
     document.getElementById('ov-weekly-ok').textContent = submittedWeekly.size;
-
-    const mdEl = document.getElementById('missing-daily-today');
-    mdEl.innerHTML = missingDaily.length
-      ? missingDaily.map(m => `<div class="missing-item"><span class="mi-name">${m.name}</span><span class="mi-badge">NOT SUBMITTED</span></div>`).join('')
+    document.getElementById('missing-daily-today').innerHTML = missingDaily.length
+      ? missingDaily.map(m=>`<div class="missing-item"><span class="mi-name">${m.name}</span><span class="mi-badge">NOT SUBMITTED</span></div>`).join('')
       : '<div class="all-good">✅ Everyone has submitted today!</div>';
-
-    const mwEl = document.getElementById('missing-weekly-week');
-    mwEl.innerHTML = missingWeekly.length
-      ? missingWeekly.map(m => `<div class="missing-item"><span class="mi-name">${m.name}</span><span class="mi-badge">NOT SUBMITTED</span></div>`).join('')
+    document.getElementById('missing-weekly-week').innerHTML = missingWeekly.length
+      ? missingWeekly.map(m=>`<div class="missing-item"><span class="mi-name">${m.name}</span><span class="mi-badge">NOT SUBMITTED</span></div>`).join('')
       : '<div class="all-good">✅ Everyone has submitted this week!</div>';
-  } catch(e) { console.error('Overview error', e); }
+  } catch(e) { console.error(e); }
 }
 
 async function loadDailyReports() {
@@ -496,13 +468,10 @@ async function loadDailyReports() {
   try {
     const data = await db(q);
     if (!data.length) { list.innerHTML = '<div class="empty-text">No reports found.</div>'; return; }
-    list.innerHTML = data.map((r, i) => `
+    list.innerHTML = data.map((r,i) => `
       <div class="report-item">
         <div class="report-header" onclick="toggleReport('dr-${i}')">
-          <div class="rh-left">
-            <div class="rh-name">${r.name}</div>
-            <div class="rh-date">${r.date}</div>
-          </div>
+          <div class="rh-left"><div class="rh-name">${r.name}</div><div class="rh-date">${r.date}</div></div>
           <div class="rh-right">
             <span class="badge daily">Daily</span>
             <button class="btn-del" onclick="event.stopPropagation();deleteReport('daily_reports',${r.id},'daily')">🗑</button>
@@ -512,10 +481,10 @@ async function loadDailyReports() {
         <div class="report-body" id="dr-${i}">
           <div class="rb-field"><div class="rf-label">Today's Task</div><div class="rf-val">${escHtml(r.today_task)}</div></div>
           <div class="rb-field"><div class="rf-label">Tomorrow's Task</div><div class="rf-val">${escHtml(r.tomorrow_task)}</div></div>
-          <div class="rb-field"><div class="rf-label">Assistance Required</div><div class="rf-val">${escHtml(r.assistance || 'None.')}</div></div>
+          <div class="rb-field"><div class="rf-label">Assistance Required</div><div class="rf-val">${escHtml(r.assistance||'None.')}</div></div>
         </div>
       </div>`).join('');
-  } catch(e) { list.innerHTML = '<div class="empty-text">Failed to load reports.</div>'; }
+  } catch(e) { list.innerHTML = '<div class="empty-text">Failed to load.</div>'; }
 }
 
 async function loadWeeklyReports() {
@@ -531,13 +500,10 @@ async function loadWeeklyReports() {
   try {
     const data = await db(q);
     if (!data.length) { list.innerHTML = '<div class="empty-text">No reports found.</div>'; return; }
-    list.innerHTML = data.map((r, i) => `
+    list.innerHTML = data.map((r,i) => `
       <div class="report-item">
         <div class="report-header" onclick="toggleReport('wr-${i}')">
-          <div class="rh-left">
-            <div class="rh-name">${r.name}</div>
-            <div class="rh-date">${r.date}</div>
-          </div>
+          <div class="rh-left"><div class="rh-name">${r.name}</div><div class="rh-date">${r.date}</div></div>
           <div class="rh-right">
             <span class="badge weekly">Weekly</span>
             <button class="btn-del" onclick="event.stopPropagation();deleteReport('weekly_reports',${r.id},'weekly')">🗑</button>
@@ -546,25 +512,24 @@ async function loadWeeklyReports() {
         </div>
         <div class="report-body" id="wr-${i}">
           <div class="rb-field"><div class="rf-label">Next Week Targets</div><div class="rf-val">${escHtml(r.next_week_target)}</div></div>
-          <div class="rb-field"><div class="rf-label">Assistance Required</div><div class="rf-val">${escHtml(r.assistance || 'None.')}</div></div>
+          <div class="rb-field"><div class="rf-label">Assistance Required</div><div class="rf-val">${escHtml(r.assistance||'None.')}</div></div>
         </div>
       </div>`).join('');
-  } catch(e) { list.innerHTML = '<div class="empty-text">Failed to load reports.</div>'; }
+  } catch(e) { list.innerHTML = '<div class="empty-text">Failed to load.</div>'; }
 }
 
 function toggleReport(id) {
   const body = document.getElementById(id);
-  const chev = document.getElementById('chev-' + id);
+  const chev = document.getElementById('chev-'+id);
   const open = body.classList.toggle('open');
   chev.textContent = open ? '▲' : '▼';
 }
 
 async function deleteReport(table, id, type) {
-  if (!confirm('Delete this report? This cannot be undone.')) return;
+  if (!confirm('Delete this report?')) return;
   try {
-    await fetch(SUPA_URL + '/rest/v1/' + table + '?id=eq.' + id, { method: 'DELETE', headers: H });
-    if (type === 'daily') loadDailyReports();
-    else loadWeeklyReports();
+    await fetch(SUPA_URL+'/rest/v1/'+table+'?id=eq.'+id, { method:'DELETE', headers:H });
+    if (type==='daily') loadDailyReports(); else loadWeeklyReports();
   } catch(e) { alert('Failed to delete.'); }
 }
 
@@ -575,133 +540,100 @@ async function loadMissStats() {
   if (!monthVal) return;
   const [year, month] = monthVal.split('-');
   const firstDay = `${year}-${month}-01`;
-  const lastDay = `${year}-${month}-${new Date(year, month, 0).getDate()}`;
-
-  const workDays = countWorkDays(new Date(year, month - 1, 1), new Date(year, month - 1, new Date(year, month, 0).getDate()));
-  const weekCount = Math.ceil(new Date(year, month, 0).getDate() / 7);
-
+  const lastDay = `${year}-${month}-${new Date(year,month,0).getDate()}`;
+  const workDays = countWorkDays(new Date(year,month-1,1), new Date(year,month-1,new Date(year,month,0).getDate()));
+  const weekCount = Math.ceil(new Date(year,month,0).getDate()/7);
   try {
     const [dailyData, weeklyData] = await Promise.all([
       db(`daily_reports?select=name,date&date=gte.${firstDay}&date=lte.${lastDay}`),
       db(`weekly_reports?select=name,date&date=gte.${firstDay}&date=lte.${lastDay}`)
     ]);
-
-    const dailyByName = {};
-    const weeklyByName = {};
-    members.forEach(m => { dailyByName[m.name] = 0; weeklyByName[m.name] = 0; });
-    dailyData.forEach(r => { if (dailyByName[r.name] !== undefined) dailyByName[r.name]++; });
-    weeklyData.forEach(r => { if (weeklyByName[r.name] !== undefined) weeklyByName[r.name]++; });
-
-    tbody.innerHTML = members.map(m => {
-      const dMiss = Math.max(0, workDays - dailyByName[m.name]);
-      const wMiss = Math.max(0, weekCount - weeklyByName[m.name]);
-      const total = dMiss + wMiss;
+    const dailyByName={}, weeklyByName={};
+    members.forEach(m=>{ dailyByName[m.name]=0; weeklyByName[m.name]=0; });
+    dailyData.forEach(r=>{ if(dailyByName[r.name]!==undefined) dailyByName[r.name]++; });
+    weeklyData.forEach(r=>{ if(weeklyByName[r.name]!==undefined) weeklyByName[r.name]++; });
+    tbody.innerHTML = members.map(m=>{
+      const dMiss=Math.max(0,workDays-dailyByName[m.name]);
+      const wMiss=Math.max(0,weekCount-weeklyByName[m.name]);
+      const total=dMiss+wMiss;
       return `<tr>
         <td><strong>${m.name}</strong></td>
-        <td><span class="miss-count ${dMiss > 0 ? 'bad' : 'ok'}">${dMiss}</span></td>
-        <td><span class="miss-count ${wMiss > 0 ? 'bad' : 'ok'}">${wMiss}</span></td>
-        <td><span class="miss-count ${total > 0 ? 'bad' : 'ok'}">${total}</span></td>
+        <td><span class="miss-count ${dMiss>0?'bad':'ok'}">${dMiss}</span></td>
+        <td><span class="miss-count ${wMiss>0?'bad':'ok'}">${wMiss}</span></td>
+        <td><span class="miss-count ${total>0?'bad':'ok'}">${total}</span></td>
       </tr>`;
     }).join('');
-  } catch(e) { tbody.innerHTML = '<tr><td colspan="4" class="empty-text">Failed to load stats.</td></tr>'; }
+  } catch(e) { tbody.innerHTML='<tr><td colspan="4" class="empty-text">Failed.</td></tr>'; }
 }
 
 function countWorkDays(start, end) {
-  let count = 0;
-  const cur = new Date(start);
-  while (cur <= end) {
-    const d = cur.getDay();
-    if (d !== 0 && d !== 6) count++;
-    cur.setDate(cur.getDate() + 1);
-  }
+  let count=0; const cur=new Date(start);
+  while(cur<=end){ const d=cur.getDay(); if(d!==0&&d!==6) count++; cur.setDate(cur.getDate()+1); }
   return count;
 }
 
 function populateMonthSelector() {
-  const sel = document.getElementById('stats-month');
-  const now = new Date();
-  for (let i = 0; i < 6; i++) {
-    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-    const val = d.toISOString().slice(0, 7);
-    const label = d.toLocaleString('en', { year: 'numeric', month: 'long' });
-    const o = document.createElement('option');
-    o.value = val; o.textContent = label;
+  const sel=document.getElementById('stats-month'); const now=new Date();
+  for(let i=0;i<6;i++){
+    const d=new Date(now.getFullYear(),now.getMonth()-i,1);
+    const o=document.createElement('option');
+    o.value=d.toISOString().slice(0,7);
+    o.textContent=d.toLocaleString('en',{year:'numeric',month:'long'});
     sel.appendChild(o);
   }
 }
 
-function escHtml(s) {
-  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-}
+function escHtml(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
 function setDefaultFilters() {
-  const t = today();
-  const ws = weekStart();
-  document.getElementById('filter-daily-from').value = ws;
-  document.getElementById('filter-daily-to').value = t;
-  document.getElementById('filter-weekly-from').value = weekStart();
-  document.getElementById('filter-weekly-to').value = weekEnd();
+  const t=today(), ws=weekStart();
+  document.getElementById('filter-daily-from').value=ws;
+  document.getElementById('filter-daily-to').value=t;
+  document.getElementById('filter-weekly-from').value=weekStart();
+  document.getElementById('filter-weekly-to').value=weekEnd();
 }
 
-function logoutHQ() {
-  sessionStorage.clear();
-}
+function logoutHQ() { sessionStorage.clear(); }
 
-(async () => {
-  if (sessionStorage.getItem('userRole') === 'hq' || sessionStorage.getItem('hq_auth') === '1') {
-    sessionStorage.setItem('hq_auth', '1');
-    document.getElementById('pwOverlay').style.display = 'none';
-    populateMonthSelector();
-    setDefaultFilters();
-    await loadMembers();
-    loadOverview();
+(async()=>{
+  if(sessionStorage.getItem('userRole')==='hq'||sessionStorage.getItem('hq_auth')==='1'){
+    sessionStorage.setItem('hq_auth','1');
+    document.getElementById('pwOverlay').style.display='none';
+    populateMonthSelector(); setDefaultFilters();
+    await loadMembers(); loadOverview();
   }
 })();
 
 async function checkPw() {
-  const inp = document.getElementById('pwInput');
-  const pw = inp.value.trim();
-  if (!pw) return;
-  const btn = document.querySelector('.pw-btn');
-  btn.disabled = true; btn.textContent = '...';
+  const inp=document.getElementById('pwInput'); const pw=inp.value.trim(); if(!pw) return;
+  const btn=document.querySelector('.pw-btn'); btn.disabled=true; btn.textContent='...';
   try {
-    const data = await db("settings?key=eq.hq_password&select=value");
-    if (data.length && data[0].value === pw) {
-      sessionStorage.setItem('hq_auth', '1');
-      document.getElementById('pwOverlay').style.display = 'none';
-      populateMonthSelector();
-      setDefaultFilters();
-      await loadMembers();
-      loadOverview();
+    const data=await db("settings?key=eq.hq_password&select=value");
+    if(data.length&&data[0].value===pw){
+      sessionStorage.setItem('hq_auth','1');
+      document.getElementById('pwOverlay').style.display='none';
+      populateMonthSelector(); setDefaultFilters();
+      await loadMembers(); loadOverview();
     } else {
       inp.classList.add('error');
       document.getElementById('pwError').classList.add('visible');
-      inp.value = '';
-      setTimeout(() => inp.classList.remove('error'), 400);
+      inp.value=''; setTimeout(()=>inp.classList.remove('error'),400);
     }
-  } catch(e) {
-    document.getElementById('pwError').textContent = 'Connection error. Please try again.';
-    document.getElementById('pwError').classList.add('visible');
-  }
-  btn.disabled = false; btn.textContent = 'Enter';
+  } catch(e){ document.getElementById('pwError').textContent='Connection error.'; document.getElementById('pwError').classList.add('visible'); }
+  btn.disabled=false; btn.textContent='Enter';
 }
 
 async function changePassword() {
-  const p1 = document.getElementById('new-pw').value.trim();
-  const p2 = document.getElementById('new-pw2').value.trim();
-  const msg = document.getElementById('chpw-msg');
-  msg.className = 'chpw-msg';
-  if (!p1 || !p2) { msg.textContent = 'Please fill in both fields.'; msg.className = 'chpw-msg fail'; return; }
-  if (p1 !== p2) { msg.textContent = 'Passwords do not match.'; msg.className = 'chpw-msg fail'; return; }
+  const p1=document.getElementById('new-pw').value.trim();
+  const p2=document.getElementById('new-pw2').value.trim();
+  const msg=document.getElementById('chpw-msg'); msg.className='chpw-msg';
+  if(!p1||!p2){msg.textContent='Please fill in both fields.';msg.className='chpw-msg fail';return;}
+  if(p1!==p2){msg.textContent='Passwords do not match.';msg.className='chpw-msg fail';return;}
   try {
-    await fetch(SUPA_URL + '/rest/v1/settings?key=eq.hq_password', {
-      method: 'PATCH', headers: H, body: JSON.stringify({ value: p1 })
-    });
-    document.getElementById('new-pw').value = '';
-    document.getElementById('new-pw2').value = '';
-    msg.textContent = '✅ Password updated successfully!';
-    msg.className = 'chpw-msg ok';
-  } catch(e) { msg.textContent = 'Failed to update password.'; msg.className = 'chpw-msg fail'; }
+    await fetch(SUPA_URL+'/rest/v1/settings?key=eq.hq_password',{method:'PATCH',headers:H,body:JSON.stringify({value:p1})});
+    document.getElementById('new-pw').value=''; document.getElementById('new-pw2').value='';
+    msg.textContent='✅ Password updated!'; msg.className='chpw-msg ok';
+  } catch(e){ msg.textContent='Failed.'; msg.className='chpw-msg fail'; }
 }
 </script>
 </body>
