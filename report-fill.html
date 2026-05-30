@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Work Report — MamaVege</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   :root {
     --bg: #fafafa;
@@ -21,115 +22,153 @@
   body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; min-height: 100vh; }
 
   .header { background: var(--green); color: white; padding: 16px 20px; display: flex; align-items: center; gap: 12px; position: sticky; top: 0; z-index: 100; }
-  .header-logo { width: 32px; height: 32px; background: white; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: 900; color: var(--green); font-size: 14px; flex-shrink: 0; }
-  .header-title { font-size: 16px; font-weight: 700; }
-  .header-back { margin-left: auto; color: rgba(255,255,255,0.8); text-decoration: none; font-size: 13px; display: flex; align-items: center; gap: 4px; }
+  .header-logo { width: 32px; height: 32px; background: white; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: 900; color: var(--green); font-size: 14px; }
+  .header-title { font-size: 16px; font-weight: 700; flex: 1; }
+  .header-back { color: rgba(255,255,255,0.8); text-decoration: none; font-size: 13px; }
   .header-back:hover { color: white; }
 
-  .container { max-width: 600px; margin: 0 auto; padding: 24px 16px 60px; }
+  .container { max-width: 640px; margin: 0 auto; padding: 24px 16px 60px; }
 
-  .mode-select-section { margin-bottom: 28px; }
-  .mode-label { font-size: 13px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 12px; }
-  .mode-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  /* Mode selector */
+  .mode-label { font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin-bottom: 12px; }
+  .mode-cards { display: grid; gap: 12px; margin-bottom: 28px; }
+  .mode-cards.two { grid-template-columns: 1fr 1fr; }
+  .mode-cards.three { grid-template-columns: 1fr 1fr 1fr; }
   .mode-card {
-    background: var(--card);
-    border: 2px solid var(--border);
-    border-radius: var(--radius);
-    padding: 20px 16px;
-    cursor: pointer;
-    transition: all 0.2s;
-    text-align: center;
-    user-select: none;
+    background: var(--card); border: 2px solid var(--border); border-radius: var(--radius);
+    padding: 20px 16px; cursor: pointer; transition: all 0.2s; text-align: center; user-select: none;
   }
   .mode-card:hover { border-color: var(--green); background: #f0fdf4; }
   .mode-card.active { border-color: var(--green); background: var(--green-light); }
   .mode-card .mode-icon { font-size: 28px; margin-bottom: 8px; }
-  .mode-card .mode-name { font-size: 15px; font-weight: 700; color: var(--text); }
-  .mode-card .mode-sub { font-size: 12px; color: var(--muted); margin-top: 4px; }
+  .mode-card .mode-name { font-size: 14px; font-weight: 700; color: var(--text); }
+  .mode-card .mode-sub { font-size: 11px; color: var(--muted); margin-top: 4px; }
   .mode-card.active .mode-name { color: var(--green); }
 
+  /* Visit records */
+  .visit-list { margin-bottom: 16px; }
+  .visit-card {
+    background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
+    margin-bottom: 10px; overflow: hidden;
+  }
+  .visit-card-header {
+    padding: 12px 16px; display: flex; align-items: center; justify-content: space-between;
+    cursor: pointer; background: #f9fafb;
+  }
+  .visit-card-header:hover { background: #f0fdf4; }
+  .vc-left .vc-customer { font-size: 14px; font-weight: 700; }
+  .vc-left .vc-meta { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .vc-right { display: flex; align-items: center; gap: 8px; }
+  .vc-amount { font-size: 13px; font-weight: 700; color: var(--green); }
+  .vc-photo-badge { font-size: 10px; background: var(--green-light); color: var(--green); padding: 2px 7px; border-radius: 20px; font-weight: 700; }
+  .vc-photo-missing { font-size: 10px; background: #fee2e2; color: var(--red); padding: 2px 7px; border-radius: 20px; font-weight: 700; }
+  .btn-icon { background: none; border: none; cursor: pointer; font-size: 16px; padding: 4px; border-radius: 6px; }
+  .btn-icon:hover { background: #f3f4f6; }
+  .visit-card-body { display: none; padding: 16px; border-top: 1px solid var(--border); }
+  .visit-card-body.open { display: block; }
+
+  /* Form fields */
+  .field { margin-bottom: 16px; }
+  .field label { display: block; font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
+  .field label .req { color: var(--red); }
+  .field input, .field textarea, .field select {
+    width: 100%; padding: 11px 14px; border: 1.5px solid var(--border); border-radius: 8px;
+    font-size: 14px; font-family: inherit; background: var(--bg); color: var(--text); transition: border-color 0.2s;
+  }
+  .field input:focus, .field textarea:focus, .field select:focus { outline: none; border-color: var(--green); background: white; }
+  .field textarea { resize: vertical; min-height: 80px; }
+  .field.has-error input, .field.has-error textarea, .field.has-error select { border-color: var(--red); }
+  .field .error-msg { font-size: 11px; color: var(--red); margin-top: 4px; display: none; }
+  .field.has-error .error-msg { display: block; }
+  .field input[readonly] { background: #f3f4f6; color: var(--muted); cursor: not-allowed; }
+
+  /* Photo upload */
+  .photo-section { margin-bottom: 16px; }
+  .photo-section label { display: block; font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
+  .photo-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 6px; }
+  .photo-slot {
+    aspect-ratio: 1; border: 2px dashed var(--border); border-radius: 10px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    cursor: pointer; transition: all 0.2s; position: relative; overflow: hidden; background: #f9fafb;
+  }
+  .photo-slot:hover { border-color: var(--green); background: #f0fdf4; }
+  .photo-slot.has-photo { border-style: solid; border-color: #86efac; }
+  .photo-slot img { width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0; }
+  .photo-slot .slot-icon { font-size: 22px; }
+  .photo-slot .slot-label { font-size: 10px; color: var(--muted); margin-top: 4px; text-align: center; }
+  .photo-slot .remove-photo { position: absolute; top: 4px; right: 4px; background: rgba(0,0,0,0.5); color: white; border: none; border-radius: 50%; width: 20px; height: 20px; font-size: 11px; cursor: pointer; display: none; align-items: center; justify-content: center; }
+  .photo-slot.has-photo .remove-photo { display: flex; }
+  .photo-slot input[type=file] { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+  .photo-required-msg { font-size: 11px; color: var(--red); display: none; }
+  .photo-required-msg.show { display: block; }
+
+  /* Followup task prompt */
+  .followup-task-prompt {
+    background: #fffbeb; border: 1px solid #fde68a; border-radius: 8px;
+    padding: 12px 14px; margin-top: 8px; display: none;
+  }
+  .followup-task-prompt.show { display: block; }
+  .ftp-text { font-size: 13px; color: #92400e; margin-bottom: 8px; }
+  .ftp-date { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .ftp-date input { flex: 1; min-width: 140px; padding: 8px 12px; border: 1.5px solid #fde68a; border-radius: 6px; font-size: 13px; font-family: inherit; }
+  .ftp-date input:focus { outline: none; border-color: var(--green); }
+  .btn-create-task { padding: 8px 14px; background: #d97706; color: white; border: none; border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer; }
+  .task-created-badge { font-size: 12px; color: var(--green); font-weight: 600; }
+
+  /* Buttons */
+  .btn-primary {
+    width: 100%; padding: 14px; background: var(--green); color: white; border: none;
+    border-radius: var(--radius); font-size: 15px; font-weight: 700; cursor: pointer; transition: background 0.2s;
+  }
+  .btn-primary:hover { background: var(--green-mid); }
+  .btn-primary:disabled { background: #9ca3af; cursor: not-allowed; }
+  .btn-secondary {
+    width: 100%; padding: 12px; background: white; color: var(--green); border: 2px solid var(--green);
+    border-radius: var(--radius); font-size: 14px; font-weight: 700; cursor: pointer; transition: all 0.2s; margin-bottom: 12px;
+  }
+  .btn-secondary:hover { background: var(--green-light); }
+
+  /* Report header card */
+  .report-header-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; margin-bottom: 16px; }
+  .report-header-card .rh-title { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 12px; }
+  .report-status { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; padding: 4px 10px; border-radius: 20px; }
+  .report-status.draft { background: var(--border); color: var(--muted); }
+  .report-status.submitted { background: var(--green-light); color: var(--green); }
+
+  /* Success */
+  .success-banner { display: none; background: var(--green-light); border: 1.5px solid #86efac; border-radius: var(--radius); padding: 20px; text-align: center; margin-bottom: 20px; }
+  .success-banner.visible { display: block; }
+  .success-banner .icon { font-size: 32px; margin-bottom: 8px; }
+  .success-banner h3 { color: var(--green); font-size: 17px; font-weight: 800; }
+  .success-banner p { color: var(--muted); font-size: 13px; margin-top: 4px; }
+
+  /* Old daily form */
   .form-card { background: var(--card); border-radius: var(--radius); border: 1px solid var(--border); padding: 24px; margin-bottom: 16px; display: none; }
   .form-card.visible { display: block; }
   .form-title { font-size: 18px; font-weight: 800; color: var(--green); margin-bottom: 4px; }
   .form-subtitle { font-size: 13px; color: var(--muted); margin-bottom: 24px; }
 
-  .field { margin-bottom: 20px; }
-  .field label { display: block; font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
-  .field label .req { color: var(--red); }
-  .field .hint { font-size: 12px; color: var(--muted); margin-bottom: 6px; }
-  .field input, .field select, .field textarea {
-    width: 100%;
-    padding: 12px 14px;
-    border: 1.5px solid var(--border);
-    border-radius: 8px;
-    font-size: 14px;
-    font-family: inherit;
-    background: var(--bg);
-    color: var(--text);
-    transition: border-color 0.2s;
-    appearance: none;
-  }
-  .field input:focus, .field select:focus, .field textarea:focus {
-    outline: none;
-    border-color: var(--green);
-    background: white;
-  }
-  .field input:disabled, .field input[readonly] {
-    background: #f3f4f6;
-    color: #6b7280;
-    cursor: not-allowed;
-  }
-  .field textarea { resize: vertical; min-height: 90px; }
-  .field .error-msg { font-size: 12px; color: var(--red); margin-top: 4px; display: none; }
-  .field.has-error input, .field.has-error select, .field.has-error textarea { border-color: var(--red); }
-  .field.has-error .error-msg { display: block; }
-
   .select-wrap { position: relative; }
   .select-wrap::after { content: '▾'; position: absolute; right: 14px; top: 50%; transform: translateY(-50%); pointer-events: none; color: var(--muted); font-size: 12px; }
 
-  .btn-submit {
-    width: 100%;
-    padding: 15px;
-    background: var(--green);
-    color: white;
-    border: none;
-    border-radius: var(--radius);
-    font-size: 16px;
-    font-weight: 700;
-    cursor: pointer;
-    transition: background 0.2s, transform 0.1s;
-    letter-spacing: 0.02em;
-  }
-  .btn-submit:hover { background: var(--green-mid); }
-  .btn-submit:active { transform: scale(0.98); }
-  .btn-submit:disabled { background: #9ca3af; cursor: not-allowed; }
-
-  .success-banner {
-    display: none;
-    background: var(--green-light);
-    border: 1.5px solid #86efac;
-    border-radius: var(--radius);
-    padding: 20px;
-    text-align: center;
-    margin-bottom: 20px;
-  }
-  .success-banner.visible { display: block; }
-  .success-banner .icon { font-size: 32px; margin-bottom: 8px; }
-  .success-banner h3 { color: var(--green); font-size: 17px; font-weight: 800; }
-  .success-banner p { color: var(--muted); font-size: 13px; margin-top: 4px; }
-  .btn-another { margin-top: 12px; padding: 10px 20px; background: var(--green); color: white; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; }
-
+  /* Recent */
   .recent-section { margin-top: 28px; display: none; }
   .recent-section.visible { display: block; }
-  .section-title { font-size: 14px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 12px; }
+  .section-title { font-size: 12px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 12px; }
   .recent-item { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; margin-bottom: 10px; }
-  .recent-item .ri-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
-  .recent-item .ri-date { font-size: 13px; font-weight: 700; color: var(--green); }
-  .recent-item .ri-type { font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 20px; }
+  .ri-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+  .ri-date { font-size: 13px; font-weight: 700; color: var(--green); }
+  .ri-type { font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 20px; }
   .ri-type.daily { background: #dbeafe; color: #1d4ed8; }
-  .ri-type.weekly { background: #fef9c3; color: #854d0e; }
-  .recent-item .ri-task { font-size: 13px; color: var(--text); line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .ri-type.weekly { background: #fef3c7; color: #854d0e; }
+  .ri-task { font-size: 13px; color: var(--text); line-height: 1.5; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
   .loading-text { font-size: 13px; color: var(--muted); text-align: center; padding: 16px; }
+
+  .spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.4); border-top-color: white; border-radius: 50%; animation: spin 0.6s linear infinite; vertical-align: middle; margin-right: 6px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .prog-bar { height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; margin-top: 8px; }
+  .prog-fill { height: 100%; background: var(--green); border-radius: 2px; transition: width 0.3s; }
 </style>
 </head>
 <body>
@@ -142,9 +181,260 @@
 
 <div class="container">
 
-  <div class="mode-select-section">
+  <!-- Mode selector -->
+  <div id="mode-selector">
     <div class="mode-label">Select Report Type</div>
-    <div class="mode-cards">
+    <div class="mode-cards" id="modeCards">
+      <!-- Populated by JS based on role -->
+    </div>
+  </div>
+
+  <!-- Success banner -->
+  <div class="success-banner" id="successBanner">
+    <div class="icon">✅</div>
+    <h3 id="successTitle">Submitted Successfully!</h3>
+    <p id="successText"></p>
+    <button style="margin-top:12px;padding:10px 20px;background:var(--green);color:white;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer" onclick="resetAll()">Submit Another</button>
+  </div>
+
+  <!-- ===== VISIT RECORDS (Sales only) ===== -->
+  <div id="visit-section" style="display:none">
+    <div class="report-header-card">
+      <div class="rh-title">📋 Today's Visit Report</div>
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+        <div class="field" style="margin:0;flex:1;min-width:140px">
+          <label>Date <span class="req">*</span></label>
+          <input type="date" id="visit-report-date">
+        </div>
+        <div class="field" style="margin:0;flex:1;min-width:140px">
+          <label>Route / Area</label>
+          <input type="text" id="visit-route" placeholder="e.g. Penang North">
+        </div>
+        <div id="report-status-badge"></div>
+      </div>
+    </div>
+
+    <div class="visit-list" id="visit-list">
+      <!-- visit cards rendered here -->
+    </div>
+
+    <button class="btn-secondary" onclick="openNewVisitForm()">+ Add Visit Record</button>
+
+    <!-- New visit form -->
+    <div id="new-visit-form" style="display:none">
+      <div style="background:white;border:2px solid var(--green);border-radius:var(--radius);padding:20px;margin-bottom:16px">
+        <div style="font-size:15px;font-weight:800;color:var(--green);margin-bottom:16px">New Visit Record</div>
+
+        <div class="field" id="fv-customer">
+          <label>Customer Name <span class="req">*</span></label>
+          <input type="text" id="v-customer" placeholder="e.g. Tesco Kepong, 美佳食品">
+          <div class="error-msg">Please enter customer name</div>
+        </div>
+
+        <div class="field">
+          <label>Order Amount (RM)</label>
+          <input type="number" id="v-amount" placeholder="0.00" min="0" step="0.01">
+        </div>
+
+        <div class="field">
+          <label>Notes</label>
+          <textarea id="v-notes" placeholder="Stock level, payment status, feedback, competitor activity..."></textarea>
+        </div>
+
+        <div class="field">
+          <label>Follow-up Notes</label>
+          <textarea id="v-followup" placeholder="What needs to be followed up next time?" oninput="checkFollowup()" rows="2"></textarea>
+        </div>
+
+        <div class="followup-task-prompt" id="followup-task-prompt">
+          <div class="ftp-text">💡 Convert this follow-up into a task?</div>
+          <div class="ftp-date">
+            <input type="date" id="v-followup-date" placeholder="Due date">
+            <button class="btn-create-task" id="btn-create-task" onclick="markTaskWillCreate()">✓ Yes, create task</button>
+            <span class="task-created-badge" id="task-created-badge" style="display:none">✅ Task will be created</span>
+          </div>
+        </div>
+
+        <!-- Photos -->
+        <div class="photo-section">
+          <label>Visit Photos <span class="req">*</span> (at least 1)</label>
+          <div class="photo-grid" id="visit-photo-grid">
+            <div class="photo-slot" id="vslot-0">
+              <div class="slot-icon">📷</div>
+              <div class="slot-label">Photo 1</div>
+              <input type="file" id="vfile-0" accept="image/*" onchange="handleVisitPhoto(0,this)">
+              <button class="remove-photo" onclick="removeVisitPhoto(event,0)">✕</button>
+            </div>
+            <div class="photo-slot" id="vslot-1">
+              <div class="slot-icon">📷</div>
+              <div class="slot-label">Photo 2</div>
+              <input type="file" id="vfile-1" accept="image/*" onchange="handleVisitPhoto(1,this)">
+              <button class="remove-photo" onclick="removeVisitPhoto(event,1)">✕</button>
+            </div>
+            <div class="photo-slot" id="vslot-2">
+              <div class="slot-icon">📷</div>
+              <div class="slot-label">Photo 3</div>
+              <input type="file" id="vfile-2" accept="image/*" onchange="handleVisitPhoto(2,this)">
+              <button class="remove-photo" onclick="removeVisitPhoto(event,2)">✕</button>
+            </div>
+          </div>
+          <div class="photo-required-msg" id="photo-required-msg">⚠️ At least 1 photo is required</div>
+          <div class="prog-bar" id="vprog-bar" style="display:none"><div class="prog-fill" id="vprog-fill" style="width:0%"></div></div>
+        </div>
+
+        <div style="display:flex;gap:10px">
+          <button class="btn-primary" style="flex:1" onclick="saveVisitRecord()">Save Visit</button>
+          <button style="flex:0;padding:14px 20px;background:#f3f4f6;color:var(--text);border:none;border-radius:var(--radius);font-size:14px;font-weight:600;cursor:pointer" onclick="cancelNewVisit()">Cancel</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="visit-submit-area" style="margin-top:8px">
+      <button class="btn-primary" id="btn-submit-report" onclick="submitDailyReport()">Submit Today's Report</button>
+    </div>
+  </div>
+
+  <!-- ===== WEEKLY REPORT ===== -->
+  <div class="form-card" id="form-weekly">
+    <div class="form-title">📅 Weekly Report</div>
+    <div class="form-subtitle">Please complete this form before Friday 18:00 every week.</div>
+
+    <div class="field" id="f-weekly-name">
+      <label>Name <span class="req">*</span></label>
+      <div class="select-wrap" id="weekly-name-select-wrap">
+        <select id="weekly-name"><option value="">Select your name</option></select>
+      </div>
+      <input type="text" id="weekly-name-locked" style="display:none" readonly>
+      <div class="error-msg">Please select your name</div>
+    </div>
+
+    <div class="field" id="f-weekly-date">
+      <label>Date <span class="req">*</span></label>
+      <input type="date" id="weekly-date">
+      <div class="error-msg">Please select a date</div>
+    </div>
+
+    <div class="field" id="f-weekly-target">
+      <label>Work Target for Next Week <span class="req">*</span></label>
+      <textarea id="weekly-target" placeholder="e.g. 1. Complete Q2 promo planning&#10;2. Visit 10 stores across region&#10;3. Submit monthly KPI report..."></textarea>
+      <div class="error-msg">Please fill in next week's targets</div>
+    </div>
+
+    <div class="field">
+      <label>Assistance Required</label>
+      <textarea id="weekly-assist" placeholder="None."></textarea>
+    </div>
+
+    <button class="btn-primary" id="btn-weekly" onclick="submitWeekly()">Submit Weekly Report</button>
+  </div>
+
+  <!-- ===== OLD DAILY REPORT (Marketing only) ===== -->
+  <div class="form-card" id="form-daily-old">
+    <div class="form-title">📋 Daily Report</div>
+    <div class="form-subtitle">Please complete the form before 18:00 every working day.</div>
+
+    <div class="field" id="f-daily-name">
+      <label>Name <span class="req">*</span></label>
+      <div class="select-wrap" id="daily-name-select-wrap">
+        <select id="daily-name"><option value="">Select your name</option></select>
+      </div>
+      <input type="text" id="daily-name-locked" style="display:none" readonly>
+      <div class="error-msg">Please select your name</div>
+    </div>
+
+    <div class="field" id="f-daily-date">
+      <label>Date <span class="req">*</span></label>
+      <input type="date" id="daily-date">
+      <div class="error-msg">Please select a date</div>
+    </div>
+
+    <div class="field" id="f-daily-today">
+      <label>Today's Daily Task <span class="req">*</span></label>
+      <textarea id="daily-today" placeholder="e.g. 1. Planned social media content&#10;2. Coordinated promo materials&#10;3. Followed up with design team..."></textarea>
+      <div class="error-msg">Please fill in today's task</div>
+    </div>
+
+    <div class="field" id="f-daily-tomorrow">
+      <label>Tomorrow's Daily Task <span class="req">*</span></label>
+      <textarea id="daily-tomorrow" placeholder="e.g. 1. Submit campaign brief&#10;2. Review artwork proofs&#10;3. Attend brand meeting..."></textarea>
+      <div class="error-msg">Please fill in tomorrow's task</div>
+    </div>
+
+    <div class="field">
+      <label>Assistance Required</label>
+      <textarea id="daily-assist" placeholder="None."></textarea>
+    </div>
+
+    <button class="btn-primary" id="btn-daily" onclick="submitDaily()">Submit Daily Report</button>
+  </div>
+
+  <!-- Recent submissions -->
+  <div class="recent-section" id="recentSection">
+    <div class="section-title" id="recentTitle">Recent Submissions</div>
+    <div id="recentList"><div class="loading-text">Loading…</div></div>
+  </div>
+
+</div>
+
+<script>
+const SUPA_URL = 'https://wjhgezvrxlhpexocfsea.supabase.co';
+const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndqaGdlenZyeGxocGV4b2Nmc2VhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg1MDU4NzgsImV4cCI6MjA5NDA4MTg3OH0.jENcrgEDYDlSRUCqve-T6rxYRJfz-dnZQHnXpPLJ_RE';
+const supa = supabase.createClient(SUPA_URL, SUPA_KEY);
+const H = { 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' };
+
+const loggedUser = sessionStorage.getItem('userName');
+const userRole = sessionStorage.getItem('userRole');
+const memberRole = sessionStorage.getItem('memberRole'); // 'sales' or 'marketing'
+
+if (!loggedUser) { location.href = 'index.html'; }
+
+// Back link
+document.getElementById('backLink').href = userRole === 'hq' ? 'index.html' : 'my-dashboard.html';
+document.getElementById('backLink').textContent = userRole === 'hq' ? '← Hub' : '← My Dashboard';
+
+let currentMode = null;
+let visitPhotoFiles = [null, null, null];
+let visitRecords = []; // locally saved before submit
+let willCreateTask = false;
+let todayReportId = null;
+
+const today = new Date().toISOString().split('T')[0];
+
+async function db(path, opts = {}) {
+  const r = await fetch(SUPA_URL + '/rest/v1/' + path, { headers: H, ...opts });
+  const text = await r.text();
+  if (!r.ok) { try { throw JSON.parse(text); } catch { throw text || r.status; } }
+  if (!text || text.trim() === '') return null;
+  try { return JSON.parse(text); } catch { return null; }
+}
+
+async function init() {
+  // Get member role from Supabase
+  const { data: member } = await supa.from('members').select('role').eq('name', loggedUser).maybeSingle();
+  const mRole = member?.role || 'sales';
+  sessionStorage.setItem('memberRole', mRole);
+
+  // Build mode cards
+  const cards = document.getElementById('modeCards');
+  if (mRole === 'sales') {
+    cards.className = 'mode-cards two';
+    cards.innerHTML = `
+      <div class="mode-card" id="card-visit" onclick="selectMode('visit')">
+        <div class="mode-icon">🤝</div>
+        <div class="mode-name">Visit Records</div>
+        <div class="mode-sub">Daily customer visits</div>
+      </div>
+      <div class="mode-card" id="card-weekly" onclick="selectMode('weekly')">
+        <div class="mode-icon">📅</div>
+        <div class="mode-name">Weekly Report</div>
+        <div class="mode-sub">Submit before Friday 18:00</div>
+      </div>`;
+    // Lock name in weekly form
+    lockNameField('weekly');
+  } else {
+    // Marketing
+    cards.className = 'mode-cards two';
+    cards.innerHTML = `
       <div class="mode-card" id="card-daily" onclick="selectMode('daily')">
         <div class="mode-icon">📋</div>
         <div class="mode-name">Daily Report</div>
@@ -154,275 +444,461 @@
         <div class="mode-icon">📅</div>
         <div class="mode-name">Weekly Report</div>
         <div class="mode-sub">Submit before Friday 18:00</div>
-      </div>
-    </div>
-  </div>
-
-  <div class="success-banner" id="successBanner">
-    <div class="icon">✅</div>
-    <h3>Submitted Successfully!</h3>
-    <p id="successText">Your report has been recorded.</p>
-    <button class="btn-another" onclick="resetForm()">Submit Another</button>
-  </div>
-
-  <!-- Daily Report Form -->
-  <div class="form-card" id="form-daily">
-    <div class="form-title">📋 Daily Report</div>
-    <div class="form-subtitle">Please complete the form before 18:00 every working day.</div>
-
-    <div class="field" id="f-daily-name">
-      <label>Name <span class="req">*</span></label>
-      <div class="hint" id="daily-name-hint">Your English name</div>
-      <div class="select-wrap" id="daily-name-select-wrap">
-        <select id="daily-name">
-          <option value="">Select your name</option>
-        </select>
-      </div>
-      <input type="text" id="daily-name-locked" style="display:none" readonly>
-      <div class="error-msg">Please select your name</div>
-    </div>
-
-    <div class="field" id="f-daily-date">
-      <label>Date <span class="req">*</span></label>
-      <div class="hint">Today's date</div>
-      <input type="date" id="daily-date">
-      <div class="error-msg">Please select a date</div>
-    </div>
-
-    <div class="field" id="f-daily-today">
-      <label>Today's Daily Task <span class="req">*</span></label>
-      <div class="hint">List out today's main daily task.</div>
-      <textarea id="daily-today" placeholder="e.g. 1. Visited 3 stores in Penang area&#10;2. Checked promo display at Tesco&#10;3. Follow-up with distributor..."></textarea>
-      <div class="error-msg">Please fill in today's task</div>
-    </div>
-
-    <div class="field" id="f-daily-tomorrow">
-      <label>Tomorrow's Daily Task <span class="req">*</span></label>
-      <div class="hint">List out tomorrow's daily task, at least three.</div>
-      <textarea id="daily-tomorrow" placeholder="e.g. 1. Visit stores in Butterworth&#10;2. Submit promo cost report&#10;3. Check new listing status..."></textarea>
-      <div class="error-msg">Please fill in tomorrow's task (at least 3 items)</div>
-    </div>
-
-    <div class="field">
-      <label>Assistance Required</label>
-      <div class="hint">If none, please write "None."</div>
-      <textarea id="daily-assist" placeholder="None."></textarea>
-    </div>
-
-    <button class="btn-submit" id="btn-daily" onclick="submitDaily()">Submit Daily Report</button>
-  </div>
-
-  <!-- Weekly Report Form -->
-  <div class="form-card" id="form-weekly">
-    <div class="form-title">📅 Weekly Report</div>
-    <div class="form-subtitle">Please complete this form before Friday 18:00 every week.</div>
-
-    <div class="field" id="f-weekly-name">
-      <label>Name <span class="req">*</span></label>
-      <div class="hint">Your English name</div>
-      <div class="select-wrap" id="weekly-name-select-wrap">
-        <select id="weekly-name">
-          <option value="">Select your name</option>
-        </select>
-      </div>
-      <input type="text" id="weekly-name-locked" style="display:none" readonly>
-      <div class="error-msg">Please select your name</div>
-    </div>
-
-    <div class="field" id="f-weekly-date">
-      <label>Date <span class="req">*</span></label>
-      <div class="hint">Today's date</div>
-      <input type="date" id="weekly-date">
-      <div class="error-msg">Please select a date</div>
-    </div>
-
-    <div class="field" id="f-weekly-target">
-      <label>Work Target for Next Week <span class="req">*</span></label>
-      <div class="hint">List out main task for next week, at least three.</div>
-      <textarea id="weekly-target" placeholder="e.g. 1. Complete Q2 promo planning&#10;2. Visit 10 stores across region&#10;3. Submit monthly KPI report..."></textarea>
-      <div class="error-msg">Please fill in next week's targets (at least 3 items)</div>
-    </div>
-
-    <div class="field">
-      <label>Assistance Required</label>
-      <div class="hint">If none, please write "None."</div>
-      <textarea id="weekly-assist" placeholder="None."></textarea>
-    </div>
-
-    <button class="btn-submit" id="btn-weekly" onclick="submitWeekly()">Submit Weekly Report</button>
-  </div>
-
-  <div class="recent-section" id="recentSection">
-    <div class="section-title" id="recentTitle">My Recent Submissions</div>
-    <div id="recentList"><div class="loading-text">Loading…</div></div>
-  </div>
-
-</div>
-
-<script>
-const SUPA_URL = 'https://wjhgezvrxlhpexocfsea.supabase.co';
-const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndqaGdlenZyeGxocGV4b2Nmc2VhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg1MDU4NzgsImV4cCI6MjA5NDA4MTg3OH0.jENcrgEDYDlSRUCqve-T6rxYRJfz-dnZQHnXpPLJ_RE';
-const headers = { 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' };
-
-// Auth check
-const loggedUser = sessionStorage.getItem('userName');
-const userRole = sessionStorage.getItem('userRole');
-if (!loggedUser) { location.href = 'index.html'; }
-
-// Back link target
-document.getElementById('backLink').href = userRole === 'hq' ? 'index.html' : 'my-dashboard.html';
-document.getElementById('backLink').textContent = userRole === 'hq' ? '← Hub' : '← My Dashboard';
-
-let currentMode = null;
-let members = [];
-
-async function db(path, opts = {}) {
-  const r = await fetch(SUPA_URL + '/rest/v1/' + path, { headers, ...opts });
-  const text = await r.text();
-  if (!r.ok) { try { throw JSON.parse(text); } catch { throw text || r.status; } }
-  if (!text || text.trim() === '') return null;
-  try { return JSON.parse(text); } catch { return null; }
-}
-
-async function loadMembers() {
-  // Members 只在 HQ 模式下从 DB 载入；销售员锁定名字
-  if (userRole === 'member') {
-    ['daily', 'weekly'].forEach(prefix => {
-      document.getElementById(prefix + '-name-select-wrap').style.display = 'none';
-      const locked = document.getElementById(prefix + '-name-locked');
-      locked.style.display = 'block';
-      locked.value = loggedUser;
-      // 隐藏的 select 也设值，让提交时拿得到
-      const sel = document.getElementById(prefix + '-name');
-      const o = document.createElement('option');
-      o.value = loggedUser; o.textContent = loggedUser; o.selected = true;
-      sel.appendChild(o);
-    });
-    document.getElementById('daily-name-hint').textContent = 'Logged in as ' + loggedUser;
-    return;
+      </div>`;
+    // Lock names
+    lockNameField('daily');
+    lockNameField('weekly');
+    // Load members for HQ mode
+    if (userRole === 'hq') loadMembersDropdown();
   }
-  try {
-    members = await db('members?select=name&order=name');
-    ['daily-name', 'weekly-name'].forEach(id => {
-      const sel = document.getElementById(id);
-      sel.innerHTML = '<option value="">Select your name</option>';
-      members.forEach(m => {
-        const o = document.createElement('option');
-        o.value = m.name; o.textContent = m.name;
-        sel.appendChild(o);
-      });
-    });
-  } catch(e) { console.error('Load members failed', e); }
+
+  // Set today's date
+  document.getElementById('visit-report-date').value = today;
+  document.getElementById('weekly-date').value = today;
+  document.getElementById('daily-date').value = today;
+
+  // Check URL param
+  const params = new URLSearchParams(location.search);
+  if (params.get('type') === 'weekly') setTimeout(() => selectMode('weekly'), 100);
+
+  // Check existing report for today (sales)
+  if (mRole === 'sales') {
+    await loadTodayReport();
+  }
 }
 
-function setToday() {
-  const today = new Date().toISOString().split('T')[0];
-  document.getElementById('daily-date').value = today;
-  document.getElementById('weekly-date').value = today;
+function lockNameField(prefix) {
+  if (userRole === 'member') {
+    const wrap = document.getElementById(prefix + '-name-select-wrap');
+    const locked = document.getElementById(prefix + '-name-locked');
+    if (wrap) wrap.style.display = 'none';
+    if (locked) { locked.style.display = 'block'; locked.value = loggedUser; }
+    const sel = document.getElementById(prefix + '-name');
+    if (sel) { const o = document.createElement('option'); o.value = loggedUser; o.textContent = loggedUser; o.selected = true; sel.appendChild(o); }
+  }
+}
+
+async function loadMembersDropdown() {
+  try {
+    const members = await db('members?select=name&order=name');
+    ['daily-name','weekly-name'].forEach(id => {
+      const sel = document.getElementById(id);
+      if (!sel) return;
+      sel.innerHTML = '<option value="">Select your name</option>';
+      members.forEach(m => { const o = document.createElement('option'); o.value = m.name; o.textContent = m.name; sel.appendChild(o); });
+    });
+  } catch(e) { console.error(e); }
+}
+
+async function loadTodayReport() {
+  // Check if there's already a report for today
+  const existing = await db(`daily_reports?name=eq.${encodeURIComponent(loggedUser)}&date=eq.${today}&order=created_at.desc&limit=1`);
+  if (existing && existing.length > 0) {
+    todayReportId = existing[0].id;
+    // Load existing visit records
+    const visits = await db(`visit_records?report_id=eq.${todayReportId}&order=created_at.asc`);
+    if (visits && visits.length > 0) {
+      visitRecords = visits.map(v => ({ ...v, saved: true }));
+      renderVisitList();
+    }
+    if (existing[0].route) document.getElementById('visit-route').value = existing[0].route;
+    updateReportStatusBadge(existing[0].status);
+    if (existing[0].status === 'submitted') {
+      document.getElementById('btn-submit-report').disabled = true;
+      document.getElementById('btn-submit-report').textContent = '✅ Report Submitted';
+    }
+  }
+}
+
+function updateReportStatusBadge(status) {
+  const el = document.getElementById('report-status-badge');
+  if (status === 'submitted') {
+    el.innerHTML = '<span class="report-status submitted">✅ Submitted</span>';
+  } else {
+    el.innerHTML = '<span class="report-status draft">📝 Draft</span>';
+  }
 }
 
 function selectMode(mode) {
   currentMode = mode;
-  document.getElementById('card-daily').classList.toggle('active', mode === 'daily');
-  document.getElementById('card-weekly').classList.toggle('active', mode === 'weekly');
-  document.getElementById('form-daily').classList.toggle('visible', mode === 'daily');
-  document.getElementById('form-weekly').classList.toggle('visible', mode === 'weekly');
-  document.getElementById('recentSection').classList.add('visible');
+  document.querySelectorAll('.mode-card').forEach(c => c.classList.remove('active'));
+  const activeCard = document.getElementById('card-' + mode);
+  if (activeCard) activeCard.classList.add('active');
+
+  document.getElementById('visit-section').style.display = 'none';
+  document.getElementById('form-weekly').classList.remove('visible');
+  document.getElementById('form-daily-old').classList.remove('visible');
   document.getElementById('successBanner').classList.remove('visible');
-  loadRecent(mode);
-  setTimeout(() => document.getElementById('form-' + mode).scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
+  document.getElementById('recentSection').classList.remove('visible');
+
+  if (mode === 'visit') {
+    document.getElementById('visit-section').style.display = 'block';
+  } else if (mode === 'weekly') {
+    document.getElementById('form-weekly').classList.add('visible');
+    document.getElementById('recentSection').classList.add('visible');
+    loadRecent('weekly');
+  } else if (mode === 'daily') {
+    document.getElementById('form-daily-old').classList.add('visible');
+    document.getElementById('recentSection').classList.add('visible');
+    loadRecent('daily');
+  }
+  setTimeout(() => document.getElementById(mode === 'visit' ? 'visit-section' : 'form-' + (mode === 'daily' ? 'daily-old' : mode)).scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
 }
 
-function validate(fields) {
-  let ok = true;
-  fields.forEach(({ id, fieldId, check }) => {
-    const el = document.getElementById(id);
-    const f = document.getElementById(fieldId);
-    const val = el.value.trim();
-    const valid = check ? check(val) : val !== '';
-    f.classList.toggle('has-error', !valid);
-    if (!valid) ok = false;
+// ── Visit Records ──────────────────────────────────────
+
+function renderVisitList() {
+  const list = document.getElementById('visit-list');
+  if (!visitRecords.length) { list.innerHTML = ''; return; }
+  list.innerHTML = visitRecords.map((v, i) => `
+    <div class="visit-card">
+      <div class="visit-card-header" onclick="toggleVisitCard(${i})">
+        <div class="vc-left">
+          <div class="vc-customer">${escHtml(v.customer_name)}</div>
+          <div class="vc-meta">RM ${Number(v.order_amount||0).toFixed(2)} ${v.followup_notes ? '· Follow-up noted' : ''}</div>
+        </div>
+        <div class="vc-right">
+          ${(v.photo_urls && v.photo_urls.length > 0)
+            ? `<span class="vc-photo-badge">📷 ${v.photo_urls.length}</span>`
+            : `<span class="vc-photo-missing">No photo</span>`}
+          <span style="color:var(--muted);font-size:12px">▼</span>
+        </div>
+      </div>
+      <div class="visit-card-body" id="vcbody-${i}">
+        ${v.notes ? `<div style="font-size:13px;color:var(--text);margin-bottom:8px"><strong style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em">Notes</strong><br>${escHtml(v.notes)}</div>` : ''}
+        ${v.followup_notes ? `<div style="font-size:13px;color:#92400e;margin-bottom:8px;background:#fffbeb;padding:8px 10px;border-radius:6px"><strong style="font-size:11px;text-transform:uppercase;letter-spacing:.04em">Follow-up</strong><br>${escHtml(v.followup_notes)}${v.followup_date ? ` · Due: ${v.followup_date}` : ''}</div>` : ''}
+        ${v.photo_urls && v.photo_urls.length > 0 ? `<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:8px">${v.photo_urls.map(u=>`<img src="${u}" style="width:100%;aspect-ratio:1;object-fit:cover;border-radius:6px">`).join('')}</div>` : ''}
+      </div>
+    </div>`).join('');
+}
+
+function toggleVisitCard(i) {
+  const body = document.getElementById('vcbody-' + i);
+  body.classList.toggle('open');
+}
+
+function openNewVisitForm() {
+  document.getElementById('new-visit-form').style.display = 'block';
+  document.getElementById('v-customer').focus();
+  willCreateTask = false;
+  visitPhotoFiles = [null, null, null];
+  document.getElementById('v-customer').value = '';
+  document.getElementById('v-amount').value = '';
+  document.getElementById('v-notes').value = '';
+  document.getElementById('v-followup').value = '';
+  document.getElementById('v-followup-date').value = '';
+  document.getElementById('followup-task-prompt').classList.remove('show');
+  document.getElementById('task-created-badge').style.display = 'none';
+  document.getElementById('btn-create-task').style.display = 'inline-block';
+  document.getElementById('photo-required-msg').classList.remove('show');
+  [0,1,2].forEach(i => {
+    const slot = document.getElementById('vslot-'+i);
+    const img = slot.querySelector('img');
+    if (img) img.remove();
+    slot.classList.remove('has-photo');
+    document.getElementById('vfile-'+i).value = '';
   });
-  return ok;
+  setTimeout(() => document.getElementById('new-visit-form').scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
 }
 
-async function submitDaily() {
-  const ok = validate([
-    { id: 'daily-name', fieldId: 'f-daily-name' },
-    { id: 'daily-date', fieldId: 'f-daily-date' },
-    { id: 'daily-today', fieldId: 'f-daily-today' },
-    { id: 'daily-tomorrow', fieldId: 'f-daily-tomorrow', check: v => v !== '' && (v.match(/\d\./g) || []).length >= 1 },
-  ]);
-  if (!ok) return;
-  const btn = document.getElementById('btn-daily');
-  btn.disabled = true; btn.textContent = 'Submitting…';
+function cancelNewVisit() {
+  document.getElementById('new-visit-form').style.display = 'none';
+}
+
+function checkFollowup() {
+  const val = document.getElementById('v-followup').value.trim();
+  document.getElementById('followup-task-prompt').classList.toggle('show', val.length > 0);
+}
+
+function markTaskWillCreate() {
+  willCreateTask = true;
+  document.getElementById('btn-create-task').style.display = 'none';
+  document.getElementById('task-created-badge').style.display = 'inline-block';
+}
+
+async function handleVisitPhoto(idx, input) {
+  if (!input.files[0]) return;
+  const compressed = await compressImage(input.files[0]);
+  visitPhotoFiles[idx] = compressed;
+  const slot = document.getElementById('vslot-' + idx);
+  const reader = new FileReader();
+  reader.onload = e => {
+    let img = slot.querySelector('img');
+    if (!img) { img = document.createElement('img'); slot.appendChild(img); }
+    img.src = e.target.result;
+    slot.classList.add('has-photo');
+  };
+  reader.readAsDataURL(compressed);
+}
+
+function removeVisitPhoto(e, idx) {
+  e.stopPropagation();
+  visitPhotoFiles[idx] = null;
+  const slot = document.getElementById('vslot-' + idx);
+  const img = slot.querySelector('img');
+  if (img) img.remove();
+  slot.classList.remove('has-photo');
+  document.getElementById('vfile-' + idx).value = '';
+}
+
+async function compressImage(file) {
+  return new Promise(resolve => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      let w = img.width, h = img.height;
+      const maxDim = 1200;
+      if (w > maxDim || h > maxDim) { const r = Math.min(maxDim/w, maxDim/h); w = Math.round(w*r); h = Math.round(h*r); }
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      canvas.toBlob(blob => resolve(new File([blob], file.name, { type: 'image/jpeg' })), 'image/jpeg', 0.75);
+      URL.revokeObjectURL(url);
+    };
+    img.src = url;
+  });
+}
+
+async function uploadVisitPhotos(visitId) {
+  const urls = [];
+  const toUpload = visitPhotoFiles.filter(f => f !== null);
+  if (!toUpload.length) return [];
+  document.getElementById('vprog-bar').style.display = 'block';
+  let uploaded = 0;
+  for (let i = 0; i < 3; i++) {
+    if (!visitPhotoFiles[i]) continue;
+    const path = `${visitId}/photo-${i}-${Date.now()}.jpg`;
+    const { data, error } = await supa.storage.from('visit-photos').upload(path, visitPhotoFiles[i], { contentType: 'image/jpeg', upsert: true });
+    if (!error) {
+      const { data: urlData } = supa.storage.from('visit-photos').getPublicUrl(path);
+      urls.push(urlData.publicUrl);
+    }
+    uploaded++;
+    document.getElementById('vprog-fill').style.width = Math.round(uploaded / toUpload.length * 100) + '%';
+  }
+  document.getElementById('vprog-bar').style.display = 'none';
+  return urls;
+}
+
+async function saveVisitRecord() {
+  // Validate
+  const customer = document.getElementById('v-customer').value.trim();
+  if (!customer) {
+    document.getElementById('fv-customer').classList.add('has-error');
+    document.getElementById('v-customer').focus();
+    return;
+  }
+  document.getElementById('fv-customer').classList.remove('has-error');
+
+  // Photo required
+  const hasPhoto = visitPhotoFiles.some(f => f !== null);
+  if (!hasPhoto) {
+    document.getElementById('photo-required-msg').classList.add('show');
+    return;
+  }
+  document.getElementById('photo-required-msg').classList.remove('show');
+
+  const btn = document.querySelector('#new-visit-form .btn-primary');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>Saving…';
+
   try {
-    await db('daily_reports', {
+    // Ensure report_id exists
+    if (!todayReportId) {
+      const reportData = await db('daily_reports', {
+        method: 'POST',
+        headers: { ...H, 'Prefer': 'return=representation' },
+        body: JSON.stringify({
+          name: loggedUser,
+          date: document.getElementById('visit-report-date').value || today,
+          route: document.getElementById('visit-route').value.trim() || null,
+          status: 'draft'
+        })
+      });
+      todayReportId = reportData[0].id;
+      updateReportStatusBadge('draft');
+    }
+
+    // Temp visit ID for photo upload
+    const tempId = crypto.randomUUID ? crypto.randomUUID() : Date.now().toString();
+    const photoUrls = await uploadVisitPhotos(tempId);
+
+    // Save visit record
+    const visitDate = document.getElementById('visit-report-date').value || today;
+    const followupNotes = document.getElementById('v-followup').value.trim();
+    const followupDate = document.getElementById('v-followup-date').value || null;
+
+    const visitPayload = {
+      report_id: todayReportId,
+      rep_name: loggedUser,
+      visit_date: visitDate,
+      customer_name: customer,
+      order_amount: parseFloat(document.getElementById('v-amount').value) || 0,
+      notes: document.getElementById('v-notes').value.trim() || null,
+      followup_notes: followupNotes || null,
+      followup_date: followupDate,
+      has_task_created: false,
+      photo_urls: photoUrls
+    };
+
+    const savedVisit = await db('visit_records', {
       method: 'POST',
+      headers: { ...H, 'Prefer': 'return=representation' },
+      body: JSON.stringify(visitPayload)
+    });
+
+    const visitId = savedVisit[0].visit_id;
+
+    // Create task if needed
+    if (willCreateTask && followupNotes) {
+      await db('tasks', {
+        method: 'POST',
+        body: JSON.stringify({
+          description: followupNotes,
+          assigned_to: loggedUser,
+          created_by: loggedUser,
+          source: 'rep_committed',
+          linked_customer: customer,
+          linked_visit_id: visitId,
+          due_date: followupDate || null,
+          status: 'pending'
+        })
+      });
+      // Mark has_task_created
+      await fetch(SUPA_URL + '/rest/v1/visit_records?visit_id=eq.' + visitId, {
+        method: 'PATCH', headers: H, body: JSON.stringify({ has_task_created: true })
+      });
+    }
+
+    visitRecords.push({ ...savedVisit[0], saved: true });
+    renderVisitList();
+    document.getElementById('new-visit-form').style.display = 'none';
+
+  } catch(e) {
+    console.error(e);
+    alert('Failed to save visit. Please try again.');
+  }
+
+  btn.disabled = false;
+  btn.innerHTML = 'Save Visit';
+}
+
+async function submitDailyReport() {
+  if (!visitRecords.length) {
+    alert('Please add at least one visit record before submitting.');
+    return;
+  }
+  if (!todayReportId) {
+    alert('No report found. Please add a visit first.');
+    return;
+  }
+
+  const btn = document.getElementById('btn-submit-report');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>Submitting…';
+
+  try {
+    await fetch(SUPA_URL + '/rest/v1/daily_reports?id=eq.' + todayReportId, {
+      method: 'PATCH', headers: H,
       body: JSON.stringify({
-        name: document.getElementById('daily-name').value,
-        date: document.getElementById('daily-date').value,
-        today_task: document.getElementById('daily-today').value.trim(),
-        tomorrow_task: document.getElementById('daily-tomorrow').value.trim(),
-        assistance: document.getElementById('daily-assist').value.trim() || 'None.'
+        status: 'submitted',
+        submitted_at: new Date().toISOString(),
+        route: document.getElementById('visit-route').value.trim() || null
       })
     });
-    showSuccess('Daily report submitted!');
-    loadRecent('daily').catch(()=>{});
+
+    document.getElementById('successTitle').textContent = 'Report Submitted!';
+    document.getElementById('successText').textContent = `${visitRecords.length} visit record(s) submitted for ${today}.`;
+    document.getElementById('successBanner').classList.add('visible');
+    document.getElementById('visit-section').style.display = 'none';
+    updateReportStatusBadge('submitted');
+    btn.textContent = '✅ Report Submitted';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   } catch(e) {
-    alert('Submission failed. Please try again.');
     console.error(e);
+    alert('Submission failed. Please try again.');
+    btn.disabled = false;
+    btn.innerHTML = 'Submit Today\'s Report';
   }
-  btn.disabled = false; btn.textContent = 'Submit Daily Report';
 }
 
+// ── Weekly report ──────────────────────────────────────
+
 async function submitWeekly() {
-  const ok = validate([
-    { id: 'weekly-name', fieldId: 'f-weekly-name' },
-    { id: 'weekly-date', fieldId: 'f-weekly-date' },
-    { id: 'weekly-target', fieldId: 'f-weekly-target', check: v => v !== '' },
-  ]);
+  const nameEl = document.getElementById('weekly-name');
+  const name = nameEl.value.trim();
+  const date = document.getElementById('weekly-date').value;
+  const target = document.getElementById('weekly-target').value.trim();
+
+  let ok = true;
+  if (!name) { document.getElementById('f-weekly-name').classList.add('has-error'); ok = false; } else { document.getElementById('f-weekly-name').classList.remove('has-error'); }
+  if (!date) { document.getElementById('f-weekly-date').classList.add('has-error'); ok = false; } else { document.getElementById('f-weekly-date').classList.remove('has-error'); }
+  if (!target) { document.getElementById('f-weekly-target').classList.add('has-error'); ok = false; } else { document.getElementById('f-weekly-target').classList.remove('has-error'); }
   if (!ok) return;
+
   const btn = document.getElementById('btn-weekly');
   btn.disabled = true; btn.textContent = 'Submitting…';
   try {
     await db('weekly_reports', {
       method: 'POST',
       body: JSON.stringify({
-        name: document.getElementById('weekly-name').value,
-        date: document.getElementById('weekly-date').value,
-        next_week_target: document.getElementById('weekly-target').value.trim(),
+        name,
+        date,
+        next_week_target: target,
         assistance: document.getElementById('weekly-assist').value.trim() || 'None.'
       })
     });
-    showSuccess('Weekly report submitted!');
-    loadRecent('weekly').catch(()=>{});
+    document.getElementById('successTitle').textContent = 'Weekly Report Submitted!';
+    document.getElementById('successText').textContent = 'Your weekly report has been recorded.';
+    document.getElementById('successBanner').classList.add('visible');
+    document.getElementById('form-weekly').classList.remove('visible');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   } catch(e) {
     alert('Submission failed. Please try again.');
-    console.error(e);
   }
   btn.disabled = false; btn.textContent = 'Submit Weekly Report';
 }
 
-function showSuccess(msg) {
-  document.getElementById('form-daily').classList.remove('visible');
-  document.getElementById('form-weekly').classList.remove('visible');
-  document.getElementById('successText').textContent = msg;
-  document.getElementById('successBanner').classList.add('visible');
-  window.scrollTo({ top: 0, behavior: 'smooth' });
+// ── Old daily report (marketing) ──────────────────────
+
+async function submitDaily() {
+  const nameEl = document.getElementById('daily-name');
+  const name = nameEl.value.trim();
+  const date = document.getElementById('daily-date').value;
+  const today_task = document.getElementById('daily-today').value.trim();
+  const tomorrow_task = document.getElementById('daily-tomorrow').value.trim();
+
+  let ok = true;
+  if (!name) { document.getElementById('f-daily-name').classList.add('has-error'); ok = false; } else { document.getElementById('f-daily-name').classList.remove('has-error'); }
+  if (!date) { document.getElementById('f-daily-date').classList.add('has-error'); ok = false; } else { document.getElementById('f-daily-date').classList.remove('has-error'); }
+  if (!today_task) { document.getElementById('f-daily-today').classList.add('has-error'); ok = false; } else { document.getElementById('f-daily-today').classList.remove('has-error'); }
+  if (!tomorrow_task) { document.getElementById('f-daily-tomorrow').classList.add('has-error'); ok = false; } else { document.getElementById('f-daily-tomorrow').classList.remove('has-error'); }
+  if (!ok) return;
+
+  const btn = document.getElementById('btn-daily');
+  btn.disabled = true; btn.textContent = 'Submitting…';
+  try {
+    await db('daily_reports', {
+      method: 'POST',
+      body: JSON.stringify({
+        name, date, today_task, tomorrow_task,
+        assistance: document.getElementById('daily-assist').value.trim() || 'None.',
+        status: 'submitted',
+        submitted_at: new Date().toISOString()
+      })
+    });
+    document.getElementById('successTitle').textContent = 'Daily Report Submitted!';
+    document.getElementById('successText').textContent = 'Your daily report has been recorded.';
+    document.getElementById('successBanner').classList.add('visible');
+    document.getElementById('form-daily-old').classList.remove('visible');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  } catch(e) {
+    alert('Submission failed. Please try again.');
+  }
+  btn.disabled = false; btn.textContent = 'Submit Daily Report';
 }
 
-function resetForm() {
-  document.getElementById('successBanner').classList.remove('visible');
-  if (currentMode) {
-    document.getElementById('form-' + currentMode).classList.add('visible');
-    if (currentMode === 'daily') {
-      ['daily-today', 'daily-tomorrow', 'daily-assist'].forEach(id => document.getElementById(id).value = '');
-    } else {
-      ['weekly-target', 'weekly-assist'].forEach(id => document.getElementById(id).value = '');
-    }
-  }
-}
+// ── Recent ────────────────────────────────────────────
 
 async function loadRecent(mode) {
   const list = document.getElementById('recentList');
@@ -432,32 +908,39 @@ async function loadRecent(mode) {
   try {
     const table = mode === 'daily' ? 'daily_reports' : 'weekly_reports';
     let query = `${table}?select=*&order=created_at.desc&limit=5`;
-    if (userRole === 'member') {
-      query = `${table}?select=*&name=eq.${encodeURIComponent(loggedUser)}&order=created_at.desc&limit=5`;
-    }
+    if (userRole === 'member') query = `${table}?select=*&name=eq.${encodeURIComponent(loggedUser)}&order=created_at.desc&limit=5`;
     const data = await db(query);
-    if (!data.length) { list.innerHTML = '<div class="loading-text">No submissions yet.</div>'; return; }
+    if (!data || !data.length) { list.innerHTML = '<div class="loading-text">No submissions yet.</div>'; return; }
     list.innerHTML = data.map(r => `
       <div class="recent-item">
         <div class="ri-header">
           <span class="ri-date">${r.date} · ${r.name}</span>
           <span class="ri-type ${mode}">${mode === 'daily' ? 'Daily' : 'Weekly'}</span>
         </div>
-        <div class="ri-task">${mode === 'daily' ? r.today_task : r.next_week_target}</div>
+        <div class="ri-task">${mode === 'daily' ? escHtml(r.today_task || '') : escHtml(r.next_week_target || '')}</div>
       </div>`).join('');
   } catch(e) { list.innerHTML = '<div class="loading-text">Failed to load.</div>'; }
 }
 
-loadMembers();
-setToday();
-
-// Support ?type=weekly from dashboard quick action
-const params = new URLSearchParams(location.search);
-if (params.get('type') === 'weekly') {
-  setTimeout(() => selectMode('weekly'), 100);
-} else if (params.get('type') === 'daily') {
-  setTimeout(() => selectMode('daily'), 100);
+function resetAll() {
+  document.getElementById('successBanner').classList.remove('visible');
+  document.querySelectorAll('.mode-card').forEach(c => c.classList.remove('active'));
+  document.getElementById('visit-section').style.display = 'none';
+  document.getElementById('form-weekly').classList.remove('visible');
+  document.getElementById('form-daily-old').classList.remove('visible');
+  currentMode = null;
+  // Reset weekly
+  document.getElementById('weekly-target').value = '';
+  document.getElementById('weekly-assist').value = '';
+  // Reset daily old
+  document.getElementById('daily-today').value = '';
+  document.getElementById('daily-tomorrow').value = '';
+  document.getElementById('daily-assist').value = '';
 }
+
+function escHtml(s) { return String(s||'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+init();
 </script>
 </body>
 </html>
