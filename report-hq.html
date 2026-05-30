@@ -61,13 +61,14 @@
   .tab.active { color: var(--green); border-bottom-color: var(--green); }
   .tab:hover { color: var(--green); background: #f0fdf4; }
 
-  .container { max-width: 800px; margin: 0 auto; padding: 24px 16px 60px; }
+  .container { max-width: 860px; margin: 0 auto; padding: 24px 16px 60px; }
   .section { display: none; }
   .section.active { display: block; }
 
   .card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; margin-bottom: 16px; }
   .card-title { font-size: 15px; font-weight: 800; color: var(--text); margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
 
+  /* Stat grid */
   .stat-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 20px; }
   @media (min-width: 500px) { .stat-grid { grid-template-columns: repeat(4, 1fr); } }
   .stat-box { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 16px; text-align: center; }
@@ -77,12 +78,14 @@
   .stat-box.green .s-val { color: var(--green); }
   .stat-box.amber .s-val { color: var(--amber); }
 
+  /* Missing list */
   .missing-list { display: flex; flex-direction: column; gap: 8px; }
   .missing-item { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; background: var(--red-light); border-radius: 8px; border: 1px solid #fca5a5; }
   .missing-item .mi-name { font-size: 14px; font-weight: 600; color: var(--red); }
   .missing-item .mi-badge { font-size: 11px; background: var(--red); color: white; padding: 2px 8px; border-radius: 20px; font-weight: 700; }
   .all-good { text-align: center; padding: 20px; color: var(--green); font-weight: 600; font-size: 14px; }
 
+  /* Report items */
   .report-item { border: 1px solid var(--border); border-radius: 10px; margin-bottom: 10px; overflow: hidden; }
   .report-header { padding: 12px 16px; background: #f9fafb; display: flex; align-items: center; justify-content: space-between; cursor: pointer; }
   .report-header:hover { background: #f0fdf4; }
@@ -92,13 +95,14 @@
   .badge { font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 20px; }
   .badge.daily { background: #dbeafe; color: #1d4ed8; }
   .badge.weekly { background: var(--amber-light); color: #92400e; }
-  .chevron { color: var(--muted); transition: transform 0.2s; font-size: 12px; }
+  .chevron { color: var(--muted); font-size: 12px; }
   .report-body { display: none; padding: 14px 16px; border-top: 1px solid var(--border); }
   .report-body.open { display: block; }
   .rb-field { margin-bottom: 10px; }
   .rb-field .rf-label { font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 3px; }
   .rb-field .rf-val { font-size: 13px; color: var(--text); white-space: pre-wrap; line-height: 1.6; }
 
+  /* Filter bar */
   .filter-bar { display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; }
   .filter-bar select, .filter-bar input {
     padding: 8px 12px; border: 1.5px solid var(--border); border-radius: 8px;
@@ -107,13 +111,72 @@
   }
   .filter-bar select:focus, .filter-bar input:focus { outline: none; border-color: var(--green); }
 
+  /* Daily briefing */
+  .briefing-date-bar { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
+  .briefing-date-bar input[type=date] { padding: 8px 12px; border: 1.5px solid var(--border); border-radius: 8px; font-size: 14px; font-family: inherit; }
+  .briefing-date-bar input[type=date]:focus { outline: none; border-color: var(--green); }
+  .btn-load { padding: 8px 16px; background: var(--green); color: white; border: none; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; }
+  .btn-load:hover { background: var(--green-mid); }
+
+  .briefing-summary { display: grid; grid-template-columns: repeat(2,1fr); gap: 10px; margin-bottom: 20px; }
+  @media(min-width:500px){ .briefing-summary { grid-template-columns: repeat(4,1fr); } }
+  .bs-card { background: white; border: 1px solid var(--border); border-radius: 10px; padding: 14px; text-align: center; }
+  .bs-val { font-size: 26px; font-weight: 900; line-height: 1; }
+  .bs-label { font-size: 11px; color: var(--muted); margin-top: 4px; text-transform: uppercase; letter-spacing: 0.04em; }
+  .bs-card.green .bs-val { color: var(--green); }
+  .bs-card.red .bs-val { color: var(--red); }
+  .bs-card.amber .bs-val { color: var(--amber); }
+  .bs-card.blue .bs-val { color: var(--blue); }
+
+  .rep-briefing-card { background: white; border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 12px; overflow: hidden; }
+  .rbc-header { padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; background: #f9fafb; }
+  .rbc-header:hover { background: #f0fdf4; }
+  .rbc-left { display: flex; align-items: center; gap: 12px; }
+  .rbc-avatar { width: 36px; height: 36px; border-radius: 50%; background: var(--green-light); color: var(--green); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 15px; flex-shrink: 0; }
+  .rbc-name { font-size: 14px; font-weight: 700; }
+  .rbc-meta { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .rbc-right { display: flex; align-items: center; gap: 8px; }
+  .status-badge { font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 20px; }
+  .status-badge.submitted { background: var(--green-light); color: var(--green); }
+  .status-badge.missing { background: var(--red-light); color: var(--red); }
+  .rbc-body { display: none; border-top: 1px solid var(--border); }
+  .rbc-body.open { display: block; }
+
+  /* Visit record in briefing */
+  .visit-record-item { padding: 14px 16px; border-bottom: 1px solid var(--border); }
+  .visit-record-item:last-child { border-bottom: none; }
+  .vri-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 8px; }
+  .vri-customer { font-size: 14px; font-weight: 700; color: var(--text); }
+  .vri-amount { font-size: 13px; font-weight: 700; color: var(--green); white-space: nowrap; }
+  .vri-notes { font-size: 13px; color: var(--muted); margin-bottom: 8px; line-height: 1.5; }
+  .vri-followup { font-size: 12px; color: #92400e; background: #fffbeb; padding: 6px 10px; border-radius: 6px; margin-bottom: 8px; }
+  .vri-photos { display: grid; grid-template-columns: repeat(4,1fr); gap: 6px; margin-bottom: 8px; }
+  .vri-photos img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 6px; cursor: pointer; }
+  .vri-actions { display: flex; gap: 8px; }
+  .btn-create-task-hq { padding: 6px 12px; background: var(--amber); color: white; border: none; border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer; }
+  .btn-create-task-hq:hover { background: #b45309; }
+
+  /* Task creation inline */
+  .task-form-inline { background: #fffbeb; border: 1px solid #fde68a; border-radius: 8px; padding: 12px; margin-top: 8px; display: none; }
+  .task-form-inline.open { display: block; }
+  .task-form-inline input, .task-form-inline select, .task-form-inline textarea {
+    width: 100%; padding: 8px 12px; border: 1.5px solid var(--border); border-radius: 6px;
+    font-size: 13px; font-family: inherit; margin-bottom: 8px;
+  }
+  .task-form-inline input:focus, .task-form-inline select:focus, .task-form-inline textarea:focus { outline: none; border-color: var(--green); }
+  .task-form-inline textarea { min-height: 60px; resize: vertical; }
+  .tfi-row { display: flex; gap: 8px; }
+  .btn-save-task { padding: 8px 14px; background: var(--green); color: white; border: none; border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer; }
+  .btn-cancel-task { padding: 8px 14px; background: #e5e7eb; color: var(--text); border: none; border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer; }
+
+  /* Members */
   .member-row { display: flex; align-items: center; gap: 8px; padding: 10px 14px; background: #f9fafb; border: 1px solid var(--border); border-radius: 8px; margin-bottom: 8px; flex-wrap: wrap; }
   .member-row .m-name { font-size: 14px; font-weight: 600; flex: 1; min-width: 100px; }
   .pw-badge { font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.04em; }
   .pw-badge.set { background: var(--green-light); color: var(--green); }
   .pw-badge.unset { background: var(--amber-light); color: var(--amber); }
   .kpi-badge { font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 20px; background: #fef3c7; color: #92400e; }
-  .role-badge { font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.04em; }
+  .role-badge { font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 20px; text-transform: uppercase; }
   .role-badge.sales { background: var(--blue-light); color: var(--blue); }
   .role-badge.marketing { background: #fdf4ff; color: #7e22ce; }
   .btn-editname { background: #3b82f6; border: none; color: white; padding: 5px 10px; border-radius: 6px; font-size: 12px; cursor: pointer; font-weight: 600; }
@@ -127,8 +190,8 @@
   .btn-del { background: none; border: 1px solid var(--red); color: var(--red); padding: 4px 10px; border-radius: 6px; font-size: 12px; cursor: pointer; font-weight: 600; }
   .btn-del:hover { background: var(--red); color: white; }
 
-  .pw-edit-row { width: 100%; display: none; gap: 8px; margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--border); }
-  .pw-edit-row.open { display: flex; flex-wrap: wrap; }
+  .pw-edit-row { width: 100%; display: none; gap: 8px; margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--border); flex-wrap: wrap; }
+  .pw-edit-row.open { display: flex; }
   .pw-edit-row input, .pw-edit-row select { flex: 1; min-width: 120px; padding: 8px 12px; border: 1.5px solid var(--border); border-radius: 6px; font-size: 13px; font-family: inherit; }
   .pw-edit-row input:focus, .pw-edit-row select:focus { outline: none; border-color: var(--green); }
   .btn-save { padding: 8px 14px; background: var(--green); color: white; border: none; border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer; }
@@ -150,13 +213,23 @@
 
   .loading-text { text-align: center; padding: 24px; color: var(--muted); font-size: 13px; }
   .empty-text { text-align: center; padding: 24px; color: var(--muted); font-size: 13px; }
-
   .month-row { display: flex; gap: 8px; align-items: center; margin-bottom: 16px; }
   .month-row select { padding: 8px 12px; border: 1.5px solid var(--border); border-radius: 8px; font-size: 13px; font-family: inherit; appearance: none; }
   .month-row select:focus { outline: none; border-color: var(--green); }
+
+  /* Image lightbox */
+  .lightbox { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 9999; display: none; align-items: center; justify-content: center; padding: 20px; }
+  .lightbox.open { display: flex; }
+  .lightbox img { max-width: 100%; max-height: 90vh; border-radius: 8px; }
+  .lightbox-close { position: absolute; top: 16px; right: 16px; background: white; border: none; border-radius: 50%; width: 36px; height: 36px; font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
 </style>
 </head>
 <body>
+
+<div class="lightbox" id="lightbox" onclick="closeLightbox()">
+  <button class="lightbox-close" onclick="closeLightbox()">✕</button>
+  <img id="lightbox-img" src="">
+</div>
 
 <div class="pw-overlay" id="pwOverlay">
   <div class="pw-box">
@@ -179,8 +252,9 @@
 </div>
 
 <div class="tabs">
-  <div class="tab active" onclick="switchTab('overview')">📊 Overview</div>
-  <div class="tab" onclick="switchTab('daily')">📋 Daily Reports</div>
+  <div class="tab active" onclick="switchTab('briefing')">📋 Daily Briefing</div>
+  <div class="tab" onclick="switchTab('overview')">📊 Overview</div>
+  <div class="tab" onclick="switchTab('daily')">📝 Daily Reports</div>
   <div class="tab" onclick="switchTab('weekly')">📅 Weekly Reports</div>
   <div class="tab" onclick="switchTab('stats')">📈 Miss Stats</div>
   <div class="tab" onclick="switchTab('members')">👥 Members</div>
@@ -188,7 +262,25 @@
 
 <div class="container">
 
-  <div class="section active" id="sec-overview">
+  <!-- ===== DAILY BRIEFING ===== -->
+  <div class="section active" id="sec-briefing">
+    <div class="briefing-date-bar">
+      <input type="date" id="briefing-date">
+      <button class="btn-load" onclick="loadBriefing()">Load</button>
+    </div>
+
+    <div class="briefing-summary" id="briefing-summary">
+      <div class="bs-card green"><div class="bs-val" id="bs-submitted">—</div><div class="bs-label">Submitted</div></div>
+      <div class="bs-card red"><div class="bs-val" id="bs-missing">—</div><div class="bs-label">Not Submitted</div></div>
+      <div class="bs-card blue"><div class="bs-val" id="bs-visits">—</div><div class="bs-label">Total Visits</div></div>
+      <div class="bs-card amber"><div class="bs-val" id="bs-orders">—</div><div class="bs-label">Total Orders (RM)</div></div>
+    </div>
+
+    <div id="briefing-list"><div class="loading-text">Loading…</div></div>
+  </div>
+
+  <!-- ===== OVERVIEW ===== -->
+  <div class="section" id="sec-overview">
     <div class="stat-grid">
       <div class="stat-box red"><div class="s-val" id="ov-daily-miss">—</div><div class="s-label">Missing Daily Today</div></div>
       <div class="stat-box green"><div class="s-val" id="ov-daily-ok">—</div><div class="s-label">Daily Submitted</div></div>
@@ -205,6 +297,7 @@
     </div>
   </div>
 
+  <!-- ===== DAILY REPORTS ===== -->
   <div class="section" id="sec-daily">
     <div class="filter-bar">
       <select id="filter-daily-name" onchange="loadDailyReports()"><option value="">All Members</option></select>
@@ -214,6 +307,7 @@
     <div id="daily-report-list"><div class="loading-text">Loading…</div></div>
   </div>
 
+  <!-- ===== WEEKLY REPORTS ===== -->
   <div class="section" id="sec-weekly">
     <div class="filter-bar">
       <select id="filter-weekly-name" onchange="loadWeeklyReports()"><option value="">All Members</option></select>
@@ -223,6 +317,7 @@
     <div id="weekly-report-list"><div class="loading-text">Loading…</div></div>
   </div>
 
+  <!-- ===== MISS STATS ===== -->
   <div class="section" id="sec-stats">
     <div class="card">
       <div class="card-title">📈 Monthly Missing Report Count</div>
@@ -234,10 +329,11 @@
     </div>
   </div>
 
+  <!-- ===== MEMBERS ===== -->
   <div class="section" id="sec-members">
     <div class="card">
       <div class="card-title">👥 Team Members</div>
-      <div style="font-size:12px;color:var(--muted);margin-bottom:12px;">⚠️ Member name must match the <strong>SALES PERSON</strong> column in Google Sheet exactly (case-sensitive) for sales data to show.</div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:12px;">⚠️ Member name must match the <strong>SALES PERSON</strong> column in Google Sheet exactly (case-sensitive).</div>
       <div id="member-list"><div class="loading-text">Loading…</div></div>
       <div class="add-member-row">
         <input type="text" id="new-member-name" placeholder="Full name" maxlength="50">
@@ -249,7 +345,6 @@
         <button class="btn-add" onclick="addMember()">+ Add</button>
       </div>
     </div>
-
     <div class="card">
       <div class="card-title">🔒 Change HQ Password</div>
       <div style="font-size:13px;color:var(--muted);margin-bottom:8px;">Enter a new password for HQ access.</div>
@@ -270,10 +365,11 @@ const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsI
 const H = { 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY, 'Content-Type': 'application/json', 'Prefer': 'return=representation' };
 
 let members = [];
+const todayStr = new Date().toISOString().split('T')[0];
 
 async function db(path, opts = {}) {
   const r = await fetch(SUPA_URL + '/rest/v1/' + path, { headers: H, ...opts });
-  if (!r.ok) { const e = await r.json(); throw e; }
+  if (!r.ok) { const e = await r.json().catch(()=>{}); throw e || r.status; }
   return r.status === 204 ? null : r.json();
 }
 
@@ -288,149 +384,173 @@ function weekEnd() {
   const diff = d.getDate() - day + (day === 0 ? 0 : 7);
   return new Date(d.setDate(diff)).toISOString().split('T')[0];
 }
+function escHtml(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function fmtRM(n) { return 'RM ' + Number(n||0).toLocaleString('en-MY', {minimumFractionDigits:0, maximumFractionDigits:0}); }
 
 function switchTab(tab) {
-  document.querySelectorAll('.tab').forEach((t, i) => {
-    const tabs = ['overview','daily','weekly','stats','members'];
-    t.classList.toggle('active', tabs[i] === tab);
-  });
+  const tabNames = ['briefing','overview','daily','weekly','stats','members'];
+  document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('active', tabNames[i] === tab));
   document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
   document.getElementById('sec-' + tab).classList.add('active');
-  if (tab === 'overview') loadOverview();
+  if (tab === 'briefing') loadBriefing();
+  else if (tab === 'overview') loadOverview();
   else if (tab === 'daily') loadDailyReports();
   else if (tab === 'weekly') loadWeeklyReports();
   else if (tab === 'stats') loadMissStats();
   else if (tab === 'members') renderMembers();
 }
 
-async function loadMembers() {
+// ===== DAILY BRIEFING =====
+
+async function loadBriefing() {
+  const date = document.getElementById('briefing-date').value || todayStr;
+  document.getElementById('briefing-date').value = date;
+  const list = document.getElementById('briefing-list');
+  list.innerHTML = '<div class="loading-text">Loading…</div>';
+
   try {
-    members = await db('members?select=*&order=name');
-    ['filter-daily-name','filter-weekly-name'].forEach(id => {
-      const sel = document.getElementById(id);
-      const cur = sel.value;
-      sel.innerHTML = '<option value="">All Members</option>';
-      members.forEach(m => {
-        const o = document.createElement('option');
-        o.value = m.name; o.textContent = m.name;
-        sel.appendChild(o);
-      });
-      sel.value = cur;
+    const salesMembers = members.filter(m => (m.role || 'sales') === 'sales');
+
+    // Get reports for this date
+    const reports = await db(`daily_reports?date=eq.${date}&select=*`);
+    const reportMap = {};
+    (reports || []).forEach(r => { reportMap[r.name] = r; });
+
+    // Get all visit records for this date
+    const visits = await db(`visit_records?visit_date=eq.${date}&select=*&order=created_at.asc`);
+    const visitsByRep = {};
+    (visits || []).forEach(v => {
+      if (!visitsByRep[v.rep_name]) visitsByRep[v.rep_name] = [];
+      visitsByRep[v.rep_name].push(v);
     });
-  } catch(e) { console.error(e); }
+
+    // Summary stats
+    const submitted = salesMembers.filter(m => reportMap[m.name]?.status === 'submitted').length;
+    const missing = salesMembers.length - submitted;
+    const totalVisits = (visits || []).length;
+    const totalOrders = (visits || []).reduce((s,v) => s + (v.order_amount||0), 0);
+
+    document.getElementById('bs-submitted').textContent = submitted;
+    document.getElementById('bs-missing').textContent = missing;
+    document.getElementById('bs-visits').textContent = totalVisits;
+    document.getElementById('bs-orders').textContent = fmtRM(totalOrders);
+
+    if (!salesMembers.length) {
+      list.innerHTML = '<div class="empty-text">No sales members found. Add members in the Members tab.</div>';
+      return;
+    }
+
+    list.innerHTML = salesMembers.map(m => {
+      const report = reportMap[m.name];
+      const repVisits = visitsByRep[m.name] || [];
+      const isSubmitted = report?.status === 'submitted';
+      const repTotal = repVisits.reduce((s,v) => s + (v.order_amount||0), 0);
+
+      return `
+        <div class="rep-briefing-card" id="rbc-${m.id}">
+          <div class="rbc-header" onclick="toggleRbc(${m.id})">
+            <div class="rbc-left">
+              <div class="rbc-avatar">${m.name.charAt(0).toUpperCase()}</div>
+              <div>
+                <div class="rbc-name">${escHtml(m.name)}</div>
+                <div class="rbc-meta">${repVisits.length} visit(s) · ${fmtRM(repTotal)}</div>
+              </div>
+            </div>
+            <div class="rbc-right">
+              <span class="status-badge ${isSubmitted ? 'submitted' : 'missing'}">${isSubmitted ? '✅ Submitted' : '⏳ Not Submitted'}</span>
+              <span style="color:var(--muted);font-size:12px">▼</span>
+            </div>
+          </div>
+          <div class="rbc-body" id="rbcbody-${m.id}">
+            ${repVisits.length === 0
+              ? `<div class="empty-text">No visit records for this date.</div>`
+              : repVisits.map((v,vi) => `
+                <div class="visit-record-item">
+                  <div class="vri-header">
+                    <div class="vri-customer">${escHtml(v.customer_name)}</div>
+                    <div class="vri-amount">${fmtRM(v.order_amount||0)}</div>
+                  </div>
+                  ${v.notes ? `<div class="vri-notes">${escHtml(v.notes)}</div>` : ''}
+                  ${v.followup_notes ? `<div class="vri-followup">📌 Follow-up: ${escHtml(v.followup_notes)}${v.followup_date ? ` · Due: ${v.followup_date}` : ''}${v.has_task_created ? ' ✅ Task created' : ''}</div>` : ''}
+                  ${v.photo_urls && v.photo_urls.length > 0 ? `<div class="vri-photos">${v.photo_urls.map(u=>`<img src="${u}" onclick="openLightbox('${u}')" loading="lazy">`).join('')}</div>` : ''}
+                  <div class="vri-actions">
+                    <button class="btn-create-task-hq" onclick="toggleTaskForm('tf-${m.id}-${vi}')">+ Create Task</button>
+                  </div>
+                  <div class="task-form-inline" id="tf-${m.id}-${vi}">
+                    <div style="font-size:12px;font-weight:700;color:#92400e;margin-bottom:8px">Create Task for ${escHtml(m.name)}</div>
+                    <textarea id="tf-desc-${m.id}-${vi}" placeholder="Task description...">${v.followup_notes ? escHtml(v.followup_notes) : ''}</textarea>
+                    <div class="tfi-row">
+                      <input type="date" id="tf-due-${m.id}-${vi}" style="flex:1" value="${v.followup_date || ''}">
+                      <button class="btn-save-task" onclick="saveTaskFromVisit('${m.name}','${v.visit_id}','${m.id}','${vi}','${escHtml(v.customer_name)}')">Save Task</button>
+                      <button class="btn-cancel-task" onclick="toggleTaskForm('tf-${m.id}-${vi}')">Cancel</button>
+                    </div>
+                  </div>
+                </div>`).join('')
+            }
+          </div>
+        </div>`;
+    }).join('');
+
+  } catch(e) {
+    console.error(e);
+    list.innerHTML = '<div class="empty-text">Failed to load briefing.</div>';
+  }
 }
 
-function renderMembers() {
-  const list = document.getElementById('member-list');
-  if (!members.length) { list.innerHTML = '<div class="empty-text">No members yet.</div>'; return; }
-  list.innerHTML = members.map(m => `
-    <div class="member-row" id="mrow-${m.id}">
-      <span class="m-name">${m.name}</span>
-      <span class="role-badge ${m.role || 'sales'}">${m.role === 'marketing' ? 'Marketing' : 'Sales'}</span>
-      <span class="pw-badge ${m.password ? 'set' : 'unset'}">${m.password ? '✓ Password' : '⚠ No password'}</span>
-      <span class="kpi-badge">KPI: RM ${Number(m.monthly_kpi || 0).toLocaleString()}</span>
-      <button class="btn-editname" onclick="toggleNameEdit(${m.id})">Name</button>
-      <button class="btn-role" onclick="toggleRoleEdit(${m.id})">Role</button>
-      <button class="btn-setpw" onclick="togglePwEdit(${m.id})">Password</button>
-      <button class="btn-kpi" onclick="toggleKpiEdit(${m.id})">KPI</button>
-      <button class="btn-del" onclick="deleteMember(${m.id}, '${m.name.replace(/'/g,"\\'")}')">Remove</button>
-      <div class="pw-edit-row" id="nameedit-${m.id}">
-        <input type="text" id="nameval-${m.id}" value="${m.name.replace(/"/g,'&quot;')}" placeholder="New name">
-        <button class="btn-save" onclick="saveName(${m.id})">Save</button>
-        <button class="btn-cancel" onclick="toggleNameEdit(${m.id})">Cancel</button>
-      </div>
-      <div class="pw-edit-row" id="roleedit-${m.id}">
-        <select id="roleval-${m.id}">
-          <option value="sales" ${(m.role||'sales')==='sales'?'selected':''}>Sales</option>
-          <option value="marketing" ${m.role==='marketing'?'selected':''}>Marketing</option>
-        </select>
-        <button class="btn-save" onclick="saveRole(${m.id})">Save</button>
-        <button class="btn-cancel" onclick="toggleRoleEdit(${m.id})">Cancel</button>
-      </div>
-      <div class="pw-edit-row" id="pwedit-${m.id}">
-        <input type="text" id="pwval-${m.id}" placeholder="New password">
-        <button class="btn-save" onclick="savePassword(${m.id})">Save</button>
-        <button class="btn-cancel" onclick="togglePwEdit(${m.id})">Cancel</button>
-      </div>
-      <div class="pw-edit-row" id="kpiedit-${m.id}">
-        <input type="number" id="kpival-${m.id}" placeholder="Monthly KPI (RM)" value="${m.monthly_kpi || ''}" min="0">
-        <button class="btn-save" onclick="saveKpi(${m.id})">Save</button>
-        <button class="btn-cancel" onclick="toggleKpiEdit(${m.id})">Cancel</button>
-      </div>
-    </div>`).join('');
+function toggleRbc(id) {
+  document.getElementById('rbcbody-' + id).classList.toggle('open');
 }
 
-function toggleNameEdit(id) { const r = document.getElementById('nameedit-'+id); r.classList.toggle('open'); if(r.classList.contains('open')) document.getElementById('nameval-'+id).focus(); }
-function toggleRoleEdit(id) { const r = document.getElementById('roleedit-'+id); r.classList.toggle('open'); }
-function togglePwEdit(id) { const r = document.getElementById('pwedit-'+id); r.classList.toggle('open'); if(r.classList.contains('open')) document.getElementById('pwval-'+id).focus(); }
-function toggleKpiEdit(id) { const r = document.getElementById('kpiedit-'+id); r.classList.toggle('open'); if(r.classList.contains('open')) document.getElementById('kpival-'+id).focus(); }
+function toggleTaskForm(id) {
+  document.getElementById(id).classList.toggle('open');
+}
 
-async function saveName(id) {
-  const inp = document.getElementById('nameval-'+id);
-  const newName = inp.value.trim();
-  if (!newName) { inp.style.borderColor='var(--red)'; return; }
-  const oldName = members.find(m=>m.id===id)?.name;
-  if (newName === oldName) { toggleNameEdit(id); return; }
-  if (!confirm(`Change name from "${oldName}" to "${newName}"?\n\n⚠️ All past reports will be updated.`)) return;
+async function saveTaskFromVisit(repName, visitId, memberId, visitIdx, customerName) {
+  const desc = document.getElementById(`tf-desc-${memberId}-${visitIdx}`).value.trim();
+  const due = document.getElementById(`tf-due-${memberId}-${visitIdx}`).value || null;
+
+  if (!desc) { alert('Please enter a task description.'); return; }
+
   try {
-    await fetch(SUPA_URL+'/rest/v1/members?id=eq.'+id, { method:'PATCH', headers:H, body:JSON.stringify({name:newName}) });
-    await fetch(SUPA_URL+'/rest/v1/daily_reports?name=eq.'+encodeURIComponent(oldName), { method:'PATCH', headers:H, body:JSON.stringify({name:newName}) });
-    await fetch(SUPA_URL+'/rest/v1/weekly_reports?name=eq.'+encodeURIComponent(oldName), { method:'PATCH', headers:H, body:JSON.stringify({name:newName}) });
-    await loadMembers(); renderMembers();
-  } catch(e) { alert('Failed to rename.'); }
+    await db('tasks', {
+      method: 'POST',
+      body: JSON.stringify({
+        description: desc,
+        assigned_to: repName,
+        created_by: 'HQ',
+        source: 'from_report',
+        linked_customer: customerName,
+        linked_visit_id: visitId,
+        due_date: due,
+        status: 'pending'
+      })
+    });
+    // Mark visit has_task_created
+    await fetch(SUPA_URL + '/rest/v1/visit_records?visit_id=eq.' + visitId, {
+      method: 'PATCH',
+      headers: { ...H, 'Prefer': 'return=minimal' },
+      body: JSON.stringify({ has_task_created: true })
+    });
+    alert('✅ Task created for ' + repName);
+    document.getElementById(`tf-${memberId}-${visitIdx}`).classList.remove('open');
+    loadBriefing();
+  } catch(e) {
+    console.error(e);
+    alert('Failed to create task.');
+  }
 }
 
-async function saveRole(id) {
-  const val = document.getElementById('roleval-'+id).value;
-  try {
-    await fetch(SUPA_URL+'/rest/v1/members?id=eq.'+id, { method:'PATCH', headers:H, body:JSON.stringify({role:val}) });
-    await loadMembers(); renderMembers();
-  } catch(e) { alert('Failed to save role.'); }
+function openLightbox(url) {
+  document.getElementById('lightbox-img').src = url;
+  document.getElementById('lightbox').classList.add('open');
 }
 
-async function savePassword(id) {
-  const inp = document.getElementById('pwval-'+id);
-  const pw = inp.value.trim();
-  if (!pw) { inp.style.borderColor='var(--red)'; return; }
-  try {
-    await fetch(SUPA_URL+'/rest/v1/members?id=eq.'+id, { method:'PATCH', headers:H, body:JSON.stringify({password:pw}) });
-    await loadMembers(); renderMembers();
-  } catch(e) { alert('Failed to save password.'); }
+function closeLightbox() {
+  document.getElementById('lightbox').classList.remove('open');
+  document.getElementById('lightbox-img').src = '';
 }
 
-async function saveKpi(id) {
-  const inp = document.getElementById('kpival-'+id);
-  const kpi = parseFloat(inp.value)||0;
-  try {
-    await fetch(SUPA_URL+'/rest/v1/members?id=eq.'+id, { method:'PATCH', headers:H, body:JSON.stringify({monthly_kpi:kpi}) });
-    await loadMembers(); renderMembers();
-  } catch(e) { alert('Failed to save KPI.'); }
-}
-
-async function addMember() {
-  const inp = document.getElementById('new-member-name');
-  const pwInp = document.getElementById('new-member-pw');
-  const roleInp = document.getElementById('new-member-role');
-  const name = inp.value.trim();
-  const pw = pwInp.value.trim();
-  const role = roleInp.value;
-  if (!name) { inp.style.borderColor='var(--red)'; return; }
-  inp.style.borderColor='';
-  try {
-    await db('members', { method:'POST', body:JSON.stringify({name, password:pw||null, monthly_kpi:0, role}) });
-    inp.value=''; pwInp.value=''; roleInp.value='sales';
-    await loadMembers(); renderMembers();
-  } catch(e) { alert('Failed to add member.'); }
-}
-
-async function deleteMember(id, name) {
-  if (!confirm(`Remove "${name}" from team?`)) return;
-  try {
-    await fetch(SUPA_URL+'/rest/v1/members?id=eq.'+id, { method:'DELETE', headers:H });
-    await loadMembers(); renderMembers();
-  } catch(e) { alert('Failed to remove.'); }
-}
-
+// ===== OVERVIEW =====
 async function loadOverview() {
   const t = today(), ws = weekStart(), we = weekEnd();
   try {
@@ -455,6 +575,7 @@ async function loadOverview() {
   } catch(e) { console.error(e); }
 }
 
+// ===== DAILY REPORTS =====
 async function loadDailyReports() {
   const list = document.getElementById('daily-report-list');
   list.innerHTML = '<div class="loading-text">Loading…</div>';
@@ -481,12 +602,13 @@ async function loadDailyReports() {
         <div class="report-body" id="dr-${i}">
           <div class="rb-field"><div class="rf-label">Today's Task</div><div class="rf-val">${escHtml(r.today_task)}</div></div>
           <div class="rb-field"><div class="rf-label">Tomorrow's Task</div><div class="rf-val">${escHtml(r.tomorrow_task)}</div></div>
-          <div class="rb-field"><div class="rf-label">Assistance Required</div><div class="rf-val">${escHtml(r.assistance||'None.')}</div></div>
+          <div class="rb-field"><div class="rf-label">Assistance</div><div class="rf-val">${escHtml(r.assistance||'None.')}</div></div>
         </div>
       </div>`).join('');
   } catch(e) { list.innerHTML = '<div class="empty-text">Failed to load.</div>'; }
 }
 
+// ===== WEEKLY REPORTS =====
 async function loadWeeklyReports() {
   const list = document.getElementById('weekly-report-list');
   list.innerHTML = '<div class="loading-text">Loading…</div>';
@@ -512,7 +634,7 @@ async function loadWeeklyReports() {
         </div>
         <div class="report-body" id="wr-${i}">
           <div class="rb-field"><div class="rf-label">Next Week Targets</div><div class="rf-val">${escHtml(r.next_week_target)}</div></div>
-          <div class="rb-field"><div class="rf-label">Assistance Required</div><div class="rf-val">${escHtml(r.assistance||'None.')}</div></div>
+          <div class="rb-field"><div class="rf-label">Assistance</div><div class="rf-val">${escHtml(r.assistance||'None.')}</div></div>
         </div>
       </div>`).join('');
   } catch(e) { list.innerHTML = '<div class="empty-text">Failed to load.</div>'; }
@@ -533,6 +655,7 @@ async function deleteReport(table, id, type) {
   } catch(e) { alert('Failed to delete.'); }
 }
 
+// ===== MISS STATS =====
 async function loadMissStats() {
   const tbody = document.getElementById('miss-stats-body');
   tbody.innerHTML = '<tr><td colspan="4" class="loading-text">Loading…</td></tr>';
@@ -572,6 +695,117 @@ function countWorkDays(start, end) {
   return count;
 }
 
+// ===== MEMBERS =====
+async function loadMembers() {
+  try {
+    members = await db('members?select=*&order=name');
+    ['filter-daily-name','filter-weekly-name'].forEach(id => {
+      const sel = document.getElementById(id);
+      const cur = sel.value;
+      sel.innerHTML = '<option value="">All Members</option>';
+      members.forEach(m => { const o = document.createElement('option'); o.value=m.name; o.textContent=m.name; sel.appendChild(o); });
+      sel.value = cur;
+    });
+  } catch(e) { console.error(e); }
+}
+
+function renderMembers() {
+  const list = document.getElementById('member-list');
+  if (!members.length) { list.innerHTML = '<div class="empty-text">No members yet.</div>'; return; }
+  list.innerHTML = members.map(m => `
+    <div class="member-row" id="mrow-${m.id}">
+      <span class="m-name">${m.name}</span>
+      <span class="role-badge ${m.role||'sales'}">${m.role==='marketing'?'Marketing':'Sales'}</span>
+      <span class="pw-badge ${m.password?'set':'unset'}">${m.password?'✓ Password':'⚠ No password'}</span>
+      <span class="kpi-badge">KPI: RM ${Number(m.monthly_kpi||0).toLocaleString()}</span>
+      <button class="btn-editname" onclick="toggleNameEdit(${m.id})">Name</button>
+      <button class="btn-role" onclick="toggleRoleEdit(${m.id})">Role</button>
+      <button class="btn-setpw" onclick="togglePwEdit(${m.id})">Password</button>
+      <button class="btn-kpi" onclick="toggleKpiEdit(${m.id})">KPI</button>
+      <button class="btn-del" onclick="deleteMember(${m.id},'${m.name.replace(/'/g,"\\'")}')">Remove</button>
+      <div class="pw-edit-row" id="nameedit-${m.id}">
+        <input type="text" id="nameval-${m.id}" value="${m.name.replace(/"/g,'&quot;')}" placeholder="New name">
+        <button class="btn-save" onclick="saveName(${m.id})">Save</button>
+        <button class="btn-cancel" onclick="toggleNameEdit(${m.id})">Cancel</button>
+      </div>
+      <div class="pw-edit-row" id="roleedit-${m.id}">
+        <select id="roleval-${m.id}">
+          <option value="sales" ${(m.role||'sales')==='sales'?'selected':''}>Sales</option>
+          <option value="marketing" ${m.role==='marketing'?'selected':''}>Marketing</option>
+        </select>
+        <button class="btn-save" onclick="saveRole(${m.id})">Save</button>
+        <button class="btn-cancel" onclick="toggleRoleEdit(${m.id})">Cancel</button>
+      </div>
+      <div class="pw-edit-row" id="pwedit-${m.id}">
+        <input type="text" id="pwval-${m.id}" placeholder="New password">
+        <button class="btn-save" onclick="savePassword(${m.id})">Save</button>
+        <button class="btn-cancel" onclick="togglePwEdit(${m.id})">Cancel</button>
+      </div>
+      <div class="pw-edit-row" id="kpiedit-${m.id}">
+        <input type="number" id="kpival-${m.id}" placeholder="Monthly KPI (RM)" value="${m.monthly_kpi||''}" min="0">
+        <button class="btn-save" onclick="saveKpi(${m.id})">Save</button>
+        <button class="btn-cancel" onclick="toggleKpiEdit(${m.id})">Cancel</button>
+      </div>
+    </div>`).join('');
+}
+
+function toggleNameEdit(id) { const r=document.getElementById('nameedit-'+id); r.classList.toggle('open'); if(r.classList.contains('open')) document.getElementById('nameval-'+id).focus(); }
+function toggleRoleEdit(id) { document.getElementById('roleedit-'+id).classList.toggle('open'); }
+function togglePwEdit(id) { const r=document.getElementById('pwedit-'+id); r.classList.toggle('open'); if(r.classList.contains('open')) document.getElementById('pwval-'+id).focus(); }
+function toggleKpiEdit(id) { const r=document.getElementById('kpiedit-'+id); r.classList.toggle('open'); if(r.classList.contains('open')) document.getElementById('kpival-'+id).focus(); }
+
+async function saveName(id) {
+  const inp=document.getElementById('nameval-'+id); const newName=inp.value.trim();
+  if(!newName){inp.style.borderColor='var(--red)';return;}
+  const oldName=members.find(m=>m.id===id)?.name;
+  if(newName===oldName){toggleNameEdit(id);return;}
+  if(!confirm(`Change name from "${oldName}" to "${newName}"?\n\nAll past reports will be updated.`)) return;
+  try {
+    await fetch(SUPA_URL+'/rest/v1/members?id=eq.'+id,{method:'PATCH',headers:H,body:JSON.stringify({name:newName})});
+    await fetch(SUPA_URL+'/rest/v1/daily_reports?name=eq.'+encodeURIComponent(oldName),{method:'PATCH',headers:H,body:JSON.stringify({name:newName})});
+    await fetch(SUPA_URL+'/rest/v1/weekly_reports?name=eq.'+encodeURIComponent(oldName),{method:'PATCH',headers:H,body:JSON.stringify({name:newName})});
+    await loadMembers(); renderMembers();
+  } catch(e){alert('Failed to rename.');}
+}
+
+async function saveRole(id) {
+  const val=document.getElementById('roleval-'+id).value;
+  try { await fetch(SUPA_URL+'/rest/v1/members?id=eq.'+id,{method:'PATCH',headers:H,body:JSON.stringify({role:val})}); await loadMembers(); renderMembers(); }
+  catch(e){alert('Failed.');}
+}
+
+async function savePassword(id) {
+  const inp=document.getElementById('pwval-'+id); const pw=inp.value.trim();
+  if(!pw){inp.style.borderColor='var(--red)';return;}
+  try { await fetch(SUPA_URL+'/rest/v1/members?id=eq.'+id,{method:'PATCH',headers:H,body:JSON.stringify({password:pw})}); await loadMembers(); renderMembers(); }
+  catch(e){alert('Failed.');}
+}
+
+async function saveKpi(id) {
+  const inp=document.getElementById('kpival-'+id); const kpi=parseFloat(inp.value)||0;
+  try { await fetch(SUPA_URL+'/rest/v1/members?id=eq.'+id,{method:'PATCH',headers:H,body:JSON.stringify({monthly_kpi:kpi})}); await loadMembers(); renderMembers(); }
+  catch(e){alert('Failed.');}
+}
+
+async function addMember() {
+  const inp=document.getElementById('new-member-name'); const pwInp=document.getElementById('new-member-pw');
+  const roleInp=document.getElementById('new-member-role');
+  const name=inp.value.trim(); const pw=pwInp.value.trim(); const role=roleInp.value;
+  if(!name){inp.style.borderColor='var(--red)';return;} inp.style.borderColor='';
+  try {
+    await db('members',{method:'POST',body:JSON.stringify({name,password:pw||null,monthly_kpi:0,role})});
+    inp.value=''; pwInp.value=''; roleInp.value='sales';
+    await loadMembers(); renderMembers();
+  } catch(e){alert('Failed to add member.');}
+}
+
+async function deleteMember(id, name) {
+  if(!confirm(`Remove "${name}" from team?`)) return;
+  try { await fetch(SUPA_URL+'/rest/v1/members?id=eq.'+id,{method:'DELETE',headers:H}); await loadMembers(); renderMembers(); }
+  catch(e){alert('Failed.');}
+}
+
+// ===== MISC =====
 function populateMonthSelector() {
   const sel=document.getElementById('stats-month'); const now=new Date();
   for(let i=0;i<6;i++){
@@ -582,8 +816,6 @@ function populateMonthSelector() {
     sel.appendChild(o);
   }
 }
-
-function escHtml(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
 function setDefaultFilters() {
   const t=today(), ws=weekStart();
@@ -599,8 +831,11 @@ function logoutHQ() { sessionStorage.clear(); }
   if(sessionStorage.getItem('userRole')==='hq'||sessionStorage.getItem('hq_auth')==='1'){
     sessionStorage.setItem('hq_auth','1');
     document.getElementById('pwOverlay').style.display='none';
-    populateMonthSelector(); setDefaultFilters();
-    await loadMembers(); loadOverview();
+    populateMonthSelector();
+    setDefaultFilters();
+    document.getElementById('briefing-date').value = todayStr;
+    await loadMembers();
+    loadBriefing();
   }
 })();
 
@@ -613,7 +848,8 @@ async function checkPw() {
       sessionStorage.setItem('hq_auth','1');
       document.getElementById('pwOverlay').style.display='none';
       populateMonthSelector(); setDefaultFilters();
-      await loadMembers(); loadOverview();
+      document.getElementById('briefing-date').value = todayStr;
+      await loadMembers(); loadBriefing();
     } else {
       inp.classList.add('error');
       document.getElementById('pwError').classList.add('visible');
@@ -633,7 +869,7 @@ async function changePassword() {
     await fetch(SUPA_URL+'/rest/v1/settings?key=eq.hq_password',{method:'PATCH',headers:H,body:JSON.stringify({value:p1})});
     document.getElementById('new-pw').value=''; document.getElementById('new-pw2').value='';
     msg.textContent='✅ Password updated!'; msg.className='chpw-msg ok';
-  } catch(e){ msg.textContent='Failed.'; msg.className='chpw-msg fail'; }
+  } catch(e){msg.textContent='Failed.';msg.className='chpw-msg fail';}
 }
 </script>
 </body>
