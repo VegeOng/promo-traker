@@ -57,7 +57,7 @@
   .chpw-msg.fail { color: var(--red); display: block; }
 
   .tabs { background: white; border-bottom: 1px solid var(--border); display: flex; overflow-x: auto; position: sticky; top: 64px; z-index: 99; }
-  .tab { padding: 14px 20px; font-size: 14px; font-weight: 600; color: var(--muted); cursor: pointer; border-bottom: 2px solid transparent; white-space: nowrap; transition: all 0.2s; }
+  .tab { padding: 14px 18px; font-size: 13px; font-weight: 600; color: var(--muted); cursor: pointer; border-bottom: 2px solid transparent; white-space: nowrap; transition: all 0.2s; }
   .tab.active { color: var(--green); border-bottom-color: var(--green); }
   .tab:hover { color: var(--green); background: #f0fdf4; }
 
@@ -68,9 +68,8 @@
   .card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; margin-bottom: 16px; }
   .card-title { font-size: 15px; font-weight: 800; color: var(--text); margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
 
-  /* Stat grid */
-  .stat-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 20px; }
-  @media (min-width: 500px) { .stat-grid { grid-template-columns: repeat(4, 1fr); } }
+  .stat-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 12px; margin-bottom: 20px; }
+  @media(min-width:500px){ .stat-grid { grid-template-columns: repeat(4,1fr); } }
   .stat-box { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 16px; text-align: center; }
   .stat-box .s-val { font-size: 28px; font-weight: 900; line-height: 1; }
   .stat-box .s-label { font-size: 11px; color: var(--muted); margin-top: 4px; text-transform: uppercase; letter-spacing: 0.04em; }
@@ -78,14 +77,12 @@
   .stat-box.green .s-val { color: var(--green); }
   .stat-box.amber .s-val { color: var(--amber); }
 
-  /* Missing list */
   .missing-list { display: flex; flex-direction: column; gap: 8px; }
   .missing-item { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; background: var(--red-light); border-radius: 8px; border: 1px solid #fca5a5; }
   .missing-item .mi-name { font-size: 14px; font-weight: 600; color: var(--red); }
   .missing-item .mi-badge { font-size: 11px; background: var(--red); color: white; padding: 2px 8px; border-radius: 20px; font-weight: 700; }
   .all-good { text-align: center; padding: 20px; color: var(--green); font-weight: 600; font-size: 14px; }
 
-  /* Report items */
   .report-item { border: 1px solid var(--border); border-radius: 10px; margin-bottom: 10px; overflow: hidden; }
   .report-header { padding: 12px 16px; background: #f9fafb; display: flex; align-items: center; justify-content: space-between; cursor: pointer; }
   .report-header:hover { background: #f0fdf4; }
@@ -102,7 +99,6 @@
   .rb-field .rf-label { font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 3px; }
   .rb-field .rf-val { font-size: 13px; color: var(--text); white-space: pre-wrap; line-height: 1.6; }
 
-  /* Filter bar */
   .filter-bar { display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; }
   .filter-bar select, .filter-bar input {
     padding: 8px 12px; border: 1.5px solid var(--border); border-radius: 8px;
@@ -111,7 +107,7 @@
   }
   .filter-bar select:focus, .filter-bar input:focus { outline: none; border-color: var(--green); }
 
-  /* Daily briefing */
+  /* Daily Briefing */
   .briefing-date-bar { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
   .briefing-date-bar input[type=date] { padding: 8px 12px; border: 1.5px solid var(--border); border-radius: 8px; font-size: 14px; font-family: inherit; }
   .briefing-date-bar input[type=date]:focus { outline: none; border-color: var(--green); }
@@ -142,11 +138,10 @@
   .rbc-body { display: none; border-top: 1px solid var(--border); }
   .rbc-body.open { display: block; }
 
-  /* Visit record in briefing */
   .visit-record-item { padding: 14px 16px; border-bottom: 1px solid var(--border); }
   .visit-record-item:last-child { border-bottom: none; }
   .vri-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 8px; }
-  .vri-customer { font-size: 14px; font-weight: 700; color: var(--text); }
+  .vri-customer { font-size: 14px; font-weight: 700; }
   .vri-amount { font-size: 13px; font-weight: 700; color: var(--green); white-space: nowrap; }
   .vri-notes { font-size: 13px; color: var(--muted); margin-bottom: 8px; line-height: 1.5; }
   .vri-followup { font-size: 12px; color: #92400e; background: #fffbeb; padding: 6px 10px; border-radius: 6px; margin-bottom: 8px; }
@@ -156,18 +151,85 @@
   .btn-create-task-hq { padding: 6px 12px; background: var(--amber); color: white; border: none; border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer; }
   .btn-create-task-hq:hover { background: #b45309; }
 
-  /* Task creation inline */
   .task-form-inline { background: #fffbeb; border: 1px solid #fde68a; border-radius: 8px; padding: 12px; margin-top: 8px; display: none; }
   .task-form-inline.open { display: block; }
-  .task-form-inline input, .task-form-inline select, .task-form-inline textarea {
-    width: 100%; padding: 8px 12px; border: 1.5px solid var(--border); border-radius: 6px;
-    font-size: 13px; font-family: inherit; margin-bottom: 8px;
-  }
+  .task-form-inline input, .task-form-inline select, .task-form-inline textarea { width: 100%; padding: 8px 12px; border: 1.5px solid var(--border); border-radius: 6px; font-size: 13px; font-family: inherit; margin-bottom: 8px; }
   .task-form-inline input:focus, .task-form-inline select:focus, .task-form-inline textarea:focus { outline: none; border-color: var(--green); }
   .task-form-inline textarea { min-height: 60px; resize: vertical; }
-  .tfi-row { display: flex; gap: 8px; }
+  .tfi-row { display: flex; gap: 8px; flex-wrap: wrap; }
   .btn-save-task { padding: 8px 14px; background: var(--green); color: white; border: none; border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer; }
   .btn-cancel-task { padding: 8px 14px; background: #e5e7eb; color: var(--text); border: none; border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer; }
+
+  /* Task Tracker */
+  .task-summary-bar { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+  .tsb-item { padding: 8px 14px; border-radius: 20px; font-size: 12px; font-weight: 700; cursor: pointer; border: 2px solid transparent; transition: all 0.15s; }
+  .tsb-item.overdue { background: var(--red-light); color: var(--red); }
+  .tsb-item.pending { background: var(--amber-light); color: var(--amber); }
+  .tsb-item.awaiting { background: #dbeafe; color: #1d4ed8; }
+  .tsb-item.completed { background: var(--green-light); color: var(--green); }
+  .tsb-item.all { background: #f3f4f6; color: var(--muted); }
+  .tsb-item.active { border-color: currentColor; }
+
+  .task-filter-bar { display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; align-items: center; }
+  .task-filter-bar select { padding: 8px 12px; border: 1.5px solid var(--border); border-radius: 8px; font-size: 13px; font-family: inherit; appearance: none; }
+  .task-filter-bar select:focus { outline: none; border-color: var(--green); }
+  .btn-new-task { padding: 9px 16px; background: var(--green); color: white; border: none; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; margin-left: auto; }
+  .btn-new-task:hover { background: var(--green-mid); }
+
+  .new-task-form { background: white; border: 2px solid var(--green); border-radius: var(--radius); padding: 20px; margin-bottom: 16px; display: none; }
+  .new-task-form.open { display: block; }
+  .new-task-form h3 { font-size: 14px; font-weight: 800; color: var(--green); margin-bottom: 14px; }
+  .ntf-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+  @media(max-width:500px){ .ntf-grid { grid-template-columns: 1fr; } }
+  .ntf-grid input, .ntf-grid select { padding: 10px 12px; border: 1.5px solid var(--border); border-radius: 8px; font-size: 13px; font-family: inherit; width: 100%; }
+  .ntf-grid input:focus, .ntf-grid select:focus { outline: none; border-color: var(--green); }
+  .ntf-textarea { width: 100%; padding: 10px 12px; border: 1.5px solid var(--border); border-radius: 8px; font-size: 13px; font-family: inherit; min-height: 80px; resize: vertical; margin-bottom: 12px; }
+  .ntf-textarea:focus { outline: none; border-color: var(--green); }
+  .ntf-actions { display: flex; gap: 10px; }
+  .btn-ntf-save { padding: 10px 20px; background: var(--green); color: white; border: none; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; }
+  .btn-ntf-cancel { padding: 10px 20px; background: #e5e7eb; color: var(--text); border: none; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; }
+
+  .task-item {
+    background: white; border: 1px solid var(--border); border-radius: var(--radius);
+    margin-bottom: 10px; overflow: hidden; border-left: 3px solid var(--border);
+  }
+  .task-item.overdue { border-left-color: var(--red); }
+  .task-item.pending { border-left-color: var(--amber); }
+  .task-item.awaiting_confirm { border-left-color: var(--blue); }
+  .task-item.completed_ontime { border-left-color: var(--green); }
+  .task-item.completed_late { border-left-color: var(--muted); }
+  .task-item.escalated { border-left-color: #8b5cf6; }
+
+  .ti-header { padding: 12px 16px; display: flex; align-items: flex-start; gap: 12px; cursor: pointer; }
+  .ti-header:hover { background: #f9fafb; }
+  .ti-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+  .ti-main { flex: 1; min-width: 0; }
+  .ti-desc { font-size: 14px; font-weight: 600; margin-bottom: 4px; line-height: 1.4; }
+  .ti-meta { font-size: 12px; color: var(--muted); display: flex; gap: 10px; flex-wrap: wrap; }
+  .ti-meta span { display: flex; align-items: center; gap: 3px; }
+  .ti-right { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+  .task-status-badge { font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.03em; }
+  .tsb-overdue { background: var(--red-light); color: var(--red); }
+  .tsb-pending { background: var(--amber-light); color: var(--amber); }
+  .tsb-awaiting { background: #dbeafe; color: #1d4ed8; }
+  .tsb-ontime { background: var(--green-light); color: var(--green); }
+  .tsb-late { background: #f3f4f6; color: var(--muted); }
+  .tsb-escalated { background: #ede9fe; color: #7c3aed; }
+  .source-tag { font-size: 10px; font-weight: 600; padding: 2px 7px; border-radius: 20px; background: #f3f4f6; color: var(--muted); }
+
+  .ti-body { display: none; padding: 0 16px 14px; border-top: 1px solid var(--border); }
+  .ti-body.open { display: block; }
+  .ti-body-inner { padding-top: 12px; }
+  .ti-note-row { margin-bottom: 10px; }
+  .ti-note-row label { font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; display: block; margin-bottom: 4px; }
+  .ti-note-row p { font-size: 13px; color: var(--text); line-height: 1.5; }
+  .ti-note-input { width: 100%; padding: 8px 12px; border: 1.5px solid var(--border); border-radius: 6px; font-size: 13px; font-family: inherit; min-height: 60px; resize: vertical; margin-bottom: 8px; }
+  .ti-note-input:focus { outline: none; border-color: var(--green); }
+  .ti-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+  .btn-confirm { padding: 7px 14px; background: var(--green); color: white; border: none; border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer; }
+  .btn-reject { padding: 7px 14px; background: #e5e7eb; color: var(--text); border: none; border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer; }
+  .btn-add-note { padding: 7px 14px; background: var(--blue-light); color: var(--blue); border: none; border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer; }
+  .btn-delete-task { padding: 7px 14px; background: none; border: 1px solid var(--red); color: var(--red); border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer; }
 
   /* Members */
   .member-row { display: flex; align-items: center; gap: 8px; padding: 10px 14px; background: #f9fafb; border: 1px solid var(--border); border-radius: 8px; margin-bottom: 8px; flex-wrap: wrap; }
@@ -189,14 +251,12 @@
   .btn-role:hover { background: #6b21a8; }
   .btn-del { background: none; border: 1px solid var(--red); color: var(--red); padding: 4px 10px; border-radius: 6px; font-size: 12px; cursor: pointer; font-weight: 600; }
   .btn-del:hover { background: var(--red); color: white; }
-
   .pw-edit-row { width: 100%; display: none; gap: 8px; margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--border); flex-wrap: wrap; }
   .pw-edit-row.open { display: flex; }
   .pw-edit-row input, .pw-edit-row select { flex: 1; min-width: 120px; padding: 8px 12px; border: 1.5px solid var(--border); border-radius: 6px; font-size: 13px; font-family: inherit; }
   .pw-edit-row input:focus, .pw-edit-row select:focus { outline: none; border-color: var(--green); }
   .btn-save { padding: 8px 14px; background: var(--green); color: white; border: none; border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer; }
   .btn-cancel { padding: 8px 14px; background: #e5e7eb; color: var(--text); border: none; border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer; }
-
   .add-member-row { display: flex; gap: 10px; margin-top: 12px; flex-wrap: wrap; }
   .add-member-row input, .add-member-row select { flex: 1; min-width: 120px; padding: 10px 14px; border: 1.5px solid var(--border); border-radius: 8px; font-size: 14px; font-family: inherit; }
   .add-member-row input:focus, .add-member-row select:focus { outline: none; border-color: var(--green); }
@@ -217,7 +277,6 @@
   .month-row select { padding: 8px 12px; border: 1.5px solid var(--border); border-radius: 8px; font-size: 13px; font-family: inherit; appearance: none; }
   .month-row select:focus { outline: none; border-color: var(--green); }
 
-  /* Image lightbox */
   .lightbox { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 9999; display: none; align-items: center; justify-content: center; padding: 20px; }
   .lightbox.open { display: flex; }
   .lightbox img { max-width: 100%; max-height: 90vh; border-radius: 8px; }
@@ -253,6 +312,7 @@
 
 <div class="tabs">
   <div class="tab active" onclick="switchTab('briefing')">📋 Daily Briefing</div>
+  <div class="tab" onclick="switchTab('tasks')">✅ Task Tracker</div>
   <div class="tab" onclick="switchTab('overview')">📊 Overview</div>
   <div class="tab" onclick="switchTab('daily')">📝 Daily Reports</div>
   <div class="tab" onclick="switchTab('weekly')">📅 Weekly Reports</div>
@@ -262,24 +322,61 @@
 
 <div class="container">
 
-  <!-- ===== DAILY BRIEFING ===== -->
+  <!-- DAILY BRIEFING -->
   <div class="section active" id="sec-briefing">
     <div class="briefing-date-bar">
       <input type="date" id="briefing-date">
       <button class="btn-load" onclick="loadBriefing()">Load</button>
     </div>
-
-    <div class="briefing-summary" id="briefing-summary">
+    <div class="briefing-summary">
       <div class="bs-card green"><div class="bs-val" id="bs-submitted">—</div><div class="bs-label">Submitted</div></div>
       <div class="bs-card red"><div class="bs-val" id="bs-missing">—</div><div class="bs-label">Not Submitted</div></div>
       <div class="bs-card blue"><div class="bs-val" id="bs-visits">—</div><div class="bs-label">Total Visits</div></div>
       <div class="bs-card amber"><div class="bs-val" id="bs-orders">—</div><div class="bs-label">Total Orders (RM)</div></div>
     </div>
-
     <div id="briefing-list"><div class="loading-text">Loading…</div></div>
   </div>
 
-  <!-- ===== OVERVIEW ===== -->
+  <!-- TASK TRACKER -->
+  <div class="section" id="sec-tasks">
+    <div class="task-summary-bar" id="task-summary-bar">
+      <span class="tsb-item overdue active" onclick="filterTasks('overdue',this)">🔴 Overdue <span id="cnt-overdue">0</span></span>
+      <span class="tsb-item awaiting" onclick="filterTasks('awaiting_confirm',this)">🔵 Awaiting Confirm <span id="cnt-awaiting">0</span></span>
+      <span class="tsb-item pending" onclick="filterTasks('pending',this)">🟡 Pending <span id="cnt-pending">0</span></span>
+      <span class="tsb-item completed" onclick="filterTasks('completed',this)">✅ Completed <span id="cnt-completed">0</span></span>
+      <span class="tsb-item all" onclick="filterTasks('all',this)">All <span id="cnt-all">0</span></span>
+    </div>
+
+    <div class="task-filter-bar">
+      <select id="task-filter-member" onchange="loadTasks()">
+        <option value="">All Members</option>
+      </select>
+      <button class="btn-new-task" onclick="toggleNewTaskForm()">+ New Task</button>
+    </div>
+
+    <div class="new-task-form" id="new-task-form">
+      <h3>Create New Task</h3>
+      <div class="ntf-grid">
+        <select id="ntf-assignee">
+          <option value="">Assign to…</option>
+        </select>
+        <input type="date" id="ntf-due" placeholder="Due date">
+        <input type="text" id="ntf-customer" placeholder="Related customer (optional)">
+        <select id="ntf-source">
+          <option value="manager_created">Manager Created</option>
+        </select>
+      </div>
+      <textarea class="ntf-textarea" id="ntf-desc" placeholder="Task description…"></textarea>
+      <div class="ntf-actions">
+        <button class="btn-ntf-save" onclick="saveNewTask()">Save Task</button>
+        <button class="btn-ntf-cancel" onclick="toggleNewTaskForm()">Cancel</button>
+      </div>
+    </div>
+
+    <div id="task-list"><div class="loading-text">Loading…</div></div>
+  </div>
+
+  <!-- OVERVIEW -->
   <div class="section" id="sec-overview">
     <div class="stat-grid">
       <div class="stat-box red"><div class="s-val" id="ov-daily-miss">—</div><div class="s-label">Missing Daily Today</div></div>
@@ -297,7 +394,7 @@
     </div>
   </div>
 
-  <!-- ===== DAILY REPORTS ===== -->
+  <!-- DAILY REPORTS -->
   <div class="section" id="sec-daily">
     <div class="filter-bar">
       <select id="filter-daily-name" onchange="loadDailyReports()"><option value="">All Members</option></select>
@@ -307,7 +404,7 @@
     <div id="daily-report-list"><div class="loading-text">Loading…</div></div>
   </div>
 
-  <!-- ===== WEEKLY REPORTS ===== -->
+  <!-- WEEKLY REPORTS -->
   <div class="section" id="sec-weekly">
     <div class="filter-bar">
       <select id="filter-weekly-name" onchange="loadWeeklyReports()"><option value="">All Members</option></select>
@@ -317,7 +414,7 @@
     <div id="weekly-report-list"><div class="loading-text">Loading…</div></div>
   </div>
 
-  <!-- ===== MISS STATS ===== -->
+  <!-- MISS STATS -->
   <div class="section" id="sec-stats">
     <div class="card">
       <div class="card-title">📈 Monthly Missing Report Count</div>
@@ -329,11 +426,11 @@
     </div>
   </div>
 
-  <!-- ===== MEMBERS ===== -->
+  <!-- MEMBERS -->
   <div class="section" id="sec-members">
     <div class="card">
       <div class="card-title">👥 Team Members</div>
-      <div style="font-size:12px;color:var(--muted);margin-bottom:12px;">⚠️ Member name must match the <strong>SALES PERSON</strong> column in Google Sheet exactly (case-sensitive).</div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:12px;">⚠️ Member name must match the <strong>SALES PERSON</strong> column in Google Sheet exactly.</div>
       <div id="member-list"><div class="loading-text">Loading…</div></div>
       <div class="add-member-row">
         <input type="text" id="new-member-name" placeholder="Full name" maxlength="50">
@@ -365,6 +462,8 @@ const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsI
 const H = { 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY, 'Content-Type': 'application/json', 'Prefer': 'return=representation' };
 
 let members = [];
+let allTasks = [];
+let currentTaskFilter = 'overdue';
 const todayStr = new Date().toISOString().split('T')[0];
 
 async function db(path, opts = {}) {
@@ -374,34 +473,253 @@ async function db(path, opts = {}) {
 }
 
 function today() { return new Date().toISOString().split('T')[0]; }
-function weekStart() {
-  const d = new Date(); const day = d.getDay();
-  const diff = d.getDate() - day + (day === 0 ? -6 : 1);
-  return new Date(d.setDate(diff)).toISOString().split('T')[0];
-}
-function weekEnd() {
-  const d = new Date(); const day = d.getDay();
-  const diff = d.getDate() - day + (day === 0 ? 0 : 7);
-  return new Date(d.setDate(diff)).toISOString().split('T')[0];
-}
+function weekStart() { const d=new Date(); const day=d.getDay(); const diff=d.getDate()-day+(day===0?-6:1); return new Date(d.setDate(diff)).toISOString().split('T')[0]; }
+function weekEnd() { const d=new Date(); const day=d.getDay(); const diff=d.getDate()-day+(day===0?0:7); return new Date(d.setDate(diff)).toISOString().split('T')[0]; }
 function escHtml(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-function fmtRM(n) { return 'RM ' + Number(n||0).toLocaleString('en-MY', {minimumFractionDigits:0, maximumFractionDigits:0}); }
+function fmtRM(n) { return 'RM '+Number(n||0).toLocaleString('en-MY',{minimumFractionDigits:0,maximumFractionDigits:0}); }
 
 function switchTab(tab) {
-  const tabNames = ['briefing','overview','daily','weekly','stats','members'];
+  const tabNames = ['briefing','tasks','overview','daily','weekly','stats','members'];
   document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('active', tabNames[i] === tab));
   document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-  document.getElementById('sec-' + tab).classList.add('active');
-  if (tab === 'briefing') loadBriefing();
-  else if (tab === 'overview') loadOverview();
-  else if (tab === 'daily') loadDailyReports();
-  else if (tab === 'weekly') loadWeeklyReports();
-  else if (tab === 'stats') loadMissStats();
-  else if (tab === 'members') renderMembers();
+  document.getElementById('sec-'+tab).classList.add('active');
+  if (tab==='briefing') loadBriefing();
+  else if (tab==='tasks') loadTasks();
+  else if (tab==='overview') loadOverview();
+  else if (tab==='daily') loadDailyReports();
+  else if (tab==='weekly') loadWeeklyReports();
+  else if (tab==='stats') loadMissStats();
+  else if (tab==='members') renderMembers();
+}
+
+// ===== TASK TRACKER =====
+
+async function loadTasks() {
+  const list = document.getElementById('task-list');
+  list.innerHTML = '<div class="loading-text">Loading…</div>';
+  const memberFilter = document.getElementById('task-filter-member').value;
+
+  try {
+    // Auto-update overdue status first
+    await updateOverdueStatuses();
+
+    let q = 'tasks?select=*&order=created_at.desc';
+    if (memberFilter) q += `&assigned_to=eq.${encodeURIComponent(memberFilter)}`;
+    allTasks = await db(q) || [];
+
+    // Count by status
+    const counts = { overdue:0, awaiting_confirm:0, pending:0, completed:0, all: allTasks.length };
+    allTasks.forEach(t => {
+      if (t.status === 'overdue') counts.overdue++;
+      else if (t.status === 'awaiting_confirm') counts.awaiting_confirm++;
+      else if (t.status === 'pending' || t.status === 'escalated') counts.pending++;
+      else if (['completed_ontime','completed_late'].includes(t.status)) counts.completed++;
+    });
+    document.getElementById('cnt-overdue').textContent = counts.overdue;
+    document.getElementById('cnt-awaiting').textContent = counts.awaiting_confirm;
+    document.getElementById('cnt-pending').textContent = counts.pending;
+    document.getElementById('cnt-completed').textContent = counts.completed;
+    document.getElementById('cnt-all').textContent = counts.all;
+
+    renderTaskList();
+  } catch(e) {
+    console.error(e);
+    list.innerHTML = '<div class="empty-text">Failed to load tasks.</div>';
+  }
+}
+
+async function updateOverdueStatuses() {
+  // Mark pending tasks past due date as overdue
+  try {
+    await fetch(SUPA_URL + '/rest/v1/tasks?status=eq.pending&due_date=lt.' + todayStr, {
+      method: 'PATCH', headers: { ...H, 'Prefer': 'return=minimal' },
+      body: JSON.stringify({ status: 'overdue' })
+    });
+  } catch(e) { console.error('Update overdue failed', e); }
+}
+
+function filterTasks(filter, el) {
+  currentTaskFilter = filter;
+  document.querySelectorAll('.tsb-item').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  renderTaskList();
+}
+
+function renderTaskList() {
+  const list = document.getElementById('task-list');
+  let filtered = allTasks;
+
+  if (currentTaskFilter === 'overdue') filtered = allTasks.filter(t => t.status === 'overdue');
+  else if (currentTaskFilter === 'awaiting_confirm') filtered = allTasks.filter(t => t.status === 'awaiting_confirm');
+  else if (currentTaskFilter === 'pending') filtered = allTasks.filter(t => ['pending','escalated'].includes(t.status));
+  else if (currentTaskFilter === 'completed') filtered = allTasks.filter(t => ['completed_ontime','completed_late'].includes(t.status));
+
+  // Sort: overdue first, then by due_date
+  filtered.sort((a,b) => {
+    const order = { overdue:0, awaiting_confirm:1, escalated:2, pending:3, completed_ontime:4, completed_late:5 };
+    const ao = order[a.status] ?? 3;
+    const bo = order[b.status] ?? 3;
+    if (ao !== bo) return ao - bo;
+    if (a.due_date && b.due_date) return a.due_date.localeCompare(b.due_date);
+    return 0;
+  });
+
+  if (!filtered.length) { list.innerHTML = '<div class="empty-text">No tasks in this category.</div>'; return; }
+
+  list.innerHTML = filtered.map(t => {
+    const icon = { overdue:'🔴', awaiting_confirm:'🔵', pending:'🟡', escalated:'⚠️', completed_ontime:'✅', completed_late:'🕐' }[t.status] || '📌';
+    const badgeClass = { overdue:'tsb-overdue', awaiting_confirm:'tsb-awaiting', pending:'tsb-pending', escalated:'tsb-escalated', completed_ontime:'tsb-ontime', completed_late:'tsb-late' }[t.status] || 'tsb-pending';
+    const badgeText = { overdue:'Overdue', awaiting_confirm:'Awaiting Confirm', pending:'Pending', escalated:'Escalated', completed_ontime:'Completed ✓', completed_late:'Completed (Late)' }[t.status] || t.status;
+    const sourceText = { manager_created:'Manager', from_report:'From Report', rep_committed:'Rep Committed' }[t.source] || t.source;
+    const daysOverdue = t.status === 'overdue' && t.due_date ? Math.floor((new Date() - new Date(t.due_date)) / 86400000) : 0;
+    const dueLabel = t.due_date ? (t.status === 'overdue' ? `⚠️ ${daysOverdue}d overdue` : `Due: ${t.due_date}`) : 'No due date';
+
+    return `
+      <div class="task-item ${t.status}" id="ti-${t.task_id}">
+        <div class="ti-header" onclick="toggleTask('${t.task_id}')">
+          <div class="ti-icon">${icon}</div>
+          <div class="ti-main">
+            <div class="ti-desc">${escHtml(t.description)}</div>
+            <div class="ti-meta">
+              <span>👤 ${escHtml(t.assigned_to)}</span>
+              <span>📅 ${dueLabel}</span>
+              ${t.linked_customer ? `<span>🏪 ${escHtml(t.linked_customer)}</span>` : ''}
+            </div>
+          </div>
+          <div class="ti-right">
+            <span class="task-status-badge ${badgeClass}">${badgeText}</span>
+            <span class="source-tag">${sourceText}</span>
+            <span style="color:var(--muted);font-size:12px">▼</span>
+          </div>
+        </div>
+        <div class="ti-body" id="tibody-${t.task_id}">
+          <div class="ti-body-inner">
+            ${t.rep_reply ? `<div class="ti-note-row"><label>Rep Reply</label><p>${escHtml(t.rep_reply)}</p></div>` : ''}
+            ${t.rep_marked_done_at ? `<div class="ti-note-row"><label>Rep Marked Done</label><p>${new Date(t.rep_marked_done_at).toLocaleString('en-MY')}</p></div>` : ''}
+            ${t.manager_note ? `<div class="ti-note-row"><label>Manager Note</label><p>${escHtml(t.manager_note)}</p></div>` : ''}
+            <textarea class="ti-note-input" id="note-${t.task_id}" placeholder="Add manager note…">${t.manager_note || ''}</textarea>
+            <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap">
+              <input type="date" id="due-${t.task_id}" value="${t.due_date||''}" style="padding:6px 10px;border:1.5px solid var(--border);border-radius:6px;font-size:12px;font-family:inherit">
+              <button style="padding:6px 12px;background:var(--amber-light);color:var(--amber);border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer" onclick="updateDueDate('${t.task_id}')">Update Due Date</button>
+            </div>
+            <div class="ti-actions">
+              <button class="btn-add-note" onclick="saveManagerNote('${t.task_id}')">💾 Save Note</button>
+              ${t.status === 'awaiting_confirm' ? `
+                <button class="btn-confirm" onclick="confirmTask('${t.task_id}','${t.rep_marked_done_at||''}','${t.due_date||''}')">✅ Confirm Done</button>
+                <button class="btn-reject" onclick="rejectTask('${t.task_id}')">↩ Reject</button>` : ''}
+              ${t.status === 'overdue' || t.status === 'escalated' ? `<button class="btn-confirm" onclick="forceComplete('${t.task_id}')">✅ Mark Complete</button>` : ''}
+              <button class="btn-delete-task" onclick="deleteTask('${t.task_id}')">🗑 Delete</button>
+            </div>
+          </div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function toggleTask(id) {
+  document.getElementById('tibody-'+id).classList.toggle('open');
+}
+
+async function saveManagerNote(taskId) {
+  const note = document.getElementById('note-'+taskId).value.trim();
+  try {
+    await fetch(SUPA_URL+'/rest/v1/tasks?task_id=eq.'+taskId, {
+      method:'PATCH', headers:{...H,'Prefer':'return=minimal'},
+      body: JSON.stringify({ manager_note: note })
+    });
+    await loadTasks();
+  } catch(e) { alert('Failed to save note.'); }
+}
+
+async function updateDueDate(taskId) {
+  const due = document.getElementById('due-'+taskId).value;
+  if (!due) return;
+  try {
+    await fetch(SUPA_URL+'/rest/v1/tasks?task_id=eq.'+taskId, {
+      method:'PATCH', headers:{...H,'Prefer':'return=minimal'},
+      body: JSON.stringify({ due_date: due, status: 'pending' })
+    });
+    await loadTasks();
+  } catch(e) { alert('Failed to update due date.'); }
+}
+
+async function confirmTask(taskId, repMarkedAt, dueDate) {
+  const markedDate = repMarkedAt ? new Date(repMarkedAt).toISOString().split('T')[0] : todayStr;
+  const status = dueDate && markedDate > dueDate ? 'completed_late' : 'completed_ontime';
+  try {
+    await fetch(SUPA_URL+'/rest/v1/tasks?task_id=eq.'+taskId, {
+      method:'PATCH', headers:{...H,'Prefer':'return=minimal'},
+      body: JSON.stringify({ status, completed_at: new Date().toISOString() })
+    });
+    await loadTasks();
+  } catch(e) { alert('Failed to confirm.'); }
+}
+
+async function rejectTask(taskId) {
+  try {
+    await fetch(SUPA_URL+'/rest/v1/tasks?task_id=eq.'+taskId, {
+      method:'PATCH', headers:{...H,'Prefer':'return=minimal'},
+      body: JSON.stringify({ status: 'pending', rep_marked_done_at: null })
+    });
+    await loadTasks();
+  } catch(e) { alert('Failed to reject.'); }
+}
+
+async function forceComplete(taskId) {
+  if (!confirm('Mark this task as completed?')) return;
+  try {
+    await fetch(SUPA_URL+'/rest/v1/tasks?task_id=eq.'+taskId, {
+      method:'PATCH', headers:{...H,'Prefer':'return=minimal'},
+      body: JSON.stringify({ status: 'completed_late', completed_at: new Date().toISOString() })
+    });
+    await loadTasks();
+  } catch(e) { alert('Failed.'); }
+}
+
+async function deleteTask(taskId) {
+  if (!confirm('Delete this task permanently?')) return;
+  try {
+    await fetch(SUPA_URL+'/rest/v1/tasks?task_id=eq.'+taskId, { method:'DELETE', headers:H });
+    await loadTasks();
+  } catch(e) { alert('Failed to delete.'); }
+}
+
+function toggleNewTaskForm() {
+  document.getElementById('new-task-form').classList.toggle('open');
+}
+
+async function saveNewTask() {
+  const desc = document.getElementById('ntf-desc').value.trim();
+  const assignee = document.getElementById('ntf-assignee').value;
+  const due = document.getElementById('ntf-due').value || null;
+  const customer = document.getElementById('ntf-customer').value.trim() || null;
+
+  if (!desc) { alert('Please enter a task description.'); return; }
+  if (!assignee) { alert('Please select a team member.'); return; }
+
+  try {
+    await db('tasks', {
+      method: 'POST',
+      body: JSON.stringify({
+        description: desc,
+        assigned_to: assignee,
+        created_by: 'HQ',
+        source: 'manager_created',
+        linked_customer: customer,
+        due_date: due,
+        status: 'pending'
+      })
+    });
+    document.getElementById('ntf-desc').value = '';
+    document.getElementById('ntf-assignee').value = '';
+    document.getElementById('ntf-due').value = '';
+    document.getElementById('ntf-customer').value = '';
+    document.getElementById('new-task-form').classList.remove('open');
+    await loadTasks();
+  } catch(e) { console.error(e); alert('Failed to create task.'); }
 }
 
 // ===== DAILY BRIEFING =====
-
 async function loadBriefing() {
   const date = document.getElementById('briefing-date').value || todayStr;
   document.getElementById('briefing-date').value = date;
@@ -409,45 +727,30 @@ async function loadBriefing() {
   list.innerHTML = '<div class="loading-text">Loading…</div>';
 
   try {
-    const salesMembers = members.filter(m => (m.role || 'sales') === 'sales');
-
-    // Get reports for this date
-    const reports = await db(`daily_reports?date=eq.${date}&select=*`);
+    const salesMembers = members.filter(m => (m.role||'sales') === 'sales');
+    const reports = await db(`daily_reports?date=eq.${date}&select=*`) || [];
     const reportMap = {};
-    (reports || []).forEach(r => { reportMap[r.name] = r; });
-
-    // Get all visit records for this date
-    const visits = await db(`visit_records?visit_date=eq.${date}&select=*&order=created_at.asc`);
+    reports.forEach(r => { reportMap[r.name] = r; });
+    const visits = await db(`visit_records?visit_date=eq.${date}&select=*&order=created_at.asc`) || [];
     const visitsByRep = {};
-    (visits || []).forEach(v => {
-      if (!visitsByRep[v.rep_name]) visitsByRep[v.rep_name] = [];
-      visitsByRep[v.rep_name].push(v);
-    });
+    visits.forEach(v => { if(!visitsByRep[v.rep_name]) visitsByRep[v.rep_name]=[]; visitsByRep[v.rep_name].push(v); });
 
-    // Summary stats
-    const submitted = salesMembers.filter(m => reportMap[m.name]?.status === 'submitted').length;
-    const missing = salesMembers.length - submitted;
-    const totalVisits = (visits || []).length;
-    const totalOrders = (visits || []).reduce((s,v) => s + (v.order_amount||0), 0);
-
+    const submitted = salesMembers.filter(m => reportMap[m.name]?.status==='submitted').length;
     document.getElementById('bs-submitted').textContent = submitted;
-    document.getElementById('bs-missing').textContent = missing;
-    document.getElementById('bs-visits').textContent = totalVisits;
-    document.getElementById('bs-orders').textContent = fmtRM(totalOrders);
+    document.getElementById('bs-missing').textContent = salesMembers.length - submitted;
+    document.getElementById('bs-visits').textContent = visits.length;
+    document.getElementById('bs-orders').textContent = fmtRM(visits.reduce((s,v)=>s+(v.order_amount||0),0));
 
-    if (!salesMembers.length) {
-      list.innerHTML = '<div class="empty-text">No sales members found. Add members in the Members tab.</div>';
-      return;
-    }
+    if (!salesMembers.length) { list.innerHTML = '<div class="empty-text">No sales members found.</div>'; return; }
 
     list.innerHTML = salesMembers.map(m => {
       const report = reportMap[m.name];
       const repVisits = visitsByRep[m.name] || [];
       const isSubmitted = report?.status === 'submitted';
-      const repTotal = repVisits.reduce((s,v) => s + (v.order_amount||0), 0);
+      const repTotal = repVisits.reduce((s,v)=>s+(v.order_amount||0),0);
 
       return `
-        <div class="rep-briefing-card" id="rbc-${m.id}">
+        <div class="rep-briefing-card">
           <div class="rbc-header" onclick="toggleRbc(${m.id})">
             <div class="rbc-left">
               <div class="rbc-avatar">${m.name.charAt(0).toUpperCase()}</div>
@@ -457,12 +760,12 @@ async function loadBriefing() {
               </div>
             </div>
             <div class="rbc-right">
-              <span class="status-badge ${isSubmitted ? 'submitted' : 'missing'}">${isSubmitted ? '✅ Submitted' : '⏳ Not Submitted'}</span>
+              <span class="status-badge ${isSubmitted?'submitted':'missing'}">${isSubmitted?'✅ Submitted':'⏳ Not Submitted'}</span>
               <span style="color:var(--muted);font-size:12px">▼</span>
             </div>
           </div>
           <div class="rbc-body" id="rbcbody-${m.id}">
-            ${repVisits.length === 0
+            ${repVisits.length===0
               ? `<div class="empty-text">No visit records for this date.</div>`
               : repVisits.map((v,vi) => `
                 <div class="visit-record-item">
@@ -471,16 +774,16 @@ async function loadBriefing() {
                     <div class="vri-amount">${fmtRM(v.order_amount||0)}</div>
                   </div>
                   ${v.notes ? `<div class="vri-notes">${escHtml(v.notes)}</div>` : ''}
-                  ${v.followup_notes ? `<div class="vri-followup">📌 Follow-up: ${escHtml(v.followup_notes)}${v.followup_date ? ` · Due: ${v.followup_date}` : ''}${v.has_task_created ? ' ✅ Task created' : ''}</div>` : ''}
-                  ${v.photo_urls && v.photo_urls.length > 0 ? `<div class="vri-photos">${v.photo_urls.map(u=>`<img src="${u}" onclick="openLightbox('${u}')" loading="lazy">`).join('')}</div>` : ''}
+                  ${v.followup_notes ? `<div class="vri-followup">📌 Follow-up: ${escHtml(v.followup_notes)}${v.followup_date?` · Due: ${v.followup_date}`:''}${v.has_task_created?' ✅ Task created':''}</div>` : ''}
+                  ${v.photo_urls&&v.photo_urls.length>0 ? `<div class="vri-photos">${v.photo_urls.map(u=>`<img src="${u}" onclick="openLightbox('${u}')" loading="lazy">`).join('')}</div>` : ''}
                   <div class="vri-actions">
                     <button class="btn-create-task-hq" onclick="toggleTaskForm('tf-${m.id}-${vi}')">+ Create Task</button>
                   </div>
                   <div class="task-form-inline" id="tf-${m.id}-${vi}">
                     <div style="font-size:12px;font-weight:700;color:#92400e;margin-bottom:8px">Create Task for ${escHtml(m.name)}</div>
-                    <textarea id="tf-desc-${m.id}-${vi}" placeholder="Task description...">${v.followup_notes ? escHtml(v.followup_notes) : ''}</textarea>
+                    <textarea id="tf-desc-${m.id}-${vi}" placeholder="Task description...">${v.followup_notes?escHtml(v.followup_notes):''}</textarea>
                     <div class="tfi-row">
-                      <input type="date" id="tf-due-${m.id}-${vi}" style="flex:1" value="${v.followup_date || ''}">
+                      <input type="date" id="tf-due-${m.id}-${vi}" style="flex:1" value="${v.followup_date||''}">
                       <button class="btn-save-task" onclick="saveTaskFromVisit('${m.name}','${v.visit_id}','${m.id}','${vi}','${escHtml(v.customer_name)}')">Save Task</button>
                       <button class="btn-cancel-task" onclick="toggleTaskForm('tf-${m.id}-${vi}')">Cancel</button>
                     </div>
@@ -490,106 +793,76 @@ async function loadBriefing() {
           </div>
         </div>`;
     }).join('');
-
-  } catch(e) {
-    console.error(e);
-    list.innerHTML = '<div class="empty-text">Failed to load briefing.</div>';
-  }
+  } catch(e) { console.error(e); list.innerHTML = '<div class="empty-text">Failed to load.</div>'; }
 }
 
-function toggleRbc(id) {
-  document.getElementById('rbcbody-' + id).classList.toggle('open');
-}
-
-function toggleTaskForm(id) {
-  document.getElementById(id).classList.toggle('open');
-}
+function toggleRbc(id) { document.getElementById('rbcbody-'+id).classList.toggle('open'); }
+function toggleTaskForm(id) { document.getElementById(id).classList.toggle('open'); }
 
 async function saveTaskFromVisit(repName, visitId, memberId, visitIdx, customerName) {
   const desc = document.getElementById(`tf-desc-${memberId}-${visitIdx}`).value.trim();
   const due = document.getElementById(`tf-due-${memberId}-${visitIdx}`).value || null;
-
   if (!desc) { alert('Please enter a task description.'); return; }
-
   try {
     await db('tasks', {
       method: 'POST',
       body: JSON.stringify({
-        description: desc,
-        assigned_to: repName,
-        created_by: 'HQ',
-        source: 'from_report',
-        linked_customer: customerName,
-        linked_visit_id: visitId,
-        due_date: due,
-        status: 'pending'
+        description: desc, assigned_to: repName, created_by: 'HQ',
+        source: 'from_report', linked_customer: customerName,
+        linked_visit_id: visitId, due_date: due, status: 'pending'
       })
     });
-    // Mark visit has_task_created
-    await fetch(SUPA_URL + '/rest/v1/visit_records?visit_id=eq.' + visitId, {
-      method: 'PATCH',
-      headers: { ...H, 'Prefer': 'return=minimal' },
+    await fetch(SUPA_URL+'/rest/v1/visit_records?visit_id=eq.'+visitId, {
+      method:'PATCH', headers:{...H,'Prefer':'return=minimal'},
       body: JSON.stringify({ has_task_created: true })
     });
-    alert('✅ Task created for ' + repName);
+    alert('✅ Task created for '+repName);
     document.getElementById(`tf-${memberId}-${visitIdx}`).classList.remove('open');
     loadBriefing();
-  } catch(e) {
-    console.error(e);
-    alert('Failed to create task.');
-  }
+  } catch(e) { console.error(e); alert('Failed to create task.'); }
 }
 
-function openLightbox(url) {
-  document.getElementById('lightbox-img').src = url;
-  document.getElementById('lightbox').classList.add('open');
-}
-
-function closeLightbox() {
-  document.getElementById('lightbox').classList.remove('open');
-  document.getElementById('lightbox-img').src = '';
-}
+function openLightbox(url) { document.getElementById('lightbox-img').src=url; document.getElementById('lightbox').classList.add('open'); }
+function closeLightbox() { document.getElementById('lightbox').classList.remove('open'); document.getElementById('lightbox-img').src=''; }
 
 // ===== OVERVIEW =====
 async function loadOverview() {
-  const t = today(), ws = weekStart(), we = weekEnd();
+  const t=today(), ws=weekStart(), we=weekEnd();
   try {
     const [dailyToday, weeklyWeek] = await Promise.all([
       db(`daily_reports?select=name&date=eq.${t}`),
       db(`weekly_reports?select=name&date=gte.${ws}&date=lte.${we}`)
     ]);
-    const submittedDaily = new Set(dailyToday.map(r=>r.name));
-    const submittedWeekly = new Set(weeklyWeek.map(r=>r.name));
-    const missingDaily = members.filter(m=>!submittedDaily.has(m.name));
-    const missingWeekly = members.filter(m=>!submittedWeekly.has(m.name));
-    document.getElementById('ov-daily-miss').textContent = missingDaily.length;
-    document.getElementById('ov-daily-ok').textContent = submittedDaily.size;
-    document.getElementById('ov-weekly-miss').textContent = missingWeekly.length;
-    document.getElementById('ov-weekly-ok').textContent = submittedWeekly.size;
-    document.getElementById('missing-daily-today').innerHTML = missingDaily.length
-      ? missingDaily.map(m=>`<div class="missing-item"><span class="mi-name">${m.name}</span><span class="mi-badge">NOT SUBMITTED</span></div>`).join('')
+    const sD=new Set(dailyToday.map(r=>r.name)), sW=new Set(weeklyWeek.map(r=>r.name));
+    const mD=members.filter(m=>!sD.has(m.name)), mW=members.filter(m=>!sW.has(m.name));
+    document.getElementById('ov-daily-miss').textContent=mD.length;
+    document.getElementById('ov-daily-ok').textContent=sD.size;
+    document.getElementById('ov-weekly-miss').textContent=mW.length;
+    document.getElementById('ov-weekly-ok').textContent=sW.size;
+    document.getElementById('missing-daily-today').innerHTML=mD.length
+      ? mD.map(m=>`<div class="missing-item"><span class="mi-name">${m.name}</span><span class="mi-badge">NOT SUBMITTED</span></div>`).join('')
       : '<div class="all-good">✅ Everyone has submitted today!</div>';
-    document.getElementById('missing-weekly-week').innerHTML = missingWeekly.length
-      ? missingWeekly.map(m=>`<div class="missing-item"><span class="mi-name">${m.name}</span><span class="mi-badge">NOT SUBMITTED</span></div>`).join('')
+    document.getElementById('missing-weekly-week').innerHTML=mW.length
+      ? mW.map(m=>`<div class="missing-item"><span class="mi-name">${m.name}</span><span class="mi-badge">NOT SUBMITTED</span></div>`).join('')
       : '<div class="all-good">✅ Everyone has submitted this week!</div>';
-  } catch(e) { console.error(e); }
+  } catch(e){ console.error(e); }
 }
 
-// ===== DAILY REPORTS =====
+// ===== DAILY/WEEKLY REPORTS =====
 async function loadDailyReports() {
-  const list = document.getElementById('daily-report-list');
-  list.innerHTML = '<div class="loading-text">Loading…</div>';
-  const name = document.getElementById('filter-daily-name').value;
-  const from = document.getElementById('filter-daily-from').value;
-  const to = document.getElementById('filter-daily-to').value;
-  let q = 'daily_reports?select=*&order=date.desc,created_at.desc&limit=100';
-  if (name) q += `&name=eq.${encodeURIComponent(name)}`;
-  if (from) q += `&date=gte.${from}`;
-  if (to) q += `&date=lte.${to}`;
+  const list=document.getElementById('daily-report-list');
+  list.innerHTML='<div class="loading-text">Loading…</div>';
+  const name=document.getElementById('filter-daily-name').value;
+  const from=document.getElementById('filter-daily-from').value;
+  const to=document.getElementById('filter-daily-to').value;
+  let q='daily_reports?select=*&order=date.desc,created_at.desc&limit=100';
+  if(name) q+=`&name=eq.${encodeURIComponent(name)}`;
+  if(from) q+=`&date=gte.${from}`;
+  if(to) q+=`&date=lte.${to}`;
   try {
-    const data = await db(q);
-    if (!data.length) { list.innerHTML = '<div class="empty-text">No reports found.</div>'; return; }
-    list.innerHTML = data.map((r,i) => `
+    const data=await db(q);
+    if(!data.length){list.innerHTML='<div class="empty-text">No reports found.</div>';return;}
+    list.innerHTML=data.map((r,i)=>`
       <div class="report-item">
         <div class="report-header" onclick="toggleReport('dr-${i}')">
           <div class="rh-left"><div class="rh-name">${r.name}</div><div class="rh-date">${r.date}</div></div>
@@ -605,24 +878,23 @@ async function loadDailyReports() {
           <div class="rb-field"><div class="rf-label">Assistance</div><div class="rf-val">${escHtml(r.assistance||'None.')}</div></div>
         </div>
       </div>`).join('');
-  } catch(e) { list.innerHTML = '<div class="empty-text">Failed to load.</div>'; }
+  } catch(e){list.innerHTML='<div class="empty-text">Failed to load.</div>';}
 }
 
-// ===== WEEKLY REPORTS =====
 async function loadWeeklyReports() {
-  const list = document.getElementById('weekly-report-list');
-  list.innerHTML = '<div class="loading-text">Loading…</div>';
-  const name = document.getElementById('filter-weekly-name').value;
-  const from = document.getElementById('filter-weekly-from').value;
-  const to = document.getElementById('filter-weekly-to').value;
-  let q = 'weekly_reports?select=*&order=date.desc,created_at.desc&limit=100';
-  if (name) q += `&name=eq.${encodeURIComponent(name)}`;
-  if (from) q += `&date=gte.${from}`;
-  if (to) q += `&date=lte.${to}`;
+  const list=document.getElementById('weekly-report-list');
+  list.innerHTML='<div class="loading-text">Loading…</div>';
+  const name=document.getElementById('filter-weekly-name').value;
+  const from=document.getElementById('filter-weekly-from').value;
+  const to=document.getElementById('filter-weekly-to').value;
+  let q='weekly_reports?select=*&order=date.desc,created_at.desc&limit=100';
+  if(name) q+=`&name=eq.${encodeURIComponent(name)}`;
+  if(from) q+=`&date=gte.${from}`;
+  if(to) q+=`&date=lte.${to}`;
   try {
-    const data = await db(q);
-    if (!data.length) { list.innerHTML = '<div class="empty-text">No reports found.</div>'; return; }
-    list.innerHTML = data.map((r,i) => `
+    const data=await db(q);
+    if(!data.length){list.innerHTML='<div class="empty-text">No reports found.</div>';return;}
+    list.innerHTML=data.map((r,i)=>`
       <div class="report-item">
         <div class="report-header" onclick="toggleReport('wr-${i}')">
           <div class="rh-left"><div class="rh-name">${r.name}</div><div class="rh-date">${r.date}</div></div>
@@ -637,61 +909,54 @@ async function loadWeeklyReports() {
           <div class="rb-field"><div class="rf-label">Assistance</div><div class="rf-val">${escHtml(r.assistance||'None.')}</div></div>
         </div>
       </div>`).join('');
-  } catch(e) { list.innerHTML = '<div class="empty-text">Failed to load.</div>'; }
+  } catch(e){list.innerHTML='<div class="empty-text">Failed to load.</div>';}
 }
 
 function toggleReport(id) {
-  const body = document.getElementById(id);
-  const chev = document.getElementById('chev-'+id);
-  const open = body.classList.toggle('open');
-  chev.textContent = open ? '▲' : '▼';
+  const body=document.getElementById(id); const chev=document.getElementById('chev-'+id);
+  const open=body.classList.toggle('open'); chev.textContent=open?'▲':'▼';
 }
 
-async function deleteReport(table, id, type) {
-  if (!confirm('Delete this report?')) return;
-  try {
-    await fetch(SUPA_URL+'/rest/v1/'+table+'?id=eq.'+id, { method:'DELETE', headers:H });
-    if (type==='daily') loadDailyReports(); else loadWeeklyReports();
-  } catch(e) { alert('Failed to delete.'); }
+async function deleteReport(table,id,type) {
+  if(!confirm('Delete this report?')) return;
+  try { await fetch(SUPA_URL+'/rest/v1/'+table+'?id=eq.'+id,{method:'DELETE',headers:H}); if(type==='daily') loadDailyReports(); else loadWeeklyReports(); }
+  catch(e){alert('Failed.');}
 }
 
 // ===== MISS STATS =====
 async function loadMissStats() {
-  const tbody = document.getElementById('miss-stats-body');
-  tbody.innerHTML = '<tr><td colspan="4" class="loading-text">Loading…</td></tr>';
-  const monthVal = document.getElementById('stats-month').value;
-  if (!monthVal) return;
-  const [year, month] = monthVal.split('-');
-  const firstDay = `${year}-${month}-01`;
-  const lastDay = `${year}-${month}-${new Date(year,month,0).getDate()}`;
-  const workDays = countWorkDays(new Date(year,month-1,1), new Date(year,month-1,new Date(year,month,0).getDate()));
-  const weekCount = Math.ceil(new Date(year,month,0).getDate()/7);
+  const tbody=document.getElementById('miss-stats-body');
+  tbody.innerHTML='<tr><td colspan="4" class="loading-text">Loading…</td></tr>';
+  const monthVal=document.getElementById('stats-month').value; if(!monthVal) return;
+  const [year,month]=monthVal.split('-');
+  const firstDay=`${year}-${month}-01`;
+  const lastDay=`${year}-${month}-${new Date(year,month,0).getDate()}`;
+  const workDays=countWorkDays(new Date(year,month-1,1),new Date(year,month-1,new Date(year,month,0).getDate()));
+  const weekCount=Math.ceil(new Date(year,month,0).getDate()/7);
   try {
-    const [dailyData, weeklyData] = await Promise.all([
+    const [dailyData,weeklyData]=await Promise.all([
       db(`daily_reports?select=name,date&date=gte.${firstDay}&date=lte.${lastDay}`),
       db(`weekly_reports?select=name,date&date=gte.${firstDay}&date=lte.${lastDay}`)
     ]);
-    const dailyByName={}, weeklyByName={};
-    members.forEach(m=>{ dailyByName[m.name]=0; weeklyByName[m.name]=0; });
-    dailyData.forEach(r=>{ if(dailyByName[r.name]!==undefined) dailyByName[r.name]++; });
-    weeklyData.forEach(r=>{ if(weeklyByName[r.name]!==undefined) weeklyByName[r.name]++; });
-    tbody.innerHTML = members.map(m=>{
-      const dMiss=Math.max(0,workDays-dailyByName[m.name]);
-      const wMiss=Math.max(0,weekCount-weeklyByName[m.name]);
-      const total=dMiss+wMiss;
-      return `<tr>
-        <td><strong>${m.name}</strong></td>
-        <td><span class="miss-count ${dMiss>0?'bad':'ok'}">${dMiss}</span></td>
-        <td><span class="miss-count ${wMiss>0?'bad':'ok'}">${wMiss}</span></td>
-        <td><span class="miss-count ${total>0?'bad':'ok'}">${total}</span></td>
-      </tr>`;
+    const dBN={},wBN={};
+    members.forEach(m=>{dBN[m.name]=0;wBN[m.name]=0;});
+    dailyData.forEach(r=>{if(dBN[r.name]!==undefined)dBN[r.name]++;});
+    weeklyData.forEach(r=>{if(wBN[r.name]!==undefined)wBN[r.name]++;});
+    tbody.innerHTML=members.map(m=>{
+      const dM=Math.max(0,workDays-dBN[m.name]);
+      const wM=Math.max(0,weekCount-wBN[m.name]);
+      const tot=dM+wM;
+      return `<tr><td><strong>${m.name}</strong></td>
+        <td><span class="miss-count ${dM>0?'bad':'ok'}">${dM}</span></td>
+        <td><span class="miss-count ${wM>0?'bad':'ok'}">${wM}</span></td>
+        <td><span class="miss-count ${tot>0?'bad':'ok'}">${tot}</span></td></tr>`;
     }).join('');
-  } catch(e) { tbody.innerHTML='<tr><td colspan="4" class="empty-text">Failed.</td></tr>'; }
+  } catch(e){tbody.innerHTML='<tr><td colspan="4" class="empty-text">Failed.</td></tr>';}
 }
 
-function countWorkDays(start, end) {
+function countWorkDays(start,end) {
   let count=0; const cur=new Date(start);
-  while(cur<=end){ const d=cur.getDay(); if(d!==0&&d!==6) count++; cur.setDate(cur.getDate()+1); }
+  while(cur<=end){const d=cur.getDay();if(d!==0&&d!==6)count++;cur.setDate(cur.getDate()+1);}
   return count;
 }
 
@@ -699,20 +964,22 @@ function countWorkDays(start, end) {
 async function loadMembers() {
   try {
     members = await db('members?select=*&order=name');
-    ['filter-daily-name','filter-weekly-name'].forEach(id => {
-      const sel = document.getElementById(id);
-      const cur = sel.value;
-      sel.innerHTML = '<option value="">All Members</option>';
-      members.forEach(m => { const o = document.createElement('option'); o.value=m.name; o.textContent=m.name; sel.appendChild(o); });
-      sel.value = cur;
+    ['filter-daily-name','filter-weekly-name','task-filter-member','ntf-assignee'].forEach(id => {
+      const sel=document.getElementById(id); if(!sel) return;
+      const cur=sel.value;
+      const isAssignee = id === 'ntf-assignee';
+      sel.innerHTML = isAssignee ? '<option value="">Assign to…</option>' : '<option value="">All Members</option>';
+      const filtered = isAssignee ? members.filter(m=>(m.role||'sales')==='sales') : members;
+      filtered.forEach(m=>{const o=document.createElement('option');o.value=m.name;o.textContent=m.name;sel.appendChild(o);});
+      if(!isAssignee) sel.value=cur;
     });
-  } catch(e) { console.error(e); }
+  } catch(e){console.error(e);}
 }
 
 function renderMembers() {
-  const list = document.getElementById('member-list');
-  if (!members.length) { list.innerHTML = '<div class="empty-text">No members yet.</div>'; return; }
-  list.innerHTML = members.map(m => `
+  const list=document.getElementById('member-list');
+  if(!members.length){list.innerHTML='<div class="empty-text">No members yet.</div>';return;}
+  list.innerHTML=members.map(m=>`
     <div class="member-row" id="mrow-${m.id}">
       <span class="m-name">${m.name}</span>
       <span class="role-badge ${m.role||'sales'}">${m.role==='marketing'?'Marketing':'Sales'}</span>
@@ -749,127 +1016,95 @@ function renderMembers() {
     </div>`).join('');
 }
 
-function toggleNameEdit(id) { const r=document.getElementById('nameedit-'+id); r.classList.toggle('open'); if(r.classList.contains('open')) document.getElementById('nameval-'+id).focus(); }
-function toggleRoleEdit(id) { document.getElementById('roleedit-'+id).classList.toggle('open'); }
-function togglePwEdit(id) { const r=document.getElementById('pwedit-'+id); r.classList.toggle('open'); if(r.classList.contains('open')) document.getElementById('pwval-'+id).focus(); }
-function toggleKpiEdit(id) { const r=document.getElementById('kpiedit-'+id); r.classList.toggle('open'); if(r.classList.contains('open')) document.getElementById('kpival-'+id).focus(); }
+function toggleNameEdit(id){const r=document.getElementById('nameedit-'+id);r.classList.toggle('open');if(r.classList.contains('open'))document.getElementById('nameval-'+id).focus();}
+function toggleRoleEdit(id){document.getElementById('roleedit-'+id).classList.toggle('open');}
+function togglePwEdit(id){const r=document.getElementById('pwedit-'+id);r.classList.toggle('open');if(r.classList.contains('open'))document.getElementById('pwval-'+id).focus();}
+function toggleKpiEdit(id){const r=document.getElementById('kpiedit-'+id);r.classList.toggle('open');if(r.classList.contains('open'))document.getElementById('kpival-'+id).focus();}
 
-async function saveName(id) {
-  const inp=document.getElementById('nameval-'+id); const newName=inp.value.trim();
+async function saveName(id){
+  const inp=document.getElementById('nameval-'+id);const newName=inp.value.trim();
   if(!newName){inp.style.borderColor='var(--red)';return;}
   const oldName=members.find(m=>m.id===id)?.name;
   if(newName===oldName){toggleNameEdit(id);return;}
   if(!confirm(`Change name from "${oldName}" to "${newName}"?\n\nAll past reports will be updated.`)) return;
-  try {
+  try{
     await fetch(SUPA_URL+'/rest/v1/members?id=eq.'+id,{method:'PATCH',headers:H,body:JSON.stringify({name:newName})});
     await fetch(SUPA_URL+'/rest/v1/daily_reports?name=eq.'+encodeURIComponent(oldName),{method:'PATCH',headers:H,body:JSON.stringify({name:newName})});
     await fetch(SUPA_URL+'/rest/v1/weekly_reports?name=eq.'+encodeURIComponent(oldName),{method:'PATCH',headers:H,body:JSON.stringify({name:newName})});
-    await loadMembers(); renderMembers();
-  } catch(e){alert('Failed to rename.');}
+    await loadMembers();renderMembers();
+  }catch(e){alert('Failed.');}
 }
-
-async function saveRole(id) {
-  const val=document.getElementById('roleval-'+id).value;
-  try { await fetch(SUPA_URL+'/rest/v1/members?id=eq.'+id,{method:'PATCH',headers:H,body:JSON.stringify({role:val})}); await loadMembers(); renderMembers(); }
+async function saveRole(id){const val=document.getElementById('roleval-'+id).value;try{await fetch(SUPA_URL+'/rest/v1/members?id=eq.'+id,{method:'PATCH',headers:H,body:JSON.stringify({role:val})});await loadMembers();renderMembers();}catch(e){alert('Failed.');}}
+async function savePassword(id){const inp=document.getElementById('pwval-'+id);const pw=inp.value.trim();if(!pw){inp.style.borderColor='var(--red)';return;}try{await fetch(SUPA_URL+'/rest/v1/members?id=eq.'+id,{method:'PATCH',headers:H,body:JSON.stringify({password:pw})});await loadMembers();renderMembers();}catch(e){alert('Failed.');}}
+async function saveKpi(id){const inp=document.getElementById('kpival-'+id);const kpi=parseFloat(inp.value)||0;try{await fetch(SUPA_URL+'/rest/v1/members?id=eq.'+id,{method:'PATCH',headers:H,body:JSON.stringify({monthly_kpi:kpi})});await loadMembers();renderMembers();}catch(e){alert('Failed.');}}
+async function addMember(){
+  const inp=document.getElementById('new-member-name');const pwInp=document.getElementById('new-member-pw');const roleInp=document.getElementById('new-member-role');
+  const name=inp.value.trim();const pw=pwInp.value.trim();const role=roleInp.value;
+  if(!name){inp.style.borderColor='var(--red)';return;}inp.style.borderColor='';
+  try{await db('members',{method:'POST',body:JSON.stringify({name,password:pw||null,monthly_kpi:0,role})});inp.value='';pwInp.value='';roleInp.value='sales';await loadMembers();renderMembers();}
   catch(e){alert('Failed.');}
 }
-
-async function savePassword(id) {
-  const inp=document.getElementById('pwval-'+id); const pw=inp.value.trim();
-  if(!pw){inp.style.borderColor='var(--red)';return;}
-  try { await fetch(SUPA_URL+'/rest/v1/members?id=eq.'+id,{method:'PATCH',headers:H,body:JSON.stringify({password:pw})}); await loadMembers(); renderMembers(); }
-  catch(e){alert('Failed.');}
-}
-
-async function saveKpi(id) {
-  const inp=document.getElementById('kpival-'+id); const kpi=parseFloat(inp.value)||0;
-  try { await fetch(SUPA_URL+'/rest/v1/members?id=eq.'+id,{method:'PATCH',headers:H,body:JSON.stringify({monthly_kpi:kpi})}); await loadMembers(); renderMembers(); }
-  catch(e){alert('Failed.');}
-}
-
-async function addMember() {
-  const inp=document.getElementById('new-member-name'); const pwInp=document.getElementById('new-member-pw');
-  const roleInp=document.getElementById('new-member-role');
-  const name=inp.value.trim(); const pw=pwInp.value.trim(); const role=roleInp.value;
-  if(!name){inp.style.borderColor='var(--red)';return;} inp.style.borderColor='';
-  try {
-    await db('members',{method:'POST',body:JSON.stringify({name,password:pw||null,monthly_kpi:0,role})});
-    inp.value=''; pwInp.value=''; roleInp.value='sales';
-    await loadMembers(); renderMembers();
-  } catch(e){alert('Failed to add member.');}
-}
-
-async function deleteMember(id, name) {
+async function deleteMember(id,name){
   if(!confirm(`Remove "${name}" from team?`)) return;
-  try { await fetch(SUPA_URL+'/rest/v1/members?id=eq.'+id,{method:'DELETE',headers:H}); await loadMembers(); renderMembers(); }
+  try{await fetch(SUPA_URL+'/rest/v1/members?id=eq.'+id,{method:'DELETE',headers:H});await loadMembers();renderMembers();}
   catch(e){alert('Failed.');}
 }
 
 // ===== MISC =====
-function populateMonthSelector() {
-  const sel=document.getElementById('stats-month'); const now=new Date();
-  for(let i=0;i<6;i++){
-    const d=new Date(now.getFullYear(),now.getMonth()-i,1);
-    const o=document.createElement('option');
-    o.value=d.toISOString().slice(0,7);
-    o.textContent=d.toLocaleString('en',{year:'numeric',month:'long'});
-    sel.appendChild(o);
-  }
+function populateMonthSelector(){
+  const sel=document.getElementById('stats-month');const now=new Date();
+  for(let i=0;i<6;i++){const d=new Date(now.getFullYear(),now.getMonth()-i,1);const o=document.createElement('option');o.value=d.toISOString().slice(0,7);o.textContent=d.toLocaleString('en',{year:'numeric',month:'long'});sel.appendChild(o);}
 }
-
-function setDefaultFilters() {
-  const t=today(), ws=weekStart();
+function setDefaultFilters(){
+  const t=today(),ws=weekStart();
   document.getElementById('filter-daily-from').value=ws;
   document.getElementById('filter-daily-to').value=t;
   document.getElementById('filter-weekly-from').value=weekStart();
   document.getElementById('filter-weekly-to').value=weekEnd();
 }
-
-function logoutHQ() { sessionStorage.clear(); }
+function logoutHQ(){sessionStorage.clear();}
 
 (async()=>{
   if(sessionStorage.getItem('userRole')==='hq'||sessionStorage.getItem('hq_auth')==='1'){
     sessionStorage.setItem('hq_auth','1');
     document.getElementById('pwOverlay').style.display='none';
-    populateMonthSelector();
-    setDefaultFilters();
-    document.getElementById('briefing-date').value = todayStr;
+    populateMonthSelector();setDefaultFilters();
+    document.getElementById('briefing-date').value=todayStr;
     await loadMembers();
     loadBriefing();
   }
 })();
 
-async function checkPw() {
-  const inp=document.getElementById('pwInput'); const pw=inp.value.trim(); if(!pw) return;
-  const btn=document.querySelector('.pw-btn'); btn.disabled=true; btn.textContent='...';
-  try {
+async function checkPw(){
+  const inp=document.getElementById('pwInput');const pw=inp.value.trim();if(!pw) return;
+  const btn=document.querySelector('.pw-btn');btn.disabled=true;btn.textContent='...';
+  try{
     const data=await db("settings?key=eq.hq_password&select=value");
     if(data.length&&data[0].value===pw){
       sessionStorage.setItem('hq_auth','1');
       document.getElementById('pwOverlay').style.display='none';
-      populateMonthSelector(); setDefaultFilters();
-      document.getElementById('briefing-date').value = todayStr;
-      await loadMembers(); loadBriefing();
-    } else {
-      inp.classList.add('error');
-      document.getElementById('pwError').classList.add('visible');
-      inp.value=''; setTimeout(()=>inp.classList.remove('error'),400);
+      populateMonthSelector();setDefaultFilters();
+      document.getElementById('briefing-date').value=todayStr;
+      await loadMembers();loadBriefing();
+    }else{
+      inp.classList.add('error');document.getElementById('pwError').classList.add('visible');
+      inp.value='';setTimeout(()=>inp.classList.remove('error'),400);
     }
-  } catch(e){ document.getElementById('pwError').textContent='Connection error.'; document.getElementById('pwError').classList.add('visible'); }
-  btn.disabled=false; btn.textContent='Enter';
+  }catch(e){document.getElementById('pwError').textContent='Connection error.';document.getElementById('pwError').classList.add('visible');}
+  btn.disabled=false;btn.textContent='Enter';
 }
 
-async function changePassword() {
+async function changePassword(){
   const p1=document.getElementById('new-pw').value.trim();
   const p2=document.getElementById('new-pw2').value.trim();
-  const msg=document.getElementById('chpw-msg'); msg.className='chpw-msg';
+  const msg=document.getElementById('chpw-msg');msg.className='chpw-msg';
   if(!p1||!p2){msg.textContent='Please fill in both fields.';msg.className='chpw-msg fail';return;}
   if(p1!==p2){msg.textContent='Passwords do not match.';msg.className='chpw-msg fail';return;}
-  try {
+  try{
     await fetch(SUPA_URL+'/rest/v1/settings?key=eq.hq_password',{method:'PATCH',headers:H,body:JSON.stringify({value:p1})});
-    document.getElementById('new-pw').value=''; document.getElementById('new-pw2').value='';
-    msg.textContent='✅ Password updated!'; msg.className='chpw-msg ok';
-  } catch(e){msg.textContent='Failed.';msg.className='chpw-msg fail';}
+    document.getElementById('new-pw').value='';document.getElementById('new-pw2').value='';
+    msg.textContent='✅ Password updated!';msg.className='chpw-msg ok';
+  }catch(e){msg.textContent='Failed.';msg.className='chpw-msg fail';}
 }
 </script>
 </body>
