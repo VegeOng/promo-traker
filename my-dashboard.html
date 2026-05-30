@@ -10,9 +10,7 @@
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    background: #fafafa;
-    min-height: 100vh;
-    color: #1f2937;
+    background: #fafafa; min-height: 100vh; color: #1f2937;
   }
   .header {
     background: white; padding: 16px 20px;
@@ -35,11 +33,7 @@
   .sec-title::after { content:''; flex:1; height:1px; background:#e5e7eb; }
   .sec-title:first-child { margin-top: 0; }
 
-  .tools-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
-    gap: 10px; margin-bottom: 8px;
-  }
+  .tools-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; margin-bottom: 8px; }
   .tool {
     background: white; border: 1px solid #bbf7d0; border-radius: 14px;
     padding: 18px 14px 14px; text-decoration: none; color: inherit;
@@ -56,23 +50,15 @@
   .tabs {
     display: flex; background: white; border-radius: 12px;
     padding: 4px; margin-bottom: 16px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-    overflow-x: auto;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05); overflow-x: auto;
   }
-  .tab {
-    flex: 1; padding: 10px 8px; text-align: center; border-radius: 8px;
-    cursor: pointer; font-size: 13px; font-weight: 600; color: #6b7280;
-    transition: all 0.2s; white-space: nowrap; min-width: 80px;
-  }
+  .tab { flex: 1; padding: 10px 8px; text-align: center; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 600; color: #6b7280; transition: all 0.2s; white-space: nowrap; min-width: 80px; }
   .tab.active { background: #166534; color: white; }
 
   .panel { display: none; }
   .panel.active { display: block; }
 
-  .card {
-    background: white; border-radius: 12px; padding: 16px;
-    margin-bottom: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-  }
+  .card { background: white; border-radius: 12px; padding: 16px; margin-bottom: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
   .card-date { font-size: 12px; color: #166534; font-weight: 600; margin-bottom: 8px; }
   .card-row { margin-bottom: 8px; font-size: 14px; }
   .card-row strong { color: #374151; display: block; margin-bottom: 2px; font-size: 12px; }
@@ -81,7 +67,6 @@
   .empty { text-align: center; color: #9ca3af; padding: 40px 20px; background: white; border-radius: 12px; font-size: 14px; }
   .loading { text-align: center; padding: 20px; color: #6b7280; font-size: 14px; }
 
-  /* KPI cards */
   .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin-bottom: 16px; }
   .kpi-card { background: white; border: 1px solid #e5e7eb; border-radius: 12px; padding: 14px; position: relative; overflow: hidden; }
   .kpi-card::before { content:''; position:absolute; top:0; left:0; right:0; height:3px; }
@@ -115,20 +100,17 @@
   .data-table .amount { font-weight: 700; color: #166534; }
   .data-table .qty { font-weight: 700; color: #3b82f6; }
 
-  /* Task styles */
+  /* Tasks */
   .task-filter-tabs { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
   .tft { padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 700; cursor: pointer; border: 2px solid transparent; transition: all 0.15s; }
+  .tft.all { background: #f3f4f6; color: #6b7280; }
   .tft.overdue { background: #fee2e2; color: #dc2626; }
   .tft.today { background: #fef3c7; color: #d97706; }
   .tft.pending { background: #f3f4f6; color: #6b7280; }
   .tft.completed { background: #dcfce7; color: #166534; }
   .tft.active { border-color: currentColor; }
 
-  .task-item {
-    background: white; border: 1px solid #e5e7eb; border-radius: 12px;
-    margin-bottom: 10px; overflow: hidden;
-    border-left: 3px solid #e5e7eb;
-  }
+  .task-item { background: white; border: 1px solid #e5e7eb; border-radius: 12px; margin-bottom: 10px; overflow: hidden; border-left: 3px solid #e5e7eb; }
   .task-item.overdue { border-left-color: #dc2626; }
   .task-item.pending { border-left-color: #d97706; }
   .task-item.awaiting_confirm { border-left-color: #3b82f6; }
@@ -154,7 +136,6 @@
   .ti-body { display: none; padding: 0 16px 14px; border-top: 1px solid #e5e7eb; }
   .ti-body.open { display: block; }
   .ti-body-inner { padding-top: 12px; }
-  .ti-note { font-size: 13px; color: #374151; background: #fffbeb; padding: 8px 12px; border-radius: 8px; margin-bottom: 10px; line-height: 1.5; }
   .ti-manager-note { font-size: 13px; color: #374151; background: #f0fdf4; padding: 8px 12px; border-radius: 8px; margin-bottom: 10px; line-height: 1.5; }
   .ti-reply-input { width: 100%; padding: 10px 12px; border: 1.5px solid #e5e7eb; border-radius: 8px; font-size: 13px; font-family: inherit; min-height: 70px; resize: vertical; margin-bottom: 10px; }
   .ti-reply-input:focus { outline: none; border-color: #166534; }
@@ -163,129 +144,148 @@
   .btn-done:hover { background: #14532d; }
   .btn-escalate { padding: 8px 16px; background: #ede9fe; color: #7c3aed; border: none; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; }
   .btn-reply { padding: 8px 16px; background: #eff6ff; color: #3b82f6; border: none; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; }
+
+  /* Visit photos */
+  .visit-photos { display: grid; grid-template-columns: repeat(4,1fr); gap: 6px; margin-top: 8px; }
+  .visit-photos img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 6px; cursor: pointer; transition: opacity 0.15s; }
+  .visit-photos img:hover { opacity: 0.85; }
+
+  /* Lightbox */
+  .lightbox { position: fixed; inset: 0; background: rgba(0,0,0,0.92); z-index: 9999; display: none; align-items: center; justify-content: center; padding: 20px; }
+  .lightbox.open { display: flex; }
+  .lightbox img { max-width: 100%; max-height: 90vh; border-radius: 8px; box-shadow: 0 0 40px rgba(0,0,0,0.5); }
+  .lightbox-close { position: absolute; top: 16px; right: 16px; background: white; border: none; border-radius: 50%; width: 36px; height: 36px; font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,0.3); }
 </style>
 </head>
 <body>
-  <div class="header">
-    <div>
-      <h1>🥬 My Dashboard</h1>
-      <div class="user" id="userLabel"></div>
-    </div>
-    <button class="logout" onclick="logout()">Logout</button>
+
+<!-- Lightbox -->
+<div class="lightbox" id="lightbox" onclick="closeLightbox()">
+  <button class="lightbox-close" onclick="closeLightbox()">✕</button>
+  <img id="lightbox-img" src="" onclick="event.stopPropagation()">
+</div>
+
+<div class="header">
+  <div>
+    <h1>🥬 My Dashboard</h1>
+    <div class="user" id="userLabel"></div>
+  </div>
+  <button class="logout" onclick="logout()">Logout</button>
+</div>
+
+<div class="container">
+
+  <div class="sec-title">My Tools</div>
+  <div class="tools-grid">
+    <a class="tool" href="report-fill.html">
+      <div class="tool-icon">📝</div>
+      <div class="tool-name">Visit Records</div>
+      <span class="tbadge">LIVE</span>
+    </a>
+    <a class="tool" href="report-fill.html?type=weekly">
+      <div class="tool-icon">📅</div>
+      <div class="tool-name">Weekly Report</div>
+      <span class="tbadge">LIVE</span>
+    </a>
+    <a class="tool" href="promo-fill.html">
+      <div class="tool-icon">✏️</div>
+      <div class="tool-name">Daily Promo Fill</div>
+      <span class="tbadge">LIVE</span>
+    </a>
+    <a class="tool" href="promo-hq.html">
+      <div class="tool-icon">📊</div>
+      <div class="tool-name">Promo Dashboard</div>
+      <span class="tbadge">LIVE</span>
+    </a>
+    <a class="tool" href="outlet-stock-check.html">
+      <div class="tool-icon">📦</div>
+      <div class="tool-name">Outlet Stock Check</div>
+      <span class="tbadge">LIVE</span>
+    </a>
+    <a class="tool" href="roi-calculator.html">
+      <div class="tool-icon">💰</div>
+      <div class="tool-name">Break-even Calculator</div>
+      <span class="tbadge">LIVE</span>
+    </a>
   </div>
 
-  <div class="container">
-
-    <div class="sec-title">My Tools</div>
-    <div class="tools-grid">
-      <a class="tool" href="report-fill.html">
-        <div class="tool-icon">📝</div>
-        <div class="tool-name">Visit Records</div>
-        <span class="tbadge">LIVE</span>
-      </a>
-      <a class="tool" href="report-fill.html?type=weekly">
-        <div class="tool-icon">📅</div>
-        <div class="tool-name">Weekly Report</div>
-        <span class="tbadge">LIVE</span>
-      </a>
-      <a class="tool" href="promo-fill.html">
-        <div class="tool-icon">✏️</div>
-        <div class="tool-name">Daily Promo Fill</div>
-        <span class="tbadge">LIVE</span>
-      </a>
-      <a class="tool" href="promo-hq.html">
-        <div class="tool-icon">📊</div>
-        <div class="tool-name">Promo Dashboard</div>
-        <span class="tbadge">LIVE</span>
-      </a>
-      <a class="tool" href="outlet-stock-check.html">
-        <div class="tool-icon">📦</div>
-        <div class="tool-name">Outlet Stock Check</div>
-        <span class="tbadge">LIVE</span>
-      </a>
-      <a class="tool" href="roi-calculator.html">
-        <div class="tool-icon">💰</div>
-        <div class="tool-name">Break-even Calculator</div>
-        <span class="tbadge">LIVE</span>
-      </a>
-    </div>
-
-    <div class="sec-title">My Data</div>
-    <div class="tabs">
-      <div class="tab active" onclick="switchTab('tasks', event)">My Tasks</div>
-      <div class="tab" onclick="switchTab('visits', event)">Visit History</div>
-      <div class="tab" onclick="switchTab('weekly', event)">Weekly Reports</div>
-      <div class="tab" onclick="switchTab('sales', event)">Sales Data</div>
-    </div>
-
-    <!-- MY TASKS -->
-    <div class="panel active" id="panel-tasks">
-      <div class="task-filter-tabs">
-        <span class="tft overdue active" onclick="filterMyTasks('overdue',this)">🔴 Overdue <span id="my-cnt-overdue">0</span></span>
-        <span class="tft today" onclick="filterMyTasks('today',this)">🟡 Due Today <span id="my-cnt-today">0</span></span>
-        <span class="tft pending" onclick="filterMyTasks('pending',this)">📋 Pending <span id="my-cnt-pending">0</span></span>
-        <span class="tft completed" onclick="filterMyTasks('completed',this)">✅ Completed <span id="my-cnt-completed">0</span></span>
-      </div>
-      <div id="my-task-list"><div class="loading">Loading tasks…</div></div>
-    </div>
-
-    <!-- VISIT HISTORY -->
-    <div class="panel" id="panel-visits">
-      <div class="loading" id="loading-visits">Loading…</div>
-      <div id="list-visits"></div>
-    </div>
-
-    <!-- WEEKLY REPORTS -->
-    <div class="panel" id="panel-weekly">
-      <div class="loading" id="loading-weekly">Loading…</div>
-      <div id="list-weekly"></div>
-    </div>
-
-    <!-- SALES DATA -->
-    <div class="panel" id="panel-sales">
-      <div class="loading" id="loading-sales">Loading sales data…</div>
-      <div id="sales-content" style="display:none">
-        <div class="kpi-grid" id="kpi-grid"></div>
-        <div class="chart-card">
-          <div class="chart-title">📈 Monthly Sales Trend (This Year)</div>
-          <div class="chart-wrap"><canvas id="chartMonthly"></canvas></div>
-        </div>
-        <div class="card" style="padding:0">
-          <div class="period-bar">
-            <div class="period-title">🏆 Top 10 Customers</div>
-            <div class="period-btns" id="outlet-period">
-              <button class="period-btn active" onclick="setOutletPeriod('month',this)">This Month</button>
-              <button class="period-btn" onclick="setOutletPeriod('year',this)">This Year</button>
-              <button class="period-btn" onclick="setOutletPeriod('all',this)">All Time</button>
-            </div>
-          </div>
-          <div style="overflow-x:auto">
-            <table class="data-table" id="topOutletTable">
-              <thead><tr><th>#</th><th>Customer</th><th>Orders</th><th>Sales</th></tr></thead>
-              <tbody></tbody>
-            </table>
-          </div>
-        </div>
-        <div class="card" style="padding:0">
-          <div class="period-bar">
-            <div class="period-title">📦 SKU Ranking</div>
-            <div class="period-btns" id="sku-period">
-              <button class="period-btn active" onclick="setSkuPeriod('month',this)">This Month</button>
-              <button class="period-btn" onclick="setSkuPeriod('year',this)">This Year</button>
-              <button class="period-btn" onclick="setSkuPeriod('all',this)">All Time</button>
-            </div>
-          </div>
-          <div style="overflow-x:auto">
-            <table class="data-table" id="topSkuTable">
-              <thead><tr><th>#</th><th>Product</th><th>Qty</th><th>%</th></tr></thead>
-              <tbody></tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-    </div>
-
+  <div class="sec-title">My Data</div>
+  <div class="tabs">
+    <div class="tab active" onclick="switchTab('tasks', event)">My Tasks</div>
+    <div class="tab" onclick="switchTab('visits', event)">Visit History</div>
+    <div class="tab" onclick="switchTab('weekly', event)">Weekly Reports</div>
+    <div class="tab" onclick="switchTab('sales', event)">Sales Data</div>
   </div>
+
+  <!-- MY TASKS -->
+  <div class="panel active" id="panel-tasks">
+    <div class="task-filter-tabs">
+      <span class="tft all active" onclick="filterMyTasks('all',this)">All <span id="my-cnt-all">0</span></span>
+      <span class="tft overdue" onclick="filterMyTasks('overdue',this)">🔴 Overdue <span id="my-cnt-overdue">0</span></span>
+      <span class="tft today" onclick="filterMyTasks('today',this)">🟡 Due Today <span id="my-cnt-today">0</span></span>
+      <span class="tft pending" onclick="filterMyTasks('pending',this)">📋 Pending <span id="my-cnt-pending">0</span></span>
+      <span class="tft completed" onclick="filterMyTasks('completed',this)">✅ Completed <span id="my-cnt-completed">0</span></span>
+    </div>
+    <div id="my-task-list"><div class="loading">Loading tasks…</div></div>
+  </div>
+
+  <!-- VISIT HISTORY -->
+  <div class="panel" id="panel-visits">
+    <div class="loading" id="loading-visits">Loading…</div>
+    <div id="list-visits"></div>
+  </div>
+
+  <!-- WEEKLY REPORTS -->
+  <div class="panel" id="panel-weekly">
+    <div class="loading" id="loading-weekly">Loading…</div>
+    <div id="list-weekly"></div>
+  </div>
+
+  <!-- SALES DATA -->
+  <div class="panel" id="panel-sales">
+    <div class="loading" id="loading-sales">Loading sales data…</div>
+    <div id="sales-content" style="display:none">
+      <div class="kpi-grid" id="kpi-grid"></div>
+      <div class="chart-card">
+        <div class="chart-title">📈 Monthly Sales Trend (This Year)</div>
+        <div class="chart-wrap"><canvas id="chartMonthly"></canvas></div>
+      </div>
+      <div class="card" style="padding:0">
+        <div class="period-bar">
+          <div class="period-title">🏆 Top 10 Customers</div>
+          <div class="period-btns" id="outlet-period">
+            <button class="period-btn active" onclick="setOutletPeriod('month',this)">This Month</button>
+            <button class="period-btn" onclick="setOutletPeriod('year',this)">This Year</button>
+            <button class="period-btn" onclick="setOutletPeriod('all',this)">All Time</button>
+          </div>
+        </div>
+        <div style="overflow-x:auto">
+          <table class="data-table" id="topOutletTable">
+            <thead><tr><th>#</th><th>Customer</th><th>Orders</th><th>Sales</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="card" style="padding:0">
+        <div class="period-bar">
+          <div class="period-title">📦 SKU Ranking</div>
+          <div class="period-btns" id="sku-period">
+            <button class="period-btn active" onclick="setSkuPeriod('month',this)">This Month</button>
+            <button class="period-btn" onclick="setSkuPeriod('year',this)">This Year</button>
+            <button class="period-btn" onclick="setSkuPeriod('all',this)">All Time</button>
+          </div>
+        </div>
+        <div style="overflow-x:auto">
+          <table class="data-table" id="topSkuTable">
+            <thead><tr><th>#</th><th>Product</th><th>Qty</th><th>%</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
 
 <script>
   const SUPABASE_URL = 'https://wjhgezvrxlhpexocfsea.supabase.co';
@@ -306,7 +306,7 @@
   function logout() { sessionStorage.clear(); location.href = 'index.html'; }
 
   let allMyTasks = [];
-  let currentTaskFilter = 'overdue';
+  let currentTaskFilter = 'all';
   let salesLoaded = false;
   let myData = [];
   let outletPeriod = 'month';
@@ -325,11 +325,22 @@
     else if (name === 'sales' && !salesLoaded) loadSales();
   }
 
+  // ===== LIGHTBOX =====
+  function openLightbox(url) {
+    document.getElementById('lightbox-img').src = url;
+    document.getElementById('lightbox').classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+  function closeLightbox() {
+    document.getElementById('lightbox').classList.remove('open');
+    document.getElementById('lightbox-img').src = '';
+    document.body.style.overflow = '';
+  }
+
   // ===== MY TASKS =====
   async function loadMyTasks() {
     document.getElementById('my-task-list').innerHTML = '<div class="loading">Loading…</div>';
     try {
-      // Auto-update overdue
       await fetch(SUPABASE_URL + '/rest/v1/tasks?status=eq.pending&due_date=lt.' + todayStr, {
         method: 'PATCH', headers: H, body: JSON.stringify({ status: 'overdue' })
       });
@@ -337,15 +348,14 @@
       const res = await fetch(SUPABASE_URL + '/rest/v1/tasks?assigned_to=eq.' + encodeURIComponent(userName) + '&select=*&order=created_at.desc', { headers: H });
       allMyTasks = await res.json();
 
-      const today = todayStr;
-      const counts = { overdue:0, today:0, pending:0, completed:0 };
+      const counts = { all: allMyTasks.length, overdue:0, today:0, pending:0, completed:0 };
       allMyTasks.forEach(t => {
         if (t.status === 'overdue') counts.overdue++;
-        else if (t.status === 'awaiting_confirm') counts.completed++;
-        else if (['completed_ontime','completed_late'].includes(t.status)) counts.completed++;
-        else if (t.due_date === today) counts.today++;
-        else if (t.status === 'pending' || t.status === 'escalated') counts.pending++;
+        else if (['completed_ontime','completed_late','awaiting_confirm'].includes(t.status)) counts.completed++;
+        else if (t.due_date === todayStr && ['pending','escalated'].includes(t.status)) counts.today++;
+        else if (['pending','escalated'].includes(t.status)) counts.pending++;
       });
+      document.getElementById('my-cnt-all').textContent = counts.all;
       document.getElementById('my-cnt-overdue').textContent = counts.overdue;
       document.getElementById('my-cnt-today').textContent = counts.today;
       document.getElementById('my-cnt-pending').textContent = counts.pending;
@@ -367,15 +377,14 @@
 
   function renderMyTasks() {
     const list = document.getElementById('my-task-list');
-    const today = todayStr;
     let filtered = allMyTasks;
 
     if (currentTaskFilter === 'overdue') {
       filtered = allMyTasks.filter(t => t.status === 'overdue');
     } else if (currentTaskFilter === 'today') {
-      filtered = allMyTasks.filter(t => t.due_date === today && !['completed_ontime','completed_late','awaiting_confirm'].includes(t.status));
+      filtered = allMyTasks.filter(t => t.due_date === todayStr && !['completed_ontime','completed_late','awaiting_confirm'].includes(t.status));
     } else if (currentTaskFilter === 'pending') {
-      filtered = allMyTasks.filter(t => ['pending','escalated'].includes(t.status) && t.due_date !== today);
+      filtered = allMyTasks.filter(t => ['pending','escalated'].includes(t.status) && t.due_date !== todayStr);
     } else if (currentTaskFilter === 'completed') {
       filtered = allMyTasks.filter(t => ['completed_ontime','completed_late','awaiting_confirm'].includes(t.status));
     }
@@ -390,10 +399,7 @@
       return 0;
     });
 
-    if (!filtered.length) {
-      list.innerHTML = '<div class="empty">No tasks here. 🎉</div>';
-      return;
-    }
+    if (!filtered.length) { list.innerHTML = '<div class="empty">No tasks here. 🎉</div>'; return; }
 
     list.innerHTML = filtered.map(t => {
       const icon = { overdue:'🔴', awaiting_confirm:'⏳', pending:'🟡', escalated:'⚠️', completed_ontime:'✅', completed_late:'🕐' }[t.status] || '📌';
@@ -401,10 +407,7 @@
       const badgeText = { overdue:'Overdue', awaiting_confirm:'Awaiting Confirm', pending:'Pending', escalated:'Escalated', completed_ontime:'Done ✓', completed_late:'Done (Late)' }[t.status] || t.status;
       const sourceText = { manager_created:'From Manager', from_report:'From Report', rep_committed:'Self Committed' }[t.source] || t.source;
       const daysOverdue = t.status === 'overdue' && t.due_date ? Math.floor((new Date() - new Date(t.due_date)) / 86400000) : 0;
-      const dueLabel = t.due_date
-        ? (t.status === 'overdue' ? `${daysOverdue}d overdue` : `Due: ${t.due_date}`)
-        : 'No due date';
-
+      const dueLabel = t.due_date ? (t.status === 'overdue' ? `${daysOverdue}d overdue` : `Due: ${t.due_date}`) : 'No due date';
       const isActionable = !['completed_ontime','completed_late'].includes(t.status);
 
       return `
@@ -419,30 +422,26 @@
                 <span style="font-size:10px;background:#f3f4f6;padding:2px 6px;border-radius:10px;color:#6b7280">${sourceText}</span>
               </div>
             </div>
-            <div class="ti-right">
-              <span class="task-badge ${badgeClass}">${badgeText}</span>
-            </div>
+            <div class="ti-right"><span class="task-badge ${badgeClass}">${badgeText}</span></div>
           </div>
           <div class="ti-body" id="mt-${t.task_id}">
             <div class="ti-body-inner">
-              ${t.manager_note ? `<div class="ti-manager-note">💬 Manager note: ${escHtml(t.manager_note)}</div>` : ''}
-              ${t.rep_reply ? `<div style="font-size:13px;color:#6b7280;margin-bottom:8px">Your reply: ${escHtml(t.rep_reply)}</div>` : ''}
+              ${t.manager_note ? `<div class="ti-manager-note">💬 Manager: ${escHtml(t.manager_note)}</div>` : ''}
+              ${t.rep_reply && !isActionable ? `<div style="font-size:13px;color:#6b7280;margin-bottom:8px">Your reply: ${escHtml(t.rep_reply)}</div>` : ''}
               ${isActionable ? `
                 <textarea class="ti-reply-input" id="reply-${t.task_id}" placeholder="Add a reply or update…">${t.rep_reply || ''}</textarea>
                 <div class="ti-actions">
                   <button class="btn-done" onclick="markTaskDone('${t.task_id}')">✅ Mark as Done</button>
                   <button class="btn-reply" onclick="saveReply('${t.task_id}')">💬 Save Reply</button>
                   <button class="btn-escalate" onclick="escalateTask('${t.task_id}')">⚠️ Need Help</button>
-                </div>` : `<div style="font-size:13px;color:#9ca3af;padding:4px 0">Awaiting manager confirmation…</div>`}
+                </div>` : `<div style="font-size:13px;color:#9ca3af;padding:4px 0">⏳ Awaiting manager confirmation…</div>`}
             </div>
           </div>
         </div>`;
     }).join('');
   }
 
-  function toggleMyTask(id) {
-    document.getElementById(id).classList.toggle('open');
-  }
+  function toggleMyTask(id) { document.getElementById(id).classList.toggle('open'); }
 
   async function markTaskDone(taskId) {
     if (!confirm('Mark this task as done? Your manager will confirm it.')) return;
@@ -456,12 +455,11 @@
   }
 
   async function saveReply(taskId) {
-    const reply = document.getElementById('reply-' + taskId).value.trim();
+    const reply = document.getElementById('reply-' + taskId)?.value.trim();
     if (!reply) return;
     try {
       await fetch(SUPABASE_URL + '/rest/v1/tasks?task_id=eq.' + taskId, {
-        method: 'PATCH', headers: H,
-        body: JSON.stringify({ rep_reply: reply })
+        method: 'PATCH', headers: H, body: JSON.stringify({ rep_reply: reply })
       });
       await loadMyTasks();
     } catch(e) { alert('Failed to save reply.'); }
@@ -471,8 +469,7 @@
     if (!confirm('Mark this task as "Need Help"? Your manager will be notified.')) return;
     try {
       await fetch(SUPABASE_URL + '/rest/v1/tasks?task_id=eq.' + taskId, {
-        method: 'PATCH', headers: H,
-        body: JSON.stringify({ status: 'escalated' })
+        method: 'PATCH', headers: H, body: JSON.stringify({ status: 'escalated' })
       });
       await loadMyTasks();
     } catch(e) { alert('Failed.'); }
@@ -482,12 +479,13 @@
   async function loadVisitHistory() {
     document.getElementById('loading-visits').style.display = 'block';
     const list = document.getElementById('list-visits');
+    list.innerHTML = '';
     try {
       const { data, error } = await supa
         .from('visit_records').select('*')
         .eq('rep_name', userName)
         .order('visit_date', { ascending: false })
-        .limit(30);
+        .limit(50);
 
       document.getElementById('loading-visits').style.display = 'none';
       if (error || !data || !data.length) {
@@ -509,14 +507,17 @@
             <span style="font-size:12px;color:#6b7280">${visits.length} visit(s) · RM ${visits.reduce((s,v)=>s+(v.order_amount||0),0).toLocaleString()}</span>
           </div>
           ${visits.map(v => `
-            <div style="padding:12px 16px;border-bottom:1px solid #f3f4f6">
-              <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px">
+            <div style="padding:14px 16px;border-bottom:1px solid #f3f4f6">
+              <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px">
                 <div style="font-size:14px;font-weight:600">${escHtml(v.customer_name)}</div>
                 <div style="font-size:13px;font-weight:700;color:#166534">RM ${Number(v.order_amount||0).toLocaleString()}</div>
               </div>
-              ${v.notes ? `<div style="font-size:12px;color:#6b7280;margin-bottom:4px">${escHtml(v.notes)}</div>` : ''}
-              ${v.followup_notes ? `<div style="font-size:12px;color:#92400e;background:#fffbeb;padding:4px 8px;border-radius:6px;margin-bottom:4px">📌 ${escHtml(v.followup_notes)}</div>` : ''}
-              ${v.photo_urls && v.photo_urls.length > 0 ? `<div style="font-size:11px;color:#166534">📷 ${v.photo_urls.length} photo(s)</div>` : ''}
+              ${v.notes ? `<div style="font-size:13px;color:#6b7280;margin-bottom:6px;line-height:1.5">${escHtml(v.notes)}</div>` : ''}
+              ${v.followup_notes ? `<div style="font-size:12px;color:#92400e;background:#fffbeb;padding:6px 10px;border-radius:6px;margin-bottom:6px">📌 Follow-up: ${escHtml(v.followup_notes)}${v.followup_date?` · Due: ${v.followup_date}`:''}</div>` : ''}
+              ${v.photo_urls && v.photo_urls.length > 0 ? `
+                <div class="visit-photos">
+                  ${v.photo_urls.map(u => `<img src="${u}" onclick="openLightbox('${u}')" loading="lazy" alt="Visit photo">`).join('')}
+                </div>` : ''}
             </div>`).join('')}
         </div>`).join('');
     } catch(e) {
@@ -584,7 +585,7 @@
     const top = Object.entries(outletMap).sort((a,b)=>b[1].total-a[1].total).slice(0,10);
     document.querySelector('#topOutletTable tbody').innerHTML = top.length
       ? top.map(([name,d],i) => `<tr><td class="rank">${i===0?'🥇':i===1?'🥈':i===2?'🥉':i+1}</td><td><strong>${escHtml(name)}</strong></td><td>${d.orders}</td><td class="amount">${fmtRM(d.total)}</td></tr>`).join('')
-      : '<tr><td colspan="4" style="text-align:center;color:#9ca3af;padding:20px">No data for this period</td></tr>';
+      : '<tr><td colspan="4" style="text-align:center;color:#9ca3af;padding:20px">No data</td></tr>';
   }
 
   function renderTopSkus() {
@@ -595,7 +596,7 @@
     const total = sorted.reduce((s,e)=>s+e[1],0);
     document.querySelector('#topSkuTable tbody').innerHTML = sorted.length
       ? sorted.map(([name,qty],i) => `<tr><td class="rank">${i+1}</td><td><strong>${escHtml(name)}</strong></td><td class="qty">${fmt(qty)}</td><td>${total>0?(qty/total*100).toFixed(1):0}%</td></tr>`).join('')
-      : '<tr><td colspan="4" style="text-align:center;color:#9ca3af;padding:20px">No data for this period</td></tr>';
+      : '<tr><td colspan="4" style="text-align:center;color:#9ca3af;padding:20px">No data</td></tr>';
   }
 
   async function loadSales() {
@@ -605,7 +606,6 @@
     try {
       const { data: memberInfo } = await supa.from('members').select('monthly_kpi').eq('name', userName).maybeSingle();
       const kpiTarget = memberInfo?.monthly_kpi || 0;
-
       const res = await fetch(SALES_API);
       const json = await res.json();
       const allData = json.data || [];
@@ -651,13 +651,12 @@
       renderTopSkus();
     } catch(e) {
       console.error(e);
-      loadEl.innerHTML = '<div class="empty">❌ Failed to load sales data.<br><small>' + e.message + '</small></div>';
+      loadEl.innerHTML = '<div class="empty">❌ Failed to load sales data.</div>';
     }
   }
 
   function escHtml(s) { return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 
-  // Init
   loadMyTasks();
   loadWeekly();
 </script>
