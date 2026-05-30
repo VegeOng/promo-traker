@@ -18,7 +18,6 @@
 }
 body{background:var(--bg);color:var(--t1);font-family:var(--font);min-height:100vh;}
 
-/* ── Login overlay ─────────────────────────────────── */
 .login-overlay{position:fixed;inset:0;background:var(--bg);z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px;}
 .login-card{background:white;border-radius:16px;box-shadow:0 4px 24px rgba(0,0,0,.08);padding:40px 32px;width:100%;max-width:380px;}
 .login-logo{text-align:center;margin-bottom:6px;}
@@ -34,7 +33,6 @@ body{background:var(--bg);color:var(--t1);font-family:var(--font);min-height:100
 .login-err{background:var(--red-bg);color:var(--red);padding:10px 14px;border-radius:8px;font-size:13px;margin-top:12px;display:none;}
 .login-err.show{display:block;}
 
-/* ── Header ────────────────────────────────────────── */
 .top{display:flex;justify-content:space-between;align-items:center;padding:18px 32px;background:var(--s1);border-bottom:1px solid var(--b1);}
 .brand{display:flex;align-items:center;gap:10px;}
 .brand-icon{width:34px;height:34px;background:var(--green);color:white;border-radius:9px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;}
@@ -48,7 +46,6 @@ body{background:var(--bg);color:var(--t1);font-family:var(--font);min-height:100
 .logout-btn{background:none;border:1px solid var(--b1);color:var(--red);padding:5px 12px;border-radius:18px;font-size:12px;cursor:pointer;font-family:var(--font);font-weight:600;}
 .logout-btn:hover{background:var(--red-bg);border-color:var(--red);}
 
-/* ── Main ──────────────────────────────────────────── */
 .main{max-width:1000px;margin:0 auto;padding:40px 24px;}
 .hero{margin-bottom:36px;}
 .hero-greeting{font-size:11px;color:var(--t3);font-family:var(--mono);margin-bottom:8px;letter-spacing:.08em;text-transform:uppercase;}
@@ -85,13 +82,11 @@ body{background:var(--bg);color:var(--t1);font-family:var(--font);min-height:100
 .footer-l{font-size:11px;color:var(--t3);}
 .footer-r{font-size:11px;color:var(--t3);font-family:var(--mono);}
 
-/* hidden until logged in */
 .app-hidden{display:none;}
 </style>
 </head>
 <body>
 
-<!-- ───── LOGIN OVERLAY ───── -->
 <div class="login-overlay" id="loginOverlay">
   <div class="login-card">
     <div class="login-logo"><h1>🥬 MamaVege</h1></div>
@@ -109,7 +104,6 @@ body{background:var(--bg);color:var(--t1);font-family:var(--font);min-height:100
   </div>
 </div>
 
-<!-- ───── APP (HQ view) ───── -->
 <div class="app-hidden" id="appView">
 
 <div class="top">
@@ -129,76 +123,56 @@ body{background:var(--bg);color:var(--t1);font-family:var(--font);min-height:100
 </div>
 
 <div class="main">
-
   <div class="hero">
     <div class="hero-greeting" id="hero-greet">Welcome</div>
     <div class="hero-title">MamaVege <span>Management Hub</span></div>
     <div class="hero-sub">Choose a tool below to get started.</div>
   </div>
 
-  <!-- Stats -->
   <div class="stats-row" id="stats-row">
     <div class="stat"><div class="stat-label">This Month</div><div class="stat-val" id="s-month">—</div><div class="stat-sub" id="s-month-sub">Loading…</div></div>
     <div class="stat"><div class="stat-label">YTD Total</div><div class="stat-val" id="s-year">—</div><div class="stat-sub">2026 cumulative</div></div>
     <div class="stat"><div class="stat-label">Gap to Target</div><div class="stat-val" id="s-gap">—</div><div class="stat-sub" id="s-gap-sub">Loading…</div></div>
   </div>
 
-  <!-- Promotion Management -->
   <div class="sec">
     <div class="sec-header"><span class="sec-title">Promotion Management</span><div class="sec-line"></div><span class="sec-tag">4 live</span></div>
     <div class="grid">
       <a class="tool live" href="promo-fill.html" style="--tc:var(--green2)">
-        <div class="tool-icon">✏️</div>
-        <div class="tool-name">Daily Promo Fill</div>
-        <span class="tbadge tb-live">LIVE</span>
+        <div class="tool-icon">✏️</div><div class="tool-name">Daily Promo Fill</div><span class="tbadge tb-live">LIVE</span>
       </a>
       <a class="tool live" href="promo-hq.html" style="--tc:var(--green)">
-        <div class="tool-icon">📊</div>
-        <div class="tool-name">Promo HQ Dashboard</div>
-        <span class="tbadge tb-live">LIVE</span>
+        <div class="tool-icon">📊</div><div class="tool-name">Promo HQ Dashboard</div><span class="tbadge tb-live">LIVE</span>
       </a>
       <a class="tool live" href="sales-dashboard.html" style="--tc:var(--red)" id="tool-sales">
-        <div class="tool-icon">📈</div>
-        <div class="tool-name">Sales Dashboard</div>
-        <span class="tbadge tb-live">LIVE</span>
+        <div class="tool-icon">📈</div><div class="tool-name">Sales Dashboard</div><span class="tbadge tb-live">LIVE</span>
       </a>
       <a class="tool live" href="roi-calculator.html" style="--tc:var(--green)">
-        <div class="tool-icon">💰</div>
-        <div class="tool-name">Break-even Calculator</div>
-        <span class="tbadge tb-live">LIVE</span>
+        <div class="tool-icon">💰</div><div class="tool-name">Break-even Calculator</div><span class="tbadge tb-live">LIVE</span>
       </a>
     </div>
   </div>
 
-  <!-- Team Reporting -->
   <div class="sec">
     <div class="sec-header"><span class="sec-title">Team Reporting</span><div class="sec-line"></div><span class="sec-tag" style="background:var(--green-bg);color:var(--green);border:1px solid var(--green-border);">2 live</span></div>
     <div class="grid">
       <a class="tool live" href="report-fill.html" style="--tc:var(--green)">
-        <div class="tool-icon">📝</div>
-        <div class="tool-name">Daily &amp; Weekly Report</div>
-        <span class="tbadge tb-live">LIVE</span>
+        <div class="tool-icon">📝</div><div class="tool-name">Daily & Weekly Report</div><span class="tbadge tb-live">LIVE</span>
       </a>
-      <a class="tool live" href="report-hq.html" style="--tc:var(--green)" id="tool-reporthq">
-        <div class="tool-icon">🗂️</div>
-        <div class="tool-name">Report HQ Dashboard</div>
-        <span class="tbadge tb-live">LIVE</span>
+      <a class="tool live" href="report-hq.html" style="--tc:var(--green)">
+        <div class="tool-icon">🗂️</div><div class="tool-name">Report HQ Dashboard</div><span class="tbadge tb-live">LIVE</span>
       </a>
     </div>
   </div>
 
-  <!-- Outlet Operations -->
   <div class="sec">
     <div class="sec-header"><span class="sec-title">Outlet Operations</span><div class="sec-line"></div><span class="sec-tag" style="background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe;">NEW</span></div>
     <div class="grid">
       <a class="tool live" href="outlet-stock-check.html" style="--tc:var(--green)">
-        <div class="tool-icon">📦</div>
-        <div class="tool-name">Outlet Stock Check &amp; Return</div>
-        <span class="tbadge tb-new">NEW</span>
+        <div class="tool-icon">📦</div><div class="tool-name">Outlet Stock Check & Return</div><span class="tbadge tb-new">NEW</span>
       </a>
     </div>
   </div>
-
 </div>
 
 <div class="footer">
@@ -213,23 +187,36 @@ const SUPABASE_URL = 'https://wjhgezvrxlhpexocfsea.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndqaGdlenZyeGxocGV4b2Nmc2VhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg1MDU4NzgsImV4cCI6MjA5NDA4MTg3OH0.jENcrgEDYDlSRUCqve-T6rxYRJfz-dnZQHnXpPLJ_RE';
 const supa = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// ===== Google Sheet stats =====
-// 把下面这行换成你原来的 Google Sheet API URL（如果不知道，先留空，stats 不会显示）
 const API_URL = 'YOUR_GOOGLE_SHEET_API_URL';
 const TARGET_2026 = 12000000;
 
-// ===== Auth flow =====
-const userName = sessionStorage.getItem('userName');
-const userRole = sessionStorage.getItem('userRole');
+// ===== localStorage with 7-day expiry =====
+function lsSet(key, value) {
+  const item = { value, expiry: Date.now() + 7 * 24 * 60 * 60 * 1000 };
+  localStorage.setItem(key, JSON.stringify(item));
+}
+function lsGet(key) {
+  const raw = localStorage.getItem(key);
+  if (!raw) return null;
+  try {
+    const item = JSON.parse(raw);
+    if (Date.now() > item.expiry) { localStorage.removeItem(key); return null; }
+    return item.value;
+  } catch { return null; }
+}
+function lsClear() {
+  ['userName','userRole','userId','hq_auth','memberRole'].forEach(k => localStorage.removeItem(k));
+}
+
+// Auth check
+const userName = lsGet('userName');
+const userRole = lsGet('userRole');
 
 if (userName && userRole === 'member') {
-  // 销售员直接跳 dashboard
   location.href = 'my-dashboard.html';
 } else if (userName && userRole === 'hq') {
-  // HQ 已登入 → 显示 app
   showApp();
 }
-// 否则停留在登入框
 
 document.getElementById('loginPw').addEventListener('keydown', e => {
   if (e.key === 'Enter') doLogin();
@@ -254,9 +241,9 @@ async function doLogin() {
   // 1. Try HQ password
   const { data: hqRow } = await supa.from('settings').select('value').eq('key', 'hq_password').single();
   if (hqRow && pw === hqRow.value) {
-    sessionStorage.setItem('userName', name);
-    sessionStorage.setItem('userRole', 'hq');
-    sessionStorage.setItem('hq_auth', '1');
+    lsSet('userName', name);
+    lsSet('userRole', 'hq');
+    lsSet('hq_auth', '1');
     showApp();
     return;
   }
@@ -264,9 +251,9 @@ async function doLogin() {
   // 2. Try member
   const { data: member } = await supa.from('members').select('id, name, password').eq('name', name).maybeSingle();
   if (member && member.password === pw) {
-    sessionStorage.setItem('userName', member.name);
-    sessionStorage.setItem('userRole', 'member');
-    sessionStorage.setItem('userId', member.id);
+    lsSet('userName', member.name);
+    lsSet('userRole', 'member');
+    lsSet('userId', member.id);
     location.href = 'my-dashboard.html';
     return;
   }
@@ -278,15 +265,15 @@ async function doLogin() {
 }
 
 function logout() {
-  sessionStorage.clear();
+  lsClear();
   location.reload();
 }
 
 function showApp() {
   document.getElementById('loginOverlay').style.display = 'none';
   document.getElementById('appView').classList.remove('app-hidden');
-  document.getElementById('user-pill').textContent = '👤 ' + sessionStorage.getItem('userName') + ' (HQ)';
-  document.getElementById('hero-greet').textContent = 'Welcome back, ' + sessionStorage.getItem('userName');
+  document.getElementById('user-pill').textContent = '👤 ' + lsGet('userName') + ' (HQ)';
+  document.getElementById('hero-greet').textContent = 'Welcome back, ' + lsGet('userName');
   initHeader();
   loadStats();
 }
@@ -305,7 +292,7 @@ function fmtRM(n){
 
 function getTotal(r){
   for(const k of Object.keys(r)){
-    if(k.toUpperCase().indexOf('TOTAL')!==-1 && k.toUpperCase().indexOf('RM')!==-1){
+    if(k.toUpperCase().indexOf('TOTAL')!==-1&&k.toUpperCase().indexOf('RM')!==-1){
       const v=parseFloat(r[k]); if(!isNaN(v)&&v>0) return v;
     }
   }
@@ -318,24 +305,24 @@ async function loadStats(){
     return;
   }
   try{
-    const res = await fetch(API_URL);
-    const json = await res.json();
-    const data = json.data || [];
-    const now = new Date();
-    const curYear = now.getFullYear(), curMonth = now.getMonth()+1;
-    const yearData = data.filter(r => { const d = new Date(r['PO DATE']); return !isNaN(d) && d.getFullYear() === curYear; });
-    const monthData = yearData.filter(r => { const d = new Date(r['PO DATE']); return d.getMonth()+1 === curMonth; });
-    const yearTotal = yearData.reduce((s,r) => s+getTotal(r), 0);
-    const monthTotal = monthData.reduce((s,r) => s+getTotal(r), 0);
-    const gap = TARGET_2026 - yearTotal;
-    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-    document.getElementById('s-month').textContent = fmtRM(monthTotal);
-    document.getElementById('s-month-sub').textContent = months[curMonth-1] + ' ' + curYear;
-    document.getElementById('s-year').textContent = fmtRM(yearTotal);
-    document.getElementById('s-gap').textContent = gap > 0 ? fmtRM(gap) : '🎉 Achieved!';
-    document.getElementById('s-gap').style.color = gap > 0 ? 'var(--red)' : 'var(--green)';
-    document.getElementById('s-gap-sub').textContent = gap > 0 ? Math.round(yearTotal/TARGET_2026*100) + '% achieved' : 'Target met!';
-  } catch(e) { console.error('Stats error:', e); }
+    const res=await fetch(API_URL);
+    const json=await res.json();
+    const data=json.data||[];
+    const now=new Date();
+    const curYear=now.getFullYear(), curMonth=now.getMonth()+1;
+    const yearData=data.filter(r=>{const d=new Date(r['PO DATE']);return !isNaN(d)&&d.getFullYear()===curYear;});
+    const monthData=yearData.filter(r=>{const d=new Date(r['PO DATE']);return d.getMonth()+1===curMonth;});
+    const yearTotal=yearData.reduce((s,r)=>s+getTotal(r),0);
+    const monthTotal=monthData.reduce((s,r)=>s+getTotal(r),0);
+    const gap=TARGET_2026-yearTotal;
+    const months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    document.getElementById('s-month').textContent=fmtRM(monthTotal);
+    document.getElementById('s-month-sub').textContent=months[curMonth-1]+' '+curYear;
+    document.getElementById('s-year').textContent=fmtRM(yearTotal);
+    document.getElementById('s-gap').textContent=gap>0?fmtRM(gap):'🎉 Achieved!';
+    document.getElementById('s-gap').style.color=gap>0?'var(--red)':'var(--green)';
+    document.getElementById('s-gap-sub').textContent=gap>0?Math.round(yearTotal/TARGET_2026*100)+'% achieved':'Target met!';
+  }catch(e){console.error('Stats error:',e);}
 }
 </script>
 </body>

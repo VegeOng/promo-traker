@@ -32,10 +32,7 @@
   .mode-label { font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin-bottom: 12px; }
   .mode-cards { display: grid; gap: 12px; margin-bottom: 28px; }
   .mode-cards.two { grid-template-columns: 1fr 1fr; }
-  .mode-card {
-    background: var(--card); border: 2px solid var(--border); border-radius: var(--radius);
-    padding: 20px 16px; cursor: pointer; transition: all 0.2s; text-align: center; user-select: none;
-  }
+  .mode-card { background: var(--card); border: 2px solid var(--border); border-radius: var(--radius); padding: 20px 16px; cursor: pointer; transition: all 0.2s; text-align: center; user-select: none; }
   .mode-card:hover { border-color: var(--green); background: #f0fdf4; }
   .mode-card.active { border-color: var(--green); background: var(--green-light); }
   .mode-card .mode-icon { font-size: 28px; margin-bottom: 8px; }
@@ -58,13 +55,10 @@
   .field { margin-bottom: 16px; }
   .field label { display: block; font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
   .field label .req { color: var(--red); }
-  .field input, .field textarea, .field select {
-    width: 100%; padding: 11px 14px; border: 1.5px solid var(--border); border-radius: 8px;
-    font-size: 14px; font-family: inherit; background: var(--bg); color: var(--text); transition: border-color 0.2s;
-  }
+  .field input, .field textarea, .field select { width: 100%; padding: 11px 14px; border: 1.5px solid var(--border); border-radius: 8px; font-size: 14px; font-family: inherit; background: var(--bg); color: var(--text); transition: border-color 0.2s; }
   .field input:focus, .field textarea:focus, .field select:focus { outline: none; border-color: var(--green); background: white; }
   .field textarea { resize: vertical; min-height: 80px; }
-  .field.has-error input, .field.has-error textarea, .field.has-error select { border-color: var(--red); }
+  .field.has-error input, .field.has-error textarea { border-color: var(--red); }
   .field .error-msg { font-size: 11px; color: var(--red); margin-top: 4px; display: none; }
   .field.has-error .error-msg { display: block; }
   .field input[readonly] { background: #f3f4f6; color: var(--muted); cursor: not-allowed; }
@@ -72,11 +66,7 @@
   .photo-section { margin-bottom: 16px; }
   .photo-section label { display: block; font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
   .photo-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 6px; }
-  .photo-slot {
-    aspect-ratio: 1; border: 2px dashed var(--border); border-radius: 10px;
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    cursor: pointer; transition: all 0.2s; position: relative; overflow: hidden; background: #f9fafb;
-  }
+  .photo-slot { aspect-ratio: 1; border: 2px dashed var(--border); border-radius: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; position: relative; overflow: hidden; background: #f9fafb; }
   .photo-slot:hover { border-color: var(--green); background: #f0fdf4; }
   .photo-slot.has-photo { border-style: solid; border-color: #86efac; }
   .photo-slot img { width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0; }
@@ -104,7 +94,7 @@
   .btn-secondary:hover { background: var(--green-light); }
 
   .report-header-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; margin-bottom: 16px; }
-  .report-header-card .rh-title { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 12px; }
+  .report-header-card .rh-title { font-size: 13px; font-weight: 700; margin-bottom: 12px; }
   .report-status { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; padding: 4px 10px; border-radius: 20px; }
   .report-status.draft { background: var(--border); color: var(--muted); }
   .report-status.submitted { background: var(--green-light); color: var(--green); }
@@ -162,7 +152,7 @@
     <button style="margin-top:12px;padding:10px 20px;background:var(--green);color:white;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer" onclick="resetAll()">Submit Another</button>
   </div>
 
-  <!-- VISIT RECORDS (Sales) -->
+  <!-- VISIT RECORDS -->
   <div id="visit-section" style="display:none">
     <div class="report-header-card">
       <div class="rh-title">📋 Today's Visit Report</div>
@@ -189,23 +179,20 @@
 
         <div class="field" id="fv-customer">
           <label>Customer Name <span class="req">*</span></label>
-          <input type="text" id="v-customer" placeholder="e.g. Tesco Kepong, 美佳食品">
+          <input type="text" id="v-customer" placeholder="e.g. Tesco Kepong">
           <div class="error-msg">Please enter customer name</div>
         </div>
-
         <div class="field">
           <label>Order Amount (RM)</label>
           <input type="number" id="v-amount" placeholder="0.00" min="0" step="0.01">
         </div>
-
         <div class="field">
           <label>Notes</label>
-          <textarea id="v-notes" placeholder="Stock level, payment status, feedback, competitor activity..."></textarea>
+          <textarea id="v-notes" placeholder="Stock level, payment status, feedback..."></textarea>
         </div>
-
         <div class="field">
           <label>Follow-up Notes</label>
-          <textarea id="v-followup" placeholder="What needs to be followed up next time?" oninput="checkFollowup()" rows="2"></textarea>
+          <textarea id="v-followup" placeholder="What needs to be followed up?" oninput="checkFollowup()" rows="2"></textarea>
         </div>
 
         <div class="followup-task-prompt" id="followup-task-prompt">
@@ -221,20 +208,17 @@
           <label>Visit Photos <span class="req">*</span> (at least 1)</label>
           <div class="photo-grid">
             <div class="photo-slot" id="vslot-0">
-              <div class="slot-icon">📷</div>
-              <div class="slot-label">Photo 1</div>
+              <div class="slot-icon">📷</div><div class="slot-label">Photo 1</div>
               <input type="file" id="vfile-0" accept="image/*" onchange="handleVisitPhoto(0,this)">
               <button class="remove-photo" onclick="removeVisitPhoto(event,0)">✕</button>
             </div>
             <div class="photo-slot" id="vslot-1">
-              <div class="slot-icon">📷</div>
-              <div class="slot-label">Photo 2</div>
+              <div class="slot-icon">📷</div><div class="slot-label">Photo 2</div>
               <input type="file" id="vfile-1" accept="image/*" onchange="handleVisitPhoto(1,this)">
               <button class="remove-photo" onclick="removeVisitPhoto(event,1)">✕</button>
             </div>
             <div class="photo-slot" id="vslot-2">
-              <div class="slot-icon">📷</div>
-              <div class="slot-label">Photo 3</div>
+              <div class="slot-icon">📷</div><div class="slot-label">Photo 3</div>
               <input type="file" id="vfile-2" accept="image/*" onchange="handleVisitPhoto(2,this)">
               <button class="remove-photo" onclick="removeVisitPhoto(event,2)">✕</button>
             </div>
@@ -258,7 +242,7 @@
   <!-- WEEKLY REPORT -->
   <div class="form-card" id="form-weekly">
     <div class="form-title">📅 Weekly Report</div>
-    <div class="form-subtitle">Please complete this form before Friday 18:00 every week.</div>
+    <div class="form-subtitle">Please complete before Friday 18:00 every week.</div>
     <div class="field" id="f-weekly-name">
       <label>Name <span class="req">*</span></label>
       <div class="select-wrap" id="weekly-name-select-wrap">
@@ -274,7 +258,7 @@
     </div>
     <div class="field" id="f-weekly-target">
       <label>Work Target for Next Week <span class="req">*</span></label>
-      <textarea id="weekly-target" placeholder="e.g. 1. Complete Q2 promo planning&#10;2. Visit 10 stores&#10;3. Submit KPI report..."></textarea>
+      <textarea id="weekly-target" placeholder="e.g. 1. Complete Q2 promo planning&#10;2. Visit 10 stores..."></textarea>
       <div class="error-msg">Please fill in next week's targets</div>
     </div>
     <div class="field">
@@ -287,7 +271,7 @@
   <!-- OLD DAILY REPORT (Marketing) -->
   <div class="form-card" id="form-daily-old">
     <div class="form-title">📋 Daily Report</div>
-    <div class="form-subtitle">Please complete the form before 18:00 every working day.</div>
+    <div class="form-subtitle">Please complete before 18:00 every working day.</div>
     <div class="field" id="f-daily-name">
       <label>Name <span class="req">*</span></label>
       <div class="select-wrap" id="daily-name-select-wrap">
@@ -303,12 +287,12 @@
     </div>
     <div class="field" id="f-daily-today">
       <label>Today's Daily Task <span class="req">*</span></label>
-      <textarea id="daily-today" placeholder="e.g. 1. Planned social media content&#10;2. Coordinated promo materials..."></textarea>
+      <textarea id="daily-today" placeholder="e.g. 1. Planned social media content..."></textarea>
       <div class="error-msg">Please fill in today's task</div>
     </div>
     <div class="field" id="f-daily-tomorrow">
       <label>Tomorrow's Daily Task <span class="req">*</span></label>
-      <textarea id="daily-tomorrow" placeholder="e.g. 1. Submit campaign brief&#10;2. Review artwork proofs..."></textarea>
+      <textarea id="daily-tomorrow" placeholder="e.g. 1. Submit campaign brief..."></textarea>
       <div class="error-msg">Please fill in tomorrow's task</div>
     </div>
     <div class="field">
@@ -331,8 +315,19 @@ const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsI
 const supa = supabase.createClient(SUPA_URL, SUPA_KEY);
 const H = { 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' };
 
-const loggedUser = sessionStorage.getItem('userName');
-const userRole = sessionStorage.getItem('userRole');
+// ===== localStorage 7-day expiry =====
+function lsGet(key) {
+  const raw = localStorage.getItem(key);
+  if (!raw) return null;
+  try {
+    const item = JSON.parse(raw);
+    if (Date.now() > item.expiry) { localStorage.removeItem(key); return null; }
+    return item.value;
+  } catch { return null; }
+}
+
+const loggedUser = lsGet('userName');
+const userRole = lsGet('userRole');
 
 if (!loggedUser) { location.href = 'index.html'; }
 
@@ -347,7 +342,7 @@ let todayReportId = null;
 const today = new Date().toISOString().split('T')[0];
 
 async function db(path, opts = {}) {
-  const r = await fetch(SUPA_URL + '/rest/v1/' + path, { headers: H, ...opts });
+  const r = await fetch(SUPA_URL + '/rest/v1/' + path, { headers: { ...H, 'Prefer': 'return=representation' }, ...opts });
   const text = await r.text();
   if (!r.ok) { try { throw JSON.parse(text); } catch { throw text || r.status; } }
   if (!text || text.trim() === '') return null;
@@ -357,7 +352,6 @@ async function db(path, opts = {}) {
 async function init() {
   const { data: member } = await supa.from('members').select('role').eq('name', loggedUser).maybeSingle();
   const mRole = member?.role || 'sales';
-  sessionStorage.setItem('memberRole', mRole);
 
   const cards = document.getElementById('modeCards');
   if (mRole === 'sales') {
@@ -417,8 +411,7 @@ async function loadMembersDropdown() {
   try {
     const members = await db('members?select=name&order=name');
     ['daily-name','weekly-name'].forEach(id => {
-      const sel = document.getElementById(id);
-      if (!sel) return;
+      const sel = document.getElementById(id); if (!sel) return;
       sel.innerHTML = '<option value="">Select your name</option>';
       members.forEach(m => { const o = document.createElement('option'); o.value = m.name; o.textContent = m.name; sel.appendChild(o); });
     });
@@ -431,10 +424,7 @@ async function loadTodayReport() {
     if (existing && existing.length > 0) {
       todayReportId = existing[0].id;
       const visits = await db(`visit_records?report_id=eq.${todayReportId}&order=created_at.asc`);
-      if (visits && visits.length > 0) {
-        visitRecords = visits.map(v => ({ ...v, saved: true }));
-        renderVisitList();
-      }
+      if (visits && visits.length > 0) { visitRecords = visits.map(v => ({ ...v, saved: true })); renderVisitList(); }
       if (existing[0].route) document.getElementById('visit-route').value = existing[0].route;
       updateReportStatusBadge(existing[0].status);
       if (existing[0].status === 'submitted') {
@@ -506,9 +496,7 @@ function renderVisitList() {
     </div>`).join('');
 }
 
-function toggleVisitCard(i) {
-  document.getElementById('vcbody-' + i).classList.toggle('open');
-}
+function toggleVisitCard(i) { document.getElementById('vcbody-' + i).classList.toggle('open'); }
 
 function openNewVisitForm() {
   willCreateTask = false;
@@ -525,8 +513,7 @@ function openNewVisitForm() {
   document.getElementById('fv-customer').classList.remove('has-error');
   [0,1,2].forEach(i => {
     const slot = document.getElementById('vslot-'+i);
-    const img = slot.querySelector('img');
-    if (img) img.remove();
+    const img = slot.querySelector('img'); if (img) img.remove();
     slot.classList.remove('has-photo');
     document.getElementById('vfile-'+i).value = '';
   });
@@ -534,15 +521,11 @@ function openNewVisitForm() {
   setTimeout(() => document.getElementById('new-visit-form').scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
 }
 
-function cancelNewVisit() {
-  document.getElementById('new-visit-form').style.display = 'none';
-}
-
+function cancelNewVisit() { document.getElementById('new-visit-form').style.display = 'none'; }
 function checkFollowup() {
   const val = document.getElementById('v-followup').value.trim();
   document.getElementById('followup-task-prompt').classList.toggle('show', val.length > 0);
 }
-
 function markTaskWillCreate() {
   willCreateTask = true;
   document.getElementById('btn-create-task').style.display = 'none';
@@ -568,8 +551,7 @@ function removeVisitPhoto(e, idx) {
   e.stopPropagation();
   visitPhotoFiles[idx] = null;
   const slot = document.getElementById('vslot-' + idx);
-  const img = slot.querySelector('img');
-  if (img) img.remove();
+  const img = slot.querySelector('img'); if (img) img.remove();
   slot.classList.remove('has-photo');
   document.getElementById('vfile-' + idx).value = '';
 }
@@ -615,37 +597,24 @@ async function uploadVisitPhotos(folder) {
 
 async function saveVisitRecord() {
   const customer = document.getElementById('v-customer').value.trim();
-  if (!customer) {
-    document.getElementById('fv-customer').classList.add('has-error');
-    document.getElementById('v-customer').focus();
-    return;
-  }
+  if (!customer) { document.getElementById('fv-customer').classList.add('has-error'); document.getElementById('v-customer').focus(); return; }
   document.getElementById('fv-customer').classList.remove('has-error');
-
   const hasPhoto = visitPhotoFiles.some(f => f !== null);
-  if (!hasPhoto) {
-    document.getElementById('photo-required-msg').classList.add('show');
-    return;
-  }
+  if (!hasPhoto) { document.getElementById('photo-required-msg').classList.add('show'); return; }
   document.getElementById('photo-required-msg').classList.remove('show');
 
   const btn = document.querySelector('#new-visit-form .btn-primary');
-  btn.disabled = true;
-  btn.innerHTML = '<span class="spinner"></span>Saving…';
+  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>Saving…';
 
   try {
     if (!todayReportId) {
       const reportData = await db('daily_reports', {
         method: 'POST',
-        headers: { ...H, 'Prefer': 'return=representation' },
         body: JSON.stringify({
           name: loggedUser,
           date: document.getElementById('visit-report-date').value || today,
           route: document.getElementById('visit-route').value.trim() || null,
-          status: 'draft',
-          today_task: '',
-          tomorrow_task: '',
-          assistance: 'None.'
+          status: 'draft', today_task: '', tomorrow_task: '', assistance: 'None.'
         })
       });
       todayReportId = reportData[0].id;
@@ -654,13 +623,11 @@ async function saveVisitRecord() {
 
     const folder = loggedUser + '-' + (document.getElementById('visit-report-date').value || today);
     const photoUrls = await uploadVisitPhotos(folder);
-
     const followupNotes = document.getElementById('v-followup').value.trim();
     const followupDate = document.getElementById('v-followup-date').value || null;
 
     const savedVisit = await db('visit_records', {
       method: 'POST',
-      headers: { ...H, 'Prefer': 'return=representation' },
       body: JSON.stringify({
         report_id: todayReportId,
         rep_name: loggedUser,
@@ -676,19 +643,13 @@ async function saveVisitRecord() {
     });
 
     const visitId = savedVisit[0].visit_id;
-
     if (willCreateTask && followupNotes) {
       await db('tasks', {
         method: 'POST',
         body: JSON.stringify({
-          description: followupNotes,
-          assigned_to: loggedUser,
-          created_by: loggedUser,
-          source: 'rep_committed',
-          linked_customer: customer,
-          linked_visit_id: visitId,
-          due_date: followupDate || null,
-          status: 'pending'
+          description: followupNotes, assigned_to: loggedUser, created_by: loggedUser,
+          source: 'rep_committed', linked_customer: customer,
+          linked_visit_id: visitId, due_date: followupDate || null, status: 'pending'
         })
       });
       await fetch(SUPA_URL + '/rest/v1/visit_records?visit_id=eq.' + visitId, {
@@ -699,41 +660,21 @@ async function saveVisitRecord() {
     visitRecords.push({ ...savedVisit[0], saved: true });
     renderVisitList();
     document.getElementById('new-visit-form').style.display = 'none';
+  } catch(e) { console.error(e); alert('Failed to save visit. Please try again.'); }
 
-  } catch(e) {
-    console.error(e);
-    alert('Failed to save visit. Please try again.');
-  }
-
-  btn.disabled = false;
-  btn.innerHTML = 'Save Visit';
+  btn.disabled = false; btn.innerHTML = 'Save Visit';
 }
 
 async function submitDailyReport() {
-  if (!visitRecords.length) {
-    alert('Please add at least one visit record before submitting.');
-    return;
-  }
-  if (!todayReportId) {
-    alert('No report found. Please add a visit first.');
-    return;
-  }
-
+  if (!visitRecords.length) { alert('Please add at least one visit record before submitting.'); return; }
+  if (!todayReportId) { alert('No report found. Please add a visit first.'); return; }
   const btn = document.getElementById('btn-submit-report');
-  btn.disabled = true;
-  btn.innerHTML = '<span class="spinner"></span>Submitting…';
-
+  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>Submitting…';
   try {
     await fetch(SUPA_URL + '/rest/v1/daily_reports?id=eq.' + todayReportId, {
-      method: 'PATCH',
-      headers: H,
-      body: JSON.stringify({
-        status: 'submitted',
-        submitted_at: new Date().toISOString(),
-        route: document.getElementById('visit-route').value.trim() || null
-      })
+      method: 'PATCH', headers: H,
+      body: JSON.stringify({ status: 'submitted', submitted_at: new Date().toISOString(), route: document.getElementById('visit-route').value.trim() || null })
     });
-
     document.getElementById('successTitle').textContent = 'Report Submitted!';
     document.getElementById('successText').textContent = `${visitRecords.length} visit record(s) submitted for ${today}.`;
     document.getElementById('successBanner').classList.add('visible');
@@ -741,44 +682,28 @@ async function submitDailyReport() {
     updateReportStatusBadge('submitted');
     btn.textContent = '✅ Report Submitted';
     window.scrollTo({ top: 0, behavior: 'smooth' });
-  } catch(e) {
-    console.error(e);
-    alert('Submission failed. Please try again.');
-    btn.disabled = false;
-    btn.innerHTML = 'Submit Today\'s Report';
-  }
+  } catch(e) { console.error(e); alert('Submission failed.'); btn.disabled = false; btn.innerHTML = 'Submit Today\'s Report'; }
 }
 
 async function submitWeekly() {
   const name = document.getElementById('weekly-name').value.trim();
   const date = document.getElementById('weekly-date').value;
   const target = document.getElementById('weekly-target').value.trim();
-
   let ok = true;
   if (!name) { document.getElementById('f-weekly-name').classList.add('has-error'); ok = false; } else { document.getElementById('f-weekly-name').classList.remove('has-error'); }
   if (!date) { document.getElementById('f-weekly-date').classList.add('has-error'); ok = false; } else { document.getElementById('f-weekly-date').classList.remove('has-error'); }
   if (!target) { document.getElementById('f-weekly-target').classList.add('has-error'); ok = false; } else { document.getElementById('f-weekly-target').classList.remove('has-error'); }
   if (!ok) return;
-
   const btn = document.getElementById('btn-weekly');
   btn.disabled = true; btn.textContent = 'Submitting…';
   try {
-    await db('weekly_reports', {
-      method: 'POST',
-      body: JSON.stringify({
-        name, date,
-        next_week_target: target,
-        assistance: document.getElementById('weekly-assist').value.trim() || 'None.'
-      })
-    });
+    await db('weekly_reports', { method: 'POST', body: JSON.stringify({ name, date, next_week_target: target, assistance: document.getElementById('weekly-assist').value.trim() || 'None.' }) });
     document.getElementById('successTitle').textContent = 'Weekly Report Submitted!';
     document.getElementById('successText').textContent = 'Your weekly report has been recorded.';
     document.getElementById('successBanner').classList.add('visible');
     document.getElementById('form-weekly').classList.remove('visible');
     window.scrollTo({ top: 0, behavior: 'smooth' });
-  } catch(e) {
-    alert('Submission failed. Please try again.');
-  }
+  } catch(e) { alert('Submission failed.'); }
   btn.disabled = false; btn.textContent = 'Submit Weekly Report';
 }
 
@@ -787,34 +712,22 @@ async function submitDaily() {
   const date = document.getElementById('daily-date').value;
   const today_task = document.getElementById('daily-today').value.trim();
   const tomorrow_task = document.getElementById('daily-tomorrow').value.trim();
-
   let ok = true;
   if (!name) { document.getElementById('f-daily-name').classList.add('has-error'); ok = false; } else { document.getElementById('f-daily-name').classList.remove('has-error'); }
   if (!date) { document.getElementById('f-daily-date').classList.add('has-error'); ok = false; } else { document.getElementById('f-daily-date').classList.remove('has-error'); }
   if (!today_task) { document.getElementById('f-daily-today').classList.add('has-error'); ok = false; } else { document.getElementById('f-daily-today').classList.remove('has-error'); }
   if (!tomorrow_task) { document.getElementById('f-daily-tomorrow').classList.add('has-error'); ok = false; } else { document.getElementById('f-daily-tomorrow').classList.remove('has-error'); }
   if (!ok) return;
-
   const btn = document.getElementById('btn-daily');
   btn.disabled = true; btn.textContent = 'Submitting…';
   try {
-    await db('daily_reports', {
-      method: 'POST',
-      body: JSON.stringify({
-        name, date, today_task, tomorrow_task,
-        assistance: document.getElementById('daily-assist').value.trim() || 'None.',
-        status: 'submitted',
-        submitted_at: new Date().toISOString()
-      })
-    });
+    await db('daily_reports', { method: 'POST', body: JSON.stringify({ name, date, today_task, tomorrow_task, assistance: document.getElementById('daily-assist').value.trim() || 'None.', status: 'submitted', submitted_at: new Date().toISOString() }) });
     document.getElementById('successTitle').textContent = 'Daily Report Submitted!';
     document.getElementById('successText').textContent = 'Your daily report has been recorded.';
     document.getElementById('successBanner').classList.add('visible');
     document.getElementById('form-daily-old').classList.remove('visible');
     window.scrollTo({ top: 0, behavior: 'smooth' });
-  } catch(e) {
-    alert('Submission failed. Please try again.');
-  }
+  } catch(e) { alert('Submission failed.'); }
   btn.disabled = false; btn.textContent = 'Submit Daily Report';
 }
 
@@ -834,7 +747,7 @@ async function loadRecent(mode) {
           <span class="ri-date">${r.date} · ${r.name}</span>
           <span class="ri-type ${mode}">${mode === 'daily' ? 'Daily' : 'Weekly'}</span>
         </div>
-        <div class="ri-task">${mode === 'daily' ? escHtml(r.today_task || '') : escHtml(r.next_week_target || '')}</div>
+        <div class="ri-task">${mode === 'daily' ? escHtml(r.today_task||'') : escHtml(r.next_week_target||'')}</div>
       </div>`).join('');
   } catch(e) { list.innerHTML = '<div class="loading-text">Failed to load.</div>'; }
 }
@@ -853,7 +766,7 @@ function resetAll() {
   document.getElementById('daily-assist').value = '';
 }
 
-function escHtml(s) { return String(s||'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function escHtml(s) { return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 
 init();
 </script>

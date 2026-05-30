@@ -89,7 +89,7 @@
   .period-bar { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-bottom: 1px solid #e5e7eb; flex-wrap: wrap; gap: 8px; }
   .period-title { font-size: 13px; font-weight: 700; color: #374151; }
   .period-btns { display: flex; gap: 4px; background: #f3f4f6; border-radius: 8px; padding: 3px; }
-  .period-btn { padding: 5px 12px; font-size: 11px; font-weight: 600; border: none; background: none; border-radius: 6px; cursor: pointer; color: #6b7280; transition: all 0.15s; }
+  .period-btn { padding: 5px 12px; font-size: 11px; font-weight: 600; border: none; background: none; border-radius: 6px; cursor: pointer; color: #6b7280; transition: all 0.15px; }
   .period-btn.active { background: white; color: #166534; box-shadow: 0 1px 2px rgba(0,0,0,0.08); }
 
   .data-table { width: 100%; border-collapse: collapse; font-size: 13px; }
@@ -145,12 +145,10 @@
   .btn-escalate { padding: 8px 16px; background: #ede9fe; color: #7c3aed; border: none; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; }
   .btn-reply { padding: 8px 16px; background: #eff6ff; color: #3b82f6; border: none; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; }
 
-  /* Visit photos */
   .visit-photos { display: grid; grid-template-columns: repeat(4,1fr); gap: 6px; margin-top: 8px; }
   .visit-photos img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 6px; cursor: pointer; transition: opacity 0.15s; }
   .visit-photos img:hover { opacity: 0.85; }
 
-  /* Lightbox */
   .lightbox { position: fixed; inset: 0; background: rgba(0,0,0,0.92); z-index: 9999; display: none; align-items: center; justify-content: center; padding: 20px; }
   .lightbox.open { display: flex; }
   .lightbox img { max-width: 100%; max-height: 90vh; border-radius: 8px; box-shadow: 0 0 40px rgba(0,0,0,0.5); }
@@ -159,7 +157,6 @@
 </head>
 <body>
 
-<!-- Lightbox -->
 <div class="lightbox" id="lightbox" onclick="closeLightbox()">
   <button class="lightbox-close" onclick="closeLightbox()">✕</button>
   <img id="lightbox-img" src="" onclick="event.stopPropagation()">
@@ -296,14 +293,28 @@
   const SALES_API = 'https://script.google.com/macros/s/AKfycbwxt23ZB0od7EeBSNvjurKTbkDcM7HLgrWhuoqHc3meKWmhbB0XQzfOdB-X2Pj5O_MY/exec';
   const PRODUCTS = ['KPM','CLM','SHCR','SHTY','SHSS','SPM - BBQ','BBQ (BAG)','SPM - MALA','MALA (BAG)','MRBR','TYSN','TYSP','TMSP','SMTS','SMCL','SPTS','SPCL','CMBR','KETUPAT'];
 
-  const userName = sessionStorage.getItem('userName');
-  const userRole = sessionStorage.getItem('userRole');
+  // ===== localStorage 7-day expiry =====
+  function lsGet(key) {
+    const raw = localStorage.getItem(key);
+    if (!raw) return null;
+    try {
+      const item = JSON.parse(raw);
+      if (Date.now() > item.expiry) { localStorage.removeItem(key); return null; }
+      return item.value;
+    } catch { return null; }
+  }
+  function lsClear() {
+    ['userName','userRole','userId','hq_auth','memberRole'].forEach(k => localStorage.removeItem(k));
+  }
+
+  const userName = lsGet('userName');
+  const userRole = lsGet('userRole');
   const todayStr = new Date().toISOString().split('T')[0];
 
   if (!userName || userRole !== 'member') { location.href = 'index.html'; }
   document.getElementById('userLabel').textContent = `Welcome back, ${userName}`;
 
-  function logout() { sessionStorage.clear(); location.href = 'index.html'; }
+  function logout() { lsClear(); location.href = 'index.html'; }
 
   let allMyTasks = [];
   let currentTaskFilter = 'all';
@@ -325,7 +336,6 @@
     else if (name === 'sales' && !salesLoaded) loadSales();
   }
 
-  // ===== LIGHTBOX =====
   function openLightbox(url) {
     document.getElementById('lightbox-img').src = url;
     document.getElementById('lightbox').classList.add('open');
@@ -344,7 +354,6 @@
       await fetch(SUPABASE_URL + '/rest/v1/tasks?status=eq.pending&due_date=lt.' + todayStr, {
         method: 'PATCH', headers: H, body: JSON.stringify({ status: 'overdue' })
       });
-
       const res = await fetch(SUPABASE_URL + '/rest/v1/tasks?assigned_to=eq.' + encodeURIComponent(userName) + '&select=*&order=created_at.desc', { headers: H });
       allMyTasks = await res.json();
 
@@ -360,7 +369,6 @@
       document.getElementById('my-cnt-today').textContent = counts.today;
       document.getElementById('my-cnt-pending').textContent = counts.pending;
       document.getElementById('my-cnt-completed').textContent = counts.completed;
-
       renderMyTasks();
     } catch(e) {
       console.error(e);
@@ -378,24 +386,16 @@
   function renderMyTasks() {
     const list = document.getElementById('my-task-list');
     let filtered = allMyTasks;
+    if (currentTaskFilter === 'overdue') filtered = allMyTasks.filter(t => t.status === 'overdue');
+    else if (currentTaskFilter === 'today') filtered = allMyTasks.filter(t => t.due_date === todayStr && !['completed_ontime','completed_late','awaiting_confirm'].includes(t.status));
+    else if (currentTaskFilter === 'pending') filtered = allMyTasks.filter(t => ['pending','escalated'].includes(t.status) && t.due_date !== todayStr);
+    else if (currentTaskFilter === 'completed') filtered = allMyTasks.filter(t => ['completed_ontime','completed_late','awaiting_confirm'].includes(t.status));
 
-    if (currentTaskFilter === 'overdue') {
-      filtered = allMyTasks.filter(t => t.status === 'overdue');
-    } else if (currentTaskFilter === 'today') {
-      filtered = allMyTasks.filter(t => t.due_date === todayStr && !['completed_ontime','completed_late','awaiting_confirm'].includes(t.status));
-    } else if (currentTaskFilter === 'pending') {
-      filtered = allMyTasks.filter(t => ['pending','escalated'].includes(t.status) && t.due_date !== todayStr);
-    } else if (currentTaskFilter === 'completed') {
-      filtered = allMyTasks.filter(t => ['completed_ontime','completed_late','awaiting_confirm'].includes(t.status));
-    }
-
-    // Sort: overdue first, then by due_date
     filtered.sort((a,b) => {
       const order = { overdue:0, escalated:1, pending:2, awaiting_confirm:3, completed_ontime:4, completed_late:5 };
-      const ao = order[a.status] ?? 2;
-      const bo = order[b.status] ?? 2;
-      if (ao !== bo) return ao - bo;
-      if (a.due_date && b.due_date) return a.due_date.localeCompare(b.due_date);
+      const ao=order[a.status]??2, bo=order[b.status]??2;
+      if (ao!==bo) return ao-bo;
+      if (a.due_date&&b.due_date) return a.due_date.localeCompare(b.due_date);
       return 0;
     });
 
@@ -406,8 +406,8 @@
       const badgeClass = { overdue:'tb-overdue', awaiting_confirm:'tb-awaiting', pending:'tb-pending', escalated:'tb-escalated', completed_ontime:'tb-ontime', completed_late:'tb-late' }[t.status] || 'tb-pending';
       const badgeText = { overdue:'Overdue', awaiting_confirm:'Awaiting Confirm', pending:'Pending', escalated:'Escalated', completed_ontime:'Done ✓', completed_late:'Done (Late)' }[t.status] || t.status;
       const sourceText = { manager_created:'From Manager', from_report:'From Report', rep_committed:'Self Committed' }[t.source] || t.source;
-      const daysOverdue = t.status === 'overdue' && t.due_date ? Math.floor((new Date() - new Date(t.due_date)) / 86400000) : 0;
-      const dueLabel = t.due_date ? (t.status === 'overdue' ? `${daysOverdue}d overdue` : `Due: ${t.due_date}`) : 'No due date';
+      const daysOverdue = t.status==='overdue'&&t.due_date ? Math.floor((new Date()-new Date(t.due_date))/86400000) : 0;
+      const dueLabel = t.due_date ? (t.status==='overdue'?`${daysOverdue}d overdue`:`Due: ${t.due_date}`) : 'No due date';
       const isActionable = !['completed_ontime','completed_late'].includes(t.status);
 
       return `
@@ -418,7 +418,7 @@
               <div class="ti-desc">${escHtml(t.description)}</div>
               <div class="ti-meta">
                 <span>📅 ${dueLabel}</span>
-                ${t.linked_customer ? `<span>🏪 ${escHtml(t.linked_customer)}</span>` : ''}
+                ${t.linked_customer?`<span>🏪 ${escHtml(t.linked_customer)}</span>`:''}
                 <span style="font-size:10px;background:#f3f4f6;padding:2px 6px;border-radius:10px;color:#6b7280">${sourceText}</span>
               </div>
             </div>
@@ -426,15 +426,18 @@
           </div>
           <div class="ti-body" id="mt-${t.task_id}">
             <div class="ti-body-inner">
-              ${t.manager_note ? `<div class="ti-manager-note">💬 Manager: ${escHtml(t.manager_note)}</div>` : ''}
-              ${t.rep_reply && !isActionable ? `<div style="font-size:13px;color:#6b7280;margin-bottom:8px">Your reply: ${escHtml(t.rep_reply)}</div>` : ''}
+              ${t.manager_note?`<div class="ti-manager-note">💬 Manager: ${escHtml(t.manager_note)}</div>`:''}
+              ${t.rep_reply&&!isActionable?`<div style="font-size:13px;color:#6b7280;margin-bottom:8px">Your reply: ${escHtml(t.rep_reply)}</div>`:''}
               ${isActionable ? `
-                <textarea class="ti-reply-input" id="reply-${t.task_id}" placeholder="Add a reply or update…">${t.rep_reply || ''}</textarea>
+                <textarea class="ti-reply-input" id="reply-${t.task_id}" placeholder="Add a reply or update…">${t.rep_reply||''}</textarea>
                 <div class="ti-actions">
                   <button class="btn-done" onclick="markTaskDone('${t.task_id}')">✅ Mark as Done</button>
                   <button class="btn-reply" onclick="saveReply('${t.task_id}')">💬 Save Reply</button>
                   <button class="btn-escalate" onclick="escalateTask('${t.task_id}')">⚠️ Need Help</button>
-                </div>` : t.status === 'awaiting_confirm' ? `<div style="font-size:13px;color:#9ca3af;padding:4px 0">⏳ Awaiting manager confirmation…</div>` : `<div style="font-size:13px;color:#166534;padding:4px 0">✅ Completed — confirmed by manager</div>`}
+                </div>`
+              : t.status === 'awaiting_confirm'
+                ? `<div style="font-size:13px;color:#9ca3af;padding:4px 0">⏳ Awaiting manager confirmation…</div>`
+                : `<div style="font-size:13px;color:#166534;padding:4px 0">✅ Completed — confirmed by manager</div>`}
             </div>
           </div>
         </div>`;
@@ -446,21 +449,16 @@
   async function markTaskDone(taskId) {
     if (!confirm('Mark this task as done? Your manager will confirm it.')) return;
     try {
-      await fetch(SUPABASE_URL + '/rest/v1/tasks?task_id=eq.' + taskId, {
-        method: 'PATCH', headers: H,
-        body: JSON.stringify({ status: 'awaiting_confirm', rep_marked_done_at: new Date().toISOString() })
-      });
+      await fetch(SUPABASE_URL+'/rest/v1/tasks?task_id=eq.'+taskId, { method:'PATCH', headers:H, body:JSON.stringify({status:'awaiting_confirm',rep_marked_done_at:new Date().toISOString()}) });
       await loadMyTasks();
     } catch(e) { alert('Failed. Please try again.'); }
   }
 
   async function saveReply(taskId) {
-    const reply = document.getElementById('reply-' + taskId)?.value.trim();
+    const reply = document.getElementById('reply-'+taskId)?.value.trim();
     if (!reply) return;
     try {
-      await fetch(SUPABASE_URL + '/rest/v1/tasks?task_id=eq.' + taskId, {
-        method: 'PATCH', headers: H, body: JSON.stringify({ rep_reply: reply })
-      });
+      await fetch(SUPABASE_URL+'/rest/v1/tasks?task_id=eq.'+taskId, { method:'PATCH', headers:H, body:JSON.stringify({rep_reply:reply}) });
       await loadMyTasks();
     } catch(e) { alert('Failed to save reply.'); }
   }
@@ -468,9 +466,7 @@
   async function escalateTask(taskId) {
     if (!confirm('Mark this task as "Need Help"? Your manager will be notified.')) return;
     try {
-      await fetch(SUPABASE_URL + '/rest/v1/tasks?task_id=eq.' + taskId, {
-        method: 'PATCH', headers: H, body: JSON.stringify({ status: 'escalated' })
-      });
+      await fetch(SUPABASE_URL+'/rest/v1/tasks?task_id=eq.'+taskId, { method:'PATCH', headers:H, body:JSON.stringify({status:'escalated'}) });
       await loadMyTasks();
     } catch(e) { alert('Failed.'); }
   }
@@ -481,43 +477,26 @@
     const list = document.getElementById('list-visits');
     list.innerHTML = '';
     try {
-      const { data, error } = await supa
-        .from('visit_records').select('*')
-        .eq('rep_name', userName)
-        .order('visit_date', { ascending: false })
-        .limit(50);
-
+      const { data, error } = await supa.from('visit_records').select('*').eq('rep_name', userName).order('visit_date', { ascending: false }).limit(50);
       document.getElementById('loading-visits').style.display = 'none';
-      if (error || !data || !data.length) {
-        list.innerHTML = '<div class="empty">No visit records yet.</div>';
-        return;
-      }
-
-      // Group by date
+      if (error || !data || !data.length) { list.innerHTML = '<div class="empty">No visit records yet.</div>'; return; }
       const byDate = {};
-      data.forEach(v => {
-        if (!byDate[v.visit_date]) byDate[v.visit_date] = [];
-        byDate[v.visit_date].push(v);
-      });
-
+      data.forEach(v => { if(!byDate[v.visit_date]) byDate[v.visit_date]=[]; byDate[v.visit_date].push(v); });
       list.innerHTML = Object.entries(byDate).map(([date, visits]) => `
         <div class="card" style="padding:0">
           <div style="padding:12px 16px;background:#f9fafb;border-bottom:1px solid #e5e7eb;display:flex;justify-content:space-between;align-items:center">
             <span style="font-size:13px;font-weight:700;color:#166534">${date}</span>
             <span style="font-size:12px;color:#6b7280">${visits.length} visit(s) · RM ${visits.reduce((s,v)=>s+(v.order_amount||0),0).toLocaleString()}</span>
           </div>
-          ${visits.map(v => `
+          ${visits.map(v=>`
             <div style="padding:14px 16px;border-bottom:1px solid #f3f4f6">
               <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px">
                 <div style="font-size:14px;font-weight:600">${escHtml(v.customer_name)}</div>
                 <div style="font-size:13px;font-weight:700;color:#166534">RM ${Number(v.order_amount||0).toLocaleString()}</div>
               </div>
-              ${v.notes ? `<div style="font-size:13px;color:#6b7280;margin-bottom:6px;line-height:1.5">${escHtml(v.notes)}</div>` : ''}
-              ${v.followup_notes ? `<div style="font-size:12px;color:#92400e;background:#fffbeb;padding:6px 10px;border-radius:6px;margin-bottom:6px">📌 Follow-up: ${escHtml(v.followup_notes)}${v.followup_date?` · Due: ${v.followup_date}`:''}</div>` : ''}
-              ${v.photo_urls && v.photo_urls.length > 0 ? `
-                <div class="visit-photos">
-                  ${v.photo_urls.map(u => `<img src="${u}" onclick="openLightbox('${u}')" loading="lazy" alt="Visit photo">`).join('')}
-                </div>` : ''}
+              ${v.notes?`<div style="font-size:13px;color:#6b7280;margin-bottom:6px;line-height:1.5">${escHtml(v.notes)}</div>`:''}
+              ${v.followup_notes?`<div style="font-size:12px;color:#92400e;background:#fffbeb;padding:6px 10px;border-radius:6px;margin-bottom:6px">📌 ${escHtml(v.followup_notes)}${v.followup_date?` · Due: ${v.followup_date}`:''}</div>`:''}
+              ${v.photo_urls&&v.photo_urls.length>0?`<div class="visit-photos">${v.photo_urls.map(u=>`<img src="${u}" onclick="openLightbox('${u}')" loading="lazy">`).join('')}</div>`:''}
             </div>`).join('')}
         </div>`).join('');
     } catch(e) {
@@ -528,134 +507,101 @@
 
   // ===== WEEKLY REPORTS =====
   async function loadWeekly() {
-    const { data, error } = await supa
-      .from('weekly_reports').select('*')
-      .eq('name', userName).order('date', { ascending: false });
+    const { data, error } = await supa.from('weekly_reports').select('*').eq('name', userName).order('date', { ascending: false });
     document.getElementById('loading-weekly').style.display = 'none';
     const list = document.getElementById('list-weekly');
     if (error || !data || !data.length) { list.innerHTML = '<div class="empty">No weekly reports yet.</div>'; return; }
-    list.innerHTML = data.map(r => `
+    list.innerHTML = data.map(r=>`
       <div class="card">
         <div class="card-date">${r.date}</div>
-        <div class="card-row"><strong>Next Week Target</strong><p>${escHtml(r.next_week_target || '-')}</p></div>
-        <div class="card-row"><strong>Assistance Required</strong><p>${escHtml(r.assistance || '-')}</p></div>
+        <div class="card-row"><strong>Next Week Target</strong><p>${escHtml(r.next_week_target||'-')}</p></div>
+        <div class="card-row"><strong>Assistance Required</strong><p>${escHtml(r.assistance||'-')}</p></div>
       </div>`).join('');
   }
 
   // ===== SALES DATA =====
-  function fmt(n) { return Number(n||0).toLocaleString('en-MY', { maximumFractionDigits: 0 }); }
-  function fmtRM(n) { return 'RM ' + fmt(n); }
-  function getTotalField(r) {
-    for (const k of Object.keys(r)) {
-      const clean = k.replace(/[^A-Za-z]/g,'').toUpperCase();
-      if (clean === 'TOTALRM') return parseFloat(r[k]) || 0;
-    }
+  function fmt(n){return Number(n||0).toLocaleString('en-MY',{maximumFractionDigits:0});}
+  function fmtRM(n){return 'RM '+fmt(n);}
+  function getTotalField(r){
+    for(const k of Object.keys(r)){const clean=k.replace(/[^A-Za-z]/g,'').toUpperCase();if(clean==='TOTALRM')return parseFloat(r[k])||0;}
     return 0;
   }
-
-  function filterByPeriod(period) {
-    if (period === 'month') return myData.filter(r => parseInt(r['YEAR']) === curYear && parseInt(r['MONTH']) === curMonth);
-    if (period === 'year') return myData.filter(r => parseInt(r['YEAR']) === curYear);
+  function filterByPeriod(period){
+    if(period==='month') return myData.filter(r=>parseInt(r['YEAR'])===curYear&&parseInt(r['MONTH'])===curMonth);
+    if(period==='year') return myData.filter(r=>parseInt(r['YEAR'])===curYear);
     return myData;
   }
+  function setOutletPeriod(p,btn){outletPeriod=p;document.querySelectorAll('#outlet-period .period-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderTopOutlets();}
+  function setSkuPeriod(p,btn){skuPeriod=p;document.querySelectorAll('#sku-period .period-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderTopSkus();}
 
-  function setOutletPeriod(p, btn) {
-    outletPeriod = p;
-    document.querySelectorAll('#outlet-period .period-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    renderTopOutlets();
+  function renderTopOutlets(){
+    const data=filterByPeriod(outletPeriod);
+    const outletMap={};
+    data.forEach(r=>{const o=r['COMPANY']||'Unknown';if(!outletMap[o])outletMap[o]={orders:0,total:0};outletMap[o].orders++;outletMap[o].total+=getTotalField(r);});
+    const top=Object.entries(outletMap).sort((a,b)=>b[1].total-a[1].total).slice(0,10);
+    document.querySelector('#topOutletTable tbody').innerHTML=top.length
+      ?top.map(([name,d],i)=>`<tr><td class="rank">${i===0?'🥇':i===1?'🥈':i===2?'🥉':i+1}</td><td><strong>${escHtml(name)}</strong></td><td>${d.orders}</td><td class="amount">${fmtRM(d.total)}</td></tr>`).join('')
+      :'<tr><td colspan="4" style="text-align:center;color:#9ca3af;padding:20px">No data</td></tr>';
   }
 
-  function setSkuPeriod(p, btn) {
-    skuPeriod = p;
-    document.querySelectorAll('#sku-period .period-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    renderTopSkus();
+  function renderTopSkus(){
+    const data=filterByPeriod(skuPeriod);
+    const skuMap={};
+    PRODUCTS.forEach(p=>{const qty=data.reduce((s,r)=>s+(parseFloat(r[p])||0),0);if(qty>0)skuMap[p]=qty;});
+    const sorted=Object.entries(skuMap).sort((a,b)=>b[1]-a[1]);
+    const total=sorted.reduce((s,e)=>s+e[1],0);
+    document.querySelector('#topSkuTable tbody').innerHTML=sorted.length
+      ?sorted.map(([name,qty],i)=>`<tr><td class="rank">${i+1}</td><td><strong>${escHtml(name)}</strong></td><td class="qty">${fmt(qty)}</td><td>${total>0?(qty/total*100).toFixed(1):0}%</td></tr>`).join('')
+      :'<tr><td colspan="4" style="text-align:center;color:#9ca3af;padding:20px">No data</td></tr>';
   }
 
-  function renderTopOutlets() {
-    const data = filterByPeriod(outletPeriod);
-    const outletMap = {};
-    data.forEach(r => {
-      const o = r['COMPANY'] || 'Unknown';
-      if (!outletMap[o]) outletMap[o] = { orders:0, total:0 };
-      outletMap[o].orders++;
-      outletMap[o].total += getTotalField(r);
-    });
-    const top = Object.entries(outletMap).sort((a,b)=>b[1].total-a[1].total).slice(0,10);
-    document.querySelector('#topOutletTable tbody').innerHTML = top.length
-      ? top.map(([name,d],i) => `<tr><td class="rank">${i===0?'🥇':i===1?'🥈':i===2?'🥉':i+1}</td><td><strong>${escHtml(name)}</strong></td><td>${d.orders}</td><td class="amount">${fmtRM(d.total)}</td></tr>`).join('')
-      : '<tr><td colspan="4" style="text-align:center;color:#9ca3af;padding:20px">No data</td></tr>';
-  }
-
-  function renderTopSkus() {
-    const data = filterByPeriod(skuPeriod);
-    const skuMap = {};
-    PRODUCTS.forEach(p => { const qty=data.reduce((s,r)=>s+(parseFloat(r[p])||0),0); if(qty>0) skuMap[p]=qty; });
-    const sorted = Object.entries(skuMap).sort((a,b)=>b[1]-a[1]);
-    const total = sorted.reduce((s,e)=>s+e[1],0);
-    document.querySelector('#topSkuTable tbody').innerHTML = sorted.length
-      ? sorted.map(([name,qty],i) => `<tr><td class="rank">${i+1}</td><td><strong>${escHtml(name)}</strong></td><td class="qty">${fmt(qty)}</td><td>${total>0?(qty/total*100).toFixed(1):0}%</td></tr>`).join('')
-      : '<tr><td colspan="4" style="text-align:center;color:#9ca3af;padding:20px">No data</td></tr>';
-  }
-
-  async function loadSales() {
-    salesLoaded = true;
-    const loadEl = document.getElementById('loading-sales');
-    const contentEl = document.getElementById('sales-content');
-    try {
-      const { data: memberInfo } = await supa.from('members').select('monthly_kpi').eq('name', userName).maybeSingle();
-      const kpiTarget = memberInfo?.monthly_kpi || 0;
-      const res = await fetch(SALES_API);
-      const json = await res.json();
-      const allData = json.data || [];
-      myData = allData.filter(r => (r['SALES PERSON']||'').trim() === userName.trim());
-
-      if (!myData.length) {
-        loadEl.style.display = 'none';
-        contentEl.style.display = 'block';
-        contentEl.innerHTML = `<div class="empty">No sales data found.<br><br>Make sure your name matches the <strong>SALES PERSON</strong> column in Google Sheet exactly.</div>`;
+  async function loadSales(){
+    salesLoaded=true;
+    const loadEl=document.getElementById('loading-sales');
+    const contentEl=document.getElementById('sales-content');
+    try{
+      const {data:memberInfo}=await supa.from('members').select('monthly_kpi').eq('name',userName).maybeSingle();
+      const kpiTarget=memberInfo?.monthly_kpi||0;
+      const res=await fetch(SALES_API);
+      const json=await res.json();
+      const allData=json.data||[];
+      myData=allData.filter(r=>(r['SALES PERSON']||'').trim()===userName.trim());
+      if(!myData.length){
+        loadEl.style.display='none';contentEl.style.display='block';
+        contentEl.innerHTML=`<div class="empty">No sales data found.<br><br>Make sure your name matches the <strong>SALES PERSON</strong> column exactly.</div>`;
         return;
       }
-
-      const yearData = myData.filter(r => parseInt(r['YEAR']) === curYear);
-      const monthData = yearData.filter(r => parseInt(r['MONTH']) === curMonth);
-      const yearTotal = yearData.reduce((s,r)=>s+getTotalField(r),0);
-      const monthTotal = monthData.reduce((s,r)=>s+getTotalField(r),0);
-      const achPct = kpiTarget > 0 ? Math.round(monthTotal/kpiTarget*100) : 0;
-      const myOutlets = new Set(myData.map(r=>r['COMPANY']).filter(Boolean)).size;
-
-      document.getElementById('kpi-grid').innerHTML = `
+      const yearData=myData.filter(r=>parseInt(r['YEAR'])===curYear);
+      const monthData=yearData.filter(r=>parseInt(r['MONTH'])===curMonth);
+      const yearTotal=yearData.reduce((s,r)=>s+getTotalField(r),0);
+      const monthTotal=monthData.reduce((s,r)=>s+getTotalField(r),0);
+      const achPct=kpiTarget>0?Math.round(monthTotal/kpiTarget*100):0;
+      const myOutlets=new Set(myData.map(r=>r['COMPANY']).filter(Boolean)).size;
+      document.getElementById('kpi-grid').innerHTML=`
         <div class="kpi-card green"><div class="kpi-label">This Month</div><div class="kpi-val green">${fmtRM(monthTotal)}</div><div class="kpi-sub">${curYear}/${curMonth} · ${monthData.length} orders</div></div>
         <div class="kpi-card amber"><div class="kpi-label">Monthly KPI</div><div class="kpi-val amber">${kpiTarget>0?fmtRM(kpiTarget):'Not set'}</div><div class="kpi-sub">${kpiTarget>0?'Contact HQ to change':'HQ has not set'}</div></div>
         <div class="kpi-card ${achPct>=100?'green':achPct>=70?'amber':'red'}"><div class="kpi-label">Achievement</div><div class="kpi-val ${achPct>=100?'green':achPct>=70?'amber':'red'}">${kpiTarget>0?achPct+'%':'—'}</div><div class="kpi-sub">${kpiTarget>0?(achPct>=100?'🎉 Target met!':'Gap: '+fmtRM(kpiTarget-monthTotal)):'Set KPI to show'}</div></div>
         <div class="kpi-card blue"><div class="kpi-label">YTD Total</div><div class="kpi-val blue">${fmtRM(yearTotal)}</div><div class="kpi-sub">${curYear} cumulative</div></div>
-        <div class="kpi-card green"><div class="kpi-label">Customers</div><div class="kpi-val green">${myOutlets}</div><div class="kpi-sub">Total served</div></div>
-      `;
-
-      loadEl.style.display = 'none';
-      contentEl.style.display = 'block';
-
-      const monthMap = {};
-      yearData.forEach(r => { const m=parseInt(r['MONTH']); if(m) monthMap[m]=(monthMap[m]||0)+getTotalField(r); });
-      const labels=[], values=[];
+        <div class="kpi-card green"><div class="kpi-label">Customers</div><div class="kpi-val green">${myOutlets}</div><div class="kpi-sub">Total served</div></div>`;
+      loadEl.style.display='none';contentEl.style.display='block';
+      const monthMap={};
+      yearData.forEach(r=>{const m=parseInt(r['MONTH']);if(m)monthMap[m]=(monthMap[m]||0)+getTotalField(r);});
+      const labels=[],values=[];
       const mNames=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
       for(let m=1;m<=12;m++){labels.push(mNames[m-1]);values.push(monthMap[m]||0);}
-      new Chart(document.getElementById('chartMonthly'), {
+      new Chart(document.getElementById('chartMonthly'),{
         type:'bar',
         data:{labels,datasets:[{label:'Sales',data:values,backgroundColor:'#166534cc',borderColor:'#166534',borderWidth:1,borderRadius:6}]},
         options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>'RM '+fmt(ctx.parsed.y)}}},scales:{y:{beginAtZero:true,ticks:{callback:v=>'RM '+fmt(v)}}}}
       });
-
-      renderTopOutlets();
-      renderTopSkus();
-    } catch(e) {
+      renderTopOutlets();renderTopSkus();
+    }catch(e){
       console.error(e);
-      loadEl.innerHTML = '<div class="empty">❌ Failed to load sales data.</div>';
+      loadEl.innerHTML='<div class="empty">❌ Failed to load sales data.</div>';
     }
   }
 
-  function escHtml(s) { return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+  function escHtml(s){return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 
   loadMyTasks();
   loadWeekly();
