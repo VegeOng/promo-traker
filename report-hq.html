@@ -1140,7 +1140,7 @@ function populateMonthSelectors(){
   const now=new Date();
   ['stats-month','perf-month'].forEach(selId=>{
     const sel=document.getElementById(selId);
-    for(let i=-2;i<13;i++){
+    for(let i=-1;i<14;i++){
       const d=new Date(now.getFullYear(),now.getMonth()-i,1);
       const o=document.createElement('option');
       o.value=d.toISOString().slice(0,7);
