@@ -22,10 +22,7 @@
   }
   .header h1 { color: #166534; font-size: 18px; }
   .header .user { font-size: 13px; color: #6b7280; }
-  .logout {
-    background: none; border: 1px solid #e5e7eb; padding: 6px 12px;
-    border-radius: 8px; font-size: 13px; color: #dc2626; cursor: pointer;
-  }
+  .logout { background: none; border: 1px solid #e5e7eb; padding: 6px 12px; border-radius: 8px; font-size: 13px; color: #dc2626; cursor: pointer; }
   .logout:hover { background: #fef2f2; }
   .container { max-width: 900px; margin: 0 auto; padding: 20px; }
 
@@ -41,8 +38,7 @@
   .tools-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
-    gap: 10px;
-    margin-bottom: 8px;
+    gap: 10px; margin-bottom: 8px;
   }
   .tool {
     background: white; border: 1px solid #bbf7d0; border-radius: 14px;
@@ -55,17 +51,18 @@
   .tool:hover { transform: translateY(-2px); box-shadow: 0 4px 14px rgba(0,0,0,.08); }
   .tool-icon { font-size: 28px; line-height: 1; }
   .tool-name { font-size: 12px; font-weight: 700; color: #111827; line-height: 1.35; }
-  .tbadge { font-size: 9px; font-weight: 700; padding: 2px 6px; border-radius: 20px; background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; letter-spacing: 0.03em; }
+  .tbadge { font-size: 9px; font-weight: 700; padding: 2px 6px; border-radius: 20px; background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; }
 
   .tabs {
     display: flex; background: white; border-radius: 12px;
     padding: 4px; margin-bottom: 16px;
     box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    overflow-x: auto;
   }
   .tab {
-    flex: 1; padding: 10px; text-align: center; border-radius: 8px;
-    cursor: pointer; font-size: 14px; font-weight: 600; color: #6b7280;
-    transition: all 0.2s;
+    flex: 1; padding: 10px 8px; text-align: center; border-radius: 8px;
+    cursor: pointer; font-size: 13px; font-weight: 600; color: #6b7280;
+    transition: all 0.2s; white-space: nowrap; min-width: 80px;
   }
   .tab.active { background: #166534; color: white; }
 
@@ -81,21 +78,12 @@
   .card-row strong { color: #374151; display: block; margin-bottom: 2px; font-size: 12px; }
   .card-row p { color: #1f2937; white-space: pre-wrap; }
 
-  .empty {
-    text-align: center; color: #9ca3af; padding: 40px 20px;
-    background: white; border-radius: 12px; font-size: 14px;
-  }
+  .empty { text-align: center; color: #9ca3af; padding: 40px 20px; background: white; border-radius: 12px; font-size: 14px; }
   .loading { text-align: center; padding: 20px; color: #6b7280; font-size: 14px; }
 
-  .kpi-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-    gap: 10px; margin-bottom: 16px;
-  }
-  .kpi-card {
-    background: white; border: 1px solid #e5e7eb; border-radius: 12px;
-    padding: 14px; position: relative; overflow: hidden;
-  }
+  /* KPI cards */
+  .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin-bottom: 16px; }
+  .kpi-card { background: white; border: 1px solid #e5e7eb; border-radius: 12px; padding: 14px; position: relative; overflow: hidden; }
   .kpi-card::before { content:''; position:absolute; top:0; left:0; right:0; height:3px; }
   .kpi-card.green::before { background: #166534; }
   .kpi-card.red::before { background: #dc2626; }
@@ -113,7 +101,6 @@
   .chart-title { font-size: 13px; font-weight: 700; color: #374151; margin-bottom: 12px; }
   .chart-wrap { position: relative; height: 220px; }
 
-  /* Period switcher */
   .period-bar { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-bottom: 1px solid #e5e7eb; flex-wrap: wrap; gap: 8px; }
   .period-title { font-size: 13px; font-weight: 700; color: #374151; }
   .period-btns { display: flex; gap: 4px; background: #f3f4f6; border-radius: 8px; padding: 3px; }
@@ -127,6 +114,55 @@
   .data-table .rank { font-weight: 700; color: #9ca3af; font-size: 12px; }
   .data-table .amount { font-weight: 700; color: #166534; }
   .data-table .qty { font-weight: 700; color: #3b82f6; }
+
+  /* Task styles */
+  .task-filter-tabs { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+  .tft { padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 700; cursor: pointer; border: 2px solid transparent; transition: all 0.15s; }
+  .tft.overdue { background: #fee2e2; color: #dc2626; }
+  .tft.today { background: #fef3c7; color: #d97706; }
+  .tft.pending { background: #f3f4f6; color: #6b7280; }
+  .tft.completed { background: #dcfce7; color: #166534; }
+  .tft.active { border-color: currentColor; }
+
+  .task-item {
+    background: white; border: 1px solid #e5e7eb; border-radius: 12px;
+    margin-bottom: 10px; overflow: hidden;
+    border-left: 3px solid #e5e7eb;
+  }
+  .task-item.overdue { border-left-color: #dc2626; }
+  .task-item.pending { border-left-color: #d97706; }
+  .task-item.awaiting_confirm { border-left-color: #3b82f6; }
+  .task-item.escalated { border-left-color: #8b5cf6; }
+  .task-item.completed_ontime { border-left-color: #166534; }
+  .task-item.completed_late { border-left-color: #9ca3af; }
+
+  .ti-header { padding: 14px 16px; display: flex; align-items: flex-start; gap: 10px; cursor: pointer; }
+  .ti-header:hover { background: #f9fafb; }
+  .ti-icon { font-size: 18px; flex-shrink: 0; }
+  .ti-main { flex: 1; min-width: 0; }
+  .ti-desc { font-size: 14px; font-weight: 600; margin-bottom: 4px; line-height: 1.4; }
+  .ti-meta { font-size: 12px; color: #6b7280; display: flex; gap: 10px; flex-wrap: wrap; }
+  .ti-right { flex-shrink: 0; }
+  .task-badge { font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 20px; text-transform: uppercase; }
+  .tb-overdue { background: #fee2e2; color: #dc2626; }
+  .tb-pending { background: #fef3c7; color: #d97706; }
+  .tb-awaiting { background: #dbeafe; color: #1d4ed8; }
+  .tb-ontime { background: #dcfce7; color: #166534; }
+  .tb-late { background: #f3f4f6; color: #6b7280; }
+  .tb-escalated { background: #ede9fe; color: #7c3aed; }
+
+  .ti-body { display: none; padding: 0 16px 14px; border-top: 1px solid #e5e7eb; }
+  .ti-body.open { display: block; }
+  .ti-body-inner { padding-top: 12px; }
+  .ti-note { font-size: 13px; color: #374151; background: #fffbeb; padding: 8px 12px; border-radius: 8px; margin-bottom: 10px; line-height: 1.5; }
+  .ti-manager-note { font-size: 13px; color: #374151; background: #f0fdf4; padding: 8px 12px; border-radius: 8px; margin-bottom: 10px; line-height: 1.5; }
+  .ti-reply-input { width: 100%; padding: 10px 12px; border: 1.5px solid #e5e7eb; border-radius: 8px; font-size: 13px; font-family: inherit; min-height: 70px; resize: vertical; margin-bottom: 10px; }
+  .ti-reply-input:focus { outline: none; border-color: #166534; }
+  .ti-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+  .btn-done { padding: 8px 16px; background: #166534; color: white; border: none; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; }
+  .btn-done:hover { background: #14532d; }
+  .btn-escalate { padding: 8px 16px; background: #ede9fe; color: #7c3aed; border: none; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; }
+  .btn-reply { padding: 8px 16px; background: #eff6ff; color: #3b82f6; border: none; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; }
 </style>
 </head>
 <body>
@@ -135,7 +171,7 @@
       <h1>🥬 My Dashboard</h1>
       <div class="user" id="userLabel"></div>
     </div>
-    <button class="logout" onclick="logout()">登出</button>
+    <button class="logout" onclick="logout()">Logout</button>
   </div>
 
   <div class="container">
@@ -144,7 +180,12 @@
     <div class="tools-grid">
       <a class="tool" href="report-fill.html">
         <div class="tool-icon">📝</div>
-        <div class="tool-name">Daily & Weekly Report</div>
+        <div class="tool-name">Visit Records</div>
+        <span class="tbadge">LIVE</span>
+      </a>
+      <a class="tool" href="report-fill.html?type=weekly">
+        <div class="tool-icon">📅</div>
+        <div class="tool-name">Weekly Report</div>
         <span class="tbadge">LIVE</span>
       </a>
       <a class="tool" href="promo-fill.html">
@@ -171,144 +212,338 @@
 
     <div class="sec-title">My Data</div>
     <div class="tabs">
-      <div class="tab active" onclick="switchTab('daily', event)">日报</div>
-      <div class="tab" onclick="switchTab('weekly', event)">周报</div>
-      <div class="tab" onclick="switchTab('sales', event)">销售数据</div>
+      <div class="tab active" onclick="switchTab('tasks', event)">My Tasks</div>
+      <div class="tab" onclick="switchTab('visits', event)">Visit History</div>
+      <div class="tab" onclick="switchTab('weekly', event)">Weekly Reports</div>
+      <div class="tab" onclick="switchTab('sales', event)">Sales Data</div>
     </div>
 
-    <div class="panel active" id="panel-daily">
-      <div class="loading" id="loading-daily">加载中...</div>
-      <div id="list-daily"></div>
+    <!-- MY TASKS -->
+    <div class="panel active" id="panel-tasks">
+      <div class="task-filter-tabs">
+        <span class="tft overdue active" onclick="filterMyTasks('overdue',this)">🔴 Overdue <span id="my-cnt-overdue">0</span></span>
+        <span class="tft today" onclick="filterMyTasks('today',this)">🟡 Due Today <span id="my-cnt-today">0</span></span>
+        <span class="tft pending" onclick="filterMyTasks('pending',this)">📋 Pending <span id="my-cnt-pending">0</span></span>
+        <span class="tft completed" onclick="filterMyTasks('completed',this)">✅ Completed <span id="my-cnt-completed">0</span></span>
+      </div>
+      <div id="my-task-list"><div class="loading">Loading tasks…</div></div>
     </div>
 
+    <!-- VISIT HISTORY -->
+    <div class="panel" id="panel-visits">
+      <div class="loading" id="loading-visits">Loading…</div>
+      <div id="list-visits"></div>
+    </div>
+
+    <!-- WEEKLY REPORTS -->
     <div class="panel" id="panel-weekly">
-      <div class="loading" id="loading-weekly">加载中...</div>
+      <div class="loading" id="loading-weekly">Loading…</div>
       <div id="list-weekly"></div>
     </div>
 
+    <!-- SALES DATA -->
     <div class="panel" id="panel-sales">
-      <div class="loading" id="loading-sales">加载销售数据中...</div>
+      <div class="loading" id="loading-sales">Loading sales data…</div>
       <div id="sales-content" style="display:none">
         <div class="kpi-grid" id="kpi-grid"></div>
-
         <div class="chart-card">
-          <div class="chart-title">📈 月度销售趋势（当年）</div>
+          <div class="chart-title">📈 Monthly Sales Trend (This Year)</div>
           <div class="chart-wrap"><canvas id="chartMonthly"></canvas></div>
         </div>
-
         <div class="card" style="padding:0">
           <div class="period-bar">
-            <div class="period-title">🏆 Top 10 客户</div>
+            <div class="period-title">🏆 Top 10 Customers</div>
             <div class="period-btns" id="outlet-period">
-              <button class="period-btn active" data-period="month" onclick="setOutletPeriod('month', this)">本月</button>
-              <button class="period-btn" data-period="year" onclick="setOutletPeriod('year', this)">本年</button>
-              <button class="period-btn" data-period="all" onclick="setOutletPeriod('all', this)">全部</button>
+              <button class="period-btn active" onclick="setOutletPeriod('month',this)">This Month</button>
+              <button class="period-btn" onclick="setOutletPeriod('year',this)">This Year</button>
+              <button class="period-btn" onclick="setOutletPeriod('all',this)">All Time</button>
             </div>
           </div>
           <div style="overflow-x:auto">
             <table class="data-table" id="topOutletTable">
-              <thead><tr><th>#</th><th>客户</th><th>订单</th><th>销售额</th></tr></thead>
+              <thead><tr><th>#</th><th>Customer</th><th>Orders</th><th>Sales</th></tr></thead>
               <tbody></tbody>
             </table>
           </div>
         </div>
-
         <div class="card" style="padding:0">
           <div class="period-bar">
-            <div class="period-title">📦 SKU 销量排行</div>
+            <div class="period-title">📦 SKU Ranking</div>
             <div class="period-btns" id="sku-period">
-              <button class="period-btn active" data-period="month" onclick="setSkuPeriod('month', this)">本月</button>
-              <button class="period-btn" data-period="year" onclick="setSkuPeriod('year', this)">本年</button>
-              <button class="period-btn" data-period="all" onclick="setSkuPeriod('all', this)">全部</button>
+              <button class="period-btn active" onclick="setSkuPeriod('month',this)">This Month</button>
+              <button class="period-btn" onclick="setSkuPeriod('year',this)">This Year</button>
+              <button class="period-btn" onclick="setSkuPeriod('all',this)">All Time</button>
             </div>
           </div>
           <div style="overflow-x:auto">
             <table class="data-table" id="topSkuTable">
-              <thead><tr><th>#</th><th>产品</th><th>数量</th><th>占比</th></tr></thead>
+              <thead><tr><th>#</th><th>Product</th><th>Qty</th><th>%</th></tr></thead>
               <tbody></tbody>
             </table>
           </div>
         </div>
       </div>
     </div>
+
   </div>
 
 <script>
   const SUPABASE_URL = 'https://wjhgezvrxlhpexocfsea.supabase.co';
   const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndqaGdlenZyeGxocGV4b2Nmc2VhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg1MDU4NzgsImV4cCI6MjA5NDA4MTg3OH0.jENcrgEDYDlSRUCqve-T6rxYRJfz-dnZQHnXpPLJ_RE';
   const supa = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  const H = { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' };
 
   const SALES_API = 'https://script.google.com/macros/s/AKfycbwxt23ZB0od7EeBSNvjurKTbkDcM7HLgrWhuoqHc3meKWmhbB0XQzfOdB-X2Pj5O_MY/exec';
   const PRODUCTS = ['KPM','CLM','SHCR','SHTY','SHSS','SPM - BBQ','BBQ (BAG)','SPM - MALA','MALA (BAG)','MRBR','TYSN','TYSP','TMSP','SMTS','SMCL','SPTS','SPCL','CMBR','KETUPAT'];
 
   const userName = sessionStorage.getItem('userName');
   const userRole = sessionStorage.getItem('userRole');
+  const todayStr = new Date().toISOString().split('T')[0];
 
   if (!userName || userRole !== 'member') { location.href = 'index.html'; }
-  document.getElementById('userLabel').textContent = `欢迎回来，${userName}`;
+  document.getElementById('userLabel').textContent = `Welcome back, ${userName}`;
 
   function logout() { sessionStorage.clear(); location.href = 'index.html'; }
 
+  let allMyTasks = [];
+  let currentTaskFilter = 'overdue';
   let salesLoaded = false;
-  let myData = [];         // 自己的全部数据
-  let curYear = new Date().getFullYear();
-  let curMonth = new Date().getMonth() + 1;
+  let myData = [];
   let outletPeriod = 'month';
   let skuPeriod = 'month';
+  const curYear = new Date().getFullYear();
+  const curMonth = new Date().getMonth() + 1;
 
   function switchTab(name, ev) {
     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
     document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
     ev.target.classList.add('active');
     document.getElementById('panel-' + name).classList.add('active');
-    if (name === 'sales' && !salesLoaded) { loadSales(); }
+    if (name === 'tasks') loadMyTasks();
+    else if (name === 'visits') loadVisitHistory();
+    else if (name === 'weekly') loadWeekly();
+    else if (name === 'sales' && !salesLoaded) loadSales();
   }
 
-  async function loadDaily() {
-    const { data, error } = await supa
-      .from('daily_reports').select('*')
-      .eq('name', userName).order('date', { ascending: false });
-    document.getElementById('loading-daily').style.display = 'none';
-    const list = document.getElementById('list-daily');
-    if (error || !data || data.length === 0) {
-      list.innerHTML = '<div class="empty">还没有日报记录</div>'; return;
+  // ===== MY TASKS =====
+  async function loadMyTasks() {
+    document.getElementById('my-task-list').innerHTML = '<div class="loading">Loading…</div>';
+    try {
+      // Auto-update overdue
+      await fetch(SUPABASE_URL + '/rest/v1/tasks?status=eq.pending&due_date=lt.' + todayStr, {
+        method: 'PATCH', headers: H, body: JSON.stringify({ status: 'overdue' })
+      });
+
+      const res = await fetch(SUPABASE_URL + '/rest/v1/tasks?assigned_to=eq.' + encodeURIComponent(userName) + '&select=*&order=created_at.desc', { headers: H });
+      allMyTasks = await res.json();
+
+      const today = todayStr;
+      const counts = { overdue:0, today:0, pending:0, completed:0 };
+      allMyTasks.forEach(t => {
+        if (t.status === 'overdue') counts.overdue++;
+        else if (t.status === 'awaiting_confirm') counts.completed++;
+        else if (['completed_ontime','completed_late'].includes(t.status)) counts.completed++;
+        else if (t.due_date === today) counts.today++;
+        else if (t.status === 'pending' || t.status === 'escalated') counts.pending++;
+      });
+      document.getElementById('my-cnt-overdue').textContent = counts.overdue;
+      document.getElementById('my-cnt-today').textContent = counts.today;
+      document.getElementById('my-cnt-pending').textContent = counts.pending;
+      document.getElementById('my-cnt-completed').textContent = counts.completed;
+
+      renderMyTasks();
+    } catch(e) {
+      console.error(e);
+      document.getElementById('my-task-list').innerHTML = '<div class="empty">Failed to load tasks.</div>';
     }
-    list.innerHTML = data.map(r => `
-      <div class="card">
-        <div class="card-date">${r.date}</div>
-        <div class="card-row"><strong>今日任务</strong><p>${escapeHtml(r.today_task || '-')}</p></div>
-        <div class="card-row"><strong>明日任务</strong><p>${escapeHtml(r.tomorrow_task || '-')}</p></div>
-        <div class="card-row"><strong>需要协助</strong><p>${escapeHtml(r.assistance || '-')}</p></div>
-      </div>`).join('');
   }
 
+  function filterMyTasks(filter, el) {
+    currentTaskFilter = filter;
+    document.querySelectorAll('.tft').forEach(b => b.classList.remove('active'));
+    el.classList.add('active');
+    renderMyTasks();
+  }
+
+  function renderMyTasks() {
+    const list = document.getElementById('my-task-list');
+    const today = todayStr;
+    let filtered = allMyTasks;
+
+    if (currentTaskFilter === 'overdue') {
+      filtered = allMyTasks.filter(t => t.status === 'overdue');
+    } else if (currentTaskFilter === 'today') {
+      filtered = allMyTasks.filter(t => t.due_date === today && !['completed_ontime','completed_late','awaiting_confirm'].includes(t.status));
+    } else if (currentTaskFilter === 'pending') {
+      filtered = allMyTasks.filter(t => ['pending','escalated'].includes(t.status) && t.due_date !== today);
+    } else if (currentTaskFilter === 'completed') {
+      filtered = allMyTasks.filter(t => ['completed_ontime','completed_late','awaiting_confirm'].includes(t.status));
+    }
+
+    // Sort: overdue first, then by due_date
+    filtered.sort((a,b) => {
+      const order = { overdue:0, escalated:1, pending:2, awaiting_confirm:3, completed_ontime:4, completed_late:5 };
+      const ao = order[a.status] ?? 2;
+      const bo = order[b.status] ?? 2;
+      if (ao !== bo) return ao - bo;
+      if (a.due_date && b.due_date) return a.due_date.localeCompare(b.due_date);
+      return 0;
+    });
+
+    if (!filtered.length) {
+      list.innerHTML = '<div class="empty">No tasks here. 🎉</div>';
+      return;
+    }
+
+    list.innerHTML = filtered.map(t => {
+      const icon = { overdue:'🔴', awaiting_confirm:'⏳', pending:'🟡', escalated:'⚠️', completed_ontime:'✅', completed_late:'🕐' }[t.status] || '📌';
+      const badgeClass = { overdue:'tb-overdue', awaiting_confirm:'tb-awaiting', pending:'tb-pending', escalated:'tb-escalated', completed_ontime:'tb-ontime', completed_late:'tb-late' }[t.status] || 'tb-pending';
+      const badgeText = { overdue:'Overdue', awaiting_confirm:'Awaiting Confirm', pending:'Pending', escalated:'Escalated', completed_ontime:'Done ✓', completed_late:'Done (Late)' }[t.status] || t.status;
+      const sourceText = { manager_created:'From Manager', from_report:'From Report', rep_committed:'Self Committed' }[t.source] || t.source;
+      const daysOverdue = t.status === 'overdue' && t.due_date ? Math.floor((new Date() - new Date(t.due_date)) / 86400000) : 0;
+      const dueLabel = t.due_date
+        ? (t.status === 'overdue' ? `${daysOverdue}d overdue` : `Due: ${t.due_date}`)
+        : 'No due date';
+
+      const isActionable = !['completed_ontime','completed_late'].includes(t.status);
+
+      return `
+        <div class="task-item ${t.status}">
+          <div class="ti-header" onclick="toggleMyTask('mt-${t.task_id}')">
+            <div class="ti-icon">${icon}</div>
+            <div class="ti-main">
+              <div class="ti-desc">${escHtml(t.description)}</div>
+              <div class="ti-meta">
+                <span>📅 ${dueLabel}</span>
+                ${t.linked_customer ? `<span>🏪 ${escHtml(t.linked_customer)}</span>` : ''}
+                <span style="font-size:10px;background:#f3f4f6;padding:2px 6px;border-radius:10px;color:#6b7280">${sourceText}</span>
+              </div>
+            </div>
+            <div class="ti-right">
+              <span class="task-badge ${badgeClass}">${badgeText}</span>
+            </div>
+          </div>
+          <div class="ti-body" id="mt-${t.task_id}">
+            <div class="ti-body-inner">
+              ${t.manager_note ? `<div class="ti-manager-note">💬 Manager note: ${escHtml(t.manager_note)}</div>` : ''}
+              ${t.rep_reply ? `<div style="font-size:13px;color:#6b7280;margin-bottom:8px">Your reply: ${escHtml(t.rep_reply)}</div>` : ''}
+              ${isActionable ? `
+                <textarea class="ti-reply-input" id="reply-${t.task_id}" placeholder="Add a reply or update…">${t.rep_reply || ''}</textarea>
+                <div class="ti-actions">
+                  <button class="btn-done" onclick="markTaskDone('${t.task_id}')">✅ Mark as Done</button>
+                  <button class="btn-reply" onclick="saveReply('${t.task_id}')">💬 Save Reply</button>
+                  <button class="btn-escalate" onclick="escalateTask('${t.task_id}')">⚠️ Need Help</button>
+                </div>` : `<div style="font-size:13px;color:#9ca3af;padding:4px 0">Awaiting manager confirmation…</div>`}
+            </div>
+          </div>
+        </div>`;
+    }).join('');
+  }
+
+  function toggleMyTask(id) {
+    document.getElementById(id).classList.toggle('open');
+  }
+
+  async function markTaskDone(taskId) {
+    if (!confirm('Mark this task as done? Your manager will confirm it.')) return;
+    try {
+      await fetch(SUPABASE_URL + '/rest/v1/tasks?task_id=eq.' + taskId, {
+        method: 'PATCH', headers: H,
+        body: JSON.stringify({ status: 'awaiting_confirm', rep_marked_done_at: new Date().toISOString() })
+      });
+      await loadMyTasks();
+    } catch(e) { alert('Failed. Please try again.'); }
+  }
+
+  async function saveReply(taskId) {
+    const reply = document.getElementById('reply-' + taskId).value.trim();
+    if (!reply) return;
+    try {
+      await fetch(SUPABASE_URL + '/rest/v1/tasks?task_id=eq.' + taskId, {
+        method: 'PATCH', headers: H,
+        body: JSON.stringify({ rep_reply: reply })
+      });
+      await loadMyTasks();
+    } catch(e) { alert('Failed to save reply.'); }
+  }
+
+  async function escalateTask(taskId) {
+    if (!confirm('Mark this task as "Need Help"? Your manager will be notified.')) return;
+    try {
+      await fetch(SUPABASE_URL + '/rest/v1/tasks?task_id=eq.' + taskId, {
+        method: 'PATCH', headers: H,
+        body: JSON.stringify({ status: 'escalated' })
+      });
+      await loadMyTasks();
+    } catch(e) { alert('Failed.'); }
+  }
+
+  // ===== VISIT HISTORY =====
+  async function loadVisitHistory() {
+    document.getElementById('loading-visits').style.display = 'block';
+    const list = document.getElementById('list-visits');
+    try {
+      const { data, error } = await supa
+        .from('visit_records').select('*')
+        .eq('rep_name', userName)
+        .order('visit_date', { ascending: false })
+        .limit(30);
+
+      document.getElementById('loading-visits').style.display = 'none';
+      if (error || !data || !data.length) {
+        list.innerHTML = '<div class="empty">No visit records yet.</div>';
+        return;
+      }
+
+      // Group by date
+      const byDate = {};
+      data.forEach(v => {
+        if (!byDate[v.visit_date]) byDate[v.visit_date] = [];
+        byDate[v.visit_date].push(v);
+      });
+
+      list.innerHTML = Object.entries(byDate).map(([date, visits]) => `
+        <div class="card" style="padding:0">
+          <div style="padding:12px 16px;background:#f9fafb;border-bottom:1px solid #e5e7eb;display:flex;justify-content:space-between;align-items:center">
+            <span style="font-size:13px;font-weight:700;color:#166534">${date}</span>
+            <span style="font-size:12px;color:#6b7280">${visits.length} visit(s) · RM ${visits.reduce((s,v)=>s+(v.order_amount||0),0).toLocaleString()}</span>
+          </div>
+          ${visits.map(v => `
+            <div style="padding:12px 16px;border-bottom:1px solid #f3f4f6">
+              <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px">
+                <div style="font-size:14px;font-weight:600">${escHtml(v.customer_name)}</div>
+                <div style="font-size:13px;font-weight:700;color:#166534">RM ${Number(v.order_amount||0).toLocaleString()}</div>
+              </div>
+              ${v.notes ? `<div style="font-size:12px;color:#6b7280;margin-bottom:4px">${escHtml(v.notes)}</div>` : ''}
+              ${v.followup_notes ? `<div style="font-size:12px;color:#92400e;background:#fffbeb;padding:4px 8px;border-radius:6px;margin-bottom:4px">📌 ${escHtml(v.followup_notes)}</div>` : ''}
+              ${v.photo_urls && v.photo_urls.length > 0 ? `<div style="font-size:11px;color:#166534">📷 ${v.photo_urls.length} photo(s)</div>` : ''}
+            </div>`).join('')}
+        </div>`).join('');
+    } catch(e) {
+      document.getElementById('loading-visits').style.display = 'none';
+      list.innerHTML = '<div class="empty">Failed to load.</div>';
+    }
+  }
+
+  // ===== WEEKLY REPORTS =====
   async function loadWeekly() {
     const { data, error } = await supa
       .from('weekly_reports').select('*')
       .eq('name', userName).order('date', { ascending: false });
     document.getElementById('loading-weekly').style.display = 'none';
     const list = document.getElementById('list-weekly');
-    if (error || !data || data.length === 0) {
-      list.innerHTML = '<div class="empty">还没有周报记录</div>'; return;
-    }
+    if (error || !data || !data.length) { list.innerHTML = '<div class="empty">No weekly reports yet.</div>'; return; }
     list.innerHTML = data.map(r => `
       <div class="card">
         <div class="card-date">${r.date}</div>
-        <div class="card-row"><strong>下周目标</strong><p>${escapeHtml(r.next_week_target || '-')}</p></div>
-        <div class="card-row"><strong>需要协助</strong><p>${escapeHtml(r.assistance || '-')}</p></div>
+        <div class="card-row"><strong>Next Week Target</strong><p>${escHtml(r.next_week_target || '-')}</p></div>
+        <div class="card-row"><strong>Assistance Required</strong><p>${escHtml(r.assistance || '-')}</p></div>
       </div>`).join('');
   }
 
-  function escapeHtml(s) {
-    return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  }
-
-  function fmt(n) {
-    if (!n || isNaN(n)) return '0';
-    return Number(n).toLocaleString('en-MY', { maximumFractionDigits: 0 });
-  }
+  // ===== SALES DATA =====
+  function fmt(n) { return Number(n||0).toLocaleString('en-MY', { maximumFractionDigits: 0 }); }
   function fmtRM(n) { return 'RM ' + fmt(n); }
-
   function getTotalField(r) {
     for (const k of Object.keys(r)) {
       const clean = k.replace(/[^A-Za-z]/g,'').toUpperCase();
@@ -342,43 +577,31 @@
     const outletMap = {};
     data.forEach(r => {
       const o = r['COMPANY'] || 'Unknown';
-      if (!outletMap[o]) outletMap[o] = { orders: 0, total: 0 };
+      if (!outletMap[o]) outletMap[o] = { orders:0, total:0 };
       outletMap[o].orders++;
       outletMap[o].total += getTotalField(r);
     });
-    const topOutlets = Object.entries(outletMap).sort((a,b) => b[1].total - a[1].total).slice(0, 10);
-    document.querySelector('#topOutletTable tbody').innerHTML = topOutlets.length ? topOutlets.map(([name, d], i) => `
-      <tr>
-        <td class="rank">${i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : i+1}</td>
-        <td><strong>${escapeHtml(name)}</strong></td>
-        <td>${d.orders}</td>
-        <td class="amount">${fmtRM(d.total)}</td>
-      </tr>`).join('') : '<tr><td colspan="4" style="text-align:center;color:#9ca3af;padding:20px;">本期间暂无数据</td></tr>';
+    const top = Object.entries(outletMap).sort((a,b)=>b[1].total-a[1].total).slice(0,10);
+    document.querySelector('#topOutletTable tbody').innerHTML = top.length
+      ? top.map(([name,d],i) => `<tr><td class="rank">${i===0?'🥇':i===1?'🥈':i===2?'🥉':i+1}</td><td><strong>${escHtml(name)}</strong></td><td>${d.orders}</td><td class="amount">${fmtRM(d.total)}</td></tr>`).join('')
+      : '<tr><td colspan="4" style="text-align:center;color:#9ca3af;padding:20px">No data for this period</td></tr>';
   }
 
   function renderTopSkus() {
     const data = filterByPeriod(skuPeriod);
     const skuMap = {};
-    PRODUCTS.forEach(p => {
-      const qty = data.reduce((s, r) => s + (parseFloat(r[p]) || 0), 0);
-      if (qty > 0) skuMap[p] = qty;
-    });
-    const sortedSku = Object.entries(skuMap).sort((a,b) => b[1] - a[1]);
-    const totalSku = sortedSku.reduce((s, e) => s + e[1], 0);
-    document.querySelector('#topSkuTable tbody').innerHTML = sortedSku.length ? sortedSku.map(([name, qty], i) => `
-      <tr>
-        <td class="rank">${i+1}</td>
-        <td><strong>${escapeHtml(name)}</strong></td>
-        <td class="qty">${fmt(qty)}</td>
-        <td>${totalSku > 0 ? (qty/totalSku*100).toFixed(1) : 0}%</td>
-      </tr>`).join('') : '<tr><td colspan="4" style="text-align:center;color:#9ca3af;padding:20px;">本期间暂无数据</td></tr>';
+    PRODUCTS.forEach(p => { const qty=data.reduce((s,r)=>s+(parseFloat(r[p])||0),0); if(qty>0) skuMap[p]=qty; });
+    const sorted = Object.entries(skuMap).sort((a,b)=>b[1]-a[1]);
+    const total = sorted.reduce((s,e)=>s+e[1],0);
+    document.querySelector('#topSkuTable tbody').innerHTML = sorted.length
+      ? sorted.map(([name,qty],i) => `<tr><td class="rank">${i+1}</td><td><strong>${escHtml(name)}</strong></td><td class="qty">${fmt(qty)}</td><td>${total>0?(qty/total*100).toFixed(1):0}%</td></tr>`).join('')
+      : '<tr><td colspan="4" style="text-align:center;color:#9ca3af;padding:20px">No data for this period</td></tr>';
   }
 
   async function loadSales() {
     salesLoaded = true;
     const loadEl = document.getElementById('loading-sales');
     const contentEl = document.getElementById('sales-content');
-
     try {
       const { data: memberInfo } = await supa.from('members').select('monthly_kpi').eq('name', userName).maybeSingle();
       const kpiTarget = memberInfo?.monthly_kpi || 0;
@@ -386,98 +609,56 @@
       const res = await fetch(SALES_API);
       const json = await res.json();
       const allData = json.data || [];
-      myData = allData.filter(r => (r['SALES PERSON'] || '').trim() === userName.trim());
+      myData = allData.filter(r => (r['SALES PERSON']||'').trim() === userName.trim());
 
-      if (myData.length === 0) {
+      if (!myData.length) {
         loadEl.style.display = 'none';
         contentEl.style.display = 'block';
-        contentEl.innerHTML = `<div class="empty">还没有销售数据。<br><br>请确认 HQ 已将你的名字「${escapeHtml(userName)}」<br>添加到 Google Sheet 的 SALES PERSON 列（名字要完全一致）。</div>`;
+        contentEl.innerHTML = `<div class="empty">No sales data found.<br><br>Make sure your name matches the <strong>SALES PERSON</strong> column in Google Sheet exactly.</div>`;
         return;
       }
 
       const yearData = myData.filter(r => parseInt(r['YEAR']) === curYear);
       const monthData = yearData.filter(r => parseInt(r['MONTH']) === curMonth);
-
-      const yearTotal = yearData.reduce((s, r) => s + getTotalField(r), 0);
-      const monthTotal = monthData.reduce((s, r) => s + getTotalField(r), 0);
-      const achPct = kpiTarget > 0 ? Math.round(monthTotal / kpiTarget * 100) : 0;
-      const monthOrders = monthData.length;
-      const myOutlets = new Set(myData.map(r => r['COMPANY']).filter(Boolean)).size;
+      const yearTotal = yearData.reduce((s,r)=>s+getTotalField(r),0);
+      const monthTotal = monthData.reduce((s,r)=>s+getTotalField(r),0);
+      const achPct = kpiTarget > 0 ? Math.round(monthTotal/kpiTarget*100) : 0;
+      const myOutlets = new Set(myData.map(r=>r['COMPANY']).filter(Boolean)).size;
 
       document.getElementById('kpi-grid').innerHTML = `
-        <div class="kpi-card green">
-          <div class="kpi-label">本月销售额</div>
-          <div class="kpi-val green">${fmtRM(monthTotal)}</div>
-          <div class="kpi-sub">${curYear}年${curMonth}月 · ${monthOrders} 单</div>
-        </div>
-        <div class="kpi-card amber">
-          <div class="kpi-label">月 KPI 目标</div>
-          <div class="kpi-val amber">${kpiTarget > 0 ? fmtRM(kpiTarget) : '未设置'}</div>
-          <div class="kpi-sub">${kpiTarget > 0 ? '请联系 HQ 修改' : 'HQ 尚未设置'}</div>
-        </div>
-        <div class="kpi-card ${achPct >= 100 ? 'green' : achPct >= 70 ? 'amber' : 'red'}">
-          <div class="kpi-label">达成率</div>
-          <div class="kpi-val ${achPct >= 100 ? 'green' : achPct >= 70 ? 'amber' : 'red'}">${kpiTarget > 0 ? achPct + '%' : '—'}</div>
-          <div class="kpi-sub">${kpiTarget > 0 ? (achPct >= 100 ? '🎉 已达成!' : '还差 ' + fmtRM(kpiTarget - monthTotal)) : '设置 KPI 后显示'}</div>
-        </div>
-        <div class="kpi-card blue">
-          <div class="kpi-label">YTD 累计</div>
-          <div class="kpi-val blue">${fmtRM(yearTotal)}</div>
-          <div class="kpi-sub">${curYear}年累计</div>
-        </div>
-        <div class="kpi-card green">
-          <div class="kpi-label">客户数</div>
-          <div class="kpi-val green">${myOutlets}</div>
-          <div class="kpi-sub">服务的客户</div>
-        </div>
+        <div class="kpi-card green"><div class="kpi-label">This Month</div><div class="kpi-val green">${fmtRM(monthTotal)}</div><div class="kpi-sub">${curYear}/${curMonth} · ${monthData.length} orders</div></div>
+        <div class="kpi-card amber"><div class="kpi-label">Monthly KPI</div><div class="kpi-val amber">${kpiTarget>0?fmtRM(kpiTarget):'Not set'}</div><div class="kpi-sub">${kpiTarget>0?'Contact HQ to change':'HQ has not set'}</div></div>
+        <div class="kpi-card ${achPct>=100?'green':achPct>=70?'amber':'red'}"><div class="kpi-label">Achievement</div><div class="kpi-val ${achPct>=100?'green':achPct>=70?'amber':'red'}">${kpiTarget>0?achPct+'%':'—'}</div><div class="kpi-sub">${kpiTarget>0?(achPct>=100?'🎉 Target met!':'Gap: '+fmtRM(kpiTarget-monthTotal)):'Set KPI to show'}</div></div>
+        <div class="kpi-card blue"><div class="kpi-label">YTD Total</div><div class="kpi-val blue">${fmtRM(yearTotal)}</div><div class="kpi-sub">${curYear} cumulative</div></div>
+        <div class="kpi-card green"><div class="kpi-label">Customers</div><div class="kpi-val green">${myOutlets}</div><div class="kpi-sub">Total served</div></div>
       `;
 
       loadEl.style.display = 'none';
       contentEl.style.display = 'block';
 
-      // 月度趋势图
       const monthMap = {};
-      yearData.forEach(r => {
-        const m = parseInt(r['MONTH']);
-        if (m) monthMap[m] = (monthMap[m] || 0) + getTotalField(r);
-      });
-      const monthNames = ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
-      const labels = [], values = [];
-      for (let m = 1; m <= 12; m++) {
-        labels.push(monthNames[m-1]);
-        values.push(monthMap[m] || 0);
-      }
+      yearData.forEach(r => { const m=parseInt(r['MONTH']); if(m) monthMap[m]=(monthMap[m]||0)+getTotalField(r); });
+      const labels=[], values=[];
+      const mNames=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+      for(let m=1;m<=12;m++){labels.push(mNames[m-1]);values.push(monthMap[m]||0);}
       new Chart(document.getElementById('chartMonthly'), {
-        type: 'bar',
-        data: {
-          labels,
-          datasets: [{
-            label: '销售额',
-            data: values,
-            backgroundColor: '#166534cc',
-            borderColor: '#166534',
-            borderWidth: 1,
-            borderRadius: 6
-          }]
-        },
-        options: {
-          responsive: true, maintainAspectRatio: false,
-          plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => 'RM ' + fmt(ctx.parsed.y) } } },
-          scales: { y: { beginAtZero: true, ticks: { callback: v => 'RM ' + fmt(v) } } }
-        }
+        type:'bar',
+        data:{labels,datasets:[{label:'Sales',data:values,backgroundColor:'#166534cc',borderColor:'#166534',borderWidth:1,borderRadius:6}]},
+        options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>'RM '+fmt(ctx.parsed.y)}}},scales:{y:{beginAtZero:true,ticks:{callback:v=>'RM '+fmt(v)}}}}
       });
 
-      // 初始渲染（默认本月）
       renderTopOutlets();
       renderTopSkus();
-
     } catch(e) {
       console.error(e);
-      loadEl.innerHTML = '<div class="empty">❌ 加载销售数据失败<br><small>' + e.message + '</small></div>';
+      loadEl.innerHTML = '<div class="empty">❌ Failed to load sales data.<br><small>' + e.message + '</small></div>';
     }
   }
 
-  loadDaily();
+  function escHtml(s) { return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+  // Init
+  loadMyTasks();
   loadWeekly();
 </script>
 </body>
