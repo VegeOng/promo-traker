@@ -801,11 +801,14 @@ async function submitDailyReport() {
     await fetch(SUPA_URL + '/rest/v1/daily_reports?id=eq.' + todayReportId, {
       method: 'PATCH', headers: H,
       body: JSON.stringify({
-        status: 'submitted',
-        submitted_at: new Date().toISOString(),
-        route: document.getElementById('visit-route').value.trim() || null
-      })
-    });
+  name: loggedUser,
+  date: document.getElementById('visit-report-date').value || today,
+  route: document.getElementById('visit-route').value.trim() || null,
+  status: 'draft',
+  today_task: '',
+  tomorrow_task: '',
+  assistance: 'None.'
+})
 
     document.getElementById('successTitle').textContent = 'Report Submitted!';
     document.getElementById('successText').textContent = `${visitRecords.length} visit record(s) submitted for ${today}.`;
