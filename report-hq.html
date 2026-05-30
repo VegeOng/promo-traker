@@ -6,21 +6,10 @@
 <title>Report HQ — MamaVege</title>
 <style>
   :root {
-    --bg: #fafafa;
-    --green: #166534;
-    --green-light: #dcfce7;
-    --green-mid: #15803d;
-    --red: #dc2626;
-    --red-light: #fee2e2;
-    --amber: #d97706;
-    --amber-light: #fef3c7;
-    --blue: #3b82f6;
-    --blue-light: #eff6ff;
-    --text: #1a1a1a;
-    --muted: #6b7280;
-    --border: #e5e7eb;
-    --card: #ffffff;
-    --radius: 12px;
+    --bg: #fafafa; --green: #166534; --green-light: #dcfce7; --green-mid: #15803d;
+    --red: #dc2626; --red-light: #fee2e2; --amber: #d97706; --amber-light: #fef3c7;
+    --blue: #3b82f6; --blue-light: #eff6ff;
+    --text: #1a1a1a; --muted: #6b7280; --border: #e5e7eb; --card: #ffffff; --radius: 12px;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; min-height: 100vh; }
@@ -57,7 +46,7 @@
   .chpw-msg.fail { color: var(--red); display: block; }
 
   .tabs { background: white; border-bottom: 1px solid var(--border); display: flex; overflow-x: auto; position: sticky; top: 64px; z-index: 99; }
-  .tab { padding: 14px 18px; font-size: 13px; font-weight: 600; color: var(--muted); cursor: pointer; border-bottom: 2px solid transparent; white-space: nowrap; transition: all 0.2s; }
+  .tab { padding: 14px 16px; font-size: 13px; font-weight: 600; color: var(--muted); cursor: pointer; border-bottom: 2px solid transparent; white-space: nowrap; transition: all 0.2s; }
   .tab.active { color: var(--green); border-bottom-color: var(--green); }
   .tab:hover { color: var(--green); background: #f0fdf4; }
 
@@ -100,14 +89,10 @@
   .rb-field .rf-val { font-size: 13px; color: var(--text); white-space: pre-wrap; line-height: 1.6; }
 
   .filter-bar { display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; }
-  .filter-bar select, .filter-bar input {
-    padding: 8px 12px; border: 1.5px solid var(--border); border-radius: 8px;
-    font-size: 13px; font-family: inherit; background: white; color: var(--text);
-    appearance: none; cursor: pointer;
-  }
+  .filter-bar select, .filter-bar input { padding: 8px 12px; border: 1.5px solid var(--border); border-radius: 8px; font-size: 13px; font-family: inherit; background: white; color: var(--text); appearance: none; cursor: pointer; }
   .filter-bar select:focus, .filter-bar input:focus { outline: none; border-color: var(--green); }
 
-  /* Daily Briefing */
+  /* Briefing */
   .briefing-date-bar { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
   .briefing-date-bar input[type=date] { padding: 8px 12px; border: 1.5px solid var(--border); border-radius: 8px; font-size: 14px; font-family: inherit; }
   .briefing-date-bar input[type=date]:focus { outline: none; border-color: var(--green); }
@@ -153,8 +138,8 @@
 
   .task-form-inline { background: #fffbeb; border: 1px solid #fde68a; border-radius: 8px; padding: 12px; margin-top: 8px; display: none; }
   .task-form-inline.open { display: block; }
-  .task-form-inline input, .task-form-inline select, .task-form-inline textarea { width: 100%; padding: 8px 12px; border: 1.5px solid var(--border); border-radius: 6px; font-size: 13px; font-family: inherit; margin-bottom: 8px; }
-  .task-form-inline input:focus, .task-form-inline select:focus, .task-form-inline textarea:focus { outline: none; border-color: var(--green); }
+  .task-form-inline input, .task-form-inline textarea { width: 100%; padding: 8px 12px; border: 1.5px solid var(--border); border-radius: 6px; font-size: 13px; font-family: inherit; margin-bottom: 8px; }
+  .task-form-inline input:focus, .task-form-inline textarea:focus { outline: none; border-color: var(--green); }
   .task-form-inline textarea { min-height: 60px; resize: vertical; }
   .tfi-row { display: flex; gap: 8px; flex-wrap: wrap; }
   .btn-save-task { padding: 8px 14px; background: var(--green); color: white; border: none; border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer; }
@@ -163,11 +148,11 @@
   /* Task Tracker */
   .task-summary-bar { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
   .tsb-item { padding: 8px 14px; border-radius: 20px; font-size: 12px; font-weight: 700; cursor: pointer; border: 2px solid transparent; transition: all 0.15s; }
+  .tsb-item.all { background: #f3f4f6; color: var(--muted); }
   .tsb-item.overdue { background: var(--red-light); color: var(--red); }
   .tsb-item.pending { background: var(--amber-light); color: var(--amber); }
   .tsb-item.awaiting { background: #dbeafe; color: #1d4ed8; }
   .tsb-item.completed { background: var(--green-light); color: var(--green); }
-  .tsb-item.all { background: #f3f4f6; color: var(--muted); }
   .tsb-item.active { border-color: currentColor; }
 
   .task-filter-bar { display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; align-items: center; }
@@ -189,10 +174,7 @@
   .btn-ntf-save { padding: 10px 20px; background: var(--green); color: white; border: none; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; }
   .btn-ntf-cancel { padding: 10px 20px; background: #e5e7eb; color: var(--text); border: none; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; }
 
-  .task-item {
-    background: white; border: 1px solid var(--border); border-radius: var(--radius);
-    margin-bottom: 10px; overflow: hidden; border-left: 3px solid var(--border);
-  }
+  .task-item { background: white; border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 10px; overflow: hidden; border-left: 3px solid var(--border); }
   .task-item.overdue { border-left-color: var(--red); }
   .task-item.pending { border-left-color: var(--amber); }
   .task-item.awaiting_confirm { border-left-color: var(--blue); }
@@ -206,9 +188,8 @@
   .ti-main { flex: 1; min-width: 0; }
   .ti-desc { font-size: 14px; font-weight: 600; margin-bottom: 4px; line-height: 1.4; }
   .ti-meta { font-size: 12px; color: var(--muted); display: flex; gap: 10px; flex-wrap: wrap; }
-  .ti-meta span { display: flex; align-items: center; gap: 3px; }
   .ti-right { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
-  .task-status-badge { font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.03em; }
+  .task-status-badge { font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 20px; text-transform: uppercase; }
   .tsb-overdue { background: var(--red-light); color: var(--red); }
   .tsb-pending { background: var(--amber-light); color: var(--amber); }
   .tsb-awaiting { background: #dbeafe; color: #1d4ed8; }
@@ -230,6 +211,58 @@
   .btn-reject { padding: 7px 14px; background: #e5e7eb; color: var(--text); border: none; border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer; }
   .btn-add-note { padding: 7px 14px; background: var(--blue-light); color: var(--blue); border: none; border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer; }
   .btn-delete-task { padding: 7px 14px; background: none; border: 1px solid var(--red); color: var(--red); border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer; }
+
+  /* Monthly Performance */
+  .perf-month-bar { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; align-items: center; }
+  .perf-month-bar select { padding: 9px 14px; border: 1.5px solid var(--border); border-radius: 8px; font-size: 14px; font-family: inherit; appearance: none; background: white; }
+  .perf-month-bar select:focus { outline: none; border-color: var(--green); }
+  .perf-notice { font-size: 12px; color: var(--muted); background: #f9fafb; border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; margin-bottom: 20px; line-height: 1.6; }
+
+  .perf-card { background: white; border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 16px; overflow: hidden; }
+  .perf-card-header { padding: 18px 20px; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+  .perf-left { display: flex; align-items: center; gap: 14px; }
+  .perf-avatar { width: 42px; height: 42px; border-radius: 50%; background: var(--green-light); color: var(--green); display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 17px; flex-shrink: 0; }
+  .perf-name { font-size: 16px; font-weight: 800; }
+  .perf-month-label { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .perf-right { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .perf-rate { font-size: 28px; font-weight: 900; }
+  .perf-rate.high { color: var(--green); }
+  .perf-rate.mid { color: var(--amber); }
+  .perf-rate.low { color: var(--red); }
+  .perf-vs { font-size: 11px; font-weight: 600; padding: 3px 8px; border-radius: 20px; }
+  .perf-vs.up { background: var(--green-light); color: var(--green); }
+  .perf-vs.down { background: var(--red-light); color: var(--red); }
+  .perf-vs.same { background: #f3f4f6; color: var(--muted); }
+
+  .perf-stats-row { display: grid; grid-template-columns: repeat(4,1fr); gap: 0; border-top: 1px solid var(--border); }
+  @media(max-width:500px){ .perf-stats-row { grid-template-columns: repeat(2,1fr); } }
+  .perf-stat { padding: 14px 16px; text-align: center; border-right: 1px solid var(--border); }
+  .perf-stat:last-child { border-right: none; }
+  .perf-stat-val { font-size: 22px; font-weight: 900; line-height: 1; }
+  .perf-stat-val.green { color: var(--green); }
+  .perf-stat-val.amber { color: var(--amber); }
+  .perf-stat-val.red { color: var(--red); }
+  .perf-stat-val.muted { color: var(--muted); }
+  .perf-stat-label { font-size: 10px; color: var(--muted); margin-top: 4px; text-transform: uppercase; letter-spacing: 0.04em; }
+
+  .perf-detail-btn { display: flex; align-items: center; justify-content: center; padding: 10px; border-top: 1px solid var(--border); cursor: pointer; font-size: 12px; font-weight: 600; color: var(--muted); background: #f9fafb; gap: 6px; }
+  .perf-detail-btn:hover { background: #f0fdf4; color: var(--green); }
+  .perf-detail { display: none; border-top: 1px solid var(--border); }
+  .perf-detail.open { display: block; }
+
+  .perf-section { padding: 14px 18px; border-bottom: 1px solid var(--border); }
+  .perf-section:last-child { border-bottom: none; }
+  .perf-section-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
+  .perf-section-title.green { color: var(--green); }
+  .perf-section-title.amber { color: var(--amber); }
+  .perf-section-title.red { color: var(--red); }
+  .perf-section-title.muted { color: var(--muted); }
+  .perf-task-item { padding: 8px 0; border-bottom: 1px solid #f3f4f6; display: flex; align-items: flex-start; gap: 10px; }
+  .perf-task-item:last-child { border-bottom: none; }
+  .perf-task-desc { flex: 1; font-size: 13px; color: var(--text); line-height: 1.4; }
+  .perf-task-meta { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .perf-task-source { font-size: 10px; font-weight: 600; padding: 2px 6px; border-radius: 10px; background: #f3f4f6; color: var(--muted); flex-shrink: 0; }
+  .perf-empty-section { font-size: 13px; color: var(--muted); font-style: italic; }
 
   /* Members */
   .member-row { display: flex; align-items: center; gap: 8px; padding: 10px 14px; background: #f9fafb; border: 1px solid var(--border); border-radius: 8px; margin-bottom: 8px; flex-wrap: wrap; }
@@ -313,10 +346,11 @@
 <div class="tabs">
   <div class="tab active" onclick="switchTab('briefing')">📋 Daily Briefing</div>
   <div class="tab" onclick="switchTab('tasks')">✅ Task Tracker</div>
+  <div class="tab" onclick="switchTab('performance')">📈 Performance</div>
   <div class="tab" onclick="switchTab('overview')">📊 Overview</div>
   <div class="tab" onclick="switchTab('daily')">📝 Daily Reports</div>
   <div class="tab" onclick="switchTab('weekly')">📅 Weekly Reports</div>
-  <div class="tab" onclick="switchTab('stats')">📈 Miss Stats</div>
+  <div class="tab" onclick="switchTab('stats')">📉 Miss Stats</div>
   <div class="tab" onclick="switchTab('members')">👥 Members</div>
 </div>
 
@@ -339,32 +373,24 @@
 
   <!-- TASK TRACKER -->
   <div class="section" id="sec-tasks">
-    <div class="task-summary-bar" id="task-summary-bar">
-      <span class="tsb-item overdue active" onclick="filterTasks('overdue',this)">🔴 Overdue <span id="cnt-overdue">0</span></span>
+    <div class="task-summary-bar">
+      <span class="tsb-item all active" onclick="filterTasks('all',this)">All <span id="cnt-all">0</span></span>
       <span class="tsb-item awaiting" onclick="filterTasks('awaiting_confirm',this)">🔵 Awaiting Confirm <span id="cnt-awaiting">0</span></span>
-      <span class="tsb-item pending" onclick="filterTasks('pending',this)">🟡 Pending <span id="cnt-pending">0</span></span>
       <span class="tsb-item completed" onclick="filterTasks('completed',this)">✅ Completed <span id="cnt-completed">0</span></span>
-      <span class="tsb-item all" onclick="filterTasks('all',this)">All <span id="cnt-all">0</span></span>
+      <span class="tsb-item pending" onclick="filterTasks('pending',this)">🟡 Pending <span id="cnt-pending">0</span></span>
+      <span class="tsb-item overdue" onclick="filterTasks('overdue',this)">🔴 Overdue <span id="cnt-overdue">0</span></span>
     </div>
-
     <div class="task-filter-bar">
-      <select id="task-filter-member" onchange="loadTasks()">
-        <option value="">All Members</option>
-      </select>
+      <select id="task-filter-member" onchange="loadTasks()"><option value="">All Members</option></select>
       <button class="btn-new-task" onclick="toggleNewTaskForm()">+ New Task</button>
     </div>
-
     <div class="new-task-form" id="new-task-form">
       <h3>Create New Task</h3>
       <div class="ntf-grid">
-        <select id="ntf-assignee">
-          <option value="">Assign to…</option>
-        </select>
-        <input type="date" id="ntf-due" placeholder="Due date">
+        <select id="ntf-assignee"><option value="">Assign to…</option></select>
+        <input type="date" id="ntf-due">
         <input type="text" id="ntf-customer" placeholder="Related customer (optional)">
-        <select id="ntf-source">
-          <option value="manager_created">Manager Created</option>
-        </select>
+        <select id="ntf-source"><option value="manager_created">Manager Created</option></select>
       </div>
       <textarea class="ntf-textarea" id="ntf-desc" placeholder="Task description…"></textarea>
       <div class="ntf-actions">
@@ -372,8 +398,18 @@
         <button class="btn-ntf-cancel" onclick="toggleNewTaskForm()">Cancel</button>
       </div>
     </div>
-
     <div id="task-list"><div class="loading-text">Loading…</div></div>
+  </div>
+
+  <!-- MONTHLY PERFORMANCE -->
+  <div class="section" id="sec-performance">
+    <div class="perf-month-bar">
+      <select id="perf-month" onchange="loadPerformance()"></select>
+    </div>
+    <div class="perf-notice">
+      📊 Monthly performance is based on tasks with a due date within the selected month. Pending tasks (not yet due) are not counted in the completion rate.
+    </div>
+    <div id="perf-list"><div class="loading-text">Loading…</div></div>
   </div>
 
   <!-- OVERVIEW -->
@@ -417,7 +453,7 @@
   <!-- MISS STATS -->
   <div class="section" id="sec-stats">
     <div class="card">
-      <div class="card-title">📈 Monthly Missing Report Count</div>
+      <div class="card-title">📉 Monthly Missing Report Count</div>
       <div class="month-row"><select id="stats-month" onchange="loadMissStats()"></select></div>
       <table class="miss-table">
         <thead><tr><th>Name</th><th>Daily Missing</th><th>Weekly Missing</th><th>Total</th></tr></thead>
@@ -460,6 +496,7 @@
 const SUPA_URL = 'https://wjhgezvrxlhpexocfsea.supabase.co';
 const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndqaGdlenZyeGxocGV4b2Nmc2VhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg1MDU4NzgsImV4cCI6MjA5NDA4MTg3OH0.jENcrgEDYDlSRUCqve-T6rxYRJfz-dnZQHnXpPLJ_RE';
 const H = { 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY, 'Content-Type': 'application/json', 'Prefer': 'return=representation' };
+const Hmin = { 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' };
 
 let members = [];
 let allTasks = [];
@@ -479,12 +516,13 @@ function escHtml(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&
 function fmtRM(n) { return 'RM '+Number(n||0).toLocaleString('en-MY',{minimumFractionDigits:0,maximumFractionDigits:0}); }
 
 function switchTab(tab) {
-  const tabNames = ['briefing','tasks','overview','daily','weekly','stats','members'];
+  const tabNames = ['briefing','tasks','performance','overview','daily','weekly','stats','members'];
   document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('active', tabNames[i] === tab));
   document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
   document.getElementById('sec-'+tab).classList.add('active');
   if (tab==='briefing') loadBriefing();
   else if (tab==='tasks') loadTasks();
+  else if (tab==='performance') loadPerformance();
   else if (tab==='overview') loadOverview();
   else if (tab==='daily') loadDailyReports();
   else if (tab==='weekly') loadWeeklyReports();
@@ -492,50 +530,208 @@ function switchTab(tab) {
   else if (tab==='members') renderMembers();
 }
 
-// ===== TASK TRACKER =====
+// ===== MONTHLY PERFORMANCE =====
+async function loadPerformance() {
+  const list = document.getElementById('perf-list');
+  list.innerHTML = '<div class="loading-text">Loading…</div>';
+  const monthVal = document.getElementById('perf-month').value;
+  if (!monthVal) return;
 
+  const [year, month] = monthVal.split('-').map(Number);
+  const firstDay = `${year}-${String(month).padStart(2,'0')}-01`;
+  const lastDay = `${year}-${String(month).padStart(2,'0')}-${new Date(year,month,0).getDate()}`;
+
+  // Previous month
+  const prevDate = new Date(year, month-2, 1);
+  const prevYear = prevDate.getFullYear();
+  const prevMonth = prevDate.getMonth() + 1;
+  const prevFirst = `${prevYear}-${String(prevMonth).padStart(2,'0')}-01`;
+  const prevLast = `${prevYear}-${String(prevMonth).padStart(2,'0')}-${new Date(prevYear,prevMonth,0).getDate()}`;
+
+  const salesMembers = members.filter(m => (m.role||'sales') === 'sales');
+  if (!salesMembers.length) { list.innerHTML = '<div class="empty-text">No sales members found.</div>'; return; }
+
+  try {
+    // Get tasks for this month (due_date in range)
+    const [curTasks, prevTasks] = await Promise.all([
+      db(`tasks?select=*&due_date=gte.${firstDay}&due_date=lte.${lastDay}&order=due_date.asc`),
+      db(`tasks?select=task_id,assigned_to,status&due_date=gte.${prevFirst}&due_date=lte.${prevLast}`)
+    ]);
+
+    // Group by member
+    const tasksByMember = {};
+    const prevByMember = {};
+    salesMembers.forEach(m => { tasksByMember[m.name] = []; prevByMember[m.name] = []; });
+    (curTasks||[]).forEach(t => { if (tasksByMember[t.assigned_to] !== undefined) tasksByMember[t.assigned_to].push(t); });
+    (prevTasks||[]).forEach(t => { if (prevByMember[t.assigned_to] !== undefined) prevByMember[t.assigned_to].push(t); });
+
+    const monthLabel = new Date(year, month-1, 1).toLocaleString('en', { year:'numeric', month:'long' });
+
+    list.innerHTML = salesMembers.map(m => {
+      const tasks = tasksByMember[m.name];
+      const prevTasksM = prevByMember[m.name];
+
+      const ontime = tasks.filter(t => t.status === 'completed_ontime').length;
+      const late = tasks.filter(t => t.status === 'completed_late').length;
+      const overdue = tasks.filter(t => t.status === 'overdue').length;
+      const pending = tasks.filter(t => ['pending','awaiting_confirm','escalated'].includes(t.status)).length;
+      const total = ontime + late + overdue; // denominator (excludes pending)
+
+      const rate = total > 0 ? Math.round(ontime / total * 100) : null;
+      const rateLabel = rate !== null ? rate + '%' : '—';
+      const rateClass = rate === null ? '' : rate >= 80 ? 'high' : rate >= 50 ? 'mid' : 'low';
+
+      // Previous month rate
+      const pOntime = prevTasksM.filter(t => t.status === 'completed_ontime').length;
+      const pLate = prevTasksM.filter(t => t.status === 'completed_late').length;
+      const pOverdue = prevTasksM.filter(t => t.status === 'overdue').length;
+      const pTotal = pOntime + pLate + pOverdue;
+      const prevRate = pTotal > 0 ? Math.round(pOntime / pTotal * 100) : null;
+
+      let vsHtml = '';
+      if (rate !== null && prevRate !== null) {
+        const diff = rate - prevRate;
+        const vsClass = diff > 0 ? 'up' : diff < 0 ? 'down' : 'same';
+        const vsLabel = diff > 0 ? `↑ ${diff}% vs last month` : diff < 0 ? `↓ ${Math.abs(diff)}% vs last month` : '= same as last month';
+        vsHtml = `<span class="perf-vs ${vsClass}">${vsLabel}</span>`;
+      } else if (rate !== null) {
+        vsHtml = `<span class="perf-vs same">No prev data</span>`;
+      }
+
+      const sourceLabel = s => ({ manager_created:'Manager', from_report:'From Report', rep_committed:'Self Committed' }[s] || s);
+
+      const detailId = `perf-detail-${m.id}`;
+
+      return `
+        <div class="perf-card">
+          <div class="perf-card-header">
+            <div class="perf-left">
+              <div class="perf-avatar">${m.name.charAt(0).toUpperCase()}</div>
+              <div>
+                <div class="perf-name">${escHtml(m.name)}</div>
+                <div class="perf-month-label">${monthLabel}</div>
+              </div>
+            </div>
+            <div class="perf-right">
+              <div>
+                <div class="perf-rate ${rateClass}">${rateLabel}</div>
+                <div style="font-size:10px;color:var(--muted);text-align:right">On-time rate</div>
+              </div>
+              ${vsHtml}
+            </div>
+          </div>
+          <div class="perf-stats-row">
+            <div class="perf-stat">
+              <div class="perf-stat-val green">${ontime}</div>
+              <div class="perf-stat-label">✅ On Time</div>
+            </div>
+            <div class="perf-stat">
+              <div class="perf-stat-val amber">${late}</div>
+              <div class="perf-stat-label">🕐 Late</div>
+            </div>
+            <div class="perf-stat">
+              <div class="perf-stat-val red">${overdue}</div>
+              <div class="perf-stat-label">🔴 Overdue</div>
+            </div>
+            <div class="perf-stat">
+              <div class="perf-stat-val muted">${pending}</div>
+              <div class="perf-stat-label">⏳ Pending</div>
+            </div>
+          </div>
+          ${tasks.length > 0 ? `
+          <div class="perf-detail-btn" onclick="togglePerfDetail('${detailId}')">
+            <span>View Details</span><span>▼</span>
+          </div>
+          <div class="perf-detail" id="${detailId}">
+            ${ontime > 0 ? `
+            <div class="perf-section">
+              <div class="perf-section-title green">✅ Completed On Time (${ontime})</div>
+              ${tasks.filter(t=>t.status==='completed_ontime').map(t=>`
+                <div class="perf-task-item">
+                  <div style="flex:1">
+                    <div class="perf-task-desc">${escHtml(t.description)}</div>
+                    <div class="perf-task-meta">Due: ${t.due_date}${t.linked_customer?` · ${escHtml(t.linked_customer)}`:''}</div>
+                  </div>
+                  <span class="perf-task-source">${sourceLabel(t.source)}</span>
+                </div>`).join('')}
+            </div>` : ''}
+            ${late > 0 ? `
+            <div class="perf-section">
+              <div class="perf-section-title amber">🕐 Completed Late (${late})</div>
+              ${tasks.filter(t=>t.status==='completed_late').map(t=>`
+                <div class="perf-task-item">
+                  <div style="flex:1">
+                    <div class="perf-task-desc">${escHtml(t.description)}</div>
+                    <div class="perf-task-meta">Due: ${t.due_date} · Completed: ${t.completed_at?new Date(t.completed_at).toLocaleDateString('en-MY'):'—'}${t.linked_customer?` · ${escHtml(t.linked_customer)}`:''}</div>
+                  </div>
+                  <span class="perf-task-source">${sourceLabel(t.source)}</span>
+                </div>`).join('')}
+            </div>` : ''}
+            ${overdue > 0 ? `
+            <div class="perf-section">
+              <div class="perf-section-title red">🔴 Overdue — Not Completed (${overdue})</div>
+              ${tasks.filter(t=>t.status==='overdue').map(t=>`
+                <div class="perf-task-item">
+                  <div style="flex:1">
+                    <div class="perf-task-desc">${escHtml(t.description)}</div>
+                    <div class="perf-task-meta">Due: ${t.due_date}${t.linked_customer?` · ${escHtml(t.linked_customer)}`:''}</div>
+                  </div>
+                  <span class="perf-task-source">${sourceLabel(t.source)}</span>
+                </div>`).join('')}
+            </div>` : ''}
+            ${pending > 0 ? `
+            <div class="perf-section">
+              <div class="perf-section-title muted">⏳ In Progress (${pending})</div>
+              ${tasks.filter(t=>['pending','awaiting_confirm','escalated'].includes(t.status)).map(t=>`
+                <div class="perf-task-item">
+                  <div style="flex:1">
+                    <div class="perf-task-desc">${escHtml(t.description)}</div>
+                    <div class="perf-task-meta">Due: ${t.due_date||'No date'}${t.linked_customer?` · ${escHtml(t.linked_customer)}`:''}</div>
+                  </div>
+                  <span class="perf-task-source">${sourceLabel(t.source)}</span>
+                </div>`).join('')}
+            </div>` : ''}
+          </div>` : ''}
+        </div>`;
+    }).join('');
+
+  } catch(e) {
+    console.error(e);
+    list.innerHTML = '<div class="empty-text">Failed to load performance data.</div>';
+  }
+}
+
+function togglePerfDetail(id) {
+  const el = document.getElementById(id);
+  const btn = el.previousElementSibling;
+  const open = el.classList.toggle('open');
+  btn.innerHTML = open ? '<span>Hide Details</span><span>▲</span>' : '<span>View Details</span><span>▼</span>';
+}
+
+// ===== TASK TRACKER =====
 async function loadTasks() {
   const list = document.getElementById('task-list');
   list.innerHTML = '<div class="loading-text">Loading…</div>';
   const memberFilter = document.getElementById('task-filter-member').value;
-
   try {
-    // Auto-update overdue status first
-    await updateOverdueStatuses();
-
+    await fetch(SUPA_URL+'/rest/v1/tasks?status=eq.pending&due_date=lt.'+todayStr, { method:'PATCH', headers:Hmin, body:JSON.stringify({status:'overdue'}) });
     let q = 'tasks?select=*&order=created_at.desc';
     if (memberFilter) q += `&assigned_to=eq.${encodeURIComponent(memberFilter)}`;
     allTasks = await db(q) || [];
-
-    // Count by status
-    const counts = { overdue:0, awaiting_confirm:0, pending:0, completed:0, all: allTasks.length };
+    const counts = { all:allTasks.length, overdue:0, awaiting_confirm:0, pending:0, completed:0 };
     allTasks.forEach(t => {
-      if (t.status === 'overdue') counts.overdue++;
-      else if (t.status === 'awaiting_confirm') counts.awaiting_confirm++;
-      else if (t.status === 'pending' || t.status === 'escalated') counts.pending++;
+      if (t.status==='overdue') counts.overdue++;
+      else if (t.status==='awaiting_confirm') counts.awaiting_confirm++;
+      else if (['pending','escalated'].includes(t.status)) counts.pending++;
       else if (['completed_ontime','completed_late'].includes(t.status)) counts.completed++;
     });
+    document.getElementById('cnt-all').textContent = counts.all;
     document.getElementById('cnt-overdue').textContent = counts.overdue;
     document.getElementById('cnt-awaiting').textContent = counts.awaiting_confirm;
     document.getElementById('cnt-pending').textContent = counts.pending;
     document.getElementById('cnt-completed').textContent = counts.completed;
-    document.getElementById('cnt-all').textContent = counts.all;
-
     renderTaskList();
-  } catch(e) {
-    console.error(e);
-    list.innerHTML = '<div class="empty-text">Failed to load tasks.</div>';
-  }
-}
-
-async function updateOverdueStatuses() {
-  // Mark pending tasks past due date as overdue
-  try {
-    await fetch(SUPA_URL + '/rest/v1/tasks?status=eq.pending&due_date=lt.' + todayStr, {
-      method: 'PATCH', headers: { ...H, 'Prefer': 'return=minimal' },
-      body: JSON.stringify({ status: 'overdue' })
-    });
-  } catch(e) { console.error('Update overdue failed', e); }
+  } catch(e) { console.error(e); list.innerHTML = '<div class="empty-text">Failed.</div>'; }
 }
 
 function filterTasks(filter, el) {
@@ -548,34 +744,30 @@ function filterTasks(filter, el) {
 function renderTaskList() {
   const list = document.getElementById('task-list');
   let filtered = allTasks;
-
-  if (currentTaskFilter === 'overdue') filtered = allTasks.filter(t => t.status === 'overdue');
-  else if (currentTaskFilter === 'awaiting_confirm') filtered = allTasks.filter(t => t.status === 'awaiting_confirm');
+  if (currentTaskFilter === 'overdue') filtered = allTasks.filter(t => t.status==='overdue');
+  else if (currentTaskFilter === 'awaiting_confirm') filtered = allTasks.filter(t => t.status==='awaiting_confirm');
   else if (currentTaskFilter === 'pending') filtered = allTasks.filter(t => ['pending','escalated'].includes(t.status));
   else if (currentTaskFilter === 'completed') filtered = allTasks.filter(t => ['completed_ontime','completed_late'].includes(t.status));
 
-  // Sort: overdue first, then by due_date
   filtered.sort((a,b) => {
-    const order = { overdue:0, awaiting_confirm:1, escalated:2, pending:3, completed_ontime:4, completed_late:5 };
-    const ao = order[a.status] ?? 3;
-    const bo = order[b.status] ?? 3;
-    if (ao !== bo) return ao - bo;
-    if (a.due_date && b.due_date) return a.due_date.localeCompare(b.due_date);
+    const order = { awaiting_confirm:0, overdue:1, escalated:2, pending:3, completed_ontime:4, completed_late:5 };
+    const ao=order[a.status]??3, bo=order[b.status]??3;
+    if (ao!==bo) return ao-bo;
+    if (a.due_date&&b.due_date) return a.due_date.localeCompare(b.due_date);
     return 0;
   });
 
-  if (!filtered.length) { list.innerHTML = '<div class="empty-text">No tasks in this category.</div>'; return; }
+  if (!filtered.length) { list.innerHTML = '<div class="empty-text">No tasks found.</div>'; return; }
 
   list.innerHTML = filtered.map(t => {
     const icon = { overdue:'🔴', awaiting_confirm:'🔵', pending:'🟡', escalated:'⚠️', completed_ontime:'✅', completed_late:'🕐' }[t.status] || '📌';
     const badgeClass = { overdue:'tsb-overdue', awaiting_confirm:'tsb-awaiting', pending:'tsb-pending', escalated:'tsb-escalated', completed_ontime:'tsb-ontime', completed_late:'tsb-late' }[t.status] || 'tsb-pending';
     const badgeText = { overdue:'Overdue', awaiting_confirm:'Awaiting Confirm', pending:'Pending', escalated:'Escalated', completed_ontime:'Completed ✓', completed_late:'Completed (Late)' }[t.status] || t.status;
     const sourceText = { manager_created:'Manager', from_report:'From Report', rep_committed:'Rep Committed' }[t.source] || t.source;
-    const daysOverdue = t.status === 'overdue' && t.due_date ? Math.floor((new Date() - new Date(t.due_date)) / 86400000) : 0;
-    const dueLabel = t.due_date ? (t.status === 'overdue' ? `⚠️ ${daysOverdue}d overdue` : `Due: ${t.due_date}`) : 'No due date';
-
+    const daysOverdue = t.status==='overdue'&&t.due_date ? Math.floor((new Date()-new Date(t.due_date))/86400000) : 0;
+    const dueLabel = t.due_date ? (t.status==='overdue'?`⚠️ ${daysOverdue}d overdue`:`Due: ${t.due_date}`) : 'No due date';
     return `
-      <div class="task-item ${t.status}" id="ti-${t.task_id}">
+      <div class="task-item ${t.status}">
         <div class="ti-header" onclick="toggleTask('${t.task_id}')">
           <div class="ti-icon">${icon}</div>
           <div class="ti-main">
@@ -583,7 +775,7 @@ function renderTaskList() {
             <div class="ti-meta">
               <span>👤 ${escHtml(t.assigned_to)}</span>
               <span>📅 ${dueLabel}</span>
-              ${t.linked_customer ? `<span>🏪 ${escHtml(t.linked_customer)}</span>` : ''}
+              ${t.linked_customer?`<span>🏪 ${escHtml(t.linked_customer)}</span>`:''}
             </div>
           </div>
           <div class="ti-right">
@@ -594,20 +786,20 @@ function renderTaskList() {
         </div>
         <div class="ti-body" id="tibody-${t.task_id}">
           <div class="ti-body-inner">
-            ${t.rep_reply ? `<div class="ti-note-row"><label>Rep Reply</label><p>${escHtml(t.rep_reply)}</p></div>` : ''}
-            ${t.rep_marked_done_at ? `<div class="ti-note-row"><label>Rep Marked Done</label><p>${new Date(t.rep_marked_done_at).toLocaleString('en-MY')}</p></div>` : ''}
-            ${t.manager_note ? `<div class="ti-note-row"><label>Manager Note</label><p>${escHtml(t.manager_note)}</p></div>` : ''}
-            <textarea class="ti-note-input" id="note-${t.task_id}" placeholder="Add manager note…">${t.manager_note || ''}</textarea>
+            ${t.rep_reply?`<div class="ti-note-row"><label>Rep Reply</label><p>${escHtml(t.rep_reply)}</p></div>`:''}
+            ${t.rep_marked_done_at?`<div class="ti-note-row"><label>Rep Marked Done</label><p>${new Date(t.rep_marked_done_at).toLocaleString('en-MY')}</p></div>`:''}
+            ${t.manager_note?`<div class="ti-note-row"><label>Manager Note</label><p>${escHtml(t.manager_note)}</p></div>`:''}
+            <textarea class="ti-note-input" id="note-${t.task_id}" placeholder="Add manager note…">${t.manager_note||''}</textarea>
             <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap">
               <input type="date" id="due-${t.task_id}" value="${t.due_date||''}" style="padding:6px 10px;border:1.5px solid var(--border);border-radius:6px;font-size:12px;font-family:inherit">
               <button style="padding:6px 12px;background:var(--amber-light);color:var(--amber);border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer" onclick="updateDueDate('${t.task_id}')">Update Due Date</button>
             </div>
             <div class="ti-actions">
               <button class="btn-add-note" onclick="saveManagerNote('${t.task_id}')">💾 Save Note</button>
-              ${t.status === 'awaiting_confirm' ? `
+              ${t.status==='awaiting_confirm'?`
                 <button class="btn-confirm" onclick="confirmTask('${t.task_id}','${t.rep_marked_done_at||''}','${t.due_date||''}')">✅ Confirm Done</button>
-                <button class="btn-reject" onclick="rejectTask('${t.task_id}')">↩ Reject</button>` : ''}
-              ${t.status === 'overdue' || t.status === 'escalated' ? `<button class="btn-confirm" onclick="forceComplete('${t.task_id}')">✅ Mark Complete</button>` : ''}
+                <button class="btn-reject" onclick="rejectTask('${t.task_id}')">↩ Reject</button>`:''}
+              ${['overdue','escalated'].includes(t.status)?`<button class="btn-confirm" onclick="forceComplete('${t.task_id}')">✅ Mark Complete</button>`:''}
               <button class="btn-delete-task" onclick="deleteTask('${t.task_id}')">🗑 Delete</button>
             </div>
           </div>
@@ -616,107 +808,55 @@ function renderTaskList() {
   }).join('');
 }
 
-function toggleTask(id) {
-  document.getElementById('tibody-'+id).classList.toggle('open');
-}
+function toggleTask(id) { document.getElementById('tibody-'+id).classList.toggle('open'); }
 
 async function saveManagerNote(taskId) {
   const note = document.getElementById('note-'+taskId).value.trim();
-  try {
-    await fetch(SUPA_URL+'/rest/v1/tasks?task_id=eq.'+taskId, {
-      method:'PATCH', headers:{...H,'Prefer':'return=minimal'},
-      body: JSON.stringify({ manager_note: note })
-    });
-    await loadTasks();
-  } catch(e) { alert('Failed to save note.'); }
+  try { await fetch(SUPA_URL+'/rest/v1/tasks?task_id=eq.'+taskId,{method:'PATCH',headers:Hmin,body:JSON.stringify({manager_note:note})}); await loadTasks(); }
+  catch(e){alert('Failed.');}
 }
-
 async function updateDueDate(taskId) {
-  const due = document.getElementById('due-'+taskId).value;
-  if (!due) return;
-  try {
-    await fetch(SUPA_URL+'/rest/v1/tasks?task_id=eq.'+taskId, {
-      method:'PATCH', headers:{...H,'Prefer':'return=minimal'},
-      body: JSON.stringify({ due_date: due, status: 'pending' })
-    });
-    await loadTasks();
-  } catch(e) { alert('Failed to update due date.'); }
+  const due = document.getElementById('due-'+taskId).value; if(!due) return;
+  try { await fetch(SUPA_URL+'/rest/v1/tasks?task_id=eq.'+taskId,{method:'PATCH',headers:Hmin,body:JSON.stringify({due_date:due,status:'pending'})}); await loadTasks(); }
+  catch(e){alert('Failed.');}
 }
-
 async function confirmTask(taskId, repMarkedAt, dueDate) {
   const markedDate = repMarkedAt ? new Date(repMarkedAt).toISOString().split('T')[0] : todayStr;
-  const status = dueDate && markedDate > dueDate ? 'completed_late' : 'completed_ontime';
-  try {
-    await fetch(SUPA_URL+'/rest/v1/tasks?task_id=eq.'+taskId, {
-      method:'PATCH', headers:{...H,'Prefer':'return=minimal'},
-      body: JSON.stringify({ status, completed_at: new Date().toISOString() })
-    });
-    await loadTasks();
-  } catch(e) { alert('Failed to confirm.'); }
+  const status = dueDate&&markedDate>dueDate ? 'completed_late' : 'completed_ontime';
+  try { await fetch(SUPA_URL+'/rest/v1/tasks?task_id=eq.'+taskId,{method:'PATCH',headers:Hmin,body:JSON.stringify({status,completed_at:new Date().toISOString()})}); await loadTasks(); }
+  catch(e){alert('Failed.');}
 }
-
 async function rejectTask(taskId) {
-  try {
-    await fetch(SUPA_URL+'/rest/v1/tasks?task_id=eq.'+taskId, {
-      method:'PATCH', headers:{...H,'Prefer':'return=minimal'},
-      body: JSON.stringify({ status: 'pending', rep_marked_done_at: null })
-    });
-    await loadTasks();
-  } catch(e) { alert('Failed to reject.'); }
+  try { await fetch(SUPA_URL+'/rest/v1/tasks?task_id=eq.'+taskId,{method:'PATCH',headers:Hmin,body:JSON.stringify({status:'pending',rep_marked_done_at:null})}); await loadTasks(); }
+  catch(e){alert('Failed.');}
 }
-
 async function forceComplete(taskId) {
-  if (!confirm('Mark this task as completed?')) return;
-  try {
-    await fetch(SUPA_URL+'/rest/v1/tasks?task_id=eq.'+taskId, {
-      method:'PATCH', headers:{...H,'Prefer':'return=minimal'},
-      body: JSON.stringify({ status: 'completed_late', completed_at: new Date().toISOString() })
-    });
-    await loadTasks();
-  } catch(e) { alert('Failed.'); }
+  if(!confirm('Mark as completed?')) return;
+  try { await fetch(SUPA_URL+'/rest/v1/tasks?task_id=eq.'+taskId,{method:'PATCH',headers:Hmin,body:JSON.stringify({status:'completed_late',completed_at:new Date().toISOString()})}); await loadTasks(); }
+  catch(e){alert('Failed.');}
 }
-
 async function deleteTask(taskId) {
-  if (!confirm('Delete this task permanently?')) return;
-  try {
-    await fetch(SUPA_URL+'/rest/v1/tasks?task_id=eq.'+taskId, { method:'DELETE', headers:H });
-    await loadTasks();
-  } catch(e) { alert('Failed to delete.'); }
+  if(!confirm('Delete this task?')) return;
+  try { await fetch(SUPA_URL+'/rest/v1/tasks?task_id=eq.'+taskId,{method:'DELETE',headers:H}); await loadTasks(); }
+  catch(e){alert('Failed.');}
 }
-
-function toggleNewTaskForm() {
-  document.getElementById('new-task-form').classList.toggle('open');
-}
-
+function toggleNewTaskForm() { document.getElementById('new-task-form').classList.toggle('open'); }
 async function saveNewTask() {
-  const desc = document.getElementById('ntf-desc').value.trim();
-  const assignee = document.getElementById('ntf-assignee').value;
-  const due = document.getElementById('ntf-due').value || null;
-  const customer = document.getElementById('ntf-customer').value.trim() || null;
-
-  if (!desc) { alert('Please enter a task description.'); return; }
-  if (!assignee) { alert('Please select a team member.'); return; }
-
+  const desc=document.getElementById('ntf-desc').value.trim();
+  const assignee=document.getElementById('ntf-assignee').value;
+  const due=document.getElementById('ntf-due').value||null;
+  const customer=document.getElementById('ntf-customer').value.trim()||null;
+  if(!desc){alert('Please enter a task description.');return;}
+  if(!assignee){alert('Please select a team member.');return;}
   try {
-    await db('tasks', {
-      method: 'POST',
-      body: JSON.stringify({
-        description: desc,
-        assigned_to: assignee,
-        created_by: 'HQ',
-        source: 'manager_created',
-        linked_customer: customer,
-        due_date: due,
-        status: 'pending'
-      })
-    });
-    document.getElementById('ntf-desc').value = '';
-    document.getElementById('ntf-assignee').value = '';
-    document.getElementById('ntf-due').value = '';
-    document.getElementById('ntf-customer').value = '';
+    await db('tasks',{method:'POST',body:JSON.stringify({description:desc,assigned_to:assignee,created_by:'HQ',source:'manager_created',linked_customer:customer,due_date:due,status:'pending'})});
+    document.getElementById('ntf-desc').value='';
+    document.getElementById('ntf-assignee').value='';
+    document.getElementById('ntf-due').value='';
+    document.getElementById('ntf-customer').value='';
     document.getElementById('new-task-form').classList.remove('open');
     await loadTasks();
-  } catch(e) { console.error(e); alert('Failed to create task.'); }
+  } catch(e){alert('Failed.');}
 }
 
 // ===== DAILY BRIEFING =====
@@ -725,39 +865,31 @@ async function loadBriefing() {
   document.getElementById('briefing-date').value = date;
   const list = document.getElementById('briefing-list');
   list.innerHTML = '<div class="loading-text">Loading…</div>';
-
   try {
-    const salesMembers = members.filter(m => (m.role||'sales') === 'sales');
+    const salesMembers = members.filter(m=>(m.role||'sales')==='sales');
     const reports = await db(`daily_reports?date=eq.${date}&select=*`) || [];
     const reportMap = {};
-    reports.forEach(r => { reportMap[r.name] = r; });
+    reports.forEach(r=>{reportMap[r.name]=r;});
     const visits = await db(`visit_records?visit_date=eq.${date}&select=*&order=created_at.asc`) || [];
     const visitsByRep = {};
-    visits.forEach(v => { if(!visitsByRep[v.rep_name]) visitsByRep[v.rep_name]=[]; visitsByRep[v.rep_name].push(v); });
-
-    const submitted = salesMembers.filter(m => reportMap[m.name]?.status==='submitted').length;
-    document.getElementById('bs-submitted').textContent = submitted;
-    document.getElementById('bs-missing').textContent = salesMembers.length - submitted;
-    document.getElementById('bs-visits').textContent = visits.length;
-    document.getElementById('bs-orders').textContent = fmtRM(visits.reduce((s,v)=>s+(v.order_amount||0),0));
-
-    if (!salesMembers.length) { list.innerHTML = '<div class="empty-text">No sales members found.</div>'; return; }
-
-    list.innerHTML = salesMembers.map(m => {
-      const report = reportMap[m.name];
-      const repVisits = visitsByRep[m.name] || [];
-      const isSubmitted = report?.status === 'submitted';
-      const repTotal = repVisits.reduce((s,v)=>s+(v.order_amount||0),0);
-
+    visits.forEach(v=>{if(!visitsByRep[v.rep_name])visitsByRep[v.rep_name]=[];visitsByRep[v.rep_name].push(v);});
+    const submitted = salesMembers.filter(m=>reportMap[m.name]?.status==='submitted').length;
+    document.getElementById('bs-submitted').textContent=submitted;
+    document.getElementById('bs-missing').textContent=salesMembers.length-submitted;
+    document.getElementById('bs-visits').textContent=visits.length;
+    document.getElementById('bs-orders').textContent=fmtRM(visits.reduce((s,v)=>s+(v.order_amount||0),0));
+    if(!salesMembers.length){list.innerHTML='<div class="empty-text">No sales members.</div>';return;}
+    list.innerHTML=salesMembers.map(m=>{
+      const report=reportMap[m.name];
+      const repVisits=visitsByRep[m.name]||[];
+      const isSubmitted=report?.status==='submitted';
+      const repTotal=repVisits.reduce((s,v)=>s+(v.order_amount||0),0);
       return `
         <div class="rep-briefing-card">
           <div class="rbc-header" onclick="toggleRbc(${m.id})">
             <div class="rbc-left">
               <div class="rbc-avatar">${m.name.charAt(0).toUpperCase()}</div>
-              <div>
-                <div class="rbc-name">${escHtml(m.name)}</div>
-                <div class="rbc-meta">${repVisits.length} visit(s) · ${fmtRM(repTotal)}</div>
-              </div>
+              <div><div class="rbc-name">${escHtml(m.name)}</div><div class="rbc-meta">${repVisits.length} visit(s) · ${fmtRM(repTotal)}</div></div>
             </div>
             <div class="rbc-right">
               <span class="status-badge ${isSubmitted?'submitted':'missing'}">${isSubmitted?'✅ Submitted':'⏳ Not Submitted'}</span>
@@ -765,20 +897,14 @@ async function loadBriefing() {
             </div>
           </div>
           <div class="rbc-body" id="rbcbody-${m.id}">
-            ${repVisits.length===0
-              ? `<div class="empty-text">No visit records for this date.</div>`
-              : repVisits.map((v,vi) => `
+            ${repVisits.length===0?`<div class="empty-text">No visit records.</div>`:
+              repVisits.map((v,vi)=>`
                 <div class="visit-record-item">
-                  <div class="vri-header">
-                    <div class="vri-customer">${escHtml(v.customer_name)}</div>
-                    <div class="vri-amount">${fmtRM(v.order_amount||0)}</div>
-                  </div>
-                  ${v.notes ? `<div class="vri-notes">${escHtml(v.notes)}</div>` : ''}
-                  ${v.followup_notes ? `<div class="vri-followup">📌 Follow-up: ${escHtml(v.followup_notes)}${v.followup_date?` · Due: ${v.followup_date}`:''}${v.has_task_created?' ✅ Task created':''}</div>` : ''}
-                  ${v.photo_urls&&v.photo_urls.length>0 ? `<div class="vri-photos">${v.photo_urls.map(u=>`<img src="${u}" onclick="openLightbox('${u}')" loading="lazy">`).join('')}</div>` : ''}
-                  <div class="vri-actions">
-                    <button class="btn-create-task-hq" onclick="toggleTaskForm('tf-${m.id}-${vi}')">+ Create Task</button>
-                  </div>
+                  <div class="vri-header"><div class="vri-customer">${escHtml(v.customer_name)}</div><div class="vri-amount">${fmtRM(v.order_amount||0)}</div></div>
+                  ${v.notes?`<div class="vri-notes">${escHtml(v.notes)}</div>`:''}
+                  ${v.followup_notes?`<div class="vri-followup">📌 ${escHtml(v.followup_notes)}${v.followup_date?` · Due: ${v.followup_date}`:''}${v.has_task_created?' ✅ Task created':''}</div>`:''}
+                  ${v.photo_urls&&v.photo_urls.length>0?`<div class="vri-photos">${v.photo_urls.map(u=>`<img src="${u}" onclick="openLightbox('${u}')" loading="lazy">`).join('')}</div>`:''}
+                  <div class="vri-actions"><button class="btn-create-task-hq" onclick="toggleTaskForm('tf-${m.id}-${vi}')">+ Create Task</button></div>
                   <div class="task-form-inline" id="tf-${m.id}-${vi}">
                     <div style="font-size:12px;font-weight:700;color:#92400e;margin-bottom:8px">Create Task for ${escHtml(m.name)}</div>
                     <textarea id="tf-desc-${m.id}-${vi}" placeholder="Task description...">${v.followup_notes?escHtml(v.followup_notes):''}</textarea>
@@ -788,68 +914,50 @@ async function loadBriefing() {
                       <button class="btn-cancel-task" onclick="toggleTaskForm('tf-${m.id}-${vi}')">Cancel</button>
                     </div>
                   </div>
-                </div>`).join('')
-            }
+                </div>`).join('')}
           </div>
         </div>`;
     }).join('');
-  } catch(e) { console.error(e); list.innerHTML = '<div class="empty-text">Failed to load.</div>'; }
+  } catch(e){console.error(e);list.innerHTML='<div class="empty-text">Failed.</div>';}
 }
 
-function toggleRbc(id) { document.getElementById('rbcbody-'+id).classList.toggle('open'); }
-function toggleTaskForm(id) { document.getElementById(id).classList.toggle('open'); }
+function toggleRbc(id){document.getElementById('rbcbody-'+id).classList.toggle('open');}
+function toggleTaskForm(id){document.getElementById(id).classList.toggle('open');}
 
-async function saveTaskFromVisit(repName, visitId, memberId, visitIdx, customerName) {
-  const desc = document.getElementById(`tf-desc-${memberId}-${visitIdx}`).value.trim();
-  const due = document.getElementById(`tf-due-${memberId}-${visitIdx}`).value || null;
-  if (!desc) { alert('Please enter a task description.'); return; }
+async function saveTaskFromVisit(repName,visitId,memberId,visitIdx,customerName){
+  const desc=document.getElementById(`tf-desc-${memberId}-${visitIdx}`).value.trim();
+  const due=document.getElementById(`tf-due-${memberId}-${visitIdx}`).value||null;
+  if(!desc){alert('Please enter a task description.');return;}
   try {
-    await db('tasks', {
-      method: 'POST',
-      body: JSON.stringify({
-        description: desc, assigned_to: repName, created_by: 'HQ',
-        source: 'from_report', linked_customer: customerName,
-        linked_visit_id: visitId, due_date: due, status: 'pending'
-      })
-    });
-    await fetch(SUPA_URL+'/rest/v1/visit_records?visit_id=eq.'+visitId, {
-      method:'PATCH', headers:{...H,'Prefer':'return=minimal'},
-      body: JSON.stringify({ has_task_created: true })
-    });
+    await db('tasks',{method:'POST',body:JSON.stringify({description:desc,assigned_to:repName,created_by:'HQ',source:'from_report',linked_customer:customerName,linked_visit_id:visitId,due_date:due,status:'pending'})});
+    await fetch(SUPA_URL+'/rest/v1/visit_records?visit_id=eq.'+visitId,{method:'PATCH',headers:Hmin,body:JSON.stringify({has_task_created:true})});
     alert('✅ Task created for '+repName);
     document.getElementById(`tf-${memberId}-${visitIdx}`).classList.remove('open');
     loadBriefing();
-  } catch(e) { console.error(e); alert('Failed to create task.'); }
+  } catch(e){alert('Failed.');}
 }
 
-function openLightbox(url) { document.getElementById('lightbox-img').src=url; document.getElementById('lightbox').classList.add('open'); }
-function closeLightbox() { document.getElementById('lightbox').classList.remove('open'); document.getElementById('lightbox-img').src=''; }
+function openLightbox(url){document.getElementById('lightbox-img').src=url;document.getElementById('lightbox').classList.add('open');}
+function closeLightbox(){document.getElementById('lightbox').classList.remove('open');document.getElementById('lightbox-img').src='';}
 
 // ===== OVERVIEW =====
-async function loadOverview() {
-  const t=today(), ws=weekStart(), we=weekEnd();
-  try {
-    const [dailyToday, weeklyWeek] = await Promise.all([
-      db(`daily_reports?select=name&date=eq.${t}`),
-      db(`weekly_reports?select=name&date=gte.${ws}&date=lte.${we}`)
-    ]);
-    const sD=new Set(dailyToday.map(r=>r.name)), sW=new Set(weeklyWeek.map(r=>r.name));
-    const mD=members.filter(m=>!sD.has(m.name)), mW=members.filter(m=>!sW.has(m.name));
+async function loadOverview(){
+  const t=today(),ws=weekStart(),we=weekEnd();
+  try{
+    const [dT,wW]=await Promise.all([db(`daily_reports?select=name&date=eq.${t}`),db(`weekly_reports?select=name&date=gte.${ws}&date=lte.${we}`)]);
+    const sD=new Set(dT.map(r=>r.name)),sW=new Set(wW.map(r=>r.name));
+    const mD=members.filter(m=>!sD.has(m.name)),mW=members.filter(m=>!sW.has(m.name));
     document.getElementById('ov-daily-miss').textContent=mD.length;
     document.getElementById('ov-daily-ok').textContent=sD.size;
     document.getElementById('ov-weekly-miss').textContent=mW.length;
     document.getElementById('ov-weekly-ok').textContent=sW.size;
-    document.getElementById('missing-daily-today').innerHTML=mD.length
-      ? mD.map(m=>`<div class="missing-item"><span class="mi-name">${m.name}</span><span class="mi-badge">NOT SUBMITTED</span></div>`).join('')
-      : '<div class="all-good">✅ Everyone has submitted today!</div>';
-    document.getElementById('missing-weekly-week').innerHTML=mW.length
-      ? mW.map(m=>`<div class="missing-item"><span class="mi-name">${m.name}</span><span class="mi-badge">NOT SUBMITTED</span></div>`).join('')
-      : '<div class="all-good">✅ Everyone has submitted this week!</div>';
-  } catch(e){ console.error(e); }
+    document.getElementById('missing-daily-today').innerHTML=mD.length?mD.map(m=>`<div class="missing-item"><span class="mi-name">${m.name}</span><span class="mi-badge">NOT SUBMITTED</span></div>`).join(''):'<div class="all-good">✅ Everyone submitted today!</div>';
+    document.getElementById('missing-weekly-week').innerHTML=mW.length?mW.map(m=>`<div class="missing-item"><span class="mi-name">${m.name}</span><span class="mi-badge">NOT SUBMITTED</span></div>`).join(''):'<div class="all-good">✅ Everyone submitted this week!</div>';
+  }catch(e){console.error(e);}
 }
 
-// ===== DAILY/WEEKLY REPORTS =====
-async function loadDailyReports() {
+// ===== REPORTS =====
+async function loadDailyReports(){
   const list=document.getElementById('daily-report-list');
   list.innerHTML='<div class="loading-text">Loading…</div>';
   const name=document.getElementById('filter-daily-name').value;
@@ -859,18 +967,14 @@ async function loadDailyReports() {
   if(name) q+=`&name=eq.${encodeURIComponent(name)}`;
   if(from) q+=`&date=gte.${from}`;
   if(to) q+=`&date=lte.${to}`;
-  try {
+  try{
     const data=await db(q);
-    if(!data.length){list.innerHTML='<div class="empty-text">No reports found.</div>';return;}
+    if(!data.length){list.innerHTML='<div class="empty-text">No reports.</div>';return;}
     list.innerHTML=data.map((r,i)=>`
       <div class="report-item">
         <div class="report-header" onclick="toggleReport('dr-${i}')">
           <div class="rh-left"><div class="rh-name">${r.name}</div><div class="rh-date">${r.date}</div></div>
-          <div class="rh-right">
-            <span class="badge daily">Daily</span>
-            <button class="btn-del" onclick="event.stopPropagation();deleteReport('daily_reports',${r.id},'daily')">🗑</button>
-            <span class="chevron" id="chev-dr-${i}">▼</span>
-          </div>
+          <div class="rh-right"><span class="badge daily">Daily</span><button class="btn-del" onclick="event.stopPropagation();deleteReport('daily_reports',${r.id},'daily')">🗑</button><span class="chevron" id="chev-dr-${i}">▼</span></div>
         </div>
         <div class="report-body" id="dr-${i}">
           <div class="rb-field"><div class="rf-label">Today's Task</div><div class="rf-val">${escHtml(r.today_task)}</div></div>
@@ -878,10 +982,10 @@ async function loadDailyReports() {
           <div class="rb-field"><div class="rf-label">Assistance</div><div class="rf-val">${escHtml(r.assistance||'None.')}</div></div>
         </div>
       </div>`).join('');
-  } catch(e){list.innerHTML='<div class="empty-text">Failed to load.</div>';}
+  }catch(e){list.innerHTML='<div class="empty-text">Failed.</div>';}
 }
 
-async function loadWeeklyReports() {
+async function loadWeeklyReports(){
   const list=document.getElementById('weekly-report-list');
   list.innerHTML='<div class="loading-text">Loading…</div>';
   const name=document.getElementById('filter-weekly-name').value;
@@ -891,92 +995,74 @@ async function loadWeeklyReports() {
   if(name) q+=`&name=eq.${encodeURIComponent(name)}`;
   if(from) q+=`&date=gte.${from}`;
   if(to) q+=`&date=lte.${to}`;
-  try {
+  try{
     const data=await db(q);
-    if(!data.length){list.innerHTML='<div class="empty-text">No reports found.</div>';return;}
+    if(!data.length){list.innerHTML='<div class="empty-text">No reports.</div>';return;}
     list.innerHTML=data.map((r,i)=>`
       <div class="report-item">
         <div class="report-header" onclick="toggleReport('wr-${i}')">
           <div class="rh-left"><div class="rh-name">${r.name}</div><div class="rh-date">${r.date}</div></div>
-          <div class="rh-right">
-            <span class="badge weekly">Weekly</span>
-            <button class="btn-del" onclick="event.stopPropagation();deleteReport('weekly_reports',${r.id},'weekly')">🗑</button>
-            <span class="chevron" id="chev-wr-${i}">▼</span>
-          </div>
+          <div class="rh-right"><span class="badge weekly">Weekly</span><button class="btn-del" onclick="event.stopPropagation();deleteReport('weekly_reports',${r.id},'weekly')">🗑</button><span class="chevron" id="chev-wr-${i}">▼</span></div>
         </div>
         <div class="report-body" id="wr-${i}">
           <div class="rb-field"><div class="rf-label">Next Week Targets</div><div class="rf-val">${escHtml(r.next_week_target)}</div></div>
           <div class="rb-field"><div class="rf-label">Assistance</div><div class="rf-val">${escHtml(r.assistance||'None.')}</div></div>
         </div>
       </div>`).join('');
-  } catch(e){list.innerHTML='<div class="empty-text">Failed to load.</div>';}
+  }catch(e){list.innerHTML='<div class="empty-text">Failed.</div>';}
 }
 
-function toggleReport(id) {
-  const body=document.getElementById(id); const chev=document.getElementById('chev-'+id);
-  const open=body.classList.toggle('open'); chev.textContent=open?'▲':'▼';
-}
-
-async function deleteReport(table,id,type) {
+function toggleReport(id){const body=document.getElementById(id);const chev=document.getElementById('chev-'+id);const open=body.classList.toggle('open');chev.textContent=open?'▲':'▼';}
+async function deleteReport(table,id,type){
   if(!confirm('Delete this report?')) return;
-  try { await fetch(SUPA_URL+'/rest/v1/'+table+'?id=eq.'+id,{method:'DELETE',headers:H}); if(type==='daily') loadDailyReports(); else loadWeeklyReports(); }
+  try{await fetch(SUPA_URL+'/rest/v1/'+table+'?id=eq.'+id,{method:'DELETE',headers:H});if(type==='daily')loadDailyReports();else loadWeeklyReports();}
   catch(e){alert('Failed.');}
 }
 
 // ===== MISS STATS =====
-async function loadMissStats() {
+async function loadMissStats(){
   const tbody=document.getElementById('miss-stats-body');
   tbody.innerHTML='<tr><td colspan="4" class="loading-text">Loading…</td></tr>';
-  const monthVal=document.getElementById('stats-month').value; if(!monthVal) return;
+  const monthVal=document.getElementById('stats-month').value;if(!monthVal)return;
   const [year,month]=monthVal.split('-');
   const firstDay=`${year}-${month}-01`;
   const lastDay=`${year}-${month}-${new Date(year,month,0).getDate()}`;
   const workDays=countWorkDays(new Date(year,month-1,1),new Date(year,month-1,new Date(year,month,0).getDate()));
   const weekCount=Math.ceil(new Date(year,month,0).getDate()/7);
-  try {
-    const [dailyData,weeklyData]=await Promise.all([
-      db(`daily_reports?select=name,date&date=gte.${firstDay}&date=lte.${lastDay}`),
-      db(`weekly_reports?select=name,date&date=gte.${firstDay}&date=lte.${lastDay}`)
-    ]);
+  try{
+    const [dD,wD]=await Promise.all([db(`daily_reports?select=name,date&date=gte.${firstDay}&date=lte.${lastDay}`),db(`weekly_reports?select=name,date&date=gte.${firstDay}&date=lte.${lastDay}`)]);
     const dBN={},wBN={};
     members.forEach(m=>{dBN[m.name]=0;wBN[m.name]=0;});
-    dailyData.forEach(r=>{if(dBN[r.name]!==undefined)dBN[r.name]++;});
-    weeklyData.forEach(r=>{if(wBN[r.name]!==undefined)wBN[r.name]++;});
+    dD.forEach(r=>{if(dBN[r.name]!==undefined)dBN[r.name]++;});
+    wD.forEach(r=>{if(wBN[r.name]!==undefined)wBN[r.name]++;});
     tbody.innerHTML=members.map(m=>{
       const dM=Math.max(0,workDays-dBN[m.name]);
       const wM=Math.max(0,weekCount-wBN[m.name]);
       const tot=dM+wM;
-      return `<tr><td><strong>${m.name}</strong></td>
-        <td><span class="miss-count ${dM>0?'bad':'ok'}">${dM}</span></td>
-        <td><span class="miss-count ${wM>0?'bad':'ok'}">${wM}</span></td>
-        <td><span class="miss-count ${tot>0?'bad':'ok'}">${tot}</span></td></tr>`;
+      return `<tr><td><strong>${m.name}</strong></td><td><span class="miss-count ${dM>0?'bad':'ok'}">${dM}</span></td><td><span class="miss-count ${wM>0?'bad':'ok'}">${wM}</span></td><td><span class="miss-count ${tot>0?'bad':'ok'}">${tot}</span></td></tr>`;
     }).join('');
-  } catch(e){tbody.innerHTML='<tr><td colspan="4" class="empty-text">Failed.</td></tr>';}
+  }catch(e){tbody.innerHTML='<tr><td colspan="4" class="empty-text">Failed.</td></tr>';}
 }
 
-function countWorkDays(start,end) {
-  let count=0; const cur=new Date(start);
-  while(cur<=end){const d=cur.getDay();if(d!==0&&d!==6)count++;cur.setDate(cur.getDate()+1);}
-  return count;
-}
+function countWorkDays(start,end){let count=0;const cur=new Date(start);while(cur<=end){const d=cur.getDay();if(d!==0&&d!==6)count++;cur.setDate(cur.getDate()+1);}return count;}
 
 // ===== MEMBERS =====
-async function loadMembers() {
-  try {
-    members = await db('members?select=*&order=name');
-    ['filter-daily-name','filter-weekly-name','task-filter-member','ntf-assignee'].forEach(id => {
-      const sel=document.getElementById(id); if(!sel) return;
+async function loadMembers(){
+  try{
+    members=await db('members?select=*&order=name');
+    ['filter-daily-name','filter-weekly-name','task-filter-member','ntf-assignee'].forEach(id=>{
+      const sel=document.getElementById(id);if(!sel)return;
       const cur=sel.value;
-      const isAssignee = id === 'ntf-assignee';
-      sel.innerHTML = isAssignee ? '<option value="">Assign to…</option>' : '<option value="">All Members</option>';
-      const filtered = isAssignee ? members.filter(m=>(m.role||'sales')==='sales') : members;
+      const isAssignee=id==='ntf-assignee';
+      sel.innerHTML=isAssignee?'<option value="">Assign to…</option>':'<option value="">All Members</option>';
+      const filtered=isAssignee?members.filter(m=>(m.role||'sales')==='sales'):members;
       filtered.forEach(m=>{const o=document.createElement('option');o.value=m.name;o.textContent=m.name;sel.appendChild(o);});
-      if(!isAssignee) sel.value=cur;
+      if(!isAssignee)sel.value=cur;
     });
-  } catch(e){console.error(e);}
+  }catch(e){console.error(e);}
 }
 
-function renderMembers() {
+function renderMembers(){
   const list=document.getElementById('member-list');
   if(!members.length){list.innerHTML='<div class="empty-text">No members yet.</div>';return;}
   list.innerHTML=members.map(m=>`
@@ -1026,7 +1112,7 @@ async function saveName(id){
   if(!newName){inp.style.borderColor='var(--red)';return;}
   const oldName=members.find(m=>m.id===id)?.name;
   if(newName===oldName){toggleNameEdit(id);return;}
-  if(!confirm(`Change name from "${oldName}" to "${newName}"?\n\nAll past reports will be updated.`)) return;
+  if(!confirm(`Change name from "${oldName}" to "${newName}"?\nAll past reports will be updated.`))return;
   try{
     await fetch(SUPA_URL+'/rest/v1/members?id=eq.'+id,{method:'PATCH',headers:H,body:JSON.stringify({name:newName})});
     await fetch(SUPA_URL+'/rest/v1/daily_reports?name=eq.'+encodeURIComponent(oldName),{method:'PATCH',headers:H,body:JSON.stringify({name:newName})});
@@ -1045,16 +1131,25 @@ async function addMember(){
   catch(e){alert('Failed.');}
 }
 async function deleteMember(id,name){
-  if(!confirm(`Remove "${name}" from team?`)) return;
+  if(!confirm(`Remove "${name}"?`))return;
   try{await fetch(SUPA_URL+'/rest/v1/members?id=eq.'+id,{method:'DELETE',headers:H});await loadMembers();renderMembers();}
   catch(e){alert('Failed.');}
 }
 
-// ===== MISC =====
-function populateMonthSelector(){
-  const sel=document.getElementById('stats-month');const now=new Date();
-  for(let i=0;i<6;i++){const d=new Date(now.getFullYear(),now.getMonth()-i,1);const o=document.createElement('option');o.value=d.toISOString().slice(0,7);o.textContent=d.toLocaleString('en',{year:'numeric',month:'long'});sel.appendChild(o);}
+function populateMonthSelectors(){
+  const now=new Date();
+  ['stats-month','perf-month'].forEach(selId=>{
+    const sel=document.getElementById(selId);
+    for(let i=0;i<6;i++){
+      const d=new Date(now.getFullYear(),now.getMonth()-i,1);
+      const o=document.createElement('option');
+      o.value=d.toISOString().slice(0,7);
+      o.textContent=d.toLocaleString('en',{year:'numeric',month:'long'});
+      sel.appendChild(o);
+    }
+  });
 }
+
 function setDefaultFilters(){
   const t=today(),ws=weekStart();
   document.getElementById('filter-daily-from').value=ws;
@@ -1062,13 +1157,14 @@ function setDefaultFilters(){
   document.getElementById('filter-weekly-from').value=weekStart();
   document.getElementById('filter-weekly-to').value=weekEnd();
 }
+
 function logoutHQ(){sessionStorage.clear();}
 
 (async()=>{
   if(sessionStorage.getItem('userRole')==='hq'||sessionStorage.getItem('hq_auth')==='1'){
     sessionStorage.setItem('hq_auth','1');
     document.getElementById('pwOverlay').style.display='none';
-    populateMonthSelector();setDefaultFilters();
+    populateMonthSelectors();setDefaultFilters();
     document.getElementById('briefing-date').value=todayStr;
     await loadMembers();
     loadBriefing();
@@ -1076,14 +1172,14 @@ function logoutHQ(){sessionStorage.clear();}
 })();
 
 async function checkPw(){
-  const inp=document.getElementById('pwInput');const pw=inp.value.trim();if(!pw) return;
+  const inp=document.getElementById('pwInput');const pw=inp.value.trim();if(!pw)return;
   const btn=document.querySelector('.pw-btn');btn.disabled=true;btn.textContent='...';
   try{
     const data=await db("settings?key=eq.hq_password&select=value");
     if(data.length&&data[0].value===pw){
       sessionStorage.setItem('hq_auth','1');
       document.getElementById('pwOverlay').style.display='none';
-      populateMonthSelector();setDefaultFilters();
+      populateMonthSelectors();setDefaultFilters();
       document.getElementById('briefing-date').value=todayStr;
       await loadMembers();loadBriefing();
     }else{
