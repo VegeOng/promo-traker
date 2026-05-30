@@ -3,470 +3,1041 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Promo HQ — MamaVege</title>
-<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<title>Report HQ — MamaVege</title>
 <style>
-*{box-sizing:border-box;margin:0;padding:0}
-:root{
-  --bg:#fafafa;--s1:#fff;--s2:#f3f4f6;--s3:#e9f5ee;
-  --b1:#e5e7eb;--b2:#d1d5db;
-  --t1:#111827;--t2:#4b5563;--t3:#9ca3af;
-  --green:#166534;--green2:#22c55e;--green-bg:#f0fdf4;--green-border:#bbf7d0;
-  --red:#dc2626;--red-bg:#fef2f2;--red-border:#fecaca;
-  --amber:#d97706;--amber-bg:#fffbeb;--amber-border:#fde68a;
-  --font:'Plus Jakarta Sans',sans-serif;--mono:'DM Mono',monospace;
-  --r:10px;--r2:16px;
-}
-body{background:var(--bg);color:var(--t1);font-family:var(--font);min-height:100vh;}
-.topbar{display:flex;align-items:center;gap:10px;padding:13px 20px;border-bottom:1px solid var(--b1);background:var(--s1);position:sticky;top:0;z-index:20;box-shadow:0 1px 3px rgba(0,0,0,.06);}
-.logo-mark{width:28px;height:28px;background:var(--green);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:#fff;flex-shrink:0;}
-.logo-text{font-size:14px;font-weight:700;}
-.logo-sub{font-size:11px;color:var(--t3);font-family:var(--mono);}
-.nav-tabs{display:flex;gap:4px;margin-left:12px;}
-.nav-tab{background:transparent;border:none;padding:6px 13px;border-radius:var(--r);font-size:12px;font-weight:600;font-family:var(--font);color:var(--t2);cursor:pointer;transition:all .2s;}
-.nav-tab.active,.nav-tab:hover{background:var(--green-bg);color:var(--green);}
-.nav-tab.active{border:1px solid var(--green-border);}
-.topbar-right{margin-left:auto;display:flex;align-items:center;gap:8px;}
-.live-dot{width:6px;height:6px;border-radius:50%;background:var(--green2);}
-.refresh-btn{background:var(--s1);border:1px solid var(--b1);border-radius:var(--r);padding:6px 13px;font-size:12px;font-weight:600;font-family:var(--font);color:var(--t2);cursor:pointer;transition:all .2s;}
-.refresh-btn:hover{color:var(--green);border-color:var(--green-border);}
-.back-link{font-size:12px;color:var(--green);font-weight:600;text-decoration:none;}
+  :root {
+    --bg: #fafafa; --green: #166534; --green-light: #dcfce7; --green-mid: #15803d;
+    --red: #dc2626; --red-light: #fee2e2; --amber: #d97706; --amber-light: #fef3c7;
+    --blue: #3b82f6; --blue-light: #eff6ff;
+    --text: #1a1a1a; --muted: #6b7280; --border: #e5e7eb; --card: #ffffff; --radius: 12px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; min-height: 100vh; }
 
-.main{padding:18px 20px;max-width:1200px;width:100%;margin:0 auto;}
-.screen{display:none;animation:fi .2s ease;}
-.screen.active{display:block;}
-@keyframes fi{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+  .header { background: var(--green); color: white; padding: 16px 20px; display: flex; align-items: center; gap: 12px; position: sticky; top: 0; z-index: 100; }
+  .header-logo { width: 32px; height: 32px; background: white; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: 900; color: var(--green); font-size: 14px; flex-shrink: 0; }
+  .header-info { flex: 1; }
+  .header-title { font-size: 16px; font-weight: 700; }
+  .header-sub { font-size: 12px; opacity: 0.75; }
+  .header-back { color: rgba(255,255,255,0.8); text-decoration: none; font-size: 13px; }
+  .header-back:hover { color: white; }
 
-.kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px;}
-.kpi{background:var(--s1);border:1px solid var(--b1);border-radius:var(--r2);padding:15px 17px;position:relative;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.04);}
-.kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--kc,var(--green));}
-.kpi-label{font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--t3);margin-bottom:7px;}
-.kpi-val{font-size:26px;font-weight:700;line-height:1;font-family:var(--mono);}
-.kpi-sub{font-size:11px;color:var(--t3);margin-top:5px;}
+  .pw-overlay { position: fixed; inset: 0; background: var(--green); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 24px; }
+  .pw-box { background: white; border-radius: 16px; padding: 32px 28px; width: 100%; max-width: 360px; text-align: center; }
+  .pw-logo { width: 52px; height: 52px; background: var(--green); border-radius: 14px; display: flex; align-items: center; justify-content: center; font-weight: 900; color: white; font-size: 22px; margin: 0 auto 16px; }
+  .pw-title { font-size: 20px; font-weight: 900; color: var(--text); margin-bottom: 4px; }
+  .pw-sub { font-size: 13px; color: var(--muted); margin-bottom: 24px; }
+  .pw-input { width: 100%; padding: 13px 16px; border: 1.5px solid var(--border); border-radius: 10px; font-size: 15px; font-family: inherit; text-align: center; letter-spacing: 0.1em; margin-bottom: 12px; }
+  .pw-input:focus { outline: none; border-color: var(--green); }
+  .pw-input.error { border-color: var(--red); animation: shake 0.3s; }
+  @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-6px)} 75%{transform:translateX(6px)} }
+  .pw-btn { width: 100%; padding: 13px; background: var(--green); color: white; border: none; border-radius: 10px; font-size: 15px; font-weight: 700; cursor: pointer; }
+  .pw-btn:hover { background: var(--green-mid); }
+  .pw-error { font-size: 13px; color: var(--red); margin-top: 8px; display: none; }
+  .pw-error.visible { display: block; }
 
-.card{background:var(--s1);border:1px solid var(--b1);border-radius:var(--r2);padding:16px 18px;box-shadow:0 1px 3px rgba(0,0,0,.04);}
-.card-title{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--t3);margin-bottom:14px;}
-.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;}
+  .chpw-row { display: flex; gap: 10px; margin-top: 12px; }
+  .chpw-row input { flex: 1; padding: 10px 14px; border: 1.5px solid var(--border); border-radius: 8px; font-size: 14px; font-family: inherit; }
+  .chpw-row input:focus { outline: none; border-color: var(--green); }
+  .btn-chpw { padding: 10px 16px; background: var(--green); color: white; border: none; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; white-space: nowrap; }
+  .btn-chpw:hover { background: var(--green-mid); }
+  .chpw-msg { font-size: 13px; margin-top: 8px; display: none; }
+  .chpw-msg.ok { color: var(--green); display: block; }
+  .chpw-msg.fail { color: var(--red); display: block; }
 
-.alert{display:flex;align-items:flex-start;gap:8px;padding:10px 13px;border-radius:var(--r);margin-bottom:8px;font-size:12px;font-weight:500;}
-.alert-red{background:var(--red-bg);border:1px solid var(--red-border);color:var(--red);}
-.alert-amber{background:var(--amber-bg);border:1px solid var(--amber-border);color:var(--amber);}
+  .tabs { background: white; border-bottom: 1px solid var(--border); display: flex; overflow-x: auto; position: sticky; top: 64px; z-index: 99; }
+  .tab { padding: 14px 18px; font-size: 13px; font-weight: 600; color: var(--muted); cursor: pointer; border-bottom: 2px solid transparent; white-space: nowrap; transition: all 0.2s; }
+  .tab.active { color: var(--green); border-bottom-color: var(--green); }
+  .tab:hover { color: var(--green); background: #f0fdf4; }
 
-.reg-item{margin-bottom:13px;}
-.reg-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;}
-.reg-name{font-size:13px;font-weight:600;display:flex;align-items:center;gap:6px;}
-.reg-dot{width:7px;height:7px;border-radius:50%;}
-.reg-pct{font-family:var(--mono);font-size:13px;font-weight:600;}
-.reg-sub{font-size:10px;color:var(--t3);margin-bottom:4px;display:flex;gap:10px;}
-.bar-track{height:5px;background:var(--s2);border-radius:3px;overflow:hidden;}
-.bar-fill{height:100%;border-radius:3px;}
+  .container { max-width: 860px; margin: 0 auto; padding: 24px 16px 60px; }
+  .section { display: none; }
+  .section.active { display: block; }
 
-.tbl-wrap{overflow-x:auto;}
-.tbl{width:100%;border-collapse:collapse;font-size:12px;min-width:600px;}
-.tbl th{text-align:left;padding:8px 9px;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--t3);border-bottom:1px solid var(--b1);font-weight:600;background:var(--s2);}
-.tbl td{padding:9px 9px;border-bottom:1px solid var(--b1);color:var(--t2);vertical-align:middle;}
-.tbl tr:last-child td{border-bottom:none;}
-.tbl tr:hover td{background:var(--green-bg);}
-.num{font-family:var(--mono);color:var(--t1)!important;}
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; margin-bottom: 16px; }
+  .card-title { font-size: 15px; font-weight: 800; color: var(--text); margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
 
-.badge{display:inline-flex;align-items:center;padding:2px 7px;border-radius:20px;font-size:10px;font-weight:700;font-family:var(--mono);}
-.b-green{background:var(--green-bg);color:var(--green);border:1px solid var(--green-border);}
-.b-amber{background:var(--amber-bg);color:var(--amber);border:1px solid var(--amber-border);}
-.b-red{background:var(--red-bg);color:var(--red);border:1px solid var(--red-border);}
+  .stat-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 12px; margin-bottom: 20px; }
+  @media(min-width:500px){ .stat-grid { grid-template-columns: repeat(4,1fr); } }
+  .stat-box { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 16px; text-align: center; }
+  .stat-box .s-val { font-size: 28px; font-weight: 900; line-height: 1; }
+  .stat-box .s-label { font-size: 11px; color: var(--muted); margin-top: 4px; text-transform: uppercase; letter-spacing: 0.04em; }
+  .stat-box.red .s-val { color: var(--red); }
+  .stat-box.green .s-val { color: var(--green); }
+  .stat-box.amber .s-val { color: var(--amber); }
 
-.filter-bar{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;}
-.filter-bar select{background:var(--s1);border:1px solid var(--b1);border-radius:var(--r);padding:6px 11px;font-size:12px;font-family:var(--font);color:var(--t2);outline:none;cursor:pointer;}
-.filter-bar select:focus{border-color:var(--green);}
+  .missing-list { display: flex; flex-direction: column; gap: 8px; }
+  .missing-item { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; background: var(--red-light); border-radius: 8px; border: 1px solid #fca5a5; }
+  .missing-item .mi-name { font-size: 14px; font-weight: 600; color: var(--red); }
+  .missing-item .mi-badge { font-size: 11px; background: var(--red); color: white; padding: 2px 8px; border-radius: 20px; font-weight: 700; }
+  .all-good { text-align: center; padding: 20px; color: var(--green); font-weight: 600; font-size: 14px; }
 
-.export-btn{background:var(--s1);border:1px solid var(--b1);border-radius:var(--r);padding:6px 13px;font-size:12px;font-weight:600;font-family:var(--font);color:var(--t2);cursor:pointer;transition:all .2s;}
-.export-btn:hover{color:var(--green);border-color:var(--green-border);}
+  .report-item { border: 1px solid var(--border); border-radius: 10px; margin-bottom: 10px; overflow: hidden; }
+  .report-header { padding: 12px 16px; background: #f9fafb; display: flex; align-items: center; justify-content: space-between; cursor: pointer; }
+  .report-header:hover { background: #f0fdf4; }
+  .rh-left .rh-name { font-size: 14px; font-weight: 700; }
+  .rh-left .rh-date { font-size: 12px; color: var(--muted); }
+  .rh-right { display: flex; align-items: center; gap: 8px; }
+  .badge { font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 20px; }
+  .badge.daily { background: #dbeafe; color: #1d4ed8; }
+  .badge.weekly { background: var(--amber-light); color: #92400e; }
+  .chevron { color: var(--muted); font-size: 12px; }
+  .report-body { display: none; padding: 14px 16px; border-top: 1px solid var(--border); }
+  .report-body.open { display: block; }
+  .rb-field { margin-bottom: 10px; }
+  .rb-field .rf-label { font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 3px; }
+  .rb-field .rf-val { font-size: 13px; color: var(--text); white-space: pre-wrap; line-height: 1.6; }
 
-.empty{text-align:center;padding:32px;color:var(--t3);font-size:13px;}
-.spinner{display:inline-block;width:14px;height:14px;border:2px solid var(--b1);border-top-color:var(--green);border-radius:50%;animation:spin .6s linear infinite;}
-@keyframes spin{to{transform:rotate(360deg)}}
+  .filter-bar { display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; }
+  .filter-bar select, .filter-bar input { padding: 8px 12px; border: 1.5px solid var(--border); border-radius: 8px; font-size: 13px; font-family: inherit; background: white; color: var(--text); appearance: none; cursor: pointer; }
+  .filter-bar select:focus, .filter-bar input:focus { outline: none; border-color: var(--green); }
 
-/* Photo viewer */
-.photo-thumb{width:36px;height:36px;border-radius:6px;object-fit:cover;cursor:pointer;border:1px solid var(--b1);transition:transform .15s;}
-.photo-thumb:hover{transform:scale(1.1);}
-.photo-count{display:inline-flex;align-items:center;gap:4px;font-size:11px;color:var(--green);font-weight:600;cursor:pointer;}
+  /* Briefing */
+  .briefing-date-bar { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
+  .briefing-date-bar input[type=date] { padding: 8px 12px; border: 1.5px solid var(--border); border-radius: 8px; font-size: 14px; font-family: inherit; }
+  .briefing-date-bar input[type=date]:focus { outline: none; border-color: var(--green); }
+  .btn-load { padding: 8px 16px; background: var(--green); color: white; border: none; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; }
+  .btn-load:hover { background: var(--green-mid); }
 
-/* Modal */
-.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:100;align-items:center;justify-content:center;}
-.modal.show{display:flex;}
-.modal-inner{background:var(--s1);border-radius:var(--r2);padding:20px;max-width:90vw;max-height:90vh;overflow:auto;}
-.modal-title{font-size:14px;font-weight:700;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;}
-.modal-close{background:none;border:none;font-size:20px;cursor:pointer;color:var(--t3);}
-.modal-photos{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
-.modal-photos img{width:100%;border-radius:var(--r);object-fit:cover;aspect-ratio:1;}
+  .briefing-summary { display: grid; grid-template-columns: repeat(2,1fr); gap: 10px; margin-bottom: 20px; }
+  @media(min-width:500px){ .briefing-summary { grid-template-columns: repeat(4,1fr); } }
+  .bs-card { background: white; border: 1px solid var(--border); border-radius: 10px; padding: 14px; text-align: center; }
+  .bs-val { font-size: 26px; font-weight: 900; line-height: 1; }
+  .bs-label { font-size: 11px; color: var(--muted); margin-top: 4px; text-transform: uppercase; letter-spacing: 0.04em; }
+  .bs-card.green .bs-val { color: var(--green); }
+  .bs-card.red .bs-val { color: var(--red); }
+  .bs-card.amber .bs-val { color: var(--amber); }
+  .bs-card.blue .bs-val { color: var(--blue); }
 
-/* Product expand */
-.expand-btn{background:none;border:1px solid var(--b1);border-radius:6px;padding:3px 8px;font-size:11px;color:var(--green);cursor:pointer;font-family:var(--font);font-weight:600;}
-.expand-btn:hover{background:var(--green-bg);}
-.prod-detail{display:none;padding:8px 0;}
-.prod-detail.show{display:block;}
-.prod-mini-tbl{width:100%;border-collapse:collapse;font-size:11px;margin-top:6px;}
-.prod-mini-tbl th{text-align:left;padding:4px 8px;background:var(--s2);font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--t3);}
-.prod-mini-tbl td{padding:5px 8px;border-bottom:1px solid var(--b1);color:var(--t2);}
-.prod-mini-tbl tr:last-child td{border-bottom:none;}
+  .rep-briefing-card { background: white; border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 12px; overflow: hidden; }
+  .rbc-header { padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; background: #f9fafb; }
+  .rbc-header:hover { background: #f0fdf4; }
+  .rbc-left { display: flex; align-items: center; gap: 12px; }
+  .rbc-avatar { width: 36px; height: 36px; border-radius: 50%; background: var(--green-light); color: var(--green); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 15px; flex-shrink: 0; }
+  .rbc-name { font-size: 14px; font-weight: 700; }
+  .rbc-meta { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .rbc-right { display: flex; align-items: center; gap: 8px; }
+  .status-badge { font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 20px; }
+  .status-badge.submitted { background: var(--green-light); color: var(--green); }
+  .status-badge.missing { background: var(--red-light); color: var(--red); }
+  .rbc-body { display: none; border-top: 1px solid var(--border); }
+  .rbc-body.open { display: block; }
+
+  .visit-record-item { padding: 14px 16px; border-bottom: 1px solid var(--border); }
+  .visit-record-item:last-child { border-bottom: none; }
+  .vri-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 8px; }
+  .vri-customer { font-size: 14px; font-weight: 700; }
+  .vri-amount { font-size: 13px; font-weight: 700; color: var(--green); white-space: nowrap; }
+  .vri-notes { font-size: 13px; color: var(--muted); margin-bottom: 8px; line-height: 1.5; }
+  .vri-followup { font-size: 12px; color: #92400e; background: #fffbeb; padding: 6px 10px; border-radius: 6px; margin-bottom: 8px; }
+  .vri-photos { display: grid; grid-template-columns: repeat(4,1fr); gap: 6px; margin-bottom: 8px; }
+  .vri-photos img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 6px; cursor: pointer; }
+  .vri-actions { display: flex; gap: 8px; }
+  .btn-create-task-hq { padding: 6px 12px; background: var(--amber); color: white; border: none; border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer; }
+  .btn-create-task-hq:hover { background: #b45309; }
+
+  .task-form-inline { background: #fffbeb; border: 1px solid #fde68a; border-radius: 8px; padding: 12px; margin-top: 8px; display: none; }
+  .task-form-inline.open { display: block; }
+  .task-form-inline input, .task-form-inline textarea { width: 100%; padding: 8px 12px; border: 1.5px solid var(--border); border-radius: 6px; font-size: 13px; font-family: inherit; margin-bottom: 8px; }
+  .task-form-inline input:focus, .task-form-inline textarea:focus { outline: none; border-color: var(--green); }
+  .task-form-inline textarea { min-height: 60px; resize: vertical; }
+  .tfi-row { display: flex; gap: 8px; flex-wrap: wrap; }
+  .btn-save-task { padding: 8px 14px; background: var(--green); color: white; border: none; border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer; }
+  .btn-cancel-task { padding: 8px 14px; background: #e5e7eb; color: var(--text); border: none; border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer; }
+
+  /* Task Tracker */
+  .task-summary-bar { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+  .tsb-item { padding: 8px 14px; border-radius: 20px; font-size: 12px; font-weight: 700; cursor: pointer; border: 2px solid transparent; transition: all 0.15s; }
+  .tsb-item.all { background: #f3f4f6; color: var(--muted); }
+  .tsb-item.overdue { background: var(--red-light); color: var(--red); }
+  .tsb-item.pending { background: var(--amber-light); color: var(--amber); }
+  .tsb-item.awaiting { background: #dbeafe; color: #1d4ed8; }
+  .tsb-item.completed { background: var(--green-light); color: var(--green); }
+  .tsb-item.active { border-color: currentColor; }
+
+  .task-filter-bar { display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; align-items: center; }
+  .task-filter-bar select { padding: 8px 12px; border: 1.5px solid var(--border); border-radius: 8px; font-size: 13px; font-family: inherit; appearance: none; }
+  .task-filter-bar select:focus { outline: none; border-color: var(--green); }
+  .btn-new-task { padding: 9px 16px; background: var(--green); color: white; border: none; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; margin-left: auto; }
+  .btn-new-task:hover { background: var(--green-mid); }
+
+  .new-task-form { background: white; border: 2px solid var(--green); border-radius: var(--radius); padding: 20px; margin-bottom: 16px; display: none; }
+  .new-task-form.open { display: block; }
+  .new-task-form h3 { font-size: 14px; font-weight: 800; color: var(--green); margin-bottom: 14px; }
+  .ntf-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+  @media(max-width:500px){ .ntf-grid { grid-template-columns: 1fr; } }
+  .ntf-grid input, .ntf-grid select { padding: 10px 12px; border: 1.5px solid var(--border); border-radius: 8px; font-size: 13px; font-family: inherit; width: 100%; }
+  .ntf-grid input:focus, .ntf-grid select:focus { outline: none; border-color: var(--green); }
+  .ntf-textarea { width: 100%; padding: 10px 12px; border: 1.5px solid var(--border); border-radius: 8px; font-size: 13px; font-family: inherit; min-height: 80px; resize: vertical; margin-bottom: 12px; }
+  .ntf-textarea:focus { outline: none; border-color: var(--green); }
+  .ntf-actions { display: flex; gap: 10px; }
+  .btn-ntf-save { padding: 10px 20px; background: var(--green); color: white; border: none; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; }
+  .btn-ntf-cancel { padding: 10px 20px; background: #e5e7eb; color: var(--text); border: none; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; }
+
+  .task-item { background: white; border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 10px; overflow: hidden; border-left: 3px solid var(--border); }
+  .task-item.overdue { border-left-color: var(--red); }
+  .task-item.pending { border-left-color: var(--amber); }
+  .task-item.awaiting_confirm { border-left-color: var(--blue); }
+  .task-item.completed_ontime { border-left-color: var(--green); }
+  .task-item.completed_late { border-left-color: var(--muted); }
+  .task-item.escalated { border-left-color: #8b5cf6; }
+
+  .ti-header { padding: 12px 16px; display: flex; align-items: flex-start; gap: 12px; cursor: pointer; }
+  .ti-header:hover { background: #f9fafb; }
+  .ti-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+  .ti-main { flex: 1; min-width: 0; }
+  .ti-desc { font-size: 14px; font-weight: 600; margin-bottom: 4px; line-height: 1.4; }
+  .ti-meta { font-size: 12px; color: var(--muted); display: flex; gap: 10px; flex-wrap: wrap; }
+  .ti-right { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+  .task-status-badge { font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 20px; text-transform: uppercase; }
+  .tsb-overdue { background: var(--red-light); color: var(--red); }
+  .tsb-pending { background: var(--amber-light); color: var(--amber); }
+  .tsb-awaiting { background: #dbeafe; color: #1d4ed8; }
+  .tsb-ontime { background: var(--green-light); color: var(--green); }
+  .tsb-late { background: #f3f4f6; color: var(--muted); }
+  .tsb-escalated { background: #ede9fe; color: #7c3aed; }
+  .source-tag { font-size: 10px; font-weight: 600; padding: 2px 7px; border-radius: 20px; background: #f3f4f6; color: var(--muted); }
+
+  .ti-body { display: none; padding: 0 16px 14px; border-top: 1px solid var(--border); }
+  .ti-body.open { display: block; }
+  .ti-body-inner { padding-top: 12px; }
+  .ti-note-row { margin-bottom: 10px; }
+  .ti-note-row label { font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; display: block; margin-bottom: 4px; }
+  .ti-note-row p { font-size: 13px; color: var(--text); line-height: 1.5; }
+  .ti-note-input { width: 100%; padding: 8px 12px; border: 1.5px solid var(--border); border-radius: 6px; font-size: 13px; font-family: inherit; min-height: 60px; resize: vertical; margin-bottom: 8px; }
+  .ti-note-input:focus { outline: none; border-color: var(--green); }
+  .ti-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+  .btn-confirm { padding: 7px 14px; background: var(--green); color: white; border: none; border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer; }
+  .btn-reject { padding: 7px 14px; background: #e5e7eb; color: var(--text); border: none; border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer; }
+  .btn-add-note { padding: 7px 14px; background: var(--blue-light); color: var(--blue); border: none; border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer; }
+  .btn-delete-task { padding: 7px 14px; background: none; border: 1px solid var(--red); color: var(--red); border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer; }
+
+  /* Members */
+  .member-row { display: flex; align-items: center; gap: 8px; padding: 10px 14px; background: #f9fafb; border: 1px solid var(--border); border-radius: 8px; margin-bottom: 8px; flex-wrap: wrap; }
+  .member-row .m-name { font-size: 14px; font-weight: 600; flex: 1; min-width: 100px; }
+  .pw-badge { font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.04em; }
+  .pw-badge.set { background: var(--green-light); color: var(--green); }
+  .pw-badge.unset { background: var(--amber-light); color: var(--amber); }
+  .kpi-badge { font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 20px; background: #fef3c7; color: #92400e; }
+  .role-badge { font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 20px; text-transform: uppercase; }
+  .role-badge.sales { background: var(--blue-light); color: var(--blue); }
+  .role-badge.marketing { background: #fdf4ff; color: #7e22ce; }
+  .btn-editname { background: #3b82f6; border: none; color: white; padding: 5px 10px; border-radius: 6px; font-size: 12px; cursor: pointer; font-weight: 600; }
+  .btn-editname:hover { background: #2563eb; }
+  .btn-setpw { background: var(--green); border: none; color: white; padding: 5px 10px; border-radius: 6px; font-size: 12px; cursor: pointer; font-weight: 600; }
+  .btn-setpw:hover { background: var(--green-mid); }
+  .btn-kpi { background: #d97706; border: none; color: white; padding: 5px 10px; border-radius: 6px; font-size: 12px; cursor: pointer; font-weight: 600; }
+  .btn-kpi:hover { background: #b45309; }
+  .btn-role { background: #7e22ce; border: none; color: white; padding: 5px 10px; border-radius: 6px; font-size: 12px; cursor: pointer; font-weight: 600; }
+  .btn-role:hover { background: #6b21a8; }
+  .btn-del { background: none; border: 1px solid var(--red); color: var(--red); padding: 4px 10px; border-radius: 6px; font-size: 12px; cursor: pointer; font-weight: 600; }
+  .btn-del:hover { background: var(--red); color: white; }
+  .pw-edit-row { width: 100%; display: none; gap: 8px; margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--border); flex-wrap: wrap; }
+  .pw-edit-row.open { display: flex; }
+  .pw-edit-row input, .pw-edit-row select { flex: 1; min-width: 120px; padding: 8px 12px; border: 1.5px solid var(--border); border-radius: 6px; font-size: 13px; font-family: inherit; }
+  .pw-edit-row input:focus, .pw-edit-row select:focus { outline: none; border-color: var(--green); }
+  .btn-save { padding: 8px 14px; background: var(--green); color: white; border: none; border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer; }
+  .btn-cancel { padding: 8px 14px; background: #e5e7eb; color: var(--text); border: none; border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer; }
+  .add-member-row { display: flex; gap: 10px; margin-top: 12px; flex-wrap: wrap; }
+  .add-member-row input, .add-member-row select { flex: 1; min-width: 120px; padding: 10px 14px; border: 1.5px solid var(--border); border-radius: 8px; font-size: 14px; font-family: inherit; }
+  .add-member-row input:focus, .add-member-row select:focus { outline: none; border-color: var(--green); }
+  .btn-add { padding: 10px 18px; background: var(--green); color: white; border: none; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer; }
+  .btn-add:hover { background: var(--green-mid); }
+
+  .miss-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .miss-table th { text-align: left; padding: 8px 12px; background: #f3f4f6; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); }
+  .miss-table td { padding: 10px 12px; border-bottom: 1px solid var(--border); }
+  .miss-table tr:last-child td { border-bottom: none; }
+  .miss-count { font-weight: 800; }
+  .miss-count.bad { color: var(--red); }
+  .miss-count.ok { color: var(--green); }
+
+  .loading-text { text-align: center; padding: 24px; color: var(--muted); font-size: 13px; }
+  .empty-text { text-align: center; padding: 24px; color: var(--muted); font-size: 13px; }
+  .month-row { display: flex; gap: 8px; align-items: center; margin-bottom: 16px; }
+  .month-row select { padding: 8px 12px; border: 1.5px solid var(--border); border-radius: 8px; font-size: 13px; font-family: inherit; appearance: none; }
+  .month-row select:focus { outline: none; border-color: var(--green); }
+
+  .lightbox { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 9999; display: none; align-items: center; justify-content: center; padding: 20px; }
+  .lightbox.open { display: flex; }
+  .lightbox img { max-width: 100%; max-height: 90vh; border-radius: 8px; }
+  .lightbox-close { position: absolute; top: 16px; right: 16px; background: white; border: none; border-radius: 50%; width: 36px; height: 36px; font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
 </style>
 </head>
 <body>
-<div class="topbar">
-  <div class="logo-mark">M</div>
-  <div><div class="logo-text">MamaVege Promo HQ</div><div class="logo-sub">Sales Management Dashboard</div></div>
-  <div class="nav-tabs">
-    <button class="nav-tab active" onclick="nav('dashboard')">Overview</button>
-    <button class="nav-tab" onclick="nav('stores')">By Store</button>
-    <button class="nav-tab" onclick="nav('products')">Products</button>
-    <button class="nav-tab" onclick="nav('all')">All Records</button>
-  </div>
-  <div class="topbar-right">
-    <div class="live-dot"></div>
-    <span style="font-size:11px;color:var(--t3)" id="last-refresh">—</span>
-    <button class="refresh-btn" onclick="loadAll()">↻ Refresh</button>
-    <a href="/" class="back-link">← Hub</a>
+
+<div class="lightbox" id="lightbox" onclick="closeLightbox()">
+  <button class="lightbox-close" onclick="closeLightbox()">✕</button>
+  <img id="lightbox-img" src="">
+</div>
+
+<div class="pw-overlay" id="pwOverlay">
+  <div class="pw-box">
+    <div class="pw-logo">M</div>
+    <div class="pw-title">Report HQ</div>
+    <div class="pw-sub">Enter password to access HQ dashboard</div>
+    <input type="password" class="pw-input" id="pwInput" placeholder="Password" onkeydown="if(event.key==='Enter')checkPw()">
+    <button class="pw-btn" onclick="checkPw()">Enter</button>
+    <div class="pw-error" id="pwError">Incorrect password. Please try again.</div>
   </div>
 </div>
 
-<!-- Photo Modal -->
-<div class="modal" id="photo-modal" onclick="closeModal()">
-  <div class="modal-inner" onclick="event.stopPropagation()">
-    <div class="modal-title">
-      <span id="modal-title-text">Site Photos</span>
-      <button class="modal-close" onclick="closeModal()">✕</button>
+<div class="header">
+  <div class="header-logo">M</div>
+  <div class="header-info">
+    <div class="header-title">Report HQ Dashboard</div>
+    <div class="header-sub">Daily & Weekly Report Management</div>
+  </div>
+  <a href="index.html" class="header-back" onclick="logoutHQ()">← Hub</a>
+</div>
+
+<div class="tabs">
+  <div class="tab active" onclick="switchTab('briefing')">📋 Daily Briefing</div>
+  <div class="tab" onclick="switchTab('tasks')">✅ Task Tracker</div>
+  <div class="tab" onclick="switchTab('overview')">📊 Overview</div>
+  <div class="tab" onclick="switchTab('daily')">📝 Daily Reports</div>
+  <div class="tab" onclick="switchTab('weekly')">📅 Weekly Reports</div>
+  <div class="tab" onclick="switchTab('stats')">📈 Miss Stats</div>
+  <div class="tab" onclick="switchTab('members')">👥 Members</div>
+</div>
+
+<div class="container">
+
+  <!-- DAILY BRIEFING -->
+  <div class="section active" id="sec-briefing">
+    <div class="briefing-date-bar">
+      <input type="date" id="briefing-date">
+      <button class="btn-load" onclick="loadBriefing()">Load</button>
     </div>
-    <div class="modal-photos" id="modal-photos"></div>
+    <div class="briefing-summary">
+      <div class="bs-card green"><div class="bs-val" id="bs-submitted">—</div><div class="bs-label">Submitted</div></div>
+      <div class="bs-card red"><div class="bs-val" id="bs-missing">—</div><div class="bs-label">Not Submitted</div></div>
+      <div class="bs-card blue"><div class="bs-val" id="bs-visits">—</div><div class="bs-label">Total Visits</div></div>
+      <div class="bs-card amber"><div class="bs-val" id="bs-orders">—</div><div class="bs-label">Total Orders (RM)</div></div>
+    </div>
+    <div id="briefing-list"><div class="loading-text">Loading…</div></div>
   </div>
-</div>
 
-<div class="main">
+  <!-- TASK TRACKER -->
+  <div class="section" id="sec-tasks">
+    <div class="task-summary-bar" id="task-summary-bar">
+      <span class="tsb-item all active" onclick="filterTasks('all',this)">All <span id="cnt-all">0</span></span>
+      <span class="tsb-item awaiting" onclick="filterTasks('awaiting_confirm',this)">🔵 Awaiting Confirm <span id="cnt-awaiting">0</span></span>
+      <span class="tsb-item completed" onclick="filterTasks('completed',this)">✅ Completed <span id="cnt-completed">0</span></span>
+      <span class="tsb-item pending" onclick="filterTasks('pending',this)">🟡 Pending <span id="cnt-pending">0</span></span>
+      <span class="tsb-item overdue" onclick="filterTasks('overdue',this)">🔴 Overdue <span id="cnt-overdue">0</span></span>
+    </div>
+
+    <div class="task-filter-bar">
+      <select id="task-filter-member" onchange="loadTasks()">
+        <option value="">All Members</option>
+      </select>
+      <button class="btn-new-task" onclick="toggleNewTaskForm()">+ New Task</button>
+    </div>
+
+    <div class="new-task-form" id="new-task-form">
+      <h3>Create New Task</h3>
+      <div class="ntf-grid">
+        <select id="ntf-assignee"><option value="">Assign to…</option></select>
+        <input type="date" id="ntf-due">
+        <input type="text" id="ntf-customer" placeholder="Related customer (optional)">
+        <select id="ntf-source"><option value="manager_created">Manager Created</option></select>
+      </div>
+      <textarea class="ntf-textarea" id="ntf-desc" placeholder="Task description…"></textarea>
+      <div class="ntf-actions">
+        <button class="btn-ntf-save" onclick="saveNewTask()">Save Task</button>
+        <button class="btn-ntf-cancel" onclick="toggleNewTaskForm()">Cancel</button>
+      </div>
+    </div>
+
+    <div id="task-list"><div class="loading-text">Loading…</div></div>
+  </div>
+
   <!-- OVERVIEW -->
-  <div class="screen active" id="screen-dashboard">
-    <div id="alert-zone" style="margin-bottom:10px;"></div>
-    <div class="kpi-row">
-      <div class="kpi" style="--kc:var(--green)"><div class="kpi-label">Total Submissions</div><div class="kpi-val" id="kpi-count" style="color:var(--green)">—</div><div class="kpi-sub">promo entries</div></div>
-      <div class="kpi" style="--kc:var(--green2)"><div class="kpi-label">Overall Achievement</div><div class="kpi-val" id="kpi-rate" style="color:var(--green)">—</div><div class="kpi-sub">total sold vs target</div></div>
-      <div class="kpi" style="--kc:var(--amber)"><div class="kpi-label">Total Sold (Units)</div><div class="kpi-val" id="kpi-sold" style="color:var(--amber)">—</div><div class="kpi-sub">across all products</div></div>
-      <div class="kpi" style="--kc:var(--red)"><div class="kpi-label">Needs Attention</div><div class="kpi-val" id="kpi-warn" style="color:var(--red)">—</div><div class="kpi-sub">regions below 60%</div></div>
+  <div class="section" id="sec-overview">
+    <div class="stat-grid">
+      <div class="stat-box red"><div class="s-val" id="ov-daily-miss">—</div><div class="s-label">Missing Daily Today</div></div>
+      <div class="stat-box green"><div class="s-val" id="ov-daily-ok">—</div><div class="s-label">Daily Submitted</div></div>
+      <div class="stat-box amber"><div class="s-val" id="ov-weekly-miss">—</div><div class="s-label">Missing Weekly This Week</div></div>
+      <div class="stat-box green"><div class="s-val" id="ov-weekly-ok">—</div><div class="s-label">Weekly Submitted</div></div>
     </div>
-    <div class="grid2">
-      <div class="card"><div class="card-title">Achievement by Region</div><div id="region-bars"><div class="empty"><span class="spinner"></span></div></div></div>
-      <div class="card"><div class="card-title">Recent Activity</div><div id="recent-activity"><div class="empty"><span class="spinner"></span></div></div></div>
+    <div class="card">
+      <div class="card-title">🚨 Missing Daily Report — Today</div>
+      <div class="missing-list" id="missing-daily-today"><div class="loading-text">Loading…</div></div>
     </div>
-    <div class="card" style="margin-top:10px;">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;"><div class="card-title" style="margin:0">Latest Submissions</div></div>
-      <div class="tbl-wrap" id="recent-wrap"><div class="empty"><span class="spinner"></span></div></div>
+    <div class="card">
+      <div class="card-title">⚠️ Missing Weekly Report — This Week</div>
+      <div class="missing-list" id="missing-weekly-week"><div class="loading-text">Loading…</div></div>
     </div>
   </div>
 
-  <!-- BY STORE -->
-  <div class="screen" id="screen-stores">
+  <!-- DAILY REPORTS -->
+  <div class="section" id="sec-daily">
+    <div class="filter-bar">
+      <select id="filter-daily-name" onchange="loadDailyReports()"><option value="">All Members</option></select>
+      <input type="date" id="filter-daily-from" onchange="loadDailyReports()">
+      <input type="date" id="filter-daily-to" onchange="loadDailyReports()">
+    </div>
+    <div id="daily-report-list"><div class="loading-text">Loading…</div></div>
+  </div>
+
+  <!-- WEEKLY REPORTS -->
+  <div class="section" id="sec-weekly">
+    <div class="filter-bar">
+      <select id="filter-weekly-name" onchange="loadWeeklyReports()"><option value="">All Members</option></select>
+      <input type="date" id="filter-weekly-from" onchange="loadWeeklyReports()">
+      <input type="date" id="filter-weekly-to" onchange="loadWeeklyReports()">
+    </div>
+    <div id="weekly-report-list"><div class="loading-text">Loading…</div></div>
+  </div>
+
+  <!-- MISS STATS -->
+  <div class="section" id="sec-stats">
     <div class="card">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;"><div class="card-title" style="margin:0">Store Summary</div></div>
-      <div class="filter-bar">
-        <select id="fs-region" onchange="renderStores()"><option value="">All Regions</option><option>Northern</option><option>Central</option><option>Southern</option><option>East Coast</option><option>East Malaysia</option></select>
-      </div>
-      <div class="tbl-wrap" id="store-wrap"><div class="empty"><span class="spinner"></span></div></div>
+      <div class="card-title">📈 Monthly Missing Report Count</div>
+      <div class="month-row"><select id="stats-month" onchange="loadMissStats()"></select></div>
+      <table class="miss-table">
+        <thead><tr><th>Name</th><th>Daily Missing</th><th>Weekly Missing</th><th>Total</th></tr></thead>
+        <tbody id="miss-stats-body"><tr><td colspan="4" class="loading-text">Loading…</td></tr></tbody>
+      </table>
     </div>
   </div>
 
-  <!-- PRODUCTS -->
-  <div class="screen" id="screen-products">
+  <!-- MEMBERS -->
+  <div class="section" id="sec-members">
     <div class="card">
-      <div class="card-title">Product Performance</div>
-      <div class="tbl-wrap" id="prod-wrap"><div class="empty"><span class="spinner"></span></div></div>
+      <div class="card-title">👥 Team Members</div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:12px;">⚠️ Member name must match the <strong>SALES PERSON</strong> column in Google Sheet exactly.</div>
+      <div id="member-list"><div class="loading-text">Loading…</div></div>
+      <div class="add-member-row">
+        <input type="text" id="new-member-name" placeholder="Full name" maxlength="50">
+        <input type="text" id="new-member-pw" placeholder="Initial password" maxlength="50">
+        <select id="new-member-role">
+          <option value="sales">Sales</option>
+          <option value="marketing">Marketing</option>
+        </select>
+        <button class="btn-add" onclick="addMember()">+ Add</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">🔒 Change HQ Password</div>
+      <div style="font-size:13px;color:var(--muted);margin-bottom:8px;">Enter a new password for HQ access.</div>
+      <div class="chpw-row">
+        <input type="password" id="new-pw" placeholder="New password">
+        <input type="password" id="new-pw2" placeholder="Confirm">
+        <button class="btn-chpw" onclick="changePassword()">Save</button>
+      </div>
+      <div class="chpw-msg" id="chpw-msg"></div>
     </div>
   </div>
 
-  <!-- ALL RECORDS -->
-  <div class="screen" id="screen-all">
-    <div class="card">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
-        <div class="card-title" style="margin:0">All Records</div>
-        <button class="export-btn" onclick="exportCSV()">↓ Export CSV</button>
-      </div>
-      <div class="filter-bar">
-        <select id="fa-region" onchange="renderAll()"><option value="">All Regions</option><option>Northern</option><option>Central</option><option>Southern</option><option>East Coast</option><option>East Malaysia</option></select>
-      </div>
-      <div class="tbl-wrap" id="all-wrap"><div class="empty"><span class="spinner"></span></div></div>
-    </div>
-  </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-const sb=supabase.createClient(
-  'https://wjhgezvrxlhpexocfsea.supabase.co',
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndqaGdlenZyeGxocGV4b2Nmc2VhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg1MDU4NzgsImV4cCI6MjA5NDA4MTg3OH0.jENcrgEDYDlSRUCqve-T6rxYRJfz-dnZQHnXpPLJ_RE'
-);
-const RC={Northern:'#166534',Central:'#22c55e',Southern:'#16a34a','East Coast':'#15803d','East Malaysia':'#14532d'};
-let records=[];
+const SUPA_URL = 'https://wjhgezvrxlhpexocfsea.supabase.co';
+const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndqaGdlenZyeGxocGV4b2Nmc2VhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg1MDU4NzgsImV4cCI6MjA5NDA4MTg3OH0.jENcrgEDYDlSRUCqve-T6rxYRJfz-dnZQHnXpPLJ_RE';
+const H = { 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY, 'Content-Type': 'application/json', 'Prefer': 'return=representation' };
+const Hmin = { 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' };
 
-const pct=(a,b)=>b===0?0:Math.round(a/b*100);
-const pctCol=p=>p>=70?'var(--green)':p>=50?'var(--amber)':'var(--red)';
-const statusBadge=p=>p>=70?'<span class="badge b-green">On Track</span>':p>=50?'<span class="badge b-amber">Behind</span>':'<span class="badge b-red">Action Needed</span>';
-const getTotals=r=>({
-  target:r.total_target_qty||Number(r.target)||0,
-  sold:r.total_sold_qty||Number(r.actual_sales)||0
-});
+let members = [];
+let allTasks = [];
+let currentTaskFilter = 'all';
+const todayStr = new Date().toISOString().split('T')[0];
 
-function nav(page){
-  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
-  document.querySelectorAll('.nav-tab').forEach(b=>b.classList.remove('active'));
-  document.getElementById('screen-'+page).classList.add('active');
-  ['dashboard','stores','products','all'].forEach((p,i)=>document.querySelectorAll('.nav-tab')[i].classList.toggle('active',p===page));
-  if(page==='stores')renderStores();
-  if(page==='products')renderProducts();
-  if(page==='all')renderAll();
+async function db(path, opts = {}) {
+  const r = await fetch(SUPA_URL + '/rest/v1/' + path, { headers: H, ...opts });
+  if (!r.ok) { const e = await r.json().catch(()=>{}); throw e || r.status; }
+  return r.status === 204 ? null : r.json();
 }
 
-async function loadAll(){
-  document.getElementById('last-refresh').textContent='Loading…';
-  const{data}=await sb.from('promotions').select('*').order('created_at',{ascending:false});
-  records=data||[];
-  document.getElementById('last-refresh').textContent='Updated '+new Date().toLocaleTimeString('en-MY',{hour:'2-digit',minute:'2-digit'});
-  renderDashboard();
-  const active=document.querySelector('.screen.active')?.id?.replace('screen-','');
-  if(active==='stores')renderStores();
-  if(active==='products')renderProducts();
-  if(active==='all')renderAll();
+function today() { return new Date().toISOString().split('T')[0]; }
+function weekStart() { const d=new Date(); const day=d.getDay(); const diff=d.getDate()-day+(day===0?-6:1); return new Date(d.setDate(diff)).toISOString().split('T')[0]; }
+function weekEnd() { const d=new Date(); const day=d.getDay(); const diff=d.getDate()-day+(day===0?0:7); return new Date(d.setDate(diff)).toISOString().split('T')[0]; }
+function escHtml(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function fmtRM(n) { return 'RM '+Number(n||0).toLocaleString('en-MY',{minimumFractionDigits:0,maximumFractionDigits:0}); }
+
+function switchTab(tab) {
+  const tabNames = ['briefing','tasks','overview','daily','weekly','stats','members'];
+  document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('active', tabNames[i] === tab));
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.getElementById('sec-'+tab).classList.add('active');
+  if (tab==='briefing') loadBriefing();
+  else if (tab==='tasks') loadTasks();
+  else if (tab==='overview') loadOverview();
+  else if (tab==='daily') loadDailyReports();
+  else if (tab==='weekly') loadWeeklyReports();
+  else if (tab==='stats') loadMissStats();
+  else if (tab==='members') renderMembers();
 }
 
-function renderDashboard(){
-  if(!records.length){
-    ['kpi-count','kpi-rate','kpi-sold','kpi-warn'].forEach(id=>document.getElementById(id).textContent='0');
-    ['region-bars','recent-activity','recent-wrap'].forEach(id=>document.getElementById(id).innerHTML='<div class="empty">No submissions yet</div>');
-    return;
-  }
-  const totT=records.reduce((a,r)=>a+getTotals(r).target,0);
-  const totS=records.reduce((a,r)=>a+getTotals(r).sold,0);
-  document.getElementById('kpi-count').textContent=records.length;
-  document.getElementById('kpi-rate').textContent=pct(totS,totT)+'%';
-  document.getElementById('kpi-sold').textContent=totS.toLocaleString();
+// ===== TASK TRACKER =====
+async function loadTasks() {
+  const list = document.getElementById('task-list');
+  list.innerHTML = '<div class="loading-text">Loading…</div>';
+  const memberFilter = document.getElementById('task-filter-member').value;
 
-  const warns=Object.keys(RC).filter(reg=>{
-    const r=records.filter(x=>x.region===reg);
-    if(!r.length)return false;
-    return pct(r.reduce((a,x)=>a+getTotals(x).sold,0),r.reduce((a,x)=>a+getTotals(x).target,0))<60;
-  });
-  document.getElementById('kpi-warn').textContent=warns.length;
-
-  let alertHtml='';
-  warns.forEach(w=>alertHtml+=`<div class="alert alert-red">⚠ <strong>${w}</strong> — achievement below 60%, immediate follow-up required</div>`);
-  document.getElementById('alert-zone').innerHTML=alertHtml;
-
-  // Region bars
-  let rbHtml='';
-  Object.entries(RC).forEach(([reg,col])=>{
-    const r=records.filter(x=>x.region===reg);
-    if(!r.length){rbHtml+=`<div class="reg-item"><div class="reg-header"><span class="reg-name"><span class="reg-dot" style="background:${col}"></span>${reg}</span><span style="font-size:11px;color:var(--t3)">No data</span></div></div>`;return;}
-    const totT=r.reduce((a,x)=>a+getTotals(x).target,0);
-    const totS=r.reduce((a,x)=>a+getTotals(x).sold,0);
-    const p2=pct(totS,totT);
-    const stores=[...new Set(r.map(x=>x.store))].length;
-    rbHtml+=`<div class="reg-item"><div class="reg-header"><span class="reg-name"><span class="reg-dot" style="background:${col}"></span>${reg}</span><span class="reg-pct" style="color:${pctCol(p2)}">${p2}%</span></div><div class="reg-sub"><span>${stores} stores</span><span>${r.length} entries</span><span>Sold: ${totS}</span></div><div class="bar-track"><div class="bar-fill" style="width:${Math.min(p2,100)}%;background:${pctCol(p2)}"></div></div></div>`;
-  });
-  document.getElementById('region-bars').innerHTML=rbHtml;
-
-  // Recent activity
-  const recent5=records.slice(0,5);
-  let raHtml='';
-  recent5.forEach(r=>{
-    const{target,sold}=getTotals(r);
-    const p2=pct(sold,target);
-    const col=pctCol(p2);
-    const photos=r.photo_urls&&r.photo_urls.length>0?`<span style="font-size:11px;color:var(--green)"> · 📷${r.photo_urls.length}</span>`:'';
-    raHtml+=`<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--b1);">
-      <div><div style="font-size:13px;font-weight:600;color:var(--t1)">${r.store}${photos}</div>
-      <div style="font-size:11px;color:var(--t3);font-family:var(--mono)">${r.date} · ${r.region}</div></div>
-      <div style="font-family:var(--mono);font-size:13px;font-weight:700;color:${col}">${p2}%</div>
-    </div>`;
-  });
-  document.getElementById('recent-activity').innerHTML=raHtml||'<div class="empty">No data</div>';
-
-  // Recent table
-  const recent=records.slice(0,8);
-  let th=`<table class="tbl"><thead><tr><th>Date</th><th>Region</th><th>Store</th><th>Promoter</th><th>Activity</th><th>Duration</th><th>Target Qty</th><th>Sold Qty</th><th>Achievement</th><th>Sampling</th><th>Other Cost</th><th>Photos</th><th>Products</th><th>Status</th></tr></thead><tbody>`;
-  recent.forEach((r,ri)=>{
-    const{target,sold}=getTotals(r);
-    const p2=pct(sold,target);
-    const photosHtml=r.photo_urls&&r.photo_urls.length>0
-      ?`<span class="photo-count" onclick="openPhotos(${ri},'${r.store}')">📷 ${r.photo_urls.length}</span>`:'—';
-    const prodsHtml=r.products_data&&r.products_data.length>0
-      ?`<button class="expand-btn" onclick="toggleProd(${ri})">▸ ${r.products_data.length} items</button>`:'—';
-    th+=`<tr>
-      <td class="num">${r.date}</td>
-      <td style="color:${RC[r.region]||'var(--green)'};font-weight:600">${r.region}</td>
-      <td style="color:var(--t1);font-weight:500">${r.store}</td>
-      <td style="color:var(--t2)">${r.manager||'—'}</td>
-      <td style="color:var(--t2)">${r.activity_name}</td>
-      <td style="color:var(--t2)">${r.duration||'—'}</td>
-      <td class="num">${target}</td>
-      <td class="num" style="color:var(--green);font-weight:700">${sold}</td>
-      <td class="num" style="color:${pctCol(p2)};font-weight:700">${p2}%</td>
-      <td class="num">${r.sampling_qty||0}</td>
-      <td class="num">${r.other_cost?'RM '+Number(r.other_cost).toLocaleString():'—'}</td>
-      <td>${photosHtml}</td>
-      <td>${prodsHtml}</td>
-      <td>${statusBadge(p2)}</td>
-    </tr>`;
-    if(r.products_data&&r.products_data.length>0){
-      th+=`<tr id="prod-detail-${ri}" style="display:none"><td colspan="14" style="padding:0 9px 12px;background:var(--green-bg);">
-        <table class="prod-mini-tbl">
-          <thead><tr><th>Product</th><th>Target Qty</th><th>Opening</th><th>Closing</th><th>Sold</th><th>Achievement</th></tr></thead>
-          <tbody>${r.products_data.map(p=>{
-            const ach=p.target_qty>0?Math.round(p.sold/p.target_qty*100):0;
-            return`<tr><td style="font-weight:600;color:var(--t1)">${p.name||'—'}</td><td>${p.target_qty}</td><td>${p.opening_stock}</td><td>${p.closing_stock}</td><td style="font-weight:700;color:var(--green)">${p.sold}</td><td style="color:${pctCol(ach)};font-weight:700">${p.target_qty>0?ach+'%':'—'}</td></tr>`;
-          }).join('')}</tbody>
-        </table>
-      </td></tr>`;
-    }
-  });
-  document.getElementById('recent-wrap').innerHTML=th+'</tbody></table>';
-  window._records=records;
-}
-
-function toggleProd(ri){
-  const row=document.getElementById(`prod-detail-${ri}`);
-  if(!row)return;
-  const showing=row.style.display!=='none';
-  row.style.display=showing?'none':'table-row';
-  const btn=document.querySelectorAll('.expand-btn')[ri];
-  if(btn)btn.textContent=showing?`▸ ${window._records[ri]?.products_data?.length||0} items`:`▾ ${window._records[ri]?.products_data?.length||0} items`;
-}
-
-function openPhotos(ri,store){
-  const r=window._records[ri];
-  if(!r||!r.photo_urls||!r.photo_urls.length)return;
-  document.getElementById('modal-title-text').textContent=`📷 ${store} — ${r.date}`;
-  document.getElementById('modal-photos').innerHTML=r.photo_urls.map(url=>`<img src="${url}" onclick="window.open('${url}','_blank')" title="Click to open full size">`).join('');
-  document.getElementById('photo-modal').classList.add('show');
-}
-
-function closeModal(){document.getElementById('photo-modal').classList.remove('show');}
-
-function renderStores(){
-  const rr=document.getElementById('fs-region').value;
-  const filtered=records.filter(r=>!rr||r.region===rr);
-  if(!filtered.length){document.getElementById('store-wrap').innerHTML='<div class="empty">No data</div>';return;}
-  const map={};
-  filtered.forEach(r=>{
-    const k=r.store+'__'+r.region;
-    if(!map[k])map[k]={store:r.store,region:r.region,target:0,sold:0,sampling:0,otherCost:0,count:0,photos:0};
-    const{target,sold}=getTotals(r);
-    map[k].target+=target;map[k].sold+=sold;
-    map[k].sampling+=r.sampling_qty||0;
-    map[k].otherCost+=Number(r.other_cost||0);
-    map[k].count++;map[k].photos+=(r.photo_urls||[]).length;
-  });
-  const rows=Object.values(map).sort((a,b)=>pct(b.sold,b.target)-pct(a.sold,a.target));
-  let html=`<table class="tbl"><thead><tr><th>Region</th><th>Store</th><th>Entries</th><th>Total Target</th><th>Total Sold</th><th>Achievement</th><th>Sampling Used</th><th>Other Cost</th><th>Photos</th><th>Status</th></tr></thead><tbody>`;
-  rows.forEach(s=>{
-    const p2=pct(s.sold,s.target);
-    html+=`<tr>
-      <td style="color:${RC[s.region]||'var(--green)'};font-weight:600">${s.region}</td>
-      <td style="color:var(--t1);font-weight:600">${s.store}</td>
-      <td class="num">${s.count}</td>
-      <td class="num">${s.target}</td>
-      <td class="num" style="color:var(--green);font-weight:700">${s.sold}</td>
-      <td class="num" style="color:${pctCol(p2)};font-weight:700">${p2}%</td>
-      <td class="num">${s.sampling}</td>
-      <td class="num">${s.otherCost?'RM '+s.otherCost.toLocaleString():'—'}</td>
-      <td class="num">${s.photos>0?'📷 '+s.photos:'—'}</td>
-      <td>${statusBadge(p2)}</td>
-    </tr>`;
-  });
-  document.getElementById('store-wrap').innerHTML=html+'</tbody></table>';
-}
-
-function renderProducts(){
-  if(!records.length){document.getElementById('prod-wrap').innerHTML='<div class="empty">No data</div>';return;}
-  const prodMap={};
-  records.forEach(r=>{
-    if(!r.products_data||!r.products_data.length)return;
-    r.products_data.forEach(p=>{
-      const name=(p.name||'').trim();
-      if(!name)return;
-      if(!prodMap[name])prodMap[name]={name,target:0,sold:0,opening:0,closing:0,count:0};
-      prodMap[name].target+=p.target_qty||0;
-      prodMap[name].sold+=p.sold||0;
-      prodMap[name].opening+=p.opening_stock||0;
-      prodMap[name].closing+=p.closing_stock||0;
-      prodMap[name].count++;
+  try {
+    // Auto-update overdue
+    await fetch(SUPA_URL+'/rest/v1/tasks?status=eq.pending&due_date=lt.'+todayStr, {
+      method:'PATCH', headers:Hmin, body:JSON.stringify({status:'overdue'})
     });
-  });
-  const rows=Object.values(prodMap).sort((a,b)=>b.sold-a.sold);
-  if(!rows.length){document.getElementById('prod-wrap').innerHTML='<div class="empty">No product data yet</div>';return;}
-  let html=`<table class="tbl"><thead><tr><th>Product</th><th>Entries</th><th>Total Target Qty</th><th>Total Opening</th><th>Total Closing</th><th>Total Sold</th><th>Achievement</th><th>Status</th></tr></thead><tbody>`;
-  rows.forEach(p=>{
-    const p2=pct(p.sold,p.target);
-    html+=`<tr>
-      <td style="color:var(--t1);font-weight:700">${p.name}</td>
-      <td class="num">${p.count}</td>
-      <td class="num">${p.target}</td>
-      <td class="num">${p.opening}</td>
-      <td class="num">${p.closing}</td>
-      <td class="num" style="color:var(--green);font-weight:700">${p.sold}</td>
-      <td class="num" style="color:${pctCol(p2)};font-weight:700">${p.target>0?p2+'%':'—'}</td>
-      <td>${p.target>0?statusBadge(p2):'—'}</td>
-    </tr>`;
-  });
-  document.getElementById('prod-wrap').innerHTML=html+'</tbody></table>';
+
+    let q = 'tasks?select=*&order=created_at.desc';
+    if (memberFilter) q += `&assigned_to=eq.${encodeURIComponent(memberFilter)}`;
+    allTasks = await db(q) || [];
+
+    const counts = { all:allTasks.length, overdue:0, awaiting_confirm:0, pending:0, completed:0 };
+    allTasks.forEach(t => {
+      if (t.status==='overdue') counts.overdue++;
+      else if (t.status==='awaiting_confirm') counts.awaiting_confirm++;
+      else if (['pending','escalated'].includes(t.status)) counts.pending++;
+      else if (['completed_ontime','completed_late'].includes(t.status)) counts.completed++;
+    });
+    document.getElementById('cnt-all').textContent = counts.all;
+    document.getElementById('cnt-overdue').textContent = counts.overdue;
+    document.getElementById('cnt-awaiting').textContent = counts.awaiting_confirm;
+    document.getElementById('cnt-pending').textContent = counts.pending;
+    document.getElementById('cnt-completed').textContent = counts.completed;
+
+    renderTaskList();
+  } catch(e) {
+    console.error(e);
+    list.innerHTML = '<div class="empty-text">Failed to load tasks.</div>';
+  }
 }
 
-function renderAll(){
-  const rr=document.getElementById('fa-region').value;
-  const filtered=records.filter(r=>!rr||r.region===rr);
-  if(!filtered.length){document.getElementById('all-wrap').innerHTML='<div class="empty">No records found</div>';return;}
-  let html=`<table class="tbl"><thead><tr><th>Date</th><th>Region</th><th>Store</th><th>Promoter</th><th>Activity</th><th>Duration</th><th>Target Qty</th><th>Sold Qty</th><th>Achievement</th><th>Sampling</th><th>Other Cost</th><th>Photos</th><th>Notes</th><th>Status</th></tr></thead><tbody>`;
-  filtered.forEach((r,ri)=>{
-    const{target,sold}=getTotals(r);
-    const p2=pct(sold,target);
-    const photosHtml=r.photo_urls&&r.photo_urls.length>0?`<span class="photo-count" onclick="openPhotosAll(${ri},'${r.store}')">📷 ${r.photo_urls.length}</span>`:'—';
-    html+=`<tr>
-      <td class="num">${r.date}</td>
-      <td style="color:${RC[r.region]||'var(--green)'};font-weight:600">${r.region}</td>
-      <td style="color:var(--t1);font-weight:500">${r.store}</td>
-      <td style="color:var(--t2)">${r.manager||'—'}</td>
-      <td style="color:var(--t2)">${r.activity_name}</td>
-      <td style="color:var(--t2)">${r.duration||'—'}</td>
-      <td class="num">${target}</td>
-      <td class="num" style="color:var(--green);font-weight:700">${sold}</td>
-      <td class="num" style="color:${pctCol(p2)};font-weight:700">${p2}%</td>
-      <td class="num">${r.sampling_qty||0}</td>
-      <td class="num">${r.other_cost?'RM '+Number(r.other_cost).toLocaleString():'—'}</td>
-      <td>${photosHtml}</td>
-      <td style="color:var(--t2);max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.note||'—'}</td>
-      <td>${statusBadge(p2)}</td>
-    </tr>`;
+function filterTasks(filter, el) {
+  currentTaskFilter = filter;
+  document.querySelectorAll('.tsb-item').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  renderTaskList();
+}
+
+function renderTaskList() {
+  const list = document.getElementById('task-list');
+  let filtered = allTasks;
+
+  if (currentTaskFilter === 'overdue') filtered = allTasks.filter(t => t.status==='overdue');
+  else if (currentTaskFilter === 'awaiting_confirm') filtered = allTasks.filter(t => t.status==='awaiting_confirm');
+  else if (currentTaskFilter === 'pending') filtered = allTasks.filter(t => ['pending','escalated'].includes(t.status));
+  else if (currentTaskFilter === 'completed') filtered = allTasks.filter(t => ['completed_ontime','completed_late'].includes(t.status));
+  // 'all' = no filter
+
+  // Sort: awaiting_confirm first, then overdue, then pending, then completed
+  filtered.sort((a,b) => {
+    const order = { awaiting_confirm:0, overdue:1, escalated:2, pending:3, completed_ontime:4, completed_late:5 };
+    const ao = order[a.status] ?? 3;
+    const bo = order[b.status] ?? 3;
+    if (ao !== bo) return ao - bo;
+    if (a.due_date && b.due_date) return a.due_date.localeCompare(b.due_date);
+    return 0;
   });
-  document.getElementById('all-wrap').innerHTML=html+'</tbody></table>';
-  window._allRecords=filtered;
+
+  if (!filtered.length) { list.innerHTML = '<div class="empty-text">No tasks found.</div>'; return; }
+
+  list.innerHTML = filtered.map(t => {
+    const icon = { overdue:'🔴', awaiting_confirm:'🔵', pending:'🟡', escalated:'⚠️', completed_ontime:'✅', completed_late:'🕐' }[t.status] || '📌';
+    const badgeClass = { overdue:'tsb-overdue', awaiting_confirm:'tsb-awaiting', pending:'tsb-pending', escalated:'tsb-escalated', completed_ontime:'tsb-ontime', completed_late:'tsb-late' }[t.status] || 'tsb-pending';
+    const badgeText = { overdue:'Overdue', awaiting_confirm:'Awaiting Confirm', pending:'Pending', escalated:'Escalated', completed_ontime:'Completed ✓', completed_late:'Completed (Late)' }[t.status] || t.status;
+    const sourceText = { manager_created:'Manager', from_report:'From Report', rep_committed:'Rep Committed' }[t.source] || t.source;
+    const daysOverdue = t.status==='overdue' && t.due_date ? Math.floor((new Date()-new Date(t.due_date))/86400000) : 0;
+    const dueLabel = t.due_date ? (t.status==='overdue' ? `⚠️ ${daysOverdue}d overdue` : `Due: ${t.due_date}`) : 'No due date';
+
+    return `
+      <div class="task-item ${t.status}" id="ti-${t.task_id}">
+        <div class="ti-header" onclick="toggleTask('${t.task_id}')">
+          <div class="ti-icon">${icon}</div>
+          <div class="ti-main">
+            <div class="ti-desc">${escHtml(t.description)}</div>
+            <div class="ti-meta">
+              <span>👤 ${escHtml(t.assigned_to)}</span>
+              <span>📅 ${dueLabel}</span>
+              ${t.linked_customer ? `<span>🏪 ${escHtml(t.linked_customer)}</span>` : ''}
+            </div>
+          </div>
+          <div class="ti-right">
+            <span class="task-status-badge ${badgeClass}">${badgeText}</span>
+            <span class="source-tag">${sourceText}</span>
+            <span style="color:var(--muted);font-size:12px">▼</span>
+          </div>
+        </div>
+        <div class="ti-body" id="tibody-${t.task_id}">
+          <div class="ti-body-inner">
+            ${t.rep_reply ? `<div class="ti-note-row"><label>Rep Reply</label><p>${escHtml(t.rep_reply)}</p></div>` : ''}
+            ${t.rep_marked_done_at ? `<div class="ti-note-row"><label>Rep Marked Done</label><p>${new Date(t.rep_marked_done_at).toLocaleString('en-MY')}</p></div>` : ''}
+            ${t.manager_note ? `<div class="ti-note-row"><label>Manager Note</label><p>${escHtml(t.manager_note)}</p></div>` : ''}
+            <textarea class="ti-note-input" id="note-${t.task_id}" placeholder="Add manager note…">${t.manager_note||''}</textarea>
+            <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap">
+              <input type="date" id="due-${t.task_id}" value="${t.due_date||''}" style="padding:6px 10px;border:1.5px solid var(--border);border-radius:6px;font-size:12px;font-family:inherit">
+              <button style="padding:6px 12px;background:var(--amber-light);color:var(--amber);border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer" onclick="updateDueDate('${t.task_id}')">Update Due Date</button>
+            </div>
+            <div class="ti-actions">
+              <button class="btn-add-note" onclick="saveManagerNote('${t.task_id}')">💾 Save Note</button>
+              ${t.status==='awaiting_confirm' ? `
+                <button class="btn-confirm" onclick="confirmTask('${t.task_id}','${t.rep_marked_done_at||''}','${t.due_date||''}')">✅ Confirm Done</button>
+                <button class="btn-reject" onclick="rejectTask('${t.task_id}')">↩ Reject</button>` : ''}
+              ${['overdue','escalated'].includes(t.status) ? `<button class="btn-confirm" onclick="forceComplete('${t.task_id}')">✅ Mark Complete</button>` : ''}
+              <button class="btn-delete-task" onclick="deleteTask('${t.task_id}')">🗑 Delete</button>
+            </div>
+          </div>
+        </div>
+      </div>`;
+  }).join('');
 }
 
-function openPhotosAll(ri,store){
-  const r=window._allRecords[ri];
-  if(!r||!r.photo_urls||!r.photo_urls.length)return;
-  document.getElementById('modal-title-text').textContent=`📷 ${store} — ${r.date}`;
-  document.getElementById('modal-photos').innerHTML=r.photo_urls.map(url=>`<img src="${url}" onclick="window.open('${url}','_blank')">`).join('');
-  document.getElementById('photo-modal').classList.add('show');
+function toggleTask(id) { document.getElementById('tibody-'+id).classList.toggle('open'); }
+
+async function saveManagerNote(taskId) {
+  const note = document.getElementById('note-'+taskId).value.trim();
+  try {
+    await fetch(SUPA_URL+'/rest/v1/tasks?task_id=eq.'+taskId, { method:'PATCH', headers:Hmin, body:JSON.stringify({manager_note:note}) });
+    await loadTasks();
+  } catch(e) { alert('Failed.'); }
 }
 
-function exportCSV(){
-  const headers=['Date','Region','Store','Promoter','Activity','Duration','Target Qty','Sold Qty','Achievement %','Sampling Qty','Other Cost (RM)','Photos Count','Notes','Submitted At'];
-  const rows=records.map(r=>{
-    const{target,sold}=getTotals(r);
-    return[r.date,r.region,r.store,r.manager||'',r.activity_name,r.duration||'',target,sold,pct(sold,target),r.sampling_qty||0,r.other_cost||0,(r.photo_urls||[]).length,r.note||'',r.created_at];
-  });
-  const csv=[headers,...rows].map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
-  const a=document.createElement('a');
-  a.href=URL.createObjectURL(new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'}));
-  a.download=`mamavege_promo_${new Date().toISOString().slice(0,10)}.csv`;
-  a.click();
+async function updateDueDate(taskId) {
+  const due = document.getElementById('due-'+taskId).value;
+  if (!due) return;
+  try {
+    await fetch(SUPA_URL+'/rest/v1/tasks?task_id=eq.'+taskId, { method:'PATCH', headers:Hmin, body:JSON.stringify({due_date:due, status:'pending'}) });
+    await loadTasks();
+  } catch(e) { alert('Failed.'); }
 }
 
-loadAll();
-setInterval(loadAll,60000);
+async function confirmTask(taskId, repMarkedAt, dueDate) {
+  const markedDate = repMarkedAt ? new Date(repMarkedAt).toISOString().split('T')[0] : todayStr;
+  const status = dueDate && markedDate > dueDate ? 'completed_late' : 'completed_ontime';
+  try {
+    await fetch(SUPA_URL+'/rest/v1/tasks?task_id=eq.'+taskId, {
+      method:'PATCH', headers:Hmin,
+      body:JSON.stringify({ status, completed_at: new Date().toISOString() })
+    });
+    await loadTasks();
+  } catch(e) { alert('Failed.'); }
+}
+
+async function rejectTask(taskId) {
+  try {
+    await fetch(SUPA_URL+'/rest/v1/tasks?task_id=eq.'+taskId, {
+      method:'PATCH', headers:Hmin,
+      body:JSON.stringify({ status:'pending', rep_marked_done_at:null })
+    });
+    await loadTasks();
+  } catch(e) { alert('Failed.'); }
+}
+
+async function forceComplete(taskId) {
+  if (!confirm('Mark this task as completed?')) return;
+  try {
+    await fetch(SUPA_URL+'/rest/v1/tasks?task_id=eq.'+taskId, {
+      method:'PATCH', headers:Hmin,
+      body:JSON.stringify({ status:'completed_late', completed_at:new Date().toISOString() })
+    });
+    await loadTasks();
+  } catch(e) { alert('Failed.'); }
+}
+
+async function deleteTask(taskId) {
+  if (!confirm('Delete this task permanently?')) return;
+  try {
+    await fetch(SUPA_URL+'/rest/v1/tasks?task_id=eq.'+taskId, { method:'DELETE', headers:H });
+    await loadTasks();
+  } catch(e) { alert('Failed.'); }
+}
+
+function toggleNewTaskForm() { document.getElementById('new-task-form').classList.toggle('open'); }
+
+async function saveNewTask() {
+  const desc = document.getElementById('ntf-desc').value.trim();
+  const assignee = document.getElementById('ntf-assignee').value;
+  const due = document.getElementById('ntf-due').value || null;
+  const customer = document.getElementById('ntf-customer').value.trim() || null;
+  if (!desc) { alert('Please enter a task description.'); return; }
+  if (!assignee) { alert('Please select a team member.'); return; }
+  try {
+    await db('tasks', { method:'POST', body:JSON.stringify({ description:desc, assigned_to:assignee, created_by:'HQ', source:'manager_created', linked_customer:customer, due_date:due, status:'pending' }) });
+    document.getElementById('ntf-desc').value='';
+    document.getElementById('ntf-assignee').value='';
+    document.getElementById('ntf-due').value='';
+    document.getElementById('ntf-customer').value='';
+    document.getElementById('new-task-form').classList.remove('open');
+    await loadTasks();
+  } catch(e) { console.error(e); alert('Failed.'); }
+}
+
+// ===== DAILY BRIEFING =====
+async function loadBriefing() {
+  const date = document.getElementById('briefing-date').value || todayStr;
+  document.getElementById('briefing-date').value = date;
+  const list = document.getElementById('briefing-list');
+  list.innerHTML = '<div class="loading-text">Loading…</div>';
+  try {
+    const salesMembers = members.filter(m => (m.role||'sales')==='sales');
+    const reports = await db(`daily_reports?date=eq.${date}&select=*`) || [];
+    const reportMap = {};
+    reports.forEach(r => { reportMap[r.name]=r; });
+    const visits = await db(`visit_records?visit_date=eq.${date}&select=*&order=created_at.asc`) || [];
+    const visitsByRep = {};
+    visits.forEach(v => { if(!visitsByRep[v.rep_name]) visitsByRep[v.rep_name]=[]; visitsByRep[v.rep_name].push(v); });
+
+    const submitted = salesMembers.filter(m => reportMap[m.name]?.status==='submitted').length;
+    document.getElementById('bs-submitted').textContent = submitted;
+    document.getElementById('bs-missing').textContent = salesMembers.length-submitted;
+    document.getElementById('bs-visits').textContent = visits.length;
+    document.getElementById('bs-orders').textContent = fmtRM(visits.reduce((s,v)=>s+(v.order_amount||0),0));
+
+    if (!salesMembers.length) { list.innerHTML='<div class="empty-text">No sales members found.</div>'; return; }
+
+    list.innerHTML = salesMembers.map(m => {
+      const report = reportMap[m.name];
+      const repVisits = visitsByRep[m.name]||[];
+      const isSubmitted = report?.status==='submitted';
+      const repTotal = repVisits.reduce((s,v)=>s+(v.order_amount||0),0);
+      return `
+        <div class="rep-briefing-card">
+          <div class="rbc-header" onclick="toggleRbc(${m.id})">
+            <div class="rbc-left">
+              <div class="rbc-avatar">${m.name.charAt(0).toUpperCase()}</div>
+              <div>
+                <div class="rbc-name">${escHtml(m.name)}</div>
+                <div class="rbc-meta">${repVisits.length} visit(s) · ${fmtRM(repTotal)}</div>
+              </div>
+            </div>
+            <div class="rbc-right">
+              <span class="status-badge ${isSubmitted?'submitted':'missing'}">${isSubmitted?'✅ Submitted':'⏳ Not Submitted'}</span>
+              <span style="color:var(--muted);font-size:12px">▼</span>
+            </div>
+          </div>
+          <div class="rbc-body" id="rbcbody-${m.id}">
+            ${repVisits.length===0
+              ? `<div class="empty-text">No visit records.</div>`
+              : repVisits.map((v,vi)=>`
+                <div class="visit-record-item">
+                  <div class="vri-header">
+                    <div class="vri-customer">${escHtml(v.customer_name)}</div>
+                    <div class="vri-amount">${fmtRM(v.order_amount||0)}</div>
+                  </div>
+                  ${v.notes?`<div class="vri-notes">${escHtml(v.notes)}</div>`:''}
+                  ${v.followup_notes?`<div class="vri-followup">📌 ${escHtml(v.followup_notes)}${v.followup_date?` · Due: ${v.followup_date}`:''}${v.has_task_created?' ✅ Task created':''}</div>`:''}
+                  ${v.photo_urls&&v.photo_urls.length>0?`<div class="vri-photos">${v.photo_urls.map(u=>`<img src="${u}" onclick="openLightbox('${u}')" loading="lazy">`).join('')}</div>`:''}
+                  <div class="vri-actions">
+                    <button class="btn-create-task-hq" onclick="toggleTaskForm('tf-${m.id}-${vi}')">+ Create Task</button>
+                  </div>
+                  <div class="task-form-inline" id="tf-${m.id}-${vi}">
+                    <div style="font-size:12px;font-weight:700;color:#92400e;margin-bottom:8px">Create Task for ${escHtml(m.name)}</div>
+                    <textarea id="tf-desc-${m.id}-${vi}" placeholder="Task description...">${v.followup_notes?escHtml(v.followup_notes):''}</textarea>
+                    <div class="tfi-row">
+                      <input type="date" id="tf-due-${m.id}-${vi}" style="flex:1" value="${v.followup_date||''}">
+                      <button class="btn-save-task" onclick="saveTaskFromVisit('${m.name}','${v.visit_id}','${m.id}','${vi}','${escHtml(v.customer_name)}')">Save Task</button>
+                      <button class="btn-cancel-task" onclick="toggleTaskForm('tf-${m.id}-${vi}')">Cancel</button>
+                    </div>
+                  </div>
+                </div>`).join('')}
+          </div>
+        </div>`;
+    }).join('');
+  } catch(e) { console.error(e); list.innerHTML='<div class="empty-text">Failed to load.</div>'; }
+}
+
+function toggleRbc(id) { document.getElementById('rbcbody-'+id).classList.toggle('open'); }
+function toggleTaskForm(id) { document.getElementById(id).classList.toggle('open'); }
+
+async function saveTaskFromVisit(repName, visitId, memberId, visitIdx, customerName) {
+  const desc = document.getElementById(`tf-desc-${memberId}-${visitIdx}`).value.trim();
+  const due = document.getElementById(`tf-due-${memberId}-${visitIdx}`).value || null;
+  if (!desc) { alert('Please enter a task description.'); return; }
+  try {
+    await db('tasks', { method:'POST', body:JSON.stringify({ description:desc, assigned_to:repName, created_by:'HQ', source:'from_report', linked_customer:customerName, linked_visit_id:visitId, due_date:due, status:'pending' }) });
+    await fetch(SUPA_URL+'/rest/v1/visit_records?visit_id=eq.'+visitId, { method:'PATCH', headers:Hmin, body:JSON.stringify({has_task_created:true}) });
+    alert('✅ Task created for '+repName);
+    document.getElementById(`tf-${memberId}-${visitIdx}`).classList.remove('open');
+    loadBriefing();
+  } catch(e) { alert('Failed.'); }
+}
+
+function openLightbox(url) { document.getElementById('lightbox-img').src=url; document.getElementById('lightbox').classList.add('open'); }
+function closeLightbox() { document.getElementById('lightbox').classList.remove('open'); document.getElementById('lightbox-img').src=''; }
+
+// ===== OVERVIEW =====
+async function loadOverview() {
+  const t=today(), ws=weekStart(), we=weekEnd();
+  try {
+    const [dT,wW] = await Promise.all([
+      db(`daily_reports?select=name&date=eq.${t}`),
+      db(`weekly_reports?select=name&date=gte.${ws}&date=lte.${we}`)
+    ]);
+    const sD=new Set(dT.map(r=>r.name)), sW=new Set(wW.map(r=>r.name));
+    const mD=members.filter(m=>!sD.has(m.name)), mW=members.filter(m=>!sW.has(m.name));
+    document.getElementById('ov-daily-miss').textContent=mD.length;
+    document.getElementById('ov-daily-ok').textContent=sD.size;
+    document.getElementById('ov-weekly-miss').textContent=mW.length;
+    document.getElementById('ov-weekly-ok').textContent=sW.size;
+    document.getElementById('missing-daily-today').innerHTML=mD.length
+      ? mD.map(m=>`<div class="missing-item"><span class="mi-name">${m.name}</span><span class="mi-badge">NOT SUBMITTED</span></div>`).join('')
+      : '<div class="all-good">✅ Everyone submitted today!</div>';
+    document.getElementById('missing-weekly-week').innerHTML=mW.length
+      ? mW.map(m=>`<div class="missing-item"><span class="mi-name">${m.name}</span><span class="mi-badge">NOT SUBMITTED</span></div>`).join('')
+      : '<div class="all-good">✅ Everyone submitted this week!</div>';
+  } catch(e){ console.error(e); }
+}
+
+// ===== REPORTS =====
+async function loadDailyReports() {
+  const list=document.getElementById('daily-report-list');
+  list.innerHTML='<div class="loading-text">Loading…</div>';
+  const name=document.getElementById('filter-daily-name').value;
+  const from=document.getElementById('filter-daily-from').value;
+  const to=document.getElementById('filter-daily-to').value;
+  let q='daily_reports?select=*&order=date.desc,created_at.desc&limit=100';
+  if(name) q+=`&name=eq.${encodeURIComponent(name)}`;
+  if(from) q+=`&date=gte.${from}`;
+  if(to) q+=`&date=lte.${to}`;
+  try {
+    const data=await db(q);
+    if(!data.length){list.innerHTML='<div class="empty-text">No reports.</div>';return;}
+    list.innerHTML=data.map((r,i)=>`
+      <div class="report-item">
+        <div class="report-header" onclick="toggleReport('dr-${i}')">
+          <div class="rh-left"><div class="rh-name">${r.name}</div><div class="rh-date">${r.date}</div></div>
+          <div class="rh-right">
+            <span class="badge daily">Daily</span>
+            <button class="btn-del" onclick="event.stopPropagation();deleteReport('daily_reports',${r.id},'daily')">🗑</button>
+            <span class="chevron" id="chev-dr-${i}">▼</span>
+          </div>
+        </div>
+        <div class="report-body" id="dr-${i}">
+          <div class="rb-field"><div class="rf-label">Today's Task</div><div class="rf-val">${escHtml(r.today_task)}</div></div>
+          <div class="rb-field"><div class="rf-label">Tomorrow's Task</div><div class="rf-val">${escHtml(r.tomorrow_task)}</div></div>
+          <div class="rb-field"><div class="rf-label">Assistance</div><div class="rf-val">${escHtml(r.assistance||'None.')}</div></div>
+        </div>
+      </div>`).join('');
+  } catch(e){list.innerHTML='<div class="empty-text">Failed.</div>';}
+}
+
+async function loadWeeklyReports() {
+  const list=document.getElementById('weekly-report-list');
+  list.innerHTML='<div class="loading-text">Loading…</div>';
+  const name=document.getElementById('filter-weekly-name').value;
+  const from=document.getElementById('filter-weekly-from').value;
+  const to=document.getElementById('filter-weekly-to').value;
+  let q='weekly_reports?select=*&order=date.desc,created_at.desc&limit=100';
+  if(name) q+=`&name=eq.${encodeURIComponent(name)}`;
+  if(from) q+=`&date=gte.${from}`;
+  if(to) q+=`&date=lte.${to}`;
+  try {
+    const data=await db(q);
+    if(!data.length){list.innerHTML='<div class="empty-text">No reports.</div>';return;}
+    list.innerHTML=data.map((r,i)=>`
+      <div class="report-item">
+        <div class="report-header" onclick="toggleReport('wr-${i}')">
+          <div class="rh-left"><div class="rh-name">${r.name}</div><div class="rh-date">${r.date}</div></div>
+          <div class="rh-right">
+            <span class="badge weekly">Weekly</span>
+            <button class="btn-del" onclick="event.stopPropagation();deleteReport('weekly_reports',${r.id},'weekly')">🗑</button>
+            <span class="chevron" id="chev-wr-${i}">▼</span>
+          </div>
+        </div>
+        <div class="report-body" id="wr-${i}">
+          <div class="rb-field"><div class="rf-label">Next Week Targets</div><div class="rf-val">${escHtml(r.next_week_target)}</div></div>
+          <div class="rb-field"><div class="rf-label">Assistance</div><div class="rf-val">${escHtml(r.assistance||'None.')}</div></div>
+        </div>
+      </div>`).join('');
+  } catch(e){list.innerHTML='<div class="empty-text">Failed.</div>';}
+}
+
+function toggleReport(id) {
+  const body=document.getElementById(id); const chev=document.getElementById('chev-'+id);
+  const open=body.classList.toggle('open'); chev.textContent=open?'▲':'▼';
+}
+
+async function deleteReport(table,id,type) {
+  if(!confirm('Delete this report?')) return;
+  try { await fetch(SUPA_URL+'/rest/v1/'+table+'?id=eq.'+id,{method:'DELETE',headers:H}); if(type==='daily') loadDailyReports(); else loadWeeklyReports(); }
+  catch(e){alert('Failed.');}
+}
+
+// ===== MISS STATS =====
+async function loadMissStats() {
+  const tbody=document.getElementById('miss-stats-body');
+  tbody.innerHTML='<tr><td colspan="4" class="loading-text">Loading…</td></tr>';
+  const monthVal=document.getElementById('stats-month').value; if(!monthVal) return;
+  const [year,month]=monthVal.split('-');
+  const firstDay=`${year}-${month}-01`;
+  const lastDay=`${year}-${month}-${new Date(year,month,0).getDate()}`;
+  const workDays=countWorkDays(new Date(year,month-1,1),new Date(year,month-1,new Date(year,month,0).getDate()));
+  const weekCount=Math.ceil(new Date(year,month,0).getDate()/7);
+  try {
+    const [dD,wD]=await Promise.all([
+      db(`daily_reports?select=name,date&date=gte.${firstDay}&date=lte.${lastDay}`),
+      db(`weekly_reports?select=name,date&date=gte.${firstDay}&date=lte.${lastDay}`)
+    ]);
+    const dBN={},wBN={};
+    members.forEach(m=>{dBN[m.name]=0;wBN[m.name]=0;});
+    dD.forEach(r=>{if(dBN[r.name]!==undefined)dBN[r.name]++;});
+    wD.forEach(r=>{if(wBN[r.name]!==undefined)wBN[r.name]++;});
+    tbody.innerHTML=members.map(m=>{
+      const dM=Math.max(0,workDays-dBN[m.name]);
+      const wM=Math.max(0,weekCount-wBN[m.name]);
+      const tot=dM+wM;
+      return `<tr><td><strong>${m.name}</strong></td>
+        <td><span class="miss-count ${dM>0?'bad':'ok'}">${dM}</span></td>
+        <td><span class="miss-count ${wM>0?'bad':'ok'}">${wM}</span></td>
+        <td><span class="miss-count ${tot>0?'bad':'ok'}">${tot}</span></td></tr>`;
+    }).join('');
+  } catch(e){tbody.innerHTML='<tr><td colspan="4" class="empty-text">Failed.</td></tr>';}
+}
+
+function countWorkDays(start,end) {
+  let count=0; const cur=new Date(start);
+  while(cur<=end){const d=cur.getDay();if(d!==0&&d!==6)count++;cur.setDate(cur.getDate()+1);}
+  return count;
+}
+
+// ===== MEMBERS =====
+async function loadMembers() {
+  try {
+    members = await db('members?select=*&order=name');
+    ['filter-daily-name','filter-weekly-name','task-filter-member','ntf-assignee'].forEach(id => {
+      const sel=document.getElementById(id); if(!sel) return;
+      const cur=sel.value;
+      const isAssignee=id==='ntf-assignee';
+      sel.innerHTML=isAssignee?'<option value="">Assign to…</option>':'<option value="">All Members</option>';
+      const filtered=isAssignee?members.filter(m=>(m.role||'sales')==='sales'):members;
+      filtered.forEach(m=>{const o=document.createElement('option');o.value=m.name;o.textContent=m.name;sel.appendChild(o);});
+      if(!isAssignee) sel.value=cur;
+    });
+  } catch(e){console.error(e);}
+}
+
+function renderMembers() {
+  const list=document.getElementById('member-list');
+  if(!members.length){list.innerHTML='<div class="empty-text">No members yet.</div>';return;}
+  list.innerHTML=members.map(m=>`
+    <div class="member-row" id="mrow-${m.id}">
+      <span class="m-name">${m.name}</span>
+      <span class="role-badge ${m.role||'sales'}">${m.role==='marketing'?'Marketing':'Sales'}</span>
+      <span class="pw-badge ${m.password?'set':'unset'}">${m.password?'✓ Password':'⚠ No password'}</span>
+      <span class="kpi-badge">KPI: RM ${Number(m.monthly_kpi||0).toLocaleString()}</span>
+      <button class="btn-editname" onclick="toggleNameEdit(${m.id})">Name</button>
+      <button class="btn-role" onclick="toggleRoleEdit(${m.id})">Role</button>
+      <button class="btn-setpw" onclick="togglePwEdit(${m.id})">Password</button>
+      <button class="btn-kpi" onclick="toggleKpiEdit(${m.id})">KPI</button>
+      <button class="btn-del" onclick="deleteMember(${m.id},'${m.name.replace(/'/g,"\\'")}')">Remove</button>
+      <div class="pw-edit-row" id="nameedit-${m.id}">
+        <input type="text" id="nameval-${m.id}" value="${m.name.replace(/"/g,'&quot;')}" placeholder="New name">
+        <button class="btn-save" onclick="saveName(${m.id})">Save</button>
+        <button class="btn-cancel" onclick="toggleNameEdit(${m.id})">Cancel</button>
+      </div>
+      <div class="pw-edit-row" id="roleedit-${m.id}">
+        <select id="roleval-${m.id}">
+          <option value="sales" ${(m.role||'sales')==='sales'?'selected':''}>Sales</option>
+          <option value="marketing" ${m.role==='marketing'?'selected':''}>Marketing</option>
+        </select>
+        <button class="btn-save" onclick="saveRole(${m.id})">Save</button>
+        <button class="btn-cancel" onclick="toggleRoleEdit(${m.id})">Cancel</button>
+      </div>
+      <div class="pw-edit-row" id="pwedit-${m.id}">
+        <input type="text" id="pwval-${m.id}" placeholder="New password">
+        <button class="btn-save" onclick="savePassword(${m.id})">Save</button>
+        <button class="btn-cancel" onclick="togglePwEdit(${m.id})">Cancel</button>
+      </div>
+      <div class="pw-edit-row" id="kpiedit-${m.id}">
+        <input type="number" id="kpival-${m.id}" placeholder="Monthly KPI (RM)" value="${m.monthly_kpi||''}" min="0">
+        <button class="btn-save" onclick="saveKpi(${m.id})">Save</button>
+        <button class="btn-cancel" onclick="toggleKpiEdit(${m.id})">Cancel</button>
+      </div>
+    </div>`).join('');
+}
+
+function toggleNameEdit(id){const r=document.getElementById('nameedit-'+id);r.classList.toggle('open');if(r.classList.contains('open'))document.getElementById('nameval-'+id).focus();}
+function toggleRoleEdit(id){document.getElementById('roleedit-'+id).classList.toggle('open');}
+function togglePwEdit(id){const r=document.getElementById('pwedit-'+id);r.classList.toggle('open');if(r.classList.contains('open'))document.getElementById('pwval-'+id).focus();}
+function toggleKpiEdit(id){const r=document.getElementById('kpiedit-'+id);r.classList.toggle('open');if(r.classList.contains('open'))document.getElementById('kpival-'+id).focus();}
+
+async function saveName(id){
+  const inp=document.getElementById('nameval-'+id);const newName=inp.value.trim();
+  if(!newName){inp.style.borderColor='var(--red)';return;}
+  const oldName=members.find(m=>m.id===id)?.name;
+  if(newName===oldName){toggleNameEdit(id);return;}
+  if(!confirm(`Change name from "${oldName}" to "${newName}"?\nAll past reports will be updated.`)) return;
+  try{
+    await fetch(SUPA_URL+'/rest/v1/members?id=eq.'+id,{method:'PATCH',headers:H,body:JSON.stringify({name:newName})});
+    await fetch(SUPA_URL+'/rest/v1/daily_reports?name=eq.'+encodeURIComponent(oldName),{method:'PATCH',headers:H,body:JSON.stringify({name:newName})});
+    await fetch(SUPA_URL+'/rest/v1/weekly_reports?name=eq.'+encodeURIComponent(oldName),{method:'PATCH',headers:H,body:JSON.stringify({name:newName})});
+    await loadMembers();renderMembers();
+  }catch(e){alert('Failed.');}
+}
+async function saveRole(id){const val=document.getElementById('roleval-'+id).value;try{await fetch(SUPA_URL+'/rest/v1/members?id=eq.'+id,{method:'PATCH',headers:H,body:JSON.stringify({role:val})});await loadMembers();renderMembers();}catch(e){alert('Failed.');}}
+async function savePassword(id){const inp=document.getElementById('pwval-'+id);const pw=inp.value.trim();if(!pw){inp.style.borderColor='var(--red)';return;}try{await fetch(SUPA_URL+'/rest/v1/members?id=eq.'+id,{method:'PATCH',headers:H,body:JSON.stringify({password:pw})});await loadMembers();renderMembers();}catch(e){alert('Failed.');}}
+async function saveKpi(id){const inp=document.getElementById('kpival-'+id);const kpi=parseFloat(inp.value)||0;try{await fetch(SUPA_URL+'/rest/v1/members?id=eq.'+id,{method:'PATCH',headers:H,body:JSON.stringify({monthly_kpi:kpi})});await loadMembers();renderMembers();}catch(e){alert('Failed.');}}
+async function addMember(){
+  const inp=document.getElementById('new-member-name');const pwInp=document.getElementById('new-member-pw');const roleInp=document.getElementById('new-member-role');
+  const name=inp.value.trim();const pw=pwInp.value.trim();const role=roleInp.value;
+  if(!name){inp.style.borderColor='var(--red)';return;}inp.style.borderColor='';
+  try{await db('members',{method:'POST',body:JSON.stringify({name,password:pw||null,monthly_kpi:0,role})});inp.value='';pwInp.value='';roleInp.value='sales';await loadMembers();renderMembers();}
+  catch(e){alert('Failed.');}
+}
+async function deleteMember(id,name){
+  if(!confirm(`Remove "${name}"?`)) return;
+  try{await fetch(SUPA_URL+'/rest/v1/members?id=eq.'+id,{method:'DELETE',headers:H});await loadMembers();renderMembers();}
+  catch(e){alert('Failed.');}
+}
+
+function populateMonthSelector(){
+  const sel=document.getElementById('stats-month');const now=new Date();
+  for(let i=0;i<6;i++){const d=new Date(now.getFullYear(),now.getMonth()-i,1);const o=document.createElement('option');o.value=d.toISOString().slice(0,7);o.textContent=d.toLocaleString('en',{year:'numeric',month:'long'});sel.appendChild(o);}
+}
+function setDefaultFilters(){
+  const t=today(),ws=weekStart();
+  document.getElementById('filter-daily-from').value=ws;
+  document.getElementById('filter-daily-to').value=t;
+  document.getElementById('filter-weekly-from').value=weekStart();
+  document.getElementById('filter-weekly-to').value=weekEnd();
+}
+function logoutHQ(){sessionStorage.clear();}
+
+(async()=>{
+  if(sessionStorage.getItem('userRole')==='hq'||sessionStorage.getItem('hq_auth')==='1'){
+    sessionStorage.setItem('hq_auth','1');
+    document.getElementById('pwOverlay').style.display='none';
+    populateMonthSelector();setDefaultFilters();
+    document.getElementById('briefing-date').value=todayStr;
+    await loadMembers();
+    loadBriefing();
+  }
+})();
+
+async function checkPw(){
+  const inp=document.getElementById('pwInput');const pw=inp.value.trim();if(!pw) return;
+  const btn=document.querySelector('.pw-btn');btn.disabled=true;btn.textContent='...';
+  try{
+    const data=await db("settings?key=eq.hq_password&select=value");
+    if(data.length&&data[0].value===pw){
+      sessionStorage.setItem('hq_auth','1');
+      document.getElementById('pwOverlay').style.display='none';
+      populateMonthSelector();setDefaultFilters();
+      document.getElementById('briefing-date').value=todayStr;
+      await loadMembers();loadBriefing();
+    }else{
+      inp.classList.add('error');document.getElementById('pwError').classList.add('visible');
+      inp.value='';setTimeout(()=>inp.classList.remove('error'),400);
+    }
+  }catch(e){document.getElementById('pwError').textContent='Connection error.';document.getElementById('pwError').classList.add('visible');}
+  btn.disabled=false;btn.textContent='Enter';
+}
+
+async function changePassword(){
+  const p1=document.getElementById('new-pw').value.trim();
+  const p2=document.getElementById('new-pw2').value.trim();
+  const msg=document.getElementById('chpw-msg');msg.className='chpw-msg';
+  if(!p1||!p2){msg.textContent='Please fill in both fields.';msg.className='chpw-msg fail';return;}
+  if(p1!==p2){msg.textContent='Passwords do not match.';msg.className='chpw-msg fail';return;}
+  try{
+    await fetch(SUPA_URL+'/rest/v1/settings?key=eq.hq_password',{method:'PATCH',headers:H,body:JSON.stringify({value:p1})});
+    document.getElementById('new-pw').value='';document.getElementById('new-pw2').value='';
+    msg.textContent='✅ Password updated!';msg.className='chpw-msg ok';
+  }catch(e){msg.textContent='Failed.';msg.className='chpw-msg fail';}
+}
 </script>
 </body>
 </html>
