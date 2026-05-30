@@ -463,7 +463,7 @@ const H = { 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY, 'Content-
 
 let members = [];
 let allTasks = [];
-let currentTaskFilter = 'overdue';
+let currentTaskFilter = 'all';
 const todayStr = new Date().toISOString().split('T')[0];
 
 async function db(path, opts = {}) {
