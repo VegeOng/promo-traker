@@ -211,7 +211,7 @@
   <div class="sec-title">My Data</div>
   <div class="tabs">
     <div class="tab active" onclick="switchTab('tasks', event)">My Tasks</div>
-    <div class="tab" onclick="switchTab('visits', event)">Visit History</div>
+    <div class="tab" id="tab-visits" onclick="switchTab('visits', event)">Visit History</div>
     <div class="tab" onclick="switchTab('weekly', event)">Weekly Reports</div>
     <div class="tab" onclick="switchTab('sales', event)">Sales Data</div>
   </div>
@@ -612,6 +612,8 @@
     const dailyTool = document.getElementById('tool-daily-report');
     if (visitTool) visitTool.style.display = 'none';
     if (dailyTool) dailyTool.style.display = 'flex';
+    const visitTab = document.getElementById('tab-visits');
+    if (visitTab) visitTab.style.display = 'none';
   }
   loadMyTasks();
   loadWeekly();
