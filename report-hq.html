@@ -40,7 +40,6 @@
   .chpw-row input { flex: 1; padding: 10px 14px; border: 1.5px solid var(--border); border-radius: 8px; font-size: 14px; font-family: inherit; }
   .chpw-row input:focus { outline: none; border-color: var(--green); }
   .btn-chpw { padding: 10px 16px; background: var(--green); color: white; border: none; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; white-space: nowrap; }
-  .btn-chpw:hover { background: var(--green-mid); }
   .chpw-msg { font-size: 13px; margin-top: 8px; display: none; }
   .chpw-msg.ok { color: var(--green); display: block; }
   .chpw-msg.fail { color: var(--red); display: block; }
@@ -50,21 +49,22 @@
   .tab.active { color: var(--green); border-bottom-color: var(--green); }
   .tab:hover { color: var(--green); background: #f0fdf4; }
 
-  .container { max-width: 860px; margin: 0 auto; padding: 24px 16px 60px; }
+  .container { max-width: 900px; margin: 0 auto; padding: 24px 16px 60px; }
   .section { display: none; }
   .section.active { display: block; }
 
   .card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; margin-bottom: 16px; }
-  .card-title { font-size: 15px; font-weight: 800; color: var(--text); margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+  .card-title { font-size: 15px; font-weight: 800; color: var(--text); margin-bottom: 16px; }
 
   .stat-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 12px; margin-bottom: 20px; }
   @media(min-width:500px){ .stat-grid { grid-template-columns: repeat(4,1fr); } }
   .stat-box { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 16px; text-align: center; }
-  .stat-box .s-val { font-size: 28px; font-weight: 900; line-height: 1; }
+  .stat-box .s-val { font-size: 24px; font-weight: 900; line-height: 1; }
   .stat-box .s-label { font-size: 11px; color: var(--muted); margin-top: 4px; text-transform: uppercase; letter-spacing: 0.04em; }
   .stat-box.red .s-val { color: var(--red); }
   .stat-box.green .s-val { color: var(--green); }
   .stat-box.amber .s-val { color: var(--amber); }
+  .stat-box.blue .s-val { color: var(--blue); }
 
   .missing-list { display: flex; flex-direction: column; gap: 8px; }
   .missing-item { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; background: var(--red-light); border-radius: 8px; border: 1px solid #fca5a5; }
@@ -89,7 +89,7 @@
   .rb-field .rf-val { font-size: 13px; color: var(--text); white-space: pre-wrap; line-height: 1.6; }
 
   .filter-bar { display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; }
-  .filter-bar select, .filter-bar input { padding: 8px 12px; border: 1.5px solid var(--border); border-radius: 8px; font-size: 13px; font-family: inherit; background: white; color: var(--text); appearance: none; cursor: pointer; }
+  .filter-bar select, .filter-bar input { padding: 8px 12px; border: 1.5px solid var(--border); border-radius: 8px; font-size: 13px; font-family: inherit; background: white; appearance: none; }
   .filter-bar select:focus, .filter-bar input:focus { outline: none; border-color: var(--green); }
 
   /* Briefing */
@@ -97,7 +97,6 @@
   .briefing-date-bar input[type=date] { padding: 8px 12px; border: 1.5px solid var(--border); border-radius: 8px; font-size: 14px; font-family: inherit; }
   .briefing-date-bar input[type=date]:focus { outline: none; border-color: var(--green); }
   .btn-load { padding: 8px 16px; background: var(--green); color: white; border: none; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; }
-  .btn-load:hover { background: var(--green-mid); }
 
   .briefing-summary { display: grid; grid-template-columns: repeat(2,1fr); gap: 10px; margin-bottom: 20px; }
   @media(min-width:500px){ .briefing-summary { grid-template-columns: repeat(4,1fr); } }
@@ -134,12 +133,10 @@
   .vri-photos img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 6px; cursor: pointer; }
   .vri-actions { display: flex; gap: 8px; }
   .btn-create-task-hq { padding: 6px 12px; background: var(--amber); color: white; border: none; border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer; }
-  .btn-create-task-hq:hover { background: #b45309; }
 
   .task-form-inline { background: #fffbeb; border: 1px solid #fde68a; border-radius: 8px; padding: 12px; margin-top: 8px; display: none; }
   .task-form-inline.open { display: block; }
   .task-form-inline input, .task-form-inline textarea { width: 100%; padding: 8px 12px; border: 1.5px solid var(--border); border-radius: 6px; font-size: 13px; font-family: inherit; margin-bottom: 8px; }
-  .task-form-inline input:focus, .task-form-inline textarea:focus { outline: none; border-color: var(--green); }
   .task-form-inline textarea { min-height: 60px; resize: vertical; }
   .tfi-row { display: flex; gap: 8px; flex-wrap: wrap; }
   .btn-save-task { padding: 8px 14px; background: var(--green); color: white; border: none; border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer; }
@@ -157,9 +154,7 @@
 
   .task-filter-bar { display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; align-items: center; }
   .task-filter-bar select { padding: 8px 12px; border: 1.5px solid var(--border); border-radius: 8px; font-size: 13px; font-family: inherit; appearance: none; }
-  .task-filter-bar select:focus { outline: none; border-color: var(--green); }
   .btn-new-task { padding: 9px 16px; background: var(--green); color: white; border: none; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; margin-left: auto; }
-  .btn-new-task:hover { background: var(--green-mid); }
 
   .new-task-form { background: white; border: 2px solid var(--green); border-radius: var(--radius); padding: 20px; margin-bottom: 16px; display: none; }
   .new-task-form.open { display: block; }
@@ -167,9 +162,7 @@
   .ntf-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
   @media(max-width:500px){ .ntf-grid { grid-template-columns: 1fr; } }
   .ntf-grid input, .ntf-grid select { padding: 10px 12px; border: 1.5px solid var(--border); border-radius: 8px; font-size: 13px; font-family: inherit; width: 100%; }
-  .ntf-grid input:focus, .ntf-grid select:focus { outline: none; border-color: var(--green); }
   .ntf-textarea { width: 100%; padding: 10px 12px; border: 1.5px solid var(--border); border-radius: 8px; font-size: 13px; font-family: inherit; min-height: 80px; resize: vertical; margin-bottom: 12px; }
-  .ntf-textarea:focus { outline: none; border-color: var(--green); }
   .ntf-actions { display: flex; gap: 10px; }
   .btn-ntf-save { padding: 10px 20px; background: var(--green); color: white; border: none; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; }
   .btn-ntf-cancel { padding: 10px 20px; background: #e5e7eb; color: var(--text); border: none; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; }
@@ -205,19 +198,16 @@
   .ti-note-row label { font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; display: block; margin-bottom: 4px; }
   .ti-note-row p { font-size: 13px; color: var(--text); line-height: 1.5; }
   .ti-note-input { width: 100%; padding: 8px 12px; border: 1.5px solid var(--border); border-radius: 6px; font-size: 13px; font-family: inherit; min-height: 60px; resize: vertical; margin-bottom: 8px; }
-  .ti-note-input:focus { outline: none; border-color: var(--green); }
   .ti-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
   .btn-confirm { padding: 7px 14px; background: var(--green); color: white; border: none; border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer; }
   .btn-reject { padding: 7px 14px; background: #e5e7eb; color: var(--text); border: none; border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer; }
   .btn-add-note { padding: 7px 14px; background: var(--blue-light); color: var(--blue); border: none; border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer; }
   .btn-delete-task { padding: 7px 14px; background: none; border: 1px solid var(--red); color: var(--red); border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer; }
 
-  /* Monthly Performance */
+  /* Performance */
   .perf-month-bar { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; align-items: center; }
   .perf-month-bar select { padding: 9px 14px; border: 1.5px solid var(--border); border-radius: 8px; font-size: 14px; font-family: inherit; appearance: none; background: white; }
-  .perf-month-bar select:focus { outline: none; border-color: var(--green); }
   .perf-notice { font-size: 12px; color: var(--muted); background: #f9fafb; border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; margin-bottom: 20px; line-height: 1.6; }
-
   .perf-card { background: white; border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 16px; overflow: hidden; }
   .perf-card-header { padding: 18px 20px; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
   .perf-left { display: flex; align-items: center; gap: 14px; }
@@ -233,7 +223,6 @@
   .perf-vs.up { background: var(--green-light); color: var(--green); }
   .perf-vs.down { background: var(--red-light); color: var(--red); }
   .perf-vs.same { background: #f3f4f6; color: var(--muted); }
-
   .perf-stats-row { display: grid; grid-template-columns: repeat(4,1fr); gap: 0; border-top: 1px solid var(--border); }
   @media(max-width:500px){ .perf-stats-row { grid-template-columns: repeat(2,1fr); } }
   .perf-stat { padding: 14px 16px; text-align: center; border-right: 1px solid var(--border); }
@@ -244,12 +233,10 @@
   .perf-stat-val.red { color: var(--red); }
   .perf-stat-val.muted { color: var(--muted); }
   .perf-stat-label { font-size: 10px; color: var(--muted); margin-top: 4px; text-transform: uppercase; letter-spacing: 0.04em; }
-
   .perf-detail-btn { display: flex; align-items: center; justify-content: center; padding: 10px; border-top: 1px solid var(--border); cursor: pointer; font-size: 12px; font-weight: 600; color: var(--muted); background: #f9fafb; gap: 6px; }
   .perf-detail-btn:hover { background: #f0fdf4; color: var(--green); }
   .perf-detail { display: none; border-top: 1px solid var(--border); }
   .perf-detail.open { display: block; }
-
   .perf-section { padding: 14px 18px; border-bottom: 1px solid var(--border); }
   .perf-section:last-child { border-bottom: none; }
   .perf-section-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
@@ -262,12 +249,66 @@
   .perf-task-desc { flex: 1; font-size: 13px; color: var(--text); line-height: 1.4; }
   .perf-task-meta { font-size: 11px; color: var(--muted); margin-top: 2px; }
   .perf-task-source { font-size: 10px; font-weight: 600; padding: 2px 6px; border-radius: 10px; background: #f3f4f6; color: var(--muted); flex-shrink: 0; }
-  .perf-empty-section { font-size: 13px; color: var(--muted); font-style: italic; }
+
+  /* Activities */
+  .act-stat-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 10px; margin-bottom: 20px; }
+  @media(min-width:500px){ .act-stat-grid { grid-template-columns: repeat(4,1fr); } }
+
+  .act-filter-bar { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+  .act-filter-btn { padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 700; cursor: pointer; border: 2px solid transparent; background: #f3f4f6; color: var(--muted); transition: all 0.15s; }
+  .act-filter-btn.active { border-color: var(--green); background: var(--green-light); color: var(--green); }
+
+  .activity-card { background: white; border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 14px; overflow: hidden; }
+  .ac-header { padding: 16px 20px; display: flex; align-items: flex-start; gap: 14px; cursor: pointer; }
+  .ac-header:hover { background: #f9fafb; }
+  .ac-icon { font-size: 28px; flex-shrink: 0; margin-top: 2px; }
+  .ac-main { flex: 1; }
+  .ac-name { font-size: 15px; font-weight: 800; margin-bottom: 4px; }
+  .ac-meta { font-size: 12px; color: var(--muted); display: flex; gap: 10px; flex-wrap: wrap; }
+  .ac-right { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; flex-shrink: 0; }
+  .ac-status { font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 20px; }
+  .ac-status.active { background: var(--green-light); color: var(--green); }
+  .ac-status.ended { background: #f3f4f6; color: var(--muted); }
+  .ac-pnl { font-size: 18px; font-weight: 900; }
+  .ac-pnl.profit { color: var(--green); }
+  .ac-pnl.loss { color: var(--red); }
+  .ac-pnl.break { color: var(--amber); }
+
+  .ac-stats-row { display: grid; grid-template-columns: repeat(4,1fr); border-top: 1px solid var(--border); }
+  @media(max-width:480px){ .ac-stats-row { grid-template-columns: repeat(2,1fr); } }
+  .ac-stat { padding: 12px; text-align: center; border-right: 1px solid var(--border); }
+  .ac-stat:last-child { border-right: none; }
+  .ac-stat-val { font-size: 15px; font-weight: 800; }
+  .ac-stat-val.green { color: var(--green); }
+  .ac-stat-val.red { color: var(--red); }
+  .ac-stat-val.amber { color: var(--amber); }
+  .ac-stat-label { font-size: 10px; color: var(--muted); margin-top: 2px; text-transform: uppercase; }
+
+  .ac-body { display: none; border-top: 1px solid var(--border); }
+  .ac-body.open { display: block; }
+
+  .ac-report-item { padding: 14px 20px; border-bottom: 1px solid var(--border); }
+  .ac-report-item:last-child { border-bottom: none; }
+  .acri-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; flex-wrap: wrap; gap: 8px; }
+  .acri-date { font-size: 13px; font-weight: 700; color: var(--green); }
+  .acri-reporter { font-size: 11px; color: var(--muted); }
+  .acri-amounts { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 6px; }
+  .acri-rev { font-size: 13px; font-weight: 700; color: var(--green); }
+  .acri-cost { font-size: 13px; font-weight: 700; color: var(--red); }
+  .acri-profit { font-size: 13px; font-weight: 700; }
+  .acri-notes { font-size: 12px; color: var(--muted); line-height: 1.5; }
+  .acri-photos { display: grid; grid-template-columns: repeat(4,1fr); gap: 6px; margin-top: 8px; }
+  .acri-photos img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 6px; cursor: pointer; }
+
+  .ac-actions { padding: 12px 20px; background: #f9fafb; border-top: 1px solid var(--border); display: flex; gap: 10px; flex-wrap: wrap; }
+  .btn-end-act { padding: 7px 14px; background: #f3f4f6; color: var(--muted); border: 1px solid var(--border); border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer; }
+  .btn-reopen-act { padding: 7px 14px; background: var(--green-light); color: var(--green); border: none; border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer; }
+  .btn-delete-act { padding: 7px 14px; background: none; border: 1px solid var(--red); color: var(--red); border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer; }
 
   /* Members */
   .member-row { display: flex; align-items: center; gap: 8px; padding: 10px 14px; background: #f9fafb; border: 1px solid var(--border); border-radius: 8px; margin-bottom: 8px; flex-wrap: wrap; }
   .member-row .m-name { font-size: 14px; font-weight: 600; flex: 1; min-width: 100px; }
-  .pw-badge { font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 20px; text-transform: uppercase; letter-spacing: 0.04em; }
+  .pw-badge { font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 20px; text-transform: uppercase; }
   .pw-badge.set { background: var(--green-light); color: var(--green); }
   .pw-badge.unset { background: var(--amber-light); color: var(--amber); }
   .kpi-badge { font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 20px; background: #fef3c7; color: #92400e; }
@@ -275,26 +316,19 @@
   .role-badge.sales { background: var(--blue-light); color: var(--blue); }
   .role-badge.marketing { background: #fdf4ff; color: #7e22ce; }
   .btn-editname { background: #3b82f6; border: none; color: white; padding: 5px 10px; border-radius: 6px; font-size: 12px; cursor: pointer; font-weight: 600; }
-  .btn-editname:hover { background: #2563eb; }
   .btn-setpw { background: var(--green); border: none; color: white; padding: 5px 10px; border-radius: 6px; font-size: 12px; cursor: pointer; font-weight: 600; }
-  .btn-setpw:hover { background: var(--green-mid); }
   .btn-kpi { background: #d97706; border: none; color: white; padding: 5px 10px; border-radius: 6px; font-size: 12px; cursor: pointer; font-weight: 600; }
-  .btn-kpi:hover { background: #b45309; }
   .btn-role { background: #7e22ce; border: none; color: white; padding: 5px 10px; border-radius: 6px; font-size: 12px; cursor: pointer; font-weight: 600; }
-  .btn-role:hover { background: #6b21a8; }
   .btn-del { background: none; border: 1px solid var(--red); color: var(--red); padding: 4px 10px; border-radius: 6px; font-size: 12px; cursor: pointer; font-weight: 600; }
   .btn-del:hover { background: var(--red); color: white; }
   .pw-edit-row { width: 100%; display: none; gap: 8px; margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--border); flex-wrap: wrap; }
   .pw-edit-row.open { display: flex; }
   .pw-edit-row input, .pw-edit-row select { flex: 1; min-width: 120px; padding: 8px 12px; border: 1.5px solid var(--border); border-radius: 6px; font-size: 13px; font-family: inherit; }
-  .pw-edit-row input:focus, .pw-edit-row select:focus { outline: none; border-color: var(--green); }
   .btn-save { padding: 8px 14px; background: var(--green); color: white; border: none; border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer; }
   .btn-cancel { padding: 8px 14px; background: #e5e7eb; color: var(--text); border: none; border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer; }
   .add-member-row { display: flex; gap: 10px; margin-top: 12px; flex-wrap: wrap; }
   .add-member-row input, .add-member-row select { flex: 1; min-width: 120px; padding: 10px 14px; border: 1.5px solid var(--border); border-radius: 8px; font-size: 14px; font-family: inherit; }
-  .add-member-row input:focus, .add-member-row select:focus { outline: none; border-color: var(--green); }
   .btn-add { padding: 10px 18px; background: var(--green); color: white; border: none; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer; }
-  .btn-add:hover { background: var(--green-mid); }
 
   .miss-table { width: 100%; border-collapse: collapse; font-size: 13px; }
   .miss-table th { text-align: left; padding: 8px 12px; background: #f3f4f6; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); }
@@ -308,7 +342,6 @@
   .empty-text { text-align: center; padding: 24px; color: var(--muted); font-size: 13px; }
   .month-row { display: flex; gap: 8px; align-items: center; margin-bottom: 16px; }
   .month-row select { padding: 8px 12px; border: 1.5px solid var(--border); border-radius: 8px; font-size: 13px; font-family: inherit; appearance: none; }
-  .month-row select:focus { outline: none; border-color: var(--green); }
 
   .lightbox { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 9999; display: none; align-items: center; justify-content: center; padding: 20px; }
   .lightbox.open { display: flex; }
@@ -330,7 +363,7 @@
     <div class="pw-sub">Enter password to access HQ dashboard</div>
     <input type="password" class="pw-input" id="pwInput" placeholder="Password" onkeydown="if(event.key==='Enter')checkPw()">
     <button class="pw-btn" onclick="checkPw()">Enter</button>
-    <div class="pw-error" id="pwError">Incorrect password. Please try again.</div>
+    <div class="pw-error" id="pwError">Incorrect password.</div>
   </div>
 </div>
 
@@ -347,6 +380,7 @@
   <div class="tab active" onclick="switchTab('briefing')">📋 Daily Briefing</div>
   <div class="tab" onclick="switchTab('tasks')">✅ Task Tracker</div>
   <div class="tab" onclick="switchTab('performance')">📈 Performance</div>
+  <div class="tab" onclick="switchTab('activities')">🎪 Activities</div>
   <div class="tab" onclick="switchTab('overview')">📊 Overview</div>
   <div class="tab" onclick="switchTab('daily')">📝 Daily Reports</div>
   <div class="tab" onclick="switchTab('weekly')">📅 Weekly Reports</div>
@@ -375,7 +409,7 @@
   <div class="section" id="sec-tasks">
     <div class="task-summary-bar">
       <span class="tsb-item all active" onclick="filterTasks('all',this)">All <span id="cnt-all">0</span></span>
-      <span class="tsb-item awaiting" onclick="filterTasks('awaiting_confirm',this)">🔵 Awaiting Confirm <span id="cnt-awaiting">0</span></span>
+      <span class="tsb-item awaiting" onclick="filterTasks('awaiting_confirm',this)">🔵 Awaiting <span id="cnt-awaiting">0</span></span>
       <span class="tsb-item completed" onclick="filterTasks('completed',this)">✅ Completed <span id="cnt-completed">0</span></span>
       <span class="tsb-item pending" onclick="filterTasks('pending',this)">🟡 Pending <span id="cnt-pending">0</span></span>
       <span class="tsb-item overdue" onclick="filterTasks('overdue',this)">🔴 Overdue <span id="cnt-overdue">0</span></span>
@@ -401,15 +435,29 @@
     <div id="task-list"><div class="loading-text">Loading…</div></div>
   </div>
 
-  <!-- MONTHLY PERFORMANCE -->
+  <!-- PERFORMANCE -->
   <div class="section" id="sec-performance">
     <div class="perf-month-bar">
       <select id="perf-month" onchange="loadPerformance()"></select>
     </div>
-    <div class="perf-notice">
-      📊 Monthly performance is based on tasks with a due date within the selected month. Pending tasks (not yet due) are not counted in the completion rate.
-    </div>
+    <div class="perf-notice">📊 Based on tasks with due date in selected month. Pending tasks excluded from rate.</div>
     <div id="perf-list"><div class="loading-text">Loading…</div></div>
+  </div>
+
+  <!-- ACTIVITIES -->
+  <div class="section" id="sec-activities">
+    <div class="act-stat-grid">
+      <div class="stat-box blue"><div class="s-val" id="act-total">—</div><div class="s-label">Total</div></div>
+      <div class="stat-box green"><div class="s-val" id="act-active">—</div><div class="s-label">Active</div></div>
+      <div class="stat-box green"><div class="s-val" id="act-revenue">—</div><div class="s-label">Total Revenue</div></div>
+      <div class="stat-box amber"><div class="s-val" id="act-profit">—</div><div class="s-label">Total P&L</div></div>
+    </div>
+    <div class="act-filter-bar">
+      <span class="act-filter-btn active" onclick="filterActivities('all',this)">All</span>
+      <span class="act-filter-btn" onclick="filterActivities('active',this)">Active</span>
+      <span class="act-filter-btn" onclick="filterActivities('ended',this)">Ended</span>
+    </div>
+    <div id="activities-list"><div class="loading-text">Loading…</div></div>
   </div>
 
   <!-- OVERVIEW -->
@@ -417,15 +465,15 @@
     <div class="stat-grid">
       <div class="stat-box red"><div class="s-val" id="ov-daily-miss">—</div><div class="s-label">Missing Daily Today</div></div>
       <div class="stat-box green"><div class="s-val" id="ov-daily-ok">—</div><div class="s-label">Daily Submitted</div></div>
-      <div class="stat-box amber"><div class="s-val" id="ov-weekly-miss">—</div><div class="s-label">Missing Weekly This Week</div></div>
+      <div class="stat-box amber"><div class="s-val" id="ov-weekly-miss">—</div><div class="s-label">Missing Weekly</div></div>
       <div class="stat-box green"><div class="s-val" id="ov-weekly-ok">—</div><div class="s-label">Weekly Submitted</div></div>
     </div>
     <div class="card">
-      <div class="card-title">🚨 Missing Daily Report — Today</div>
+      <div class="card-title">🚨 Missing Daily — Today</div>
       <div class="missing-list" id="missing-daily-today"><div class="loading-text">Loading…</div></div>
     </div>
     <div class="card">
-      <div class="card-title">⚠️ Missing Weekly Report — This Week</div>
+      <div class="card-title">⚠️ Missing Weekly — This Week</div>
       <div class="missing-list" id="missing-weekly-week"><div class="loading-text">Loading…</div></div>
     </div>
   </div>
@@ -457,7 +505,7 @@
       <div class="month-row"><select id="stats-month" onchange="loadMissStats()"></select></div>
       <table class="miss-table">
         <thead><tr><th>Name</th><th>Daily Missing</th><th>Weekly Missing</th><th>Total</th></tr></thead>
-        <tbody id="miss-stats-body"><tr><td colspan="4" class="loading-text">Loading…</td></tr></tbody>
+        <tbody id="miss-stats-body"></tbody>
       </table>
     </div>
   </div>
@@ -466,21 +514,17 @@
   <div class="section" id="sec-members">
     <div class="card">
       <div class="card-title">👥 Team Members</div>
-      <div style="font-size:12px;color:var(--muted);margin-bottom:12px;">⚠️ Member name must match the <strong>SALES PERSON</strong> column in Google Sheet exactly.</div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:12px;">⚠️ Name must match <strong>SALES PERSON</strong> column in Google Sheet exactly.</div>
       <div id="member-list"><div class="loading-text">Loading…</div></div>
       <div class="add-member-row">
         <input type="text" id="new-member-name" placeholder="Full name" maxlength="50">
         <input type="text" id="new-member-pw" placeholder="Initial password" maxlength="50">
-        <select id="new-member-role">
-          <option value="sales">Sales</option>
-          <option value="marketing">Marketing</option>
-        </select>
+        <select id="new-member-role"><option value="sales">Sales</option><option value="marketing">Marketing</option></select>
         <button class="btn-add" onclick="addMember()">+ Add</button>
       </div>
     </div>
     <div class="card">
       <div class="card-title">🔒 Change HQ Password</div>
-      <div style="font-size:13px;color:var(--muted);margin-bottom:8px;">Enter a new password for HQ access.</div>
       <div class="chpw-row">
         <input type="password" id="new-pw" placeholder="New password">
         <input type="password" id="new-pw2" placeholder="Confirm">
@@ -500,7 +544,9 @@ const Hmin = { 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY, 'Conte
 
 let members = [];
 let allTasks = [];
+let allActivities = [];
 let currentTaskFilter = 'all';
+let currentActFilter = 'all';
 const todayStr = new Date().toISOString().split('T')[0];
 
 async function db(path, opts = {}) {
@@ -514,15 +560,17 @@ function weekStart() { const d=new Date(); const day=d.getDay(); const diff=d.ge
 function weekEnd() { const d=new Date(); const day=d.getDay(); const diff=d.getDate()-day+(day===0?0:7); return new Date(d.setDate(diff)).toISOString().split('T')[0]; }
 function escHtml(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 function fmtRM(n) { return 'RM '+Number(n||0).toLocaleString('en-MY',{minimumFractionDigits:0,maximumFractionDigits:0}); }
+function fmtRMDec(n) { return 'RM '+Number(n||0).toLocaleString('en-MY',{minimumFractionDigits:2,maximumFractionDigits:2}); }
 
 function switchTab(tab) {
-  const tabNames = ['briefing','tasks','performance','overview','daily','weekly','stats','members'];
+  const tabNames = ['briefing','tasks','performance','activities','overview','daily','weekly','stats','members'];
   document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('active', tabNames[i] === tab));
   document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
   document.getElementById('sec-'+tab).classList.add('active');
   if (tab==='briefing') loadBriefing();
   else if (tab==='tasks') loadTasks();
   else if (tab==='performance') loadPerformance();
+  else if (tab==='activities') loadActivities();
   else if (tab==='overview') loadOverview();
   else if (tab==='daily') loadDailyReports();
   else if (tab==='weekly') loadWeeklyReports();
@@ -530,182 +578,130 @@ function switchTab(tab) {
   else if (tab==='members') renderMembers();
 }
 
-// ===== MONTHLY PERFORMANCE =====
-async function loadPerformance() {
-  const list = document.getElementById('perf-list');
+// ===== ACTIVITIES =====
+async function loadActivities() {
+  const list = document.getElementById('activities-list');
   list.innerHTML = '<div class="loading-text">Loading…</div>';
-  const monthVal = document.getElementById('perf-month').value;
-  if (!monthVal) return;
-
-  const [year, month] = monthVal.split('-').map(Number);
-  const firstDay = `${year}-${String(month).padStart(2,'0')}-01`;
-  const lastDay = `${year}-${String(month).padStart(2,'0')}-${new Date(year,month,0).getDate()}`;
-
-  // Previous month
-  const prevDate = new Date(year, month-2, 1);
-  const prevYear = prevDate.getFullYear();
-  const prevMonth = prevDate.getMonth() + 1;
-  const prevFirst = `${prevYear}-${String(prevMonth).padStart(2,'0')}-01`;
-  const prevLast = `${prevYear}-${String(prevMonth).padStart(2,'0')}-${new Date(prevYear,prevMonth,0).getDate()}`;
-
-  const salesMembers = members.filter(m => (m.role||'sales') === 'sales');
-  if (!salesMembers.length) { list.innerHTML = '<div class="empty-text">No sales members found.</div>'; return; }
-
   try {
-    // Get tasks for this month (due_date in range)
-    const [curTasks, prevTasks] = await Promise.all([
-      db(`tasks?select=*&due_date=gte.${firstDay}&due_date=lte.${lastDay}&order=due_date.asc`),
-      db(`tasks?select=task_id,assigned_to,status&due_date=gte.${prevFirst}&due_date=lte.${prevLast}`)
+    const [activities, reports] = await Promise.all([
+      db('activities?select=*&order=created_at.desc'),
+      db('activity_reports?select=*&order=report_date.asc')
     ]);
+    allActivities = (activities || []).map(a => {
+      const reps = (reports || []).filter(r => r.activity_id === a.activity_id);
+      const totalRev = reps.reduce((s,r) => s+(r.revenue||0), 0);
+      const totalCost = reps.reduce((s,r) => s+(r.cost||0), 0);
+      return { ...a, reports: reps, totalRev, totalCost, profit: totalRev - totalCost };
+    });
 
-    // Group by member
-    const tasksByMember = {};
-    const prevByMember = {};
-    salesMembers.forEach(m => { tasksByMember[m.name] = []; prevByMember[m.name] = []; });
-    (curTasks||[]).forEach(t => { if (tasksByMember[t.assigned_to] !== undefined) tasksByMember[t.assigned_to].push(t); });
-    (prevTasks||[]).forEach(t => { if (prevByMember[t.assigned_to] !== undefined) prevByMember[t.assigned_to].push(t); });
+    // Summary stats
+    const totalRev = allActivities.reduce((s,a) => s+a.totalRev, 0);
+    const totalProfit = allActivities.reduce((s,a) => s+a.profit, 0);
+    document.getElementById('act-total').textContent = allActivities.length;
+    document.getElementById('act-active').textContent = allActivities.filter(a=>a.status==='active').length;
+    document.getElementById('act-revenue').textContent = fmtRM(totalRev);
+    const profitEl = document.getElementById('act-profit');
+    profitEl.textContent = fmtRM(totalProfit);
+    profitEl.style.color = totalProfit >= 0 ? 'var(--green)' : 'var(--red)';
 
-    const monthLabel = new Date(year, month-1, 1).toLocaleString('en', { year:'numeric', month:'long' });
-
-    list.innerHTML = salesMembers.map(m => {
-      const tasks = tasksByMember[m.name];
-      const prevTasksM = prevByMember[m.name];
-
-      const ontime = tasks.filter(t => t.status === 'completed_ontime').length;
-      const late = tasks.filter(t => t.status === 'completed_late').length;
-      const overdue = tasks.filter(t => t.status === 'overdue').length;
-      const pending = tasks.filter(t => ['pending','awaiting_confirm','escalated'].includes(t.status)).length;
-      const total = ontime + late + overdue; // denominator (excludes pending)
-
-      const rate = total > 0 ? Math.round(ontime / total * 100) : null;
-      const rateLabel = rate !== null ? rate + '%' : '—';
-      const rateClass = rate === null ? '' : rate >= 80 ? 'high' : rate >= 50 ? 'mid' : 'low';
-
-      // Previous month rate
-      const pOntime = prevTasksM.filter(t => t.status === 'completed_ontime').length;
-      const pLate = prevTasksM.filter(t => t.status === 'completed_late').length;
-      const pOverdue = prevTasksM.filter(t => t.status === 'overdue').length;
-      const pTotal = pOntime + pLate + pOverdue;
-      const prevRate = pTotal > 0 ? Math.round(pOntime / pTotal * 100) : null;
-
-      let vsHtml = '';
-      if (rate !== null && prevRate !== null) {
-        const diff = rate - prevRate;
-        const vsClass = diff > 0 ? 'up' : diff < 0 ? 'down' : 'same';
-        const vsLabel = diff > 0 ? `↑ ${diff}% vs last month` : diff < 0 ? `↓ ${Math.abs(diff)}% vs last month` : '= same as last month';
-        vsHtml = `<span class="perf-vs ${vsClass}">${vsLabel}</span>`;
-      } else if (rate !== null) {
-        vsHtml = `<span class="perf-vs same">No prev data</span>`;
-      }
-
-      const sourceLabel = s => ({ manager_created:'Manager', from_report:'From Report', rep_committed:'Self Committed' }[s] || s);
-
-      const detailId = `perf-detail-${m.id}`;
-
-      return `
-        <div class="perf-card">
-          <div class="perf-card-header">
-            <div class="perf-left">
-              <div class="perf-avatar">${m.name.charAt(0).toUpperCase()}</div>
-              <div>
-                <div class="perf-name">${escHtml(m.name)}</div>
-                <div class="perf-month-label">${monthLabel}</div>
-              </div>
-            </div>
-            <div class="perf-right">
-              <div>
-                <div class="perf-rate ${rateClass}">${rateLabel}</div>
-                <div style="font-size:10px;color:var(--muted);text-align:right">On-time rate</div>
-              </div>
-              ${vsHtml}
-            </div>
-          </div>
-          <div class="perf-stats-row">
-            <div class="perf-stat">
-              <div class="perf-stat-val green">${ontime}</div>
-              <div class="perf-stat-label">✅ On Time</div>
-            </div>
-            <div class="perf-stat">
-              <div class="perf-stat-val amber">${late}</div>
-              <div class="perf-stat-label">🕐 Late</div>
-            </div>
-            <div class="perf-stat">
-              <div class="perf-stat-val red">${overdue}</div>
-              <div class="perf-stat-label">🔴 Overdue</div>
-            </div>
-            <div class="perf-stat">
-              <div class="perf-stat-val muted">${pending}</div>
-              <div class="perf-stat-label">⏳ Pending</div>
-            </div>
-          </div>
-          ${tasks.length > 0 ? `
-          <div class="perf-detail-btn" onclick="togglePerfDetail('${detailId}')">
-            <span>View Details</span><span>▼</span>
-          </div>
-          <div class="perf-detail" id="${detailId}">
-            ${ontime > 0 ? `
-            <div class="perf-section">
-              <div class="perf-section-title green">✅ Completed On Time (${ontime})</div>
-              ${tasks.filter(t=>t.status==='completed_ontime').map(t=>`
-                <div class="perf-task-item">
-                  <div style="flex:1">
-                    <div class="perf-task-desc">${escHtml(t.description)}</div>
-                    <div class="perf-task-meta">Due: ${t.due_date}${t.linked_customer?` · ${escHtml(t.linked_customer)}`:''}</div>
-                  </div>
-                  <span class="perf-task-source">${sourceLabel(t.source)}</span>
-                </div>`).join('')}
-            </div>` : ''}
-            ${late > 0 ? `
-            <div class="perf-section">
-              <div class="perf-section-title amber">🕐 Completed Late (${late})</div>
-              ${tasks.filter(t=>t.status==='completed_late').map(t=>`
-                <div class="perf-task-item">
-                  <div style="flex:1">
-                    <div class="perf-task-desc">${escHtml(t.description)}</div>
-                    <div class="perf-task-meta">Due: ${t.due_date} · Completed: ${t.completed_at?new Date(t.completed_at).toLocaleDateString('en-MY'):'—'}${t.linked_customer?` · ${escHtml(t.linked_customer)}`:''}</div>
-                  </div>
-                  <span class="perf-task-source">${sourceLabel(t.source)}</span>
-                </div>`).join('')}
-            </div>` : ''}
-            ${overdue > 0 ? `
-            <div class="perf-section">
-              <div class="perf-section-title red">🔴 Overdue — Not Completed (${overdue})</div>
-              ${tasks.filter(t=>t.status==='overdue').map(t=>`
-                <div class="perf-task-item">
-                  <div style="flex:1">
-                    <div class="perf-task-desc">${escHtml(t.description)}</div>
-                    <div class="perf-task-meta">Due: ${t.due_date}${t.linked_customer?` · ${escHtml(t.linked_customer)}`:''}</div>
-                  </div>
-                  <span class="perf-task-source">${sourceLabel(t.source)}</span>
-                </div>`).join('')}
-            </div>` : ''}
-            ${pending > 0 ? `
-            <div class="perf-section">
-              <div class="perf-section-title muted">⏳ In Progress (${pending})</div>
-              ${tasks.filter(t=>['pending','awaiting_confirm','escalated'].includes(t.status)).map(t=>`
-                <div class="perf-task-item">
-                  <div style="flex:1">
-                    <div class="perf-task-desc">${escHtml(t.description)}</div>
-                    <div class="perf-task-meta">Due: ${t.due_date||'No date'}${t.linked_customer?` · ${escHtml(t.linked_customer)}`:''}</div>
-                  </div>
-                  <span class="perf-task-source">${sourceLabel(t.source)}</span>
-                </div>`).join('')}
-            </div>` : ''}
-          </div>` : ''}
-        </div>`;
-    }).join('');
-
-  } catch(e) {
-    console.error(e);
-    list.innerHTML = '<div class="empty-text">Failed to load performance data.</div>';
-  }
+    renderActivities();
+  } catch(e) { console.error(e); list.innerHTML = '<div class="empty-text">Failed to load.</div>'; }
 }
 
-function togglePerfDetail(id) {
-  const el = document.getElementById(id);
-  const btn = el.previousElementSibling;
-  const open = el.classList.toggle('open');
-  btn.innerHTML = open ? '<span>Hide Details</span><span>▲</span>' : '<span>View Details</span><span>▼</span>';
+function filterActivities(filter, el) {
+  currentActFilter = filter;
+  document.querySelectorAll('.act-filter-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  renderActivities();
+}
+
+function renderActivities() {
+  const list = document.getElementById('activities-list');
+  let filtered = allActivities;
+  if (currentActFilter === 'active') filtered = allActivities.filter(a => a.status === 'active');
+  else if (currentActFilter === 'ended') filtered = allActivities.filter(a => a.status === 'ended');
+
+  if (!filtered.length) { list.innerHTML = '<div class="empty-text">No activities found.</div>'; return; }
+
+  const typeIcons = { Sampling:'🧪', Roadshow:'🚗', Exhibition:'🏟️', 'Food Fair':'🍱', 'Food Expo':'🏪', Other:'📌' };
+
+  list.innerHTML = filtered.map(a => {
+    const pnlClass = a.profit > 0 ? 'profit' : a.profit < 0 ? 'loss' : 'break';
+    const pnlLabel = a.profit > 0 ? '▲ ' : a.profit < 0 ? '▼ ' : '';
+
+    return `
+      <div class="activity-card">
+        <div class="ac-header" onclick="toggleAc('ac-${a.activity_id}')">
+          <div class="ac-icon">${typeIcons[a.type]||'📌'}</div>
+          <div class="ac-main">
+            <div class="ac-name">${escHtml(a.name)}</div>
+            <div class="ac-meta">
+              <span>${a.type}</span>
+              ${a.location?`<span>📍 ${escHtml(a.location)}</span>`:''}
+              ${a.responsible?`<span>👤 ${escHtml(a.responsible)}</span>`:''}
+              ${a.start_date?`<span>📅 ${a.start_date}${a.end_date?' → '+a.end_date:''}</span>`:''}
+            </div>
+          </div>
+          <div class="ac-right">
+            <span class="ac-status ${a.status}">${a.status==='active'?'🟢 Active':'⚫ Ended'}</span>
+            <span class="ac-pnl ${pnlClass}">${pnlLabel}${fmtRM(Math.abs(a.profit))}</span>
+          </div>
+        </div>
+        <div class="ac-stats-row">
+          <div class="ac-stat"><div class="ac-stat-val green">${fmtRM(a.totalRev)}</div><div class="ac-stat-label">Revenue</div></div>
+          <div class="ac-stat"><div class="ac-stat-val red">${fmtRM(a.totalCost)}</div><div class="ac-stat-label">Cost</div></div>
+          <div class="ac-stat"><div class="ac-stat-val ${pnlClass}">${fmtRM(Math.abs(a.profit))}</div><div class="ac-stat-label">${a.profit>=0?'Profit':'Loss'}</div></div>
+          <div class="ac-stat"><div class="ac-stat-val">${a.reports.length}</div><div class="ac-stat-label">Reports</div></div>
+        </div>
+        <div class="ac-body" id="ac-${a.activity_id}">
+          ${a.notes ? `<div style="padding:12px 20px;background:#f9fafb;font-size:13px;color:var(--muted);border-bottom:1px solid var(--border)">📝 ${escHtml(a.notes)}</div>` : ''}
+          ${a.reports.length === 0
+            ? `<div class="empty-text">No daily reports submitted yet.</div>`
+            : a.reports.map(r => {
+                const rProfit = (r.revenue||0) - (r.cost||0);
+                const rClass = rProfit > 0 ? 'profit' : rProfit < 0 ? 'loss' : 'break';
+                return `
+                  <div class="ac-report-item">
+                    <div class="acri-header">
+                      <span class="acri-date">${r.report_date}</span>
+                      <span class="acri-reporter">by ${escHtml(r.reported_by||'—')}</span>
+                    </div>
+                    <div class="acri-amounts">
+                      <span class="acri-rev">↑ ${fmtRMDec(r.revenue||0)}</span>
+                      <span class="acri-cost">↓ ${fmtRMDec(r.cost||0)}</span>
+                      <span class="acri-profit" style="color:${rProfit>=0?'var(--green)':'var(--red)'}">${rProfit>=0?'▲':'▼'} ${fmtRMDec(Math.abs(rProfit))}</span>
+                    </div>
+                    ${r.notes?`<div class="acri-notes">${escHtml(r.notes)}</div>`:''}
+                    ${r.photo_urls&&r.photo_urls.length>0?`<div class="acri-photos">${r.photo_urls.map(u=>`<img src="${u}" onclick="openLightbox('${u}')" loading="lazy">`).join('')}</div>`:''}
+                  </div>`;
+              }).join('')}
+          <div class="ac-actions">
+            ${a.status==='active'
+              ? `<button class="btn-end-act" onclick="setActivityStatus('${a.activity_id}','ended')">⚫ Mark as Ended</button>`
+              : `<button class="btn-reopen-act" onclick="setActivityStatus('${a.activity_id}','active')">🟢 Reopen</button>`}
+            <button class="btn-delete-act" onclick="deleteActivity('${a.activity_id}')">🗑 Delete</button>
+          </div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function toggleAc(id) { document.getElementById(id).classList.toggle('open'); }
+
+async function setActivityStatus(id, status) {
+  try {
+    await fetch(SUPA_URL+'/rest/v1/activities?activity_id=eq.'+id, { method:'PATCH', headers:Hmin, body:JSON.stringify({status}) });
+    loadActivities();
+  } catch(e) { alert('Failed.'); }
+}
+
+async function deleteActivity(id) {
+  if (!confirm('Delete this activity and all its reports?')) return;
+  try {
+    await fetch(SUPA_URL+'/rest/v1/activity_reports?activity_id=eq.'+id, { method:'DELETE', headers:H });
+    await fetch(SUPA_URL+'/rest/v1/activities?activity_id=eq.'+id, { method:'DELETE', headers:H });
+    loadActivities();
+  } catch(e) { alert('Failed.'); }
 }
 
 // ===== TASK TRACKER =====
@@ -731,7 +727,7 @@ async function loadTasks() {
     document.getElementById('cnt-pending').textContent = counts.pending;
     document.getElementById('cnt-completed').textContent = counts.completed;
     renderTaskList();
-  } catch(e) { console.error(e); list.innerHTML = '<div class="empty-text">Failed.</div>'; }
+  } catch(e) { list.innerHTML = '<div class="empty-text">Failed.</div>'; }
 }
 
 function filterTasks(filter, el) {
@@ -809,57 +805,100 @@ function renderTaskList() {
 }
 
 function toggleTask(id) { document.getElementById('tibody-'+id).classList.toggle('open'); }
-
-async function saveManagerNote(taskId) {
-  const note = document.getElementById('note-'+taskId).value.trim();
-  try { await fetch(SUPA_URL+'/rest/v1/tasks?task_id=eq.'+taskId,{method:'PATCH',headers:Hmin,body:JSON.stringify({manager_note:note})}); await loadTasks(); }
-  catch(e){alert('Failed.');}
-}
-async function updateDueDate(taskId) {
-  const due = document.getElementById('due-'+taskId).value; if(!due) return;
-  try { await fetch(SUPA_URL+'/rest/v1/tasks?task_id=eq.'+taskId,{method:'PATCH',headers:Hmin,body:JSON.stringify({due_date:due,status:'pending'})}); await loadTasks(); }
-  catch(e){alert('Failed.');}
-}
-async function confirmTask(taskId, repMarkedAt, dueDate) {
-  const markedDate = repMarkedAt ? new Date(repMarkedAt).toISOString().split('T')[0] : todayStr;
-  const status = dueDate&&markedDate>dueDate ? 'completed_late' : 'completed_ontime';
-  try { await fetch(SUPA_URL+'/rest/v1/tasks?task_id=eq.'+taskId,{method:'PATCH',headers:Hmin,body:JSON.stringify({status,completed_at:new Date().toISOString()})}); await loadTasks(); }
-  catch(e){alert('Failed.');}
-}
-async function rejectTask(taskId) {
-  try { await fetch(SUPA_URL+'/rest/v1/tasks?task_id=eq.'+taskId,{method:'PATCH',headers:Hmin,body:JSON.stringify({status:'pending',rep_marked_done_at:null})}); await loadTasks(); }
-  catch(e){alert('Failed.');}
-}
-async function forceComplete(taskId) {
-  if(!confirm('Mark as completed?')) return;
-  try { await fetch(SUPA_URL+'/rest/v1/tasks?task_id=eq.'+taskId,{method:'PATCH',headers:Hmin,body:JSON.stringify({status:'completed_late',completed_at:new Date().toISOString()})}); await loadTasks(); }
-  catch(e){alert('Failed.');}
-}
-async function deleteTask(taskId) {
-  if(!confirm('Delete this task?')) return;
-  try { await fetch(SUPA_URL+'/rest/v1/tasks?task_id=eq.'+taskId,{method:'DELETE',headers:H}); await loadTasks(); }
-  catch(e){alert('Failed.');}
-}
+async function saveManagerNote(taskId) { const note=document.getElementById('note-'+taskId).value.trim(); try{await fetch(SUPA_URL+'/rest/v1/tasks?task_id=eq.'+taskId,{method:'PATCH',headers:Hmin,body:JSON.stringify({manager_note:note})});await loadTasks();}catch(e){alert('Failed.');} }
+async function updateDueDate(taskId) { const due=document.getElementById('due-'+taskId).value;if(!due)return;try{await fetch(SUPA_URL+'/rest/v1/tasks?task_id=eq.'+taskId,{method:'PATCH',headers:Hmin,body:JSON.stringify({due_date:due,status:'pending'})});await loadTasks();}catch(e){alert('Failed.');} }
+async function confirmTask(taskId, repMarkedAt, dueDate) { const markedDate=repMarkedAt?new Date(repMarkedAt).toISOString().split('T')[0]:todayStr; const status=dueDate&&markedDate>dueDate?'completed_late':'completed_ontime'; try{await fetch(SUPA_URL+'/rest/v1/tasks?task_id=eq.'+taskId,{method:'PATCH',headers:Hmin,body:JSON.stringify({status,completed_at:new Date().toISOString()})});await loadTasks();}catch(e){alert('Failed.');} }
+async function rejectTask(taskId) { try{await fetch(SUPA_URL+'/rest/v1/tasks?task_id=eq.'+taskId,{method:'PATCH',headers:Hmin,body:JSON.stringify({status:'pending',rep_marked_done_at:null})});await loadTasks();}catch(e){alert('Failed.');} }
+async function forceComplete(taskId) { if(!confirm('Mark as completed?'))return;try{await fetch(SUPA_URL+'/rest/v1/tasks?task_id=eq.'+taskId,{method:'PATCH',headers:Hmin,body:JSON.stringify({status:'completed_late',completed_at:new Date().toISOString()})});await loadTasks();}catch(e){alert('Failed.');} }
+async function deleteTask(taskId) { if(!confirm('Delete this task?'))return;try{await fetch(SUPA_URL+'/rest/v1/tasks?task_id=eq.'+taskId,{method:'DELETE',headers:H});await loadTasks();}catch(e){alert('Failed.');} }
 function toggleNewTaskForm() { document.getElementById('new-task-form').classList.toggle('open'); }
 async function saveNewTask() {
-  const desc=document.getElementById('ntf-desc').value.trim();
-  const assignee=document.getElementById('ntf-assignee').value;
-  const due=document.getElementById('ntf-due').value||null;
-  const customer=document.getElementById('ntf-customer').value.trim()||null;
-  if(!desc){alert('Please enter a task description.');return;}
-  if(!assignee){alert('Please select a team member.');return;}
-  try {
-    await db('tasks',{method:'POST',body:JSON.stringify({description:desc,assigned_to:assignee,created_by:'HQ',source:'manager_created',linked_customer:customer,due_date:due,status:'pending'})});
-    document.getElementById('ntf-desc').value='';
-    document.getElementById('ntf-assignee').value='';
-    document.getElementById('ntf-due').value='';
-    document.getElementById('ntf-customer').value='';
-    document.getElementById('new-task-form').classList.remove('open');
-    await loadTasks();
-  } catch(e){alert('Failed.');}
+  const desc=document.getElementById('ntf-desc').value.trim(); const assignee=document.getElementById('ntf-assignee').value;
+  const due=document.getElementById('ntf-due').value||null; const customer=document.getElementById('ntf-customer').value.trim()||null;
+  if(!desc){alert('Please enter a task description.');return;} if(!assignee){alert('Please select a team member.');return;}
+  try{ await db('tasks',{method:'POST',body:JSON.stringify({description:desc,assigned_to:assignee,created_by:'HQ',source:'manager_created',linked_customer:customer,due_date:due,status:'pending'})});
+    document.getElementById('ntf-desc').value=''; document.getElementById('ntf-assignee').value=''; document.getElementById('ntf-due').value=''; document.getElementById('ntf-customer').value='';
+    document.getElementById('new-task-form').classList.remove('open'); await loadTasks();
+  }catch(e){alert('Failed.');}
 }
 
-// ===== DAILY BRIEFING =====
+// ===== PERFORMANCE =====
+async function loadPerformance() {
+  const list = document.getElementById('perf-list');
+  list.innerHTML = '<div class="loading-text">Loading…</div>';
+  const monthVal = document.getElementById('perf-month').value; if(!monthVal) return;
+  const [year, month] = monthVal.split('-').map(Number);
+  const firstDay = `${year}-${String(month).padStart(2,'0')}-01`;
+  const lastDay = `${year}-${String(month).padStart(2,'0')}-${new Date(year,month,0).getDate()}`;
+  const prevDate = new Date(year, month-2, 1);
+  const prevYear = prevDate.getFullYear(), prevMonth = prevDate.getMonth()+1;
+  const prevFirst = `${prevYear}-${String(prevMonth).padStart(2,'0')}-01`;
+  const prevLast = `${prevYear}-${String(prevMonth).padStart(2,'0')}-${new Date(prevYear,prevMonth,0).getDate()}`;
+  const salesMembers = members.filter(m => (m.role||'sales') === 'sales');
+  if (!salesMembers.length) { list.innerHTML = '<div class="empty-text">No sales members.</div>'; return; }
+  try {
+    const [curTasks, prevTasks] = await Promise.all([
+      db(`tasks?select=*&due_date=gte.${firstDay}&due_date=lte.${lastDay}&order=due_date.asc`),
+      db(`tasks?select=task_id,assigned_to,status&due_date=gte.${prevFirst}&due_date=lte.${prevLast}`)
+    ]);
+    const tasksByMember={}, prevByMember={};
+    salesMembers.forEach(m=>{tasksByMember[m.name]=[];prevByMember[m.name]=[];});
+    (curTasks||[]).forEach(t=>{if(tasksByMember[t.assigned_to]!==undefined)tasksByMember[t.assigned_to].push(t);});
+    (prevTasks||[]).forEach(t=>{if(prevByMember[t.assigned_to]!==undefined)prevByMember[t.assigned_to].push(t);});
+    const monthLabel = new Date(year, month-1, 1).toLocaleString('en',{year:'numeric',month:'long'});
+    const sourceLabel = s => ({manager_created:'Manager',from_report:'From Report',rep_committed:'Self Committed'}[s]||s);
+
+    list.innerHTML = salesMembers.map(m => {
+      const tasks=tasksByMember[m.name], prevTasksM=prevByMember[m.name];
+      const ontime=tasks.filter(t=>t.status==='completed_ontime').length;
+      const late=tasks.filter(t=>t.status==='completed_late').length;
+      const overdue=tasks.filter(t=>t.status==='overdue').length;
+      const pending=tasks.filter(t=>['pending','awaiting_confirm','escalated'].includes(t.status)).length;
+      const total=ontime+late+overdue;
+      const rate=total>0?Math.round(ontime/total*100):null;
+      const rateLabel=rate!==null?rate+'%':'—';
+      const rateClass=rate===null?'':rate>=80?'high':rate>=50?'mid':'low';
+      const pOntime=prevTasksM.filter(t=>t.status==='completed_ontime').length;
+      const pTotal=prevTasksM.filter(t=>['completed_ontime','completed_late','overdue'].includes(t.status)).length;
+      const prevRate=pTotal>0?Math.round(pOntime/pTotal*100):null;
+      let vsHtml='';
+      if(rate!==null&&prevRate!==null){const diff=rate-prevRate;const vsClass=diff>0?'up':diff<0?'down':'same';vsHtml=`<span class="perf-vs ${vsClass}">${diff>0?'↑ '+diff+'%':diff<0?'↓ '+Math.abs(diff)+'%':'= same'} vs last month</span>`;}
+      else if(rate!==null){vsHtml=`<span class="perf-vs same">No prev data</span>`;}
+      const detailId=`perf-detail-${m.id}`;
+      return `
+        <div class="perf-card">
+          <div class="perf-card-header">
+            <div class="perf-left">
+              <div class="perf-avatar">${m.name.charAt(0).toUpperCase()}</div>
+              <div><div class="perf-name">${escHtml(m.name)}</div><div class="perf-month-label">${monthLabel}</div></div>
+            </div>
+            <div class="perf-right">
+              <div><div class="perf-rate ${rateClass}">${rateLabel}</div><div style="font-size:10px;color:var(--muted);text-align:right">On-time rate</div></div>
+              ${vsHtml}
+            </div>
+          </div>
+          <div class="perf-stats-row">
+            <div class="perf-stat"><div class="perf-stat-val green">${ontime}</div><div class="perf-stat-label">✅ On Time</div></div>
+            <div class="perf-stat"><div class="perf-stat-val amber">${late}</div><div class="perf-stat-label">🕐 Late</div></div>
+            <div class="perf-stat"><div class="perf-stat-val red">${overdue}</div><div class="perf-stat-label">🔴 Overdue</div></div>
+            <div class="perf-stat"><div class="perf-stat-val muted">${pending}</div><div class="perf-stat-label">⏳ Pending</div></div>
+          </div>
+          ${tasks.length>0?`
+          <div class="perf-detail-btn" onclick="togglePerfDetail('${detailId}')"><span>View Details</span><span>▼</span></div>
+          <div class="perf-detail" id="${detailId}">
+            ${ontime>0?`<div class="perf-section"><div class="perf-section-title green">✅ On Time (${ontime})</div>${tasks.filter(t=>t.status==='completed_ontime').map(t=>`<div class="perf-task-item"><div style="flex:1"><div class="perf-task-desc">${escHtml(t.description)}</div><div class="perf-task-meta">Due: ${t.due_date}${t.linked_customer?' · '+escHtml(t.linked_customer):''}</div></div><span class="perf-task-source">${sourceLabel(t.source)}</span></div>`).join('')}</div>`:''}
+            ${late>0?`<div class="perf-section"><div class="perf-section-title amber">🕐 Late (${late})</div>${tasks.filter(t=>t.status==='completed_late').map(t=>`<div class="perf-task-item"><div style="flex:1"><div class="perf-task-desc">${escHtml(t.description)}</div><div class="perf-task-meta">Due: ${t.due_date}${t.linked_customer?' · '+escHtml(t.linked_customer):''}</div></div><span class="perf-task-source">${sourceLabel(t.source)}</span></div>`).join('')}</div>`:''}
+            ${overdue>0?`<div class="perf-section"><div class="perf-section-title red">🔴 Overdue (${overdue})</div>${tasks.filter(t=>t.status==='overdue').map(t=>`<div class="perf-task-item"><div style="flex:1"><div class="perf-task-desc">${escHtml(t.description)}</div><div class="perf-task-meta">Due: ${t.due_date}${t.linked_customer?' · '+escHtml(t.linked_customer):''}</div></div><span class="perf-task-source">${sourceLabel(t.source)}</span></div>`).join('')}</div>`:''}
+            ${pending>0?`<div class="perf-section"><div class="perf-section-title muted">⏳ Pending (${pending})</div>${tasks.filter(t=>['pending','awaiting_confirm','escalated'].includes(t.status)).map(t=>`<div class="perf-task-item"><div style="flex:1"><div class="perf-task-desc">${escHtml(t.description)}</div><div class="perf-task-meta">Due: ${t.due_date||'No date'}${t.linked_customer?' · '+escHtml(t.linked_customer):''}</div></div><span class="perf-task-source">${sourceLabel(t.source)}</span></div>`).join('')}</div>`:''}
+          </div>`:''}
+        </div>`;
+    }).join('');
+  } catch(e) { console.error(e); list.innerHTML = '<div class="empty-text">Failed.</div>'; }
+}
+
+function togglePerfDetail(id) { const el=document.getElementById(id); const btn=el.previousElementSibling; const open=el.classList.toggle('open'); btn.innerHTML=open?'<span>Hide Details</span><span>▲</span>':'<span>View Details</span><span>▼</span>'; }
+
+// ===== BRIEFING =====
 async function loadBriefing() {
   const date = document.getElementById('briefing-date').value || todayStr;
   document.getElementById('briefing-date').value = date;
@@ -868,11 +907,9 @@ async function loadBriefing() {
   try {
     const salesMembers = members.filter(m=>(m.role||'sales')==='sales');
     const reports = await db(`daily_reports?date=eq.${date}&select=*`) || [];
-    const reportMap = {};
-    reports.forEach(r=>{reportMap[r.name]=r;});
+    const reportMap = {}; reports.forEach(r=>{reportMap[r.name]=r;});
     const visits = await db(`visit_records?visit_date=eq.${date}&select=*&order=created_at.asc`) || [];
-    const visitsByRep = {};
-    visits.forEach(v=>{if(!visitsByRep[v.rep_name])visitsByRep[v.rep_name]=[];visitsByRep[v.rep_name].push(v);});
+    const visitsByRep = {}; visits.forEach(v=>{if(!visitsByRep[v.rep_name])visitsByRep[v.rep_name]=[];visitsByRep[v.rep_name].push(v);});
     const submitted = salesMembers.filter(m=>reportMap[m.name]?.status==='submitted').length;
     document.getElementById('bs-submitted').textContent=submitted;
     document.getElementById('bs-missing').textContent=salesMembers.length-submitted;
@@ -880,10 +917,8 @@ async function loadBriefing() {
     document.getElementById('bs-orders').textContent=fmtRM(visits.reduce((s,v)=>s+(v.order_amount||0),0));
     if(!salesMembers.length){list.innerHTML='<div class="empty-text">No sales members.</div>';return;}
     list.innerHTML=salesMembers.map(m=>{
-      const report=reportMap[m.name];
-      const repVisits=visitsByRep[m.name]||[];
-      const isSubmitted=report?.status==='submitted';
-      const repTotal=repVisits.reduce((s,v)=>s+(v.order_amount||0),0);
+      const report=reportMap[m.name]; const repVisits=visitsByRep[m.name]||[];
+      const isSubmitted=report?.status==='submitted'; const repTotal=repVisits.reduce((s,v)=>s+(v.order_amount||0),0);
       return `
         <div class="rep-briefing-card">
           <div class="rbc-header" onclick="toggleRbc(${m.id})">
@@ -902,7 +937,7 @@ async function loadBriefing() {
                 <div class="visit-record-item">
                   <div class="vri-header"><div class="vri-customer">${escHtml(v.customer_name)}</div><div class="vri-amount">${fmtRM(v.order_amount||0)}</div></div>
                   ${v.notes?`<div class="vri-notes">${escHtml(v.notes)}</div>`:''}
-                  ${v.followup_notes?`<div class="vri-followup">📌 ${escHtml(v.followup_notes)}${v.followup_date?` · Due: ${v.followup_date}`:''}${v.has_task_created?' ✅ Task created':''}</div>`:''}
+                  ${v.followup_notes?`<div class="vri-followup">📌 ${escHtml(v.followup_notes)}${v.followup_date?' · Due: '+v.followup_date:''}${v.has_task_created?' ✅ Task created':''}</div>`:''}
                   ${v.photo_urls&&v.photo_urls.length>0?`<div class="vri-photos">${v.photo_urls.map(u=>`<img src="${u}" onclick="openLightbox('${u}')" loading="lazy">`).join('')}</div>`:''}
                   <div class="vri-actions"><button class="btn-create-task-hq" onclick="toggleTaskForm('tf-${m.id}-${vi}')">+ Create Task</button></div>
                   <div class="task-form-inline" id="tf-${m.id}-${vi}">
@@ -923,18 +958,16 @@ async function loadBriefing() {
 
 function toggleRbc(id){document.getElementById('rbcbody-'+id).classList.toggle('open');}
 function toggleTaskForm(id){document.getElementById(id).classList.toggle('open');}
-
 async function saveTaskFromVisit(repName,visitId,memberId,visitIdx,customerName){
   const desc=document.getElementById(`tf-desc-${memberId}-${visitIdx}`).value.trim();
   const due=document.getElementById(`tf-due-${memberId}-${visitIdx}`).value||null;
   if(!desc){alert('Please enter a task description.');return;}
-  try {
-    await db('tasks',{method:'POST',body:JSON.stringify({description:desc,assigned_to:repName,created_by:'HQ',source:'from_report',linked_customer:customerName,linked_visit_id:visitId,due_date:due,status:'pending'})});
+  try{await db('tasks',{method:'POST',body:JSON.stringify({description:desc,assigned_to:repName,created_by:'HQ',source:'from_report',linked_customer:customerName,linked_visit_id:visitId,due_date:due,status:'pending'})});
     await fetch(SUPA_URL+'/rest/v1/visit_records?visit_id=eq.'+visitId,{method:'PATCH',headers:Hmin,body:JSON.stringify({has_task_created:true})});
     alert('✅ Task created for '+repName);
     document.getElementById(`tf-${memberId}-${visitIdx}`).classList.remove('open');
     loadBriefing();
-  } catch(e){alert('Failed.');}
+  }catch(e){alert('Failed.');}
 }
 
 function openLightbox(url){document.getElementById('lightbox-img').src=url;document.getElementById('lightbox').classList.add('open');}
@@ -964,9 +997,9 @@ async function loadDailyReports(){
   const from=document.getElementById('filter-daily-from').value;
   const to=document.getElementById('filter-daily-to').value;
   let q='daily_reports?select=*&order=date.desc,created_at.desc&limit=100';
-  if(name) q+=`&name=eq.${encodeURIComponent(name)}`;
-  if(from) q+=`&date=gte.${from}`;
-  if(to) q+=`&date=lte.${to}`;
+  if(name)q+=`&name=eq.${encodeURIComponent(name)}`;
+  if(from)q+=`&date=gte.${from}`;
+  if(to)q+=`&date=lte.${to}`;
   try{
     const data=await db(q);
     if(!data.length){list.innerHTML='<div class="empty-text">No reports.</div>';return;}
@@ -992,9 +1025,9 @@ async function loadWeeklyReports(){
   const from=document.getElementById('filter-weekly-from').value;
   const to=document.getElementById('filter-weekly-to').value;
   let q='weekly_reports?select=*&order=date.desc,created_at.desc&limit=100';
-  if(name) q+=`&name=eq.${encodeURIComponent(name)}`;
-  if(from) q+=`&date=gte.${from}`;
-  if(to) q+=`&date=lte.${to}`;
+  if(name)q+=`&name=eq.${encodeURIComponent(name)}`;
+  if(from)q+=`&date=gte.${from}`;
+  if(to)q+=`&date=lte.${to}`;
   try{
     const data=await db(q);
     if(!data.length){list.innerHTML='<div class="empty-text">No reports.</div>';return;}
@@ -1013,11 +1046,7 @@ async function loadWeeklyReports(){
 }
 
 function toggleReport(id){const body=document.getElementById(id);const chev=document.getElementById('chev-'+id);const open=body.classList.toggle('open');chev.textContent=open?'▲':'▼';}
-async function deleteReport(table,id,type){
-  if(!confirm('Delete this report?')) return;
-  try{await fetch(SUPA_URL+'/rest/v1/'+table+'?id=eq.'+id,{method:'DELETE',headers:H});if(type==='daily')loadDailyReports();else loadWeeklyReports();}
-  catch(e){alert('Failed.');}
-}
+async function deleteReport(table,id,type){if(!confirm('Delete?'))return;try{await fetch(SUPA_URL+'/rest/v1/'+table+'?id=eq.'+id,{method:'DELETE',headers:H});if(type==='daily')loadDailyReports();else loadWeeklyReports();}catch(e){alert('Failed.');}}
 
 // ===== MISS STATS =====
 async function loadMissStats(){
@@ -1036,14 +1065,11 @@ async function loadMissStats(){
     dD.forEach(r=>{if(dBN[r.name]!==undefined)dBN[r.name]++;});
     wD.forEach(r=>{if(wBN[r.name]!==undefined)wBN[r.name]++;});
     tbody.innerHTML=members.map(m=>{
-      const dM=Math.max(0,workDays-dBN[m.name]);
-      const wM=Math.max(0,weekCount-wBN[m.name]);
-      const tot=dM+wM;
+      const dM=Math.max(0,workDays-dBN[m.name]);const wM=Math.max(0,weekCount-wBN[m.name]);const tot=dM+wM;
       return `<tr><td><strong>${m.name}</strong></td><td><span class="miss-count ${dM>0?'bad':'ok'}">${dM}</span></td><td><span class="miss-count ${wM>0?'bad':'ok'}">${wM}</span></td><td><span class="miss-count ${tot>0?'bad':'ok'}">${tot}</span></td></tr>`;
     }).join('');
   }catch(e){tbody.innerHTML='<tr><td colspan="4" class="empty-text">Failed.</td></tr>';}
 }
-
 function countWorkDays(start,end){let count=0;const cur=new Date(start);while(cur<=end){const d=cur.getDay();if(d!==0&&d!==6)count++;cur.setDate(cur.getDate()+1);}return count;}
 
 // ===== MEMBERS =====
@@ -1052,8 +1078,7 @@ async function loadMembers(){
     members=await db('members?select=*&order=name');
     ['filter-daily-name','filter-weekly-name','task-filter-member','ntf-assignee'].forEach(id=>{
       const sel=document.getElementById(id);if(!sel)return;
-      const cur=sel.value;
-      const isAssignee=id==='ntf-assignee';
+      const cur=sel.value; const isAssignee=id==='ntf-assignee';
       sel.innerHTML=isAssignee?'<option value="">Assign to…</option>':'<option value="">All Members</option>';
       const filtered=isAssignee?members.filter(m=>(m.role||'sales')==='sales'):members;
       filtered.forEach(m=>{const o=document.createElement('option');o.value=m.name;o.textContent=m.name;sel.appendChild(o);});
@@ -1082,10 +1107,7 @@ function renderMembers(){
         <button class="btn-cancel" onclick="toggleNameEdit(${m.id})">Cancel</button>
       </div>
       <div class="pw-edit-row" id="roleedit-${m.id}">
-        <select id="roleval-${m.id}">
-          <option value="sales" ${(m.role||'sales')==='sales'?'selected':''}>Sales</option>
-          <option value="marketing" ${m.role==='marketing'?'selected':''}>Marketing</option>
-        </select>
+        <select id="roleval-${m.id}"><option value="sales" ${(m.role||'sales')==='sales'?'selected':''}>Sales</option><option value="marketing" ${m.role==='marketing'?'selected':''}>Marketing</option></select>
         <button class="btn-save" onclick="saveRole(${m.id})">Save</button>
         <button class="btn-cancel" onclick="toggleRoleEdit(${m.id})">Cancel</button>
       </div>
@@ -1106,35 +1128,12 @@ function toggleNameEdit(id){const r=document.getElementById('nameedit-'+id);r.cl
 function toggleRoleEdit(id){document.getElementById('roleedit-'+id).classList.toggle('open');}
 function togglePwEdit(id){const r=document.getElementById('pwedit-'+id);r.classList.toggle('open');if(r.classList.contains('open'))document.getElementById('pwval-'+id).focus();}
 function toggleKpiEdit(id){const r=document.getElementById('kpiedit-'+id);r.classList.toggle('open');if(r.classList.contains('open'))document.getElementById('kpival-'+id).focus();}
-
-async function saveName(id){
-  const inp=document.getElementById('nameval-'+id);const newName=inp.value.trim();
-  if(!newName){inp.style.borderColor='var(--red)';return;}
-  const oldName=members.find(m=>m.id===id)?.name;
-  if(newName===oldName){toggleNameEdit(id);return;}
-  if(!confirm(`Change name from "${oldName}" to "${newName}"?\nAll past reports will be updated.`))return;
-  try{
-    await fetch(SUPA_URL+'/rest/v1/members?id=eq.'+id,{method:'PATCH',headers:H,body:JSON.stringify({name:newName})});
-    await fetch(SUPA_URL+'/rest/v1/daily_reports?name=eq.'+encodeURIComponent(oldName),{method:'PATCH',headers:H,body:JSON.stringify({name:newName})});
-    await fetch(SUPA_URL+'/rest/v1/weekly_reports?name=eq.'+encodeURIComponent(oldName),{method:'PATCH',headers:H,body:JSON.stringify({name:newName})});
-    await loadMembers();renderMembers();
-  }catch(e){alert('Failed.');}
-}
+async function saveName(id){const inp=document.getElementById('nameval-'+id);const newName=inp.value.trim();if(!newName){inp.style.borderColor='var(--red)';return;}const oldName=members.find(m=>m.id===id)?.name;if(newName===oldName){toggleNameEdit(id);return;}if(!confirm(`Change "${oldName}" to "${newName}"?\nAll reports updated.`))return;try{await fetch(SUPA_URL+'/rest/v1/members?id=eq.'+id,{method:'PATCH',headers:H,body:JSON.stringify({name:newName})});await fetch(SUPA_URL+'/rest/v1/daily_reports?name=eq.'+encodeURIComponent(oldName),{method:'PATCH',headers:H,body:JSON.stringify({name:newName})});await fetch(SUPA_URL+'/rest/v1/weekly_reports?name=eq.'+encodeURIComponent(oldName),{method:'PATCH',headers:H,body:JSON.stringify({name:newName})});await loadMembers();renderMembers();}catch(e){alert('Failed.');}}
 async function saveRole(id){const val=document.getElementById('roleval-'+id).value;try{await fetch(SUPA_URL+'/rest/v1/members?id=eq.'+id,{method:'PATCH',headers:H,body:JSON.stringify({role:val})});await loadMembers();renderMembers();}catch(e){alert('Failed.');}}
 async function savePassword(id){const inp=document.getElementById('pwval-'+id);const pw=inp.value.trim();if(!pw){inp.style.borderColor='var(--red)';return;}try{await fetch(SUPA_URL+'/rest/v1/members?id=eq.'+id,{method:'PATCH',headers:H,body:JSON.stringify({password:pw})});await loadMembers();renderMembers();}catch(e){alert('Failed.');}}
 async function saveKpi(id){const inp=document.getElementById('kpival-'+id);const kpi=parseFloat(inp.value)||0;try{await fetch(SUPA_URL+'/rest/v1/members?id=eq.'+id,{method:'PATCH',headers:H,body:JSON.stringify({monthly_kpi:kpi})});await loadMembers();renderMembers();}catch(e){alert('Failed.');}}
-async function addMember(){
-  const inp=document.getElementById('new-member-name');const pwInp=document.getElementById('new-member-pw');const roleInp=document.getElementById('new-member-role');
-  const name=inp.value.trim();const pw=pwInp.value.trim();const role=roleInp.value;
-  if(!name){inp.style.borderColor='var(--red)';return;}inp.style.borderColor='';
-  try{await db('members',{method:'POST',body:JSON.stringify({name,password:pw||null,monthly_kpi:0,role})});inp.value='';pwInp.value='';roleInp.value='sales';await loadMembers();renderMembers();}
-  catch(e){alert('Failed.');}
-}
-async function deleteMember(id,name){
-  if(!confirm(`Remove "${name}"?`))return;
-  try{await fetch(SUPA_URL+'/rest/v1/members?id=eq.'+id,{method:'DELETE',headers:H});await loadMembers();renderMembers();}
-  catch(e){alert('Failed.');}
-}
+async function addMember(){const inp=document.getElementById('new-member-name');const pwInp=document.getElementById('new-member-pw');const roleInp=document.getElementById('new-member-role');const name=inp.value.trim();const pw=pwInp.value.trim();const role=roleInp.value;if(!name){inp.style.borderColor='var(--red)';return;}inp.style.borderColor='';try{await db('members',{method:'POST',body:JSON.stringify({name,password:pw||null,monthly_kpi:0,role})});inp.value='';pwInp.value='';roleInp.value='sales';await loadMembers();renderMembers();}catch(e){alert('Failed.');}}
+async function deleteMember(id,name){if(!confirm(`Remove "${name}"?`))return;try{await fetch(SUPA_URL+'/rest/v1/members?id=eq.'+id,{method:'DELETE',headers:H});await loadMembers();renderMembers();}catch(e){alert('Failed.');}}
 
 function populateMonthSelectors(){
   const now=new Date();
@@ -1142,19 +1141,13 @@ function populateMonthSelectors(){
     const sel=document.getElementById(selId);
     const months=[];
     for(let i=-6;i<=12;i++){
-      const yr=now.getFullYear();
-      const mo=now.getMonth()-i;
+      const yr=now.getFullYear(); const mo=now.getMonth()-i;
       const d=new Date(yr,mo,1);
       const val=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
       const label=d.toLocaleString('en',{year:'numeric',month:'long'});
       months.push({val,label});
     }
-    months.forEach(m=>{
-      const o=document.createElement('option');
-      o.value=m.val;
-      o.textContent=m.label;
-      sel.appendChild(o);
-    });
+    months.forEach(m=>{const o=document.createElement('option');o.value=m.val;o.textContent=m.label;sel.appendChild(o);});
   });
 }
 
@@ -1169,7 +1162,7 @@ function setDefaultFilters(){
 function logoutHQ(){sessionStorage.clear();}
 
 (async()=>{
-  if(sessionStorage.getItem('userRole')==='hq'||sessionStorage.getItem('hq_auth')==='1'){
+  if(sessionStorage.getItem('userRole')==='hq'||sessionStorage.getItem('hq_auth')==='1'||lsGet('userRole')==='hq'){
     sessionStorage.setItem('hq_auth','1');
     document.getElementById('pwOverlay').style.display='none';
     populateMonthSelectors();setDefaultFilters();
@@ -1178,6 +1171,8 @@ function logoutHQ(){sessionStorage.clear();}
     loadBriefing();
   }
 })();
+
+function lsGet(key){const raw=localStorage.getItem(key);if(!raw)return null;try{const item=JSON.parse(raw);if(Date.now()>item.expiry){localStorage.removeItem(key);return null;}return item.value;}catch{return null;}}
 
 async function checkPw(){
   const inp=document.getElementById('pwInput');const pw=inp.value.trim();if(!pw)return;
@@ -1190,25 +1185,18 @@ async function checkPw(){
       populateMonthSelectors();setDefaultFilters();
       document.getElementById('briefing-date').value=todayStr;
       await loadMembers();loadBriefing();
-    }else{
-      inp.classList.add('error');document.getElementById('pwError').classList.add('visible');
-      inp.value='';setTimeout(()=>inp.classList.remove('error'),400);
-    }
+    }else{inp.classList.add('error');document.getElementById('pwError').classList.add('visible');inp.value='';setTimeout(()=>inp.classList.remove('error'),400);}
   }catch(e){document.getElementById('pwError').textContent='Connection error.';document.getElementById('pwError').classList.add('visible');}
   btn.disabled=false;btn.textContent='Enter';
 }
 
 async function changePassword(){
-  const p1=document.getElementById('new-pw').value.trim();
-  const p2=document.getElementById('new-pw2').value.trim();
+  const p1=document.getElementById('new-pw').value.trim();const p2=document.getElementById('new-pw2').value.trim();
   const msg=document.getElementById('chpw-msg');msg.className='chpw-msg';
-  if(!p1||!p2){msg.textContent='Please fill in both fields.';msg.className='chpw-msg fail';return;}
+  if(!p1||!p2){msg.textContent='Please fill both fields.';msg.className='chpw-msg fail';return;}
   if(p1!==p2){msg.textContent='Passwords do not match.';msg.className='chpw-msg fail';return;}
-  try{
-    await fetch(SUPA_URL+'/rest/v1/settings?key=eq.hq_password',{method:'PATCH',headers:H,body:JSON.stringify({value:p1})});
-    document.getElementById('new-pw').value='';document.getElementById('new-pw2').value='';
-    msg.textContent='✅ Password updated!';msg.className='chpw-msg ok';
-  }catch(e){msg.textContent='Failed.';msg.className='chpw-msg fail';}
+  try{await fetch(SUPA_URL+'/rest/v1/settings?key=eq.hq_password',{method:'PATCH',headers:H,body:JSON.stringify({value:p1})});document.getElementById('new-pw').value='';document.getElementById('new-pw2').value='';msg.textContent='✅ Password updated!';msg.className='chpw-msg ok';}
+  catch(e){msg.textContent='Failed.';msg.className='chpw-msg fail';}
 }
 </script>
 </body>

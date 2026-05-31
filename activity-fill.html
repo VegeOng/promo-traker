@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Activity Report — MamaVege</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root {
+    --bg: #fafafa; --green: #166534; --green-light: #dcfce7; --green-mid: #15803d;
+    --red: #dc2626; --amber: #d97706; --amber-light: #fef3c7;
+    --text: #1a1a1a; --muted: #6b7280; --border: #e5e7eb; --card: #ffffff; --radius: 12px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; min-height: 100vh; }
+
+  .header { background: var(--green); color: white; padding: 16px 20px; display: flex; align-items: center; gap: 12px; position: sticky; top: 0; z-index: 100; }
+  .header-logo { width: 32px; height: 32px; background: white; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: 900; color: var(--green); font-size: 14px; }
+  .header-title { font-size: 16px; font-weight: 700; flex: 1; }
+  .header-back { color: rgba(255,255,255,0.8); text-decoration: none; font-size: 13px; }
+  .header-back:hover { color: white; }
+
+  .container { max-width: 640px; margin: 0 auto; padding: 24px 16px 60px; }
+
+  .mode-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 24px; }
+  .mode-card { background: var(--card); border: 2px solid var(--border); border-radius: var(--radius); padding: 20px 16px; cursor: pointer; transition: all 0.2s; text-align: center; }
+  .mode-card:hover { border-color: var(--green); background: #f0fdf4; }
+  .mode-card.active { border-color: var(--green); background: var(--green-light); }
+  .mode-card .mc-icon { font-size: 28px; margin-bottom: 8px; }
+  .mode-card .mc-name { font-size: 14px; font-weight: 700; }
+  .mode-card .mc-sub { font-size: 11px; color: var(--muted); margin-top: 4px; }
+  .mode-card.active .mc-name { color: var(--green); }
+
+  .form-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; margin-bottom: 16px; display: none; }
+  .form-card.visible { display: block; }
+  .form-title { font-size: 18px; font-weight: 800; color: var(--green); margin-bottom: 4px; }
+  .form-subtitle { font-size: 13px; color: var(--muted); margin-bottom: 24px; }
+
+  .field { margin-bottom: 16px; }
+  .field label { display: block; font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
+  .field label .req { color: var(--red); }
+  .field input, .field textarea, .field select {
+    width: 100%; padding: 11px 14px; border: 1.5px solid var(--border); border-radius: 8px;
+    font-size: 14px; font-family: inherit; background: var(--bg); color: var(--text); transition: border-color 0.2s;
+  }
+  .field input:focus, .field textarea:focus, .field select:focus { outline: none; border-color: var(--green); background: white; }
+  .field textarea { resize: vertical; min-height: 80px; }
+  .field.has-error input, .field.has-error select, .field.has-error textarea { border-color: var(--red); }
+  .field .error-msg { font-size: 11px; color: var(--red); margin-top: 4px; display: none; }
+  .field.has-error .error-msg { display: block; }
+  .field input[readonly] { background: #f3f4f6; color: var(--muted); cursor: not-allowed; }
+
+  .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+  .type-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .type-btn { padding: 10px 8px; border: 1.5px solid var(--border); border-radius: 8px; text-align: center; cursor: pointer; font-size: 12px; font-weight: 600; transition: all 0.15s; background: white; }
+  .type-btn:hover { border-color: var(--green); background: #f0fdf4; }
+  .type-btn.active { border-color: var(--green); background: var(--green-light); color: var(--green); }
+  .type-btn .tb-icon { font-size: 20px; display: block; margin-bottom: 4px; }
+
+  .btn-primary { width: 100%; padding: 14px; background: var(--green); color: white; border: none; border-radius: var(--radius); font-size: 15px; font-weight: 700; cursor: pointer; transition: background 0.2s; }
+  .btn-primary:hover { background: var(--green-mid); }
+  .btn-primary:disabled { background: #9ca3af; cursor: not-allowed; }
+
+  .success-banner { display: none; background: var(--green-light); border: 1.5px solid #86efac; border-radius: var(--radius); padding: 20px; text-align: center; margin-bottom: 20px; }
+  .success-banner.visible { display: block; }
+  .success-banner .icon { font-size: 32px; margin-bottom: 8px; }
+  .success-banner h3 { color: var(--green); font-size: 17px; font-weight: 800; }
+  .success-banner p { color: var(--muted); font-size: 13px; margin-top: 4px; }
+
+  /* Activity list for report selection */
+  .activity-select-list { margin-bottom: 16px; }
+  .activity-item { background: var(--card); border: 1.5px solid var(--border); border-radius: 10px; padding: 14px 16px; margin-bottom: 8px; cursor: pointer; transition: all 0.15s; display: flex; align-items: center; gap: 12px; }
+  .activity-item:hover { border-color: var(--green); background: #f0fdf4; }
+  .activity-item.selected { border-color: var(--green); background: var(--green-light); }
+  .ai-icon { font-size: 24px; flex-shrink: 0; }
+  .ai-info { flex: 1; }
+  .ai-name { font-size: 14px; font-weight: 700; }
+  .ai-meta { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .ai-status { font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 20px; }
+  .ai-status.active { background: var(--green-light); color: var(--green); }
+  .ai-status.ended { background: #f3f4f6; color: var(--muted); }
+
+  /* Photo upload */
+  .photo-section { margin-bottom: 16px; }
+  .photo-section label { display: block; font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
+  .photo-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 6px; }
+  .photo-slot { aspect-ratio: 1; border: 2px dashed var(--border); border-radius: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; position: relative; overflow: hidden; background: #f9fafb; }
+  .photo-slot:hover { border-color: var(--green); background: #f0fdf4; }
+  .photo-slot.has-photo { border-style: solid; border-color: #86efac; }
+  .photo-slot img { width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0; }
+  .photo-slot .slot-icon { font-size: 22px; }
+  .photo-slot .slot-label { font-size: 10px; color: var(--muted); margin-top: 4px; }
+  .photo-slot .remove-photo { position: absolute; top: 4px; right: 4px; background: rgba(0,0,0,0.5); color: white; border: none; border-radius: 50%; width: 20px; height: 20px; font-size: 11px; cursor: pointer; display: none; align-items: center; justify-content: center; }
+  .photo-slot.has-photo .remove-photo { display: flex; }
+  .photo-slot input[type=file] { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+
+  .prog-bar { height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; margin-top: 8px; }
+  .prog-fill { height: 100%; background: var(--green); border-radius: 2px; transition: width 0.3s; }
+
+  .amount-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .amount-card { background: #f9fafb; border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px; }
+  .amount-label { font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 6px; }
+  .amount-input { width: 100%; border: none; background: transparent; font-size: 20px; font-weight: 800; color: var(--text); font-family: inherit; outline: none; }
+  .amount-input.revenue { color: var(--green); }
+  .amount-input.cost { color: var(--red); }
+  .amount-prefix { font-size: 12px; color: var(--muted); margin-bottom: 2px; }
+
+  .profit-display { background: var(--card); border: 1.5px solid var(--border); border-radius: 10px; padding: 14px 16px; margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between; }
+  .pd-label { font-size: 13px; color: var(--muted); font-weight: 600; }
+  .pd-val { font-size: 22px; font-weight: 900; }
+  .pd-val.profit { color: var(--green); }
+  .pd-val.loss { color: var(--red); }
+  .pd-val.break { color: var(--amber); }
+
+  .loading-text { text-align: center; padding: 20px; color: var(--muted); font-size: 13px; }
+  .empty-text { text-align: center; padding: 20px; color: var(--muted); font-size: 13px; }
+  .spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.4); border-top-color: white; border-radius: 50%; animation: spin 0.6s linear infinite; vertical-align: middle; margin-right: 6px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-logo">M</div>
+  <div class="header-title">Activity Report</div>
+  <a href="#" id="backLink" class="header-back">← Back</a>
+</div>
+
+<div class="container">
+
+  <div class="mode-cards">
+    <div class="mode-card" id="card-new" onclick="selectMode('new')">
+      <div class="mc-icon">➕</div>
+      <div class="mc-name">New Activity</div>
+      <div class="mc-sub">Create a new event</div>
+    </div>
+    <div class="mode-card" id="card-report" onclick="selectMode('report')">
+      <div class="mc-icon">📊</div>
+      <div class="mc-name">Daily Report</div>
+      <div class="mc-sub">Submit today's figures</div>
+    </div>
+  </div>
+
+  <div class="success-banner" id="successBanner">
+    <div class="icon">✅</div>
+    <h3 id="successTitle">Done!</h3>
+    <p id="successText"></p>
+    <button style="margin-top:12px;padding:10px 20px;background:var(--green);color:white;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer" onclick="resetAll()">Submit Another</button>
+  </div>
+
+  <!-- NEW ACTIVITY FORM -->
+  <div class="form-card" id="form-new">
+    <div class="form-title">➕ New Activity</div>
+    <div class="form-subtitle">Create a new promotional activity or event.</div>
+
+    <div class="field" id="fn-name">
+      <label>Activity Name <span class="req">*</span></label>
+      <input type="text" id="n-name" placeholder="e.g. Aeon Mall Sampling June 2026">
+      <div class="error-msg">Please enter activity name</div>
+    </div>
+
+    <div class="field" id="fn-type">
+      <label>Activity Type <span class="req">*</span></label>
+      <div class="type-grid">
+        <div class="type-btn" onclick="selectType('Sampling')"><span class="tb-icon">🧪</span>Sampling</div>
+        <div class="type-btn" onclick="selectType('Roadshow')"><span class="tb-icon">🚗</span>Roadshow</div>
+        <div class="type-btn" onclick="selectType('Exhibition')"><span class="tb-icon">🏟️</span>Exhibition</div>
+        <div class="type-btn" onclick="selectType('Food Fair')"><span class="tb-icon">🍱</span>Food Fair</div>
+        <div class="type-btn" onclick="selectType('Food Expo')"><span class="tb-icon">🏪</span>Food Expo</div>
+        <div class="type-btn" onclick="selectType('Other')"><span class="tb-icon">📌</span>Other</div>
+      </div>
+      <input type="hidden" id="n-type">
+      <div class="error-msg">Please select activity type</div>
+    </div>
+
+    <div class="field">
+      <label>Location</label>
+      <input type="text" id="n-location" placeholder="e.g. Aeon Mall Bukit Tinggi, Klang">
+    </div>
+
+    <div class="field">
+      <label>Responsible Person</label>
+      <input type="text" id="n-responsible" placeholder="Who is in charge?">
+    </div>
+
+    <div class="field-row">
+      <div class="field">
+        <label>Start Date</label>
+        <input type="date" id="n-start">
+      </div>
+      <div class="field">
+        <label>End Date</label>
+        <input type="date" id="n-end">
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Notes</label>
+      <textarea id="n-notes" placeholder="Budget, objectives, special instructions..."></textarea>
+    </div>
+
+    <button class="btn-primary" id="btn-new" onclick="submitNewActivity()">Create Activity</button>
+  </div>
+
+  <!-- DAILY REPORT FORM -->
+  <div class="form-card" id="form-report">
+    <div class="form-title">📊 Daily Report</div>
+    <div class="form-subtitle">Select an activity and submit today's figures.</div>
+
+    <div class="field">
+      <label>Select Activity <span class="req">*</span></label>
+      <div class="activity-select-list" id="activity-select-list">
+        <div class="loading-text">Loading activities…</div>
+      </div>
+    </div>
+
+    <div id="report-form-body" style="display:none">
+      <div class="field">
+        <label>Report Date <span class="req">*</span></label>
+        <input type="date" id="r-date">
+      </div>
+
+      <div class="amount-row" style="margin-bottom:16px">
+        <div class="amount-card">
+          <div class="amount-label">Revenue (RM)</div>
+          <div class="amount-prefix">RM</div>
+          <input type="number" class="amount-input revenue" id="r-revenue" placeholder="0.00" min="0" step="0.01" oninput="calcProfit()">
+        </div>
+        <div class="amount-card">
+          <div class="amount-label">Cost (RM)</div>
+          <div class="amount-prefix">RM</div>
+          <input type="number" class="amount-input cost" id="r-cost" placeholder="0.00" min="0" step="0.01" oninput="calcProfit()">
+        </div>
+      </div>
+
+      <div class="profit-display" id="profit-display">
+        <div class="pd-label">Profit / Loss</div>
+        <div class="pd-val break" id="pd-val">RM 0</div>
+      </div>
+
+      <div class="field">
+        <label>Notes</label>
+        <textarea id="r-notes" placeholder="Traffic, customer response, issues..."></textarea>
+      </div>
+
+      <div class="photo-section">
+        <label>Photos (optional)</label>
+        <div class="photo-grid">
+          <div class="photo-slot" id="rslot-0">
+            <div class="slot-icon">📷</div><div class="slot-label">Photo 1</div>
+            <input type="file" id="rfile-0" accept="image/*" onchange="handlePhoto(0,this)">
+            <button class="remove-photo" onclick="removePhoto(event,0)">✕</button>
+          </div>
+          <div class="photo-slot" id="rslot-1">
+            <div class="slot-icon">📷</div><div class="slot-label">Photo 2</div>
+            <input type="file" id="rfile-1" accept="image/*" onchange="handlePhoto(1,this)">
+            <button class="remove-photo" onclick="removePhoto(event,1)">✕</button>
+          </div>
+          <div class="photo-slot" id="rslot-2">
+            <div class="slot-icon">📷</div><div class="slot-label">Photo 3</div>
+            <input type="file" id="rfile-2" accept="image/*" onchange="handlePhoto(2,this)">
+            <button class="remove-photo" onclick="removePhoto(event,2)">✕</button>
+          </div>
+        </div>
+        <div class="prog-bar" id="rprog-bar" style="display:none"><div class="prog-fill" id="rprog-fill" style="width:0%"></div></div>
+      </div>
+
+      <button class="btn-primary" id="btn-report" onclick="submitReport()">Submit Report</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const SUPA_URL = 'https://wjhgezvrxlhpexocfsea.supabase.co';
+const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndqaGdlenZyeGxocGV4b2Nmc2VhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg1MDU4NzgsImV4cCI6MjA5NDA4MTg3OH0.jENcrgEDYDlSRUCqve-T6rxYRJfz-dnZQHnXpPLJ_RE';
+const supa = supabase.createClient(SUPA_URL, SUPA_KEY);
+const H = { 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY, 'Content-Type': 'application/json', 'Prefer': 'return=representation' };
+const Hmin = { 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' };
+
+function lsGet(key) {
+  const raw = localStorage.getItem(key);
+  if (!raw) return null;
+  try { const item = JSON.parse(raw); if (Date.now() > item.expiry) { localStorage.removeItem(key); return null; } return item.value; } catch { return null; }
+}
+
+const loggedUser = lsGet('userName');
+const userRole = lsGet('userRole');
+if (!loggedUser) { location.href = 'index.html'; }
+
+const backLink = document.getElementById('backLink');
+backLink.href = userRole === 'member' ? 'my-dashboard.html' : 'index.html';
+backLink.textContent = userRole === 'member' ? '← My Dashboard' : '← Hub';
+
+let selectedType = '';
+let selectedActivityId = null;
+let photoFiles = [null, null, null];
+const today = new Date().toISOString().split('T')[0];
+
+async function db(path, opts = {}) {
+  const r = await fetch(SUPA_URL + '/rest/v1/' + path, { headers: H, ...opts });
+  const text = await r.text();
+  if (!r.ok) { try { throw JSON.parse(text); } catch { throw text || r.status; } }
+  if (!text || text.trim() === '') return null;
+  try { return JSON.parse(text); } catch { return null; }
+}
+
+function selectMode(mode) {
+  document.querySelectorAll('.mode-card').forEach(c => c.classList.remove('active'));
+  document.getElementById('card-' + mode).classList.add('active');
+  document.getElementById('form-new').classList.remove('visible');
+  document.getElementById('form-report').classList.remove('visible');
+  document.getElementById('successBanner').classList.remove('visible');
+  if (mode === 'new') {
+    document.getElementById('form-new').classList.add('visible');
+  } else {
+    document.getElementById('form-report').classList.add('visible');
+    loadActivities();
+  }
+  setTimeout(() => {
+    const el = document.getElementById('form-' + mode);
+    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, 100);
+}
+
+function selectType(type) {
+  selectedType = type;
+  document.getElementById('n-type').value = type;
+  document.querySelectorAll('.type-btn').forEach(b => {
+    b.classList.toggle('active', b.textContent.trim() === type);
+  });
+  document.getElementById('fn-type').classList.remove('has-error');
+}
+
+async function loadActivities() {
+  const list = document.getElementById('activity-select-list');
+  list.innerHTML = '<div class="loading-text">Loading…</div>';
+  try {
+    let q = 'activities?select=*&order=created_at.desc';
+    if (userRole === 'member') q += `&responsible=eq.${encodeURIComponent(loggedUser)}`;
+    const data = await db(q) || [];
+    if (!data.length) { list.innerHTML = '<div class="empty-text">No activities found. Create one first.</div>'; return; }
+    const typeIcons = { Sampling:'🧪', Roadshow:'🚗', Exhibition:'🏟️', 'Food Fair':'🍱', 'Food Expo':'🏪', Other:'📌' };
+    list.innerHTML = data.map(a => `
+      <div class="activity-item ${selectedActivityId===a.activity_id?'selected':''}" onclick="selectActivity('${a.activity_id}','${escHtml(a.name)}')">
+        <div class="ai-icon">${typeIcons[a.type]||'📌'}</div>
+        <div class="ai-info">
+          <div class="ai-name">${escHtml(a.name)}</div>
+          <div class="ai-meta">${a.type}${a.location?' · '+escHtml(a.location):''}${a.start_date?' · '+a.start_date:''}</div>
+        </div>
+        <span class="ai-status ${a.status==='active'?'active':'ended'}">${a.status==='active'?'Active':'Ended'}</span>
+      </div>`).join('');
+  } catch(e) { list.innerHTML = '<div class="empty-text">Failed to load.</div>'; }
+}
+
+function selectActivity(id, name) {
+  selectedActivityId = id;
+  document.querySelectorAll('.activity-item').forEach(el => el.classList.remove('selected'));
+  event.currentTarget.classList.add('selected');
+  document.getElementById('report-form-body').style.display = 'block';
+  document.getElementById('r-date').value = today;
+  setTimeout(() => document.getElementById('report-form-body').scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
+}
+
+function calcProfit() {
+  const rev = parseFloat(document.getElementById('r-revenue').value) || 0;
+  const cost = parseFloat(document.getElementById('r-cost').value) || 0;
+  const profit = rev - cost;
+  const el = document.getElementById('pd-val');
+  el.textContent = 'RM ' + profit.toLocaleString('en-MY', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  el.className = 'pd-val ' + (profit > 0 ? 'profit' : profit < 0 ? 'loss' : 'break');
+}
+
+async function handlePhoto(idx, input) {
+  if (!input.files[0]) return;
+  const compressed = await compressImage(input.files[0]);
+  photoFiles[idx] = compressed;
+  const slot = document.getElementById('rslot-' + idx);
+  const reader = new FileReader();
+  reader.onload = e => {
+    let img = slot.querySelector('img');
+    if (!img) { img = document.createElement('img'); slot.appendChild(img); }
+    img.src = e.target.result;
+    slot.classList.add('has-photo');
+  };
+  reader.readAsDataURL(compressed);
+}
+
+function removePhoto(e, idx) {
+  e.stopPropagation();
+  photoFiles[idx] = null;
+  const slot = document.getElementById('rslot-' + idx);
+  const img = slot.querySelector('img'); if (img) img.remove();
+  slot.classList.remove('has-photo');
+  document.getElementById('rfile-' + idx).value = '';
+}
+
+async function compressImage(file) {
+  return new Promise(resolve => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      let w = img.width, h = img.height;
+      const maxDim = 1200;
+      if (w > maxDim || h > maxDim) { const r = Math.min(maxDim/w, maxDim/h); w = Math.round(w*r); h = Math.round(h*r); }
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      canvas.toBlob(blob => resolve(new File([blob], file.name, { type: 'image/jpeg' })), 'image/jpeg', 0.75);
+      URL.revokeObjectURL(url);
+    };
+    img.src = url;
+  });
+}
+
+async function uploadPhotos() {
+  const urls = [];
+  const toUpload = photoFiles.filter(f => f !== null);
+  if (!toUpload.length) return [];
+  document.getElementById('rprog-bar').style.display = 'block';
+  let uploaded = 0;
+  for (let i = 0; i < 3; i++) {
+    if (!photoFiles[i]) continue;
+    const path = `activity-${selectedActivityId}/${Date.now()}-${i}.jpg`;
+    const { error } = await supa.storage.from('visit-photos').upload(path, photoFiles[i], { contentType: 'image/jpeg', upsert: true });
+    if (!error) {
+      const { data: urlData } = supa.storage.from('visit-photos').getPublicUrl(path);
+      urls.push(urlData.publicUrl);
+    }
+    uploaded++;
+    document.getElementById('rprog-fill').style.width = Math.round(uploaded / toUpload.length * 100) + '%';
+  }
+  document.getElementById('rprog-bar').style.display = 'none';
+  return urls;
+}
+
+async function submitNewActivity() {
+  const name = document.getElementById('n-name').value.trim();
+  const type = document.getElementById('n-type').value;
+  let ok = true;
+  if (!name) { document.getElementById('fn-name').classList.add('has-error'); ok = false; } else { document.getElementById('fn-name').classList.remove('has-error'); }
+  if (!type) { document.getElementById('fn-type').classList.add('has-error'); ok = false; } else { document.getElementById('fn-type').classList.remove('has-error'); }
+  if (!ok) return;
+
+  const btn = document.getElementById('btn-new');
+  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>Creating…';
+
+  try {
+    await db('activities', {
+      method: 'POST',
+      body: JSON.stringify({
+        name,
+        type,
+        location: document.getElementById('n-location').value.trim() || null,
+        responsible: document.getElementById('n-responsible').value.trim() || loggedUser,
+        start_date: document.getElementById('n-start').value || null,
+        end_date: document.getElementById('n-end').value || null,
+        notes: document.getElementById('n-notes').value.trim() || null,
+        created_by: loggedUser,
+        status: 'active'
+      })
+    });
+    document.getElementById('successTitle').textContent = 'Activity Created!';
+    document.getElementById('successText').textContent = `"${name}" has been created successfully.`;
+    document.getElementById('successBanner').classList.add('visible');
+    document.getElementById('form-new').classList.remove('visible');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  } catch(e) { console.error(e); alert('Failed to create activity.'); }
+
+  btn.disabled = false; btn.innerHTML = 'Create Activity';
+}
+
+async function submitReport() {
+  if (!selectedActivityId) { alert('Please select an activity.'); return; }
+  const date = document.getElementById('r-date').value;
+  if (!date) { alert('Please select a date.'); return; }
+
+  const btn = document.getElementById('btn-report');
+  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>Submitting…';
+
+  try {
+    const photoUrls = await uploadPhotos();
+    await db('activity_reports', {
+      method: 'POST',
+      body: JSON.stringify({
+        activity_id: selectedActivityId,
+        reported_by: loggedUser,
+        report_date: date,
+        revenue: parseFloat(document.getElementById('r-revenue').value) || 0,
+        cost: parseFloat(document.getElementById('r-cost').value) || 0,
+        notes: document.getElementById('r-notes').value.trim() || null,
+        photo_urls: photoUrls
+      })
+    });
+
+    document.getElementById('successTitle').textContent = 'Report Submitted!';
+    document.getElementById('successText').textContent = `Daily report for ${date} has been recorded.`;
+    document.getElementById('successBanner').classList.add('visible');
+    document.getElementById('form-report').classList.remove('visible');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  } catch(e) { console.error(e); alert('Failed to submit report.'); }
+
+  btn.disabled = false; btn.innerHTML = 'Submit Report';
+}
+
+function resetAll() {
+  document.getElementById('successBanner').classList.remove('visible');
+  document.querySelectorAll('.mode-card').forEach(c => c.classList.remove('active'));
+  document.getElementById('form-new').classList.remove('visible');
+  document.getElementById('form-report').classList.remove('visible');
+  document.getElementById('n-name').value = '';
+  document.getElementById('n-location').value = '';
+  document.getElementById('n-responsible').value = '';
+  document.getElementById('n-start').value = '';
+  document.getElementById('n-end').value = '';
+  document.getElementById('n-notes').value = '';
+  selectedType = '';
+  document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('active'));
+  selectedActivityId = null;
+  photoFiles = [null, null, null];
+  document.getElementById('report-form-body').style.display = 'none';
+}
+
+function escHtml(s) { return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+// Set default responsible to logged user
+document.getElementById('n-responsible').value = loggedUser;
+document.getElementById('r-date').value = today;
+</script>
+</body>
+</html>
