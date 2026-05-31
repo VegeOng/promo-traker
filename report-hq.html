@@ -270,9 +270,9 @@
   .ac-status.active { background: var(--green-light); color: var(--green); }
   .ac-status.ended { background: #f3f4f6; color: var(--muted); }
   .ac-pnl { font-size: 18px; font-weight: 900; }
-  .ac-pnl.profit { color: var(--green); }
-  .ac-pnl.loss { color: var(--red); }
-  .ac-pnl.break { color: var(--amber); }
+  .ac-pnl.roas-high { color: var(--green); }
+  .ac-pnl.roas-low { color: var(--red); }
+  .ac-pnl.roas-mid { color: var(--amber); }
 
   .ac-stats-row { display: grid; grid-template-columns: repeat(4,1fr); border-top: 1px solid var(--border); }
   @media(max-width:480px){ .ac-stats-row { grid-template-columns: repeat(2,1fr); } }
@@ -450,7 +450,7 @@
       <div class="stat-box blue"><div class="s-val" id="act-total">—</div><div class="s-label">Total</div></div>
       <div class="stat-box green"><div class="s-val" id="act-active">—</div><div class="s-label">Active</div></div>
       <div class="stat-box green"><div class="s-val" id="act-revenue">—</div><div class="s-label">Total Revenue</div></div>
-      <div class="stat-box amber"><div class="s-val" id="act-profit">—</div><div class="s-label">Total P&L</div></div>
+      <div class="stat-box amber"><div class="s-val" id="act-profit">—</div><div class="s-label">Avg ROAS</div></div>
     </div>
     <div class="act-filter-bar">
       <span class="act-filter-btn active" onclick="filterActivities('all',this)">All</span>
@@ -626,8 +626,11 @@ function renderActivities() {
   const typeIcons = { Sampling:'🧪', Roadshow:'🚗', Exhibition:'🏟️', 'Food Fair':'🍱', 'Food Expo':'🏪', Other:'📌' };
 
   list.innerHTML = filtered.map(a => {
-    const pnlClass = a.profit > 0 ? 'profit' : a.profit < 0 ? 'loss' : 'break';
-    const pnlLabel = a.profit > 0 ? '▲ ' : a.profit < 0 ? '▼ ' : '';
+    const ROAS_GREEN = 7;
+    const ROAS_AMBER = 4;
+    const roas = a.totalCost > 0 ? (a.totalRev / a.totalCost) : 0;
+    const pnlClass = roas >= ROAS_GREEN ? 'roas-high' : roas >= ROAS_AMBER ? 'roas-mid' : 'roas-low';
+    const pnlLabel = roas > 0 ? roas.toFixed(2) + 'x' : '—';
 
     return `
       <div class="activity-card">
@@ -644,13 +647,13 @@ function renderActivities() {
           </div>
           <div class="ac-right">
             <span class="ac-status ${a.status}">${a.status==='active'?'🟢 Active':'⚫ Ended'}</span>
-            <span class="ac-pnl ${pnlClass}">${pnlLabel}${fmtRM(Math.abs(a.profit))}</span>
+            <span class="ac-pnl ${pnlClass}">ROAS ${pnlLabel}</span>
           </div>
         </div>
         <div class="ac-stats-row">
           <div class="ac-stat"><div class="ac-stat-val green">${fmtRM(a.totalRev)}</div><div class="ac-stat-label">Revenue</div></div>
           <div class="ac-stat"><div class="ac-stat-val red">${fmtRM(a.totalCost)}</div><div class="ac-stat-label">Cost</div></div>
-          <div class="ac-stat"><div class="ac-stat-val ${pnlClass}">${fmtRM(Math.abs(a.profit))}</div><div class="ac-stat-label">${a.profit>=0?'Profit':'Loss'}</div></div>
+          <div class="ac-stat"><div class="ac-stat-val ${pnlClass}">${roas > 0 ? roas.toFixed(2) + 'x' : '—'}</div><div class="ac-stat-label">ROAS</div></div>
           <div class="ac-stat"><div class="ac-stat-val">${a.reports.length}</div><div class="ac-stat-label">Reports</div></div>
         </div>
         <div class="ac-body" id="ac-${a.activity_id}">
