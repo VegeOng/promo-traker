@@ -189,7 +189,25 @@ const TARGET_2026 = 12000000;
 
 // ===== localStorage with 7-day expiry =====
 function lsSet(key, value) {
- 
+  const item = { value, expiry: Date.now() + 7 * 24 * 60 * 60 * 1000 };
+  localStorage.setItem(key, JSON.stringify(item));
+}
+function lsGet(key) {
+  const raw = localStorage.getItem(key);
+  if (!raw) return null;
+  try {
+    const item = JSON.parse(raw);
+    if (Date.now() > item.expiry) { localStorage.removeItem(key); return null; }
+    return item.value;
+  } catch { return null; }
+}
+function lsClear() {
+  ["userName","userRole","userId","hq_auth","memberRole"].forEach(k => localStorage.removeItem(k));
+}
+
+const userName = lsGet("userName");
+const userRole = lsGet("userRole");
+
 if (userName && userRole === 'member') {
   location.href = 'my-dashboard.html';
 } else if (userName && userRole === 'hq') {
