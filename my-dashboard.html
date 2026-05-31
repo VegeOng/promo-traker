@@ -212,8 +212,9 @@
   <div class="tabs">
     <div class="tab active" onclick="switchTab('tasks', event)">My Tasks</div>
     <div class="tab" id="tab-visits" onclick="switchTab('visits', event)">Visit History</div>
+    <div class="tab" id="tab-daily-reports" style="display:none" onclick="switchTab('daily_reports', event)">Daily Reports</div>
     <div class="tab" onclick="switchTab('weekly', event)">Weekly Reports</div>
-    <div class="tab" onclick="switchTab('sales', event)">Sales Data</div>
+    <div class="tab" id="tab-sales" onclick="switchTab('sales', event)">Sales Data</div>
   </div>
 
   <!-- MY TASKS -->
@@ -229,6 +230,7 @@
   </div>
 
   <!-- VISIT HISTORY -->
+  <div class="panel" id="panel-daily_reports"><div class="loading" id="loading-daily-reports">Loading…</div><div id="list-daily-reports"></div></div>
   <div class="panel" id="panel-visits">
     <div class="loading" id="loading-visits">Loading…</div>
     <div id="list-visits"></div>
@@ -336,6 +338,7 @@
     else if (name === 'visits') loadVisitHistory();
     else if (name === 'weekly') loadWeekly();
     else if (name === 'sales' && !salesLoaded) loadSales();
+    else if (name === 'daily_reports') loadDailyReportsTab();
   }
 
   function openLightbox(url) {
@@ -603,6 +606,27 @@
     }
   }
 
+  async function loadDailyReportsTab() {
+    document.getElementById('loading-daily-reports').style.display = 'block';
+    const list = document.getElementById('list-daily-reports');
+    list.innerHTML = '';
+    try {
+      const { data, error } = await supa.from('daily_reports').select('*').eq('name', userName).order('date', { ascending: false }).limit(30);
+      document.getElementById('loading-daily-reports').style.display = 'none';
+      if (error || !data || !data.length) { list.innerHTML = '<div class="empty">No daily reports yet.</div>'; return; }
+      list.innerHTML = data.map(r => `
+        <div class="card">
+          <div class="card-date">${r.date}</div>
+          <div class="card-row"><strong>Today\'s Task</strong><p>${escHtml(r.today_task||'-')}</p></div>
+          <div class="card-row"><strong>Tomorrow\'s Task</strong><p>${escHtml(r.tomorrow_task||'-')}</p></div>
+          <div class="card-row"><strong>Assistance</strong><p>${escHtml(r.assistance||'-')}</p></div>
+        </div>`).join('');
+    } catch(e) {
+      document.getElementById('loading-daily-reports').style.display = 'none';
+      list.innerHTML = '<div class="empty">Failed to load.</div>';
+    }
+  }
+
   function escHtml(s){return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 
   // Show/hide tools based on role
@@ -614,6 +638,10 @@
     if (dailyTool) dailyTool.style.display = 'flex';
     const visitTab = document.getElementById('tab-visits');
     if (visitTab) visitTab.style.display = 'none';
+    const salesTab = document.getElementById('tab-sales');
+    if (salesTab) salesTab.style.display = 'none';
+    const dailyReportsTab = document.getElementById('tab-daily-reports');
+    if (dailyReportsTab) dailyReportsTab.style.display = 'block';
   }
   loadMyTasks();
   loadWeekly();
