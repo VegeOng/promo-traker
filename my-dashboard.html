@@ -174,7 +174,12 @@
 
   <div class="sec-title">My Tools</div>
   <div class="tools-grid">
-    <a class="tool" href="report-fill.html">
+    <a class="tool" id="tool-daily-report" href="report-fill.html" style="display:none">
+      <div class="tool-icon">📋</div>
+      <div class="tool-name">Daily Report</div>
+      <span class="tbadge">LIVE</span>
+    </a>
+    <a class="tool" id="tool-visit" href="report-fill.html">
       <div class="tool-icon">📝</div>
       <div class="tool-name">Visit Records</div>
       <span class="tbadge">LIVE</span>
@@ -600,6 +605,14 @@
 
   function escHtml(s){return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 
+  // Show/hide tools based on role
+  const memberRole = lsGet('memberRole') || 'sales';
+  if (memberRole === 'marketing') {
+    const visitTool = document.getElementById('tool-visit');
+    const dailyTool = document.getElementById('tool-daily-report');
+    if (visitTool) visitTool.style.display = 'none';
+    if (dailyTool) dailyTool.style.display = 'flex';
+  }
   loadMyTasks();
   loadWeekly();
 </script>

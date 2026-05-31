@@ -245,11 +245,12 @@ async function doLogin() {
   }
 
   // 2. Try member
-  const { data: member } = await supa.from('members').select('id, name, password').eq('name', name).maybeSingle();
+  const { data: member } = await supa.from('members').select('id, name, password, role').eq('name', name).maybeSingle();
   if (member && member.password === pw) {
     lsSet('userName', member.name);
     lsSet('userRole', 'member');
     lsSet('userId', member.id);
+    lsSet('memberRole', member.role || 'sales');
     location.href = 'my-dashboard.html';
     return;
   }
