@@ -156,7 +156,7 @@ body{background:var(--bg);color:var(--t1);font-family:var(--font);min-height:100
         <div class="tool-icon">📝</div><div class="tool-name">Daily & Weekly Report</div><span class="tbadge tb-live">LIVE</span>
       </a>
       <a class="tool live" href="activity-fill.html" style="--tc:var(--amber)"><div class="tool-icon">🎪</div><div class="tool-name">Activity Report</div><span class="tbadge tb-live">LIVE</span></a>
-      <a class="tool live" href="report-hq.html" style="--tc:var(--green)">
+      <a class="tool live" href="report-hq.html" style="--tc:var(--green)" id="tool-report-hq">
         <div class="tool-icon">🗂️</div><div class="tool-name">Report HQ Dashboard</div><span class="tbadge tb-live">LIVE</span>
       </a>
     </div>
@@ -270,6 +270,11 @@ function showApp() {
   document.getElementById('appView').classList.remove('app-hidden');
   document.getElementById('user-pill').textContent = '👤 ' + lsGet('userName') + ' (HQ)';
   document.getElementById('hero-greet').textContent = 'Welcome back, ' + lsGet('userName');
+  const role = lsGet("userRole"); const memberRole = lsGet("memberRole");
+  if (role === "member") {
+    const hqTool = document.getElementById("tool-report-hq");
+    if (hqTool) hqTool.style.display = "none";
+  }
   initHeader();
   loadStats();
 }
