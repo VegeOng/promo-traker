@@ -338,7 +338,7 @@ async function loadActivities() {
   list.innerHTML = '<div class="loading-text">Loading…</div>';
   try {
     let q = 'activities?select=*&order=created_at.desc';
-    if (userRole === 'member') q += `&responsible=eq.${encodeURIComponent(loggedUser)}`;
+   
     const data = await db(q) || [];
     if (!data.length) { list.innerHTML = '<div class="empty-text">No activities found. Create one first.</div>'; return; }
     const typeIcons = { Sampling:'🧪', Roadshow:'🚗', Exhibition:'🏟️', 'Food Fair':'🍱', 'Food Expo':'🏪', Other:'📌' };
