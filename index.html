@@ -423,6 +423,8 @@ function showApp() {
   }
   initHeader();
   loadStats();
+  document.getElementById("sales-overview").style.display = "block";
+  loadSalesOverviewMembers().then(() => loadSalesOverview());
 }
 
 function initHeader() {
