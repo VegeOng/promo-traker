@@ -405,41 +405,6 @@
 
 <div class="container">
 
-  <!-- SALES OVERVIEW -->
-  <div id="sales-overview" style="display:none;margin-bottom:20px">
-    <div class="so-wrap">
-      <div class="so-title">📊 Team Sales — <span id="so-month-label">—</span>
-        <span style="margin-left:auto;font-size:11px;color:var(--muted);font-weight:400" id="so-loading">Loading…</span>
-      </div>
-      <div class="so-grid">
-        <div class="so-card">
-          <div class="so-label">This Month</div>
-          <div class="so-val green" id="so-month-val">—</div>
-          <div class="so-sub" id="so-month-pct">—</div>
-          <div class="so-bar-wrap"><div class="so-bar" id="so-month-bar" style="width:0%;background:var(--green)"></div></div>
-        </div>
-        <div class="so-card">
-          <div class="so-label">Gap to Month Target</div>
-          <div class="so-val" id="so-month-gap">—</div>
-          <div class="so-sub" id="so-month-target">—</div>
-        </div>
-        <div class="so-card">
-          <div class="so-label">YTD Total</div>
-          <div class="so-val blue" id="so-ytd-val">—</div>
-          <div class="so-sub" id="so-ytd-pct">—</div>
-          <div class="so-bar-wrap"><div class="so-bar" id="so-ytd-bar" style="width:0%;background:var(--blue)"></div></div>
-        </div>
-        <div class="so-card">
-          <div class="so-label">Gap to Annual Target</div>
-          <div class="so-val" id="so-annual-gap">—</div>
-          <div class="so-sub">Target: RM 6,000,000</div>
-        </div>
-      </div>
-      <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:10px">👤 Individual — This Month</div>
-      <div id="so-members-list"><div class="loading-text" style="padding:10px">Loading…</div></div>
-    </div>
-  </div>
-
   <!-- VISIT REPORT -->
   <div class="section active" id="sec-briefing">
     <div class="briefing-date-bar">
@@ -631,81 +596,6 @@ function switchTab(tab) {
   else if (tab==='weekly') loadWeeklyReports();
   else if (tab==='stats') loadMissStats();
   else if (tab==='members') renderMembers();
-}
-
-// ===== SALES OVERVIEW =====
-async function loadSalesOverview() {
-  try {
-    const now = new Date();
-    const curYear = now.getFullYear(), curMonth = now.getMonth()+1;
-    const mNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-    document.getElementById('so-month-label').textContent = mNames[curMonth-1] + ' ' + curYear;
-
-    const res = await fetch(SALES_API);
-    const json = await res.json();
-    const allData = json.data || [];
-
-    const yearData = allData.filter(r => parseInt(r['YEAR']) === curYear);
-    const monthData = yearData.filter(r => parseInt(r['MONTH']) === curMonth);
-    const ytdTotal = yearData.reduce((s,r) => s+getTotalField(r), 0);
-    const monthTotal = monthData.reduce((s,r) => s+getTotalField(r), 0);
-
-    const salesMembers = members.filter(m => (m.role||'sales') === 'sales');
-    const teamMonthTarget = salesMembers.reduce((s,m) => s+(m.monthly_kpi||0), 0);
-    const monthGap = teamMonthTarget - monthTotal;
-    const monthPct = teamMonthTarget > 0 ? Math.round(monthTotal/teamMonthTarget*100) : 0;
-    const annualGap = ANNUAL_TARGET - ytdTotal;
-    const annualPct = Math.round(ytdTotal/ANNUAL_TARGET*100);
-
-    document.getElementById('so-month-val').textContent = fmtRMShort(monthTotal);
-    document.getElementById('so-month-pct').textContent = teamMonthTarget > 0 ? monthPct+'% of target' : 'No target set';
-    document.getElementById('so-month-bar').style.width = Math.min(monthPct,100)+'%';
-
-    const gapEl = document.getElementById('so-month-gap');
-    gapEl.textContent = monthGap > 0 ? fmtRMShort(monthGap) : '🎉 Achieved!';
-    gapEl.className = 'so-val ' + (monthGap <= 0 ? 'green' : monthPct >= 70 ? 'amber' : 'red');
-    document.getElementById('so-month-target').textContent = teamMonthTarget > 0 ? 'Target: '+fmtRMShort(teamMonthTarget) : '';
-
-    document.getElementById('so-ytd-val').textContent = fmtRMShort(ytdTotal);
-    document.getElementById('so-ytd-pct').textContent = annualPct+'% of annual target';
-    document.getElementById('so-ytd-bar').style.width = Math.min(annualPct,100)+'%';
-
-    const annGapEl = document.getElementById('so-annual-gap');
-    annGapEl.textContent = annualGap > 0 ? fmtRMShort(annualGap) : '🎉 Achieved!';
-    annGapEl.className = 'so-val ' + (annualGap <= 0 ? 'green' : annualPct >= 70 ? 'amber' : 'red');
-
-    // Per member
-    const memberList = document.getElementById('so-members-list');
-    if (!salesMembers.length) { memberList.innerHTML = '<div class="empty-text">No sales members.</div>'; return; }
-
-    memberList.innerHTML = salesMembers.map(m => {
-      const mData = monthData.filter(r => (r['SALES PERSON']||'').trim() === m.name.trim());
-      const mTotal = mData.reduce((s,r) => s+getTotalField(r), 0);
-      const kpi = m.monthly_kpi || 0;
-      const pct = kpi > 0 ? Math.round(mTotal/kpi*100) : 0;
-      const gap = kpi - mTotal;
-      const barColor = pct >= 100 ? 'var(--green)' : pct >= 70 ? 'var(--amber)' : 'var(--red)';
-      return `
-        <div class="so-member-row">
-          <div class="so-member-name">${escHtml(m.name)}</div>
-          <div class="so-member-bar-wrap">
-            <div class="so-member-bar-bg">
-              <div class="so-member-bar-fill" style="width:${Math.min(pct,100)}%;background:${barColor}"></div>
-            </div>
-            <div style="font-size:10px;color:var(--muted);margin-top:2px">${pct}%${kpi>0?' of '+fmtRMShort(kpi):' (no target)'}</div>
-          </div>
-          <div class="so-member-amount">${fmtRMShort(mTotal)}</div>
-          <div class="so-member-gap" style="color:${gap<=0?'var(--green)':gap/kpi>0.5?'var(--red)':'var(--amber)'}">
-            ${kpi>0?(gap<=0?'✅ Met':'▼ '+fmtRMShort(gap)):'—'}
-          </div>
-        </div>`;
-    }).join('');
-
-    document.getElementById('so-loading').textContent = '';
-  } catch(e) {
-    console.error('Sales overview error:', e);
-    document.getElementById('so-loading').textContent = 'Failed to load sales data';
-  }
 }
 
 // ===== ACTIVITIES =====
@@ -1229,8 +1119,6 @@ function logoutHQ(){sessionStorage.clear();}
     populateMonthSelectors();setDefaultFilters();
     document.getElementById('briefing-date').value=todayStr;
     await loadMembers();
-    document.getElementById('sales-overview').style.display='block';
-    loadSalesOverview();
     loadBriefing();
   }
 })();
@@ -1246,8 +1134,6 @@ async function checkPw(){
       populateMonthSelectors();setDefaultFilters();
       document.getElementById('briefing-date').value=todayStr;
       await loadMembers();
-      document.getElementById('sales-overview').style.display='block';
-      loadSalesOverview();
       loadBriefing();
     }else{inp.classList.add('error');document.getElementById('pwError').classList.add('visible');inp.value='';setTimeout(()=>inp.classList.remove('error'),400);}
   }catch(e){document.getElementById('pwError').textContent='Connection error.';document.getElementById('pwError').classList.add('visible');}

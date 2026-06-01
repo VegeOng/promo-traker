@@ -5,7 +5,85 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>MamaVege Management Hub</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2">
+const SALES_API = 'https://script.google.com/macros/s/AKfycbwxt23ZB0od7EeBSNvjurKTbkDcM7HLgrWhuoqHc3meKWmhbB0XQzfOdB-X2Pj5O_MY/exec';
+const ANNUAL_TARGET = 6000000;
+let salesMembers = [];
+
+function fmtRMShort(n) {
+  if (n >= 1000000) return 'RM ' + (n/1000000).toFixed(2) + 'M';
+  if (n >= 1000) return 'RM ' + (n/1000).toFixed(1) + 'K';
+  return 'RM ' + Number(n||0).toLocaleString('en-MY', {minimumFractionDigits:0});
+}
+function getTotalField(r) {
+  for (const k of Object.keys(r)) {
+    const clean = k.replace(/[^A-Za-z]/g,'').toUpperCase();
+    if (clean === 'TOTALRM') return parseFloat(r[k]) || 0;
+  }
+  return 0;
+}
+async function loadSalesOverviewMembers() {
+  try {
+    const { data } = await supa.from('members').select('name, monthly_kpi, role').order('name');
+    salesMembers = (data || []).filter(m => (m.role || 'sales') === 'sales');
+  } catch(e) { console.error(e); }
+}
+async function loadSalesOverview() {
+  try {
+    const now = new Date();
+    const curYear = now.getFullYear(), curMonth = now.getMonth() + 1;
+    const mNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    document.getElementById('so-month-label').textContent = mNames[curMonth-1] + ' ' + curYear;
+    const res = await fetch(SALES_API);
+    const json = await res.json();
+    const allData = json.data || [];
+    const yearData = allData.filter(r => parseInt(r['YEAR']) === curYear);
+    const monthData = yearData.filter(r => parseInt(r['MONTH']) === curMonth);
+    const ytdTotal = yearData.reduce((s,r) => s+getTotalField(r), 0);
+    const monthTotal = monthData.reduce((s,r) => s+getTotalField(r), 0);
+    const teamMonthTarget = salesMembers.reduce((s,m) => s+(m.monthly_kpi||0), 0);
+    const monthGap = teamMonthTarget - monthTotal;
+    const monthPct = teamMonthTarget > 0 ? Math.round(monthTotal/teamMonthTarget*100) : 0;
+    const annualGap = ANNUAL_TARGET - ytdTotal;
+    const annualPct = Math.round(ytdTotal/ANNUAL_TARGET*100);
+    document.getElementById('so-month-val').textContent = fmtRMShort(monthTotal);
+    document.getElementById('so-month-pct').textContent = teamMonthTarget > 0 ? monthPct+'% of target' : 'No target set';
+    document.getElementById('so-month-bar').style.width = Math.min(monthPct,100)+'%';
+    const gapEl = document.getElementById('so-month-gap');
+    gapEl.textContent = monthGap <= 0 ? '🎉 Achieved!' : fmtRMShort(monthGap);
+    gapEl.className = 'so-val ' + (monthGap <= 0 ? 'green' : monthPct >= 70 ? 'amber' : 'red');
+    document.getElementById('so-month-target').textContent = teamMonthTarget > 0 ? 'Target: '+fmtRMShort(teamMonthTarget) : '';
+    document.getElementById('so-ytd-val').textContent = fmtRMShort(ytdTotal);
+    document.getElementById('so-ytd-pct').textContent = annualPct+'% of annual target';
+    document.getElementById('so-ytd-bar').style.width = Math.min(annualPct,100)+'%';
+    const annGapEl = document.getElementById('so-annual-gap');
+    annGapEl.textContent = annualGap <= 0 ? '🎉 Achieved!' : fmtRMShort(annualGap);
+    annGapEl.className = 'so-val ' + (annualGap <= 0 ? 'green' : annualPct >= 70 ? 'amber' : 'red');
+    const memberList = document.getElementById('so-members-list');
+    if (!salesMembers.length) { memberList.innerHTML = '<div style="color:var(--t3);font-size:13px;padding:10px">No sales members.</div>'; return; }
+    memberList.innerHTML = salesMembers.map(m => {
+      const mData = monthData.filter(r => (r['SALES PERSON']||'').trim() === m.name.trim());
+      const mTotal = mData.reduce((s,r) => s+getTotalField(r), 0);
+      const kpi = m.monthly_kpi || 0;
+      const pct = kpi > 0 ? Math.round(mTotal/kpi*100) : 0;
+      const gap = kpi - mTotal;
+      const barColor = pct >= 100 ? 'var(--green)' : pct >= 70 ? 'var(--amber)' : 'var(--red)';
+      return '<div class="so-member-row">'
+        + '<div class="so-member-name">'+m.name+'</div>'
+        + '<div class="so-member-bar-wrap"><div class="so-member-bar-bg"><div class="so-member-bar-fill" style="width:'+Math.min(pct,100)+'%;background:'+barColor+'"></div></div>'
+        + '<div style="font-size:10px;color:var(--t3);margin-top:2px">'+pct+'%'+(kpi>0?' of '+fmtRMShort(kpi):' (no target)')+'</div></div>'
+        + '<div class="so-member-amount">'+fmtRMShort(mTotal)+'</div>'
+        + '<div class="so-member-gap" style="color:'+(gap<=0?'var(--green)':gap/kpi>0.5?'var(--red)':'var(--amber)')+'">'+( kpi>0?(gap<=0?'✅ Met':'▼ '+fmtRMShort(gap)):'—')+'</div>'
+        + '</div>';
+    }).join('');
+    document.getElementById('so-loading').textContent = '';
+  } catch(e) {
+    console.error(e);
+    document.getElementById('so-loading').textContent = 'Failed to load';
+  }
+}
+
+</script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -83,6 +161,30 @@ body{background:var(--bg);color:var(--t1);font-family:var(--font);min-height:100
 .footer-r{font-size:11px;color:var(--t3);font-family:var(--mono);}
 
 .app-hidden{display:none;}
+
+  /* Sales Overview */
+  .so-wrap{background:white;border:1px solid var(--b1);border-radius:14px;padding:20px;margin-bottom:28px;display:none;}
+  .so-title{font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:14px;display:flex;align-items:center;gap:8px;}
+  .so-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:16px;}
+  @media(min-width:600px){.so-grid{grid-template-columns:repeat(4,1fr);}}
+  .so-card{background:#f9fafb;border-radius:10px;padding:14px;}
+  .so-label{font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:0.04em;margin-bottom:4px;}
+  .so-val{font-size:20px;font-weight:900;line-height:1.1;}
+  .so-val.green{color:var(--green);}
+  .so-val.blue{color:var(--blue);}
+  .so-val.red{color:var(--red);}
+  .so-val.amber{color:var(--amber);}
+  .so-sub{font-size:11px;color:var(--t3);margin-top:3px;}
+  .so-bar-wrap{height:6px;background:var(--b1);border-radius:3px;margin-top:6px;overflow:hidden;}
+  .so-bar{height:100%;border-radius:3px;transition:width 0.6s;}
+  .so-member-row{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--b1);flex-wrap:wrap;}
+  .so-member-row:last-child{border-bottom:none;}
+  .so-member-name{font-size:13px;font-weight:700;min-width:80px;}
+  .so-member-bar-wrap{flex:1;min-width:100px;}
+  .so-member-bar-bg{height:8px;background:var(--b1);border-radius:4px;overflow:hidden;}
+  .so-member-bar-fill{height:100%;border-radius:4px;transition:width 0.6s;}
+  .so-member-amount{font-size:13px;font-weight:700;color:var(--green);text-align:right;min-width:80px;}
+  .so-member-gap{font-size:11px;min-width:90px;text-align:right;}
 </style>
 </head>
 <body>
@@ -133,6 +235,39 @@ body{background:var(--bg);color:var(--t1);font-family:var(--font);min-height:100
     <div class="stat"><div class="stat-label">This Month</div><div class="stat-val" id="s-month">—</div><div class="stat-sub" id="s-month-sub">Loading…</div></div>
     <div class="stat"><div class="stat-label">YTD Total</div><div class="stat-val" id="s-year">—</div><div class="stat-sub">2026 cumulative</div></div>
     <div class="stat"><div class="stat-label">Gap to Target</div><div class="stat-val" id="s-gap">—</div><div class="stat-sub" id="s-gap-sub">Loading…</div></div>
+  </div>
+
+  <!-- SALES OVERVIEW (HQ only) -->
+  <div class="so-wrap" id="sales-overview">
+    <div class="so-title">📊 Team Sales — <span id="so-month-label">—</span>
+      <span style="margin-left:auto;font-size:11px;font-weight:400" id="so-loading">Loading…</span>
+    </div>
+    <div class="so-grid">
+      <div class="so-card">
+        <div class="so-label">This Month</div>
+        <div class="so-val green" id="so-month-val">—</div>
+        <div class="so-sub" id="so-month-pct">—</div>
+        <div class="so-bar-wrap"><div class="so-bar" id="so-month-bar" style="width:0%;background:var(--green)"></div></div>
+      </div>
+      <div class="so-card">
+        <div class="so-label">Gap to Month Target</div>
+        <div class="so-val red" id="so-month-gap">—</div>
+        <div class="so-sub" id="so-month-target">—</div>
+      </div>
+      <div class="so-card">
+        <div class="so-label">YTD Total</div>
+        <div class="so-val blue" id="so-ytd-val">—</div>
+        <div class="so-sub" id="so-ytd-pct">—</div>
+        <div class="so-bar-wrap"><div class="so-bar" id="so-ytd-bar" style="width:0%;background:var(--blue)"></div></div>
+      </div>
+      <div class="so-card">
+        <div class="so-label">Gap to Annual Target</div>
+        <div class="so-val red" id="so-annual-gap">—</div>
+        <div class="so-sub">Target: RM 6,000,000</div>
+      </div>
+    </div>
+    <div style="font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:10px">👤 Individual — This Month</div>
+    <div id="so-members-list"><div style="text-align:center;padding:10px;color:var(--t3);font-size:13px">Loading…</div></div>
   </div>
 
   <div class="sec">
