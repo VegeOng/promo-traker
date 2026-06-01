@@ -411,6 +411,24 @@ let approverVerified = false;
 let recordsVerified = false;
 
 // ── URL param: direct approve link
+// ── Role-based tab visibility ──
+function lsGet(key) {
+  const raw = localStorage.getItem(key);
+  if (!raw) return null;
+  try {
+    const item = JSON.parse(raw);
+    if (Date.now() > item.expiry) { localStorage.removeItem(key); return null; }
+    return item.value;
+  } catch { return null; }
+}
+const userRole = lsGet('userRole');
+if (userRole !== 'hq') {
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    if (btn.textContent.includes('Approval') || btn.textContent.includes('All Records')) {
+      btn.style.display = 'none';
+    }
+  });
+}
 const urlParams = new URLSearchParams(location.search);
 const approveId = urlParams.get('approve');
 
