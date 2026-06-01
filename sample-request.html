@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="zh-MY">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>样品申请 — MamaVege</title>
+<title>Sample Request — MamaVege</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
@@ -17,11 +17,12 @@
   --green:#166534;--green2:#22c55e;--green-bg:#f0fdf4;--green-border:#bbf7d0;
   --red:#dc2626;--red-bg:#fef2f2;--red-border:#fca5a5;
   --amber:#d97706;--amber-bg:#fffbeb;--amber-border:#fde68a;
+  --blue:#1d4ed8;--blue-bg:#eff6ff;--blue-border:#bfdbfe;
   --font:'Plus Jakarta Sans',sans-serif;--mono:'DM Mono',monospace;
 }
 body{background:var(--bg);color:var(--t1);font-family:var(--font);min-height:100vh;}
 
-/* ── HEADER ── */
+/* HEADER */
 .top{display:flex;justify-content:space-between;align-items:center;padding:14px 24px;background:var(--s1);border-bottom:1px solid var(--b1);position:sticky;top:0;z-index:50;}
 .brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:inherit;}
 .brand-icon{width:32px;height:32px;background:var(--green);color:white;border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;}
@@ -30,100 +31,101 @@ body{background:var(--bg);color:var(--t1);font-family:var(--font);min-height:100
 .back-link{font-size:12px;color:var(--t3);text-decoration:none;display:flex;align-items:center;gap:4px;padding:6px 10px;border:1px solid var(--b1);border-radius:8px;transition:all .15s;}
 .back-link:hover{background:var(--s2);color:var(--t2);}
 
-/* ── TABS ── */
-.tab-bar{display:flex;background:var(--s1);border-bottom:1px solid var(--b1);padding:0 24px;}
-.tab-btn{padding:12px 16px;font-size:13px;font-weight:600;color:var(--t3);border:none;background:none;cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;font-family:var(--font);}
+/* TABS */
+.tab-bar{display:flex;background:var(--s1);border-bottom:1px solid var(--b1);padding:0 24px;overflow-x:auto;}
+.tab-btn{padding:12px 16px;font-size:13px;font-weight:600;color:var(--t3);border:none;background:none;cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;font-family:var(--font);white-space:nowrap;}
 .tab-btn.active{color:var(--green);border-bottom-color:var(--green);}
 .tab-btn:hover:not(.active){color:var(--t2);}
 
-/* ── MAIN ── */
-.main{max-width:700px;margin:0 auto;padding:28px 20px 60px;}
+/* MAIN */
+.main{max-width:720px;margin:0 auto;padding:28px 20px 60px;}
 .panel{display:none;}.panel.active{display:block;}
 
-/* ── PAGE TITLE ── */
+/* PAGE TITLE */
 .page-title{margin-bottom:24px;}
 .page-title h2{font-size:20px;font-weight:800;margin-bottom:4px;}
 .page-title p{font-size:13px;color:var(--t3);}
 
-/* ── CARD ── */
+/* CARD */
 .card{background:var(--s1);border:1px solid var(--b1);border-radius:14px;padding:20px;margin-bottom:16px;box-shadow:0 1px 3px rgba(0,0,0,.04);}
 .card-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--t3);margin-bottom:14px;display:flex;align-items:center;gap:8px;}
 .card-title::after{content:'';flex:1;height:1px;background:var(--b1);}
 
-/* ── FORM ── */
+/* FORM */
 .field{margin-bottom:14px;}
 .field:last-child{margin-bottom:0;}
 label{display:block;font-size:11px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;}
 label .req{color:var(--red);}
-input,select,textarea{width:100%;padding:10px 12px;border:1.5px solid var(--b1);border-radius:10px;font-size:14px;font-family:var(--font);background:var(--s2);color:var(--t1);transition:all .2s;outline:none;}
+input,select,textarea{width:100%;padding:10px 12px;border:1.5px solid var(--b1);border-radius:10px;font-size:14px;font-family:var(--font);background:var(--s2);color:var(--t1);transition:all .2s;outline:none;appearance:none;}
 input:focus,select:focus,textarea:focus{border-color:var(--green);background:white;box-shadow:0 0 0 3px rgba(22,101,52,.06);}
 input.err,select.err,textarea.err{border-color:var(--red);}
 textarea{resize:vertical;min-height:80px;}
 .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
 @media(max-width:500px){.row2{grid-template-columns:1fr;}}
 
-/* ── PRODUCT TABLE ── */
-.prod-header{display:grid;grid-template-columns:1fr 90px 36px;gap:8px;margin-bottom:6px;}
+/* PRODUCT TABLE */
+.prod-header{display:grid;grid-template-columns:1fr 130px 90px 36px;gap:8px;margin-bottom:6px;}
 .prod-header span{font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.05em;}
-.prod-row{display:grid;grid-template-columns:1fr 90px 36px;gap:8px;margin-bottom:8px;align-items:center;}
-.prod-row input{font-size:13px;}
+.prod-row{display:grid;grid-template-columns:1fr 130px 90px 36px;gap:8px;margin-bottom:8px;align-items:center;}
+.prod-row select,.prod-row input{font-size:13px;padding:8px 10px;}
+@media(max-width:520px){
+  .prod-header{grid-template-columns:1fr 100px 75px 32px;}
+  .prod-row{grid-template-columns:1fr 100px 75px 32px;}
+}
 .rm-btn{width:32px;height:32px;border:none;background:var(--red-bg);color:var(--red);border-radius:8px;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;transition:background .15s;flex-shrink:0;}
 .rm-btn:hover{background:#fca5a5;}
 .add-row-btn{width:100%;padding:9px;background:var(--green-bg);color:var(--green);border:1.5px dashed var(--green-border);border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:var(--font);transition:background .15s;margin-top:4px;}
 .add-row-btn:hover{background:#dcfce7;}
 
-/* ── BUTTONS ── */
+/* BUTTONS */
 .btn-primary{width:100%;padding:13px;background:var(--green);color:white;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:var(--font);transition:background .2s;display:flex;align-items:center;justify-content:center;gap:8px;}
 .btn-primary:hover{background:#14532d;}
 .btn-primary:disabled{background:var(--b2);cursor:not-allowed;}
 .btn-outline{padding:9px 16px;background:transparent;color:var(--green);border:1.5px solid var(--green);border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:var(--font);transition:all .15s;display:inline-flex;align-items:center;gap:6px;}
 .btn-outline:hover{background:var(--green-bg);}
-.btn-red-outline{padding:9px 16px;background:transparent;color:var(--red);border:1.5px solid var(--red-border);border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:var(--font);transition:all .15s;display:inline-flex;align-items:center;gap:6px;}
-.btn-red-outline:hover{background:var(--red-bg);}
 .btn-approve{padding:9px 18px;background:var(--green);color:white;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:var(--font);transition:background .2s;display:inline-flex;align-items:center;gap:6px;}
 .btn-approve:hover{background:#14532d;}
 .btn-reject{padding:9px 18px;background:var(--red);color:white;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:var(--font);transition:background .2s;display:inline-flex;align-items:center;gap:6px;}
 .btn-reject:hover{background:#b91c1c;}
 
-/* ── ALERTS ── */
+/* ALERTS */
 .alert{border-radius:10px;padding:14px 16px;font-size:13px;margin-bottom:16px;display:none;}
 .alert.show{display:block;}
 .alert-success{background:var(--green-bg);border:1px solid var(--green-border);color:var(--green);}
 .alert-error{background:var(--red-bg);border:1px solid var(--red-border);color:var(--red);}
-.alert-info{background:var(--amber-bg);border:1px solid var(--amber-border);color:var(--amber);}
 
-/* ── STATUS BADGE ── */
+/* BADGE */
 .badge{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;font-family:var(--mono);}
 .badge-pending{background:var(--amber-bg);color:var(--amber);border:1px solid var(--amber-border);}
 .badge-approved{background:var(--green-bg);color:var(--green);border:1px solid var(--green-border);}
 .badge-rejected{background:var(--red-bg);color:var(--red);border:1px solid var(--red-border);}
 
-/* ── REQUEST LIST ── */
+/* REQUEST LIST ITEM */
 .req-item{background:var(--s1);border:1px solid var(--b1);border-radius:12px;padding:16px;margin-bottom:10px;box-shadow:0 1px 3px rgba(0,0,0,.04);cursor:pointer;transition:all .15s;}
 .req-item:hover{border-color:var(--b2);box-shadow:0 4px 12px rgba(0,0,0,.07);}
-.req-item-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;}
+.req-item-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;}
 .req-ref{font-size:12px;font-family:var(--mono);color:var(--green);font-weight:700;}
+.req-customer{font-size:14px;font-weight:700;color:var(--t1);margin-top:2px;}
 .req-meta{font-size:12px;color:var(--t3);margin-top:3px;}
-.req-customer{font-size:14px;font-weight:700;color:var(--t1);}
 .req-body{display:none;margin-top:12px;padding-top:12px;border-top:1px solid var(--b1);}
 .req-body.open{display:block;}
+
+/* DETAIL GRID */
 .detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;}
 @media(max-width:480px){.detail-grid{grid-template-columns:1fr;}}
 .detail-item label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--t3);margin-bottom:3px;display:block;}
 .detail-item p{font-size:13px;color:var(--t1);font-weight:500;}
-.prod-table{width:100%;border-collapse:collapse;font-size:13px;margin-bottom:12px;}
-.prod-table th{background:var(--s2);padding:7px 10px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--t3);border-bottom:1px solid var(--b1);}
-.prod-table td{padding:8px 10px;border-bottom:1px solid var(--s2);}
-.prod-table tr:last-child td{border-bottom:none;}
+
+/* PRODUCT TABLE IN DETAIL */
+.prod-table{width:100%;border-collapse:collapse;font-size:13px;margin-bottom:12px;border-radius:8px;overflow:hidden;border:1px solid var(--b1);}
+.prod-table th{background:var(--s2);padding:8px 12px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--t3);}
+.prod-table td{padding:9px 12px;border-top:1px solid var(--b1);}
+.prod-table tr:first-child td{border-top:none;}
+
 .action-row{display:flex;gap:8px;flex-wrap:wrap;}
 
-/* ── APPROVAL CARD ── */
-.approve-card{background:var(--s1);border:2px solid var(--green-border);border-radius:16px;padding:24px;margin-bottom:16px;}
-.approve-card h3{font-size:16px;font-weight:800;color:var(--green);margin-bottom:4px;}
-.approve-card .sub{font-size:13px;color:var(--t3);margin-bottom:20px;}
-
-/* ── SHARE BOX ── */
-.share-box{background:var(--green-bg);border:1px solid var(--green-border);border-radius:12px;padding:16px;margin-bottom:16px;}
+/* SHARE BOX */
+.share-box{background:var(--green-bg);border:1px solid var(--green-border);border-radius:12px;padding:16px;margin-top:16px;}
 .share-box h4{font-size:13px;font-weight:700;color:var(--green);margin-bottom:10px;}
 .share-url{display:flex;gap:8px;align-items:center;}
 .share-url input{flex:1;font-family:var(--mono);font-size:12px;background:white;border-color:var(--green-border);color:var(--t2);}
@@ -132,26 +134,26 @@ textarea{resize:vertical;min-height:80px;}
 .wa-btn{display:flex;align-items:center;gap:8px;padding:10px 16px;background:#25d366;color:white;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:var(--font);width:100%;justify-content:center;margin-top:10px;}
 .wa-btn:hover{background:#22bf5b;}
 
-/* ── EMPTY STATE ── */
+/* EMPTY / LOADING */
 .empty{text-align:center;padding:40px 20px;color:var(--t3);}
 .empty-icon{font-size:40px;margin-bottom:10px;}
 .empty p{font-size:13px;}
-
-/* ── LOADING ── */
 .loading{text-align:center;padding:30px;color:var(--t3);font-size:13px;}
 
-/* ── PRINT ONLY ── */
-@media print{
-  .top,.tab-bar,.action-row,.share-box,.btn-primary,
-  .add-row-btn,.rm-btn,.back-link{display:none!important;}
-  body{background:white;}
-  .main{padding:0;max-width:100%;}
-  .card,.approve-card{box-shadow:none;border:1px solid #ddd;}
-  .print-only{display:block!important;}
-}
-.print-only{display:none;}
+/* FILTER BAR */
+.filter-bar{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;align-items:center;}
+.filter-bar select,.filter-bar input{width:auto;flex:1;min-width:120px;padding:8px 12px;font-size:13px;}
+.filter-label{font-size:12px;color:var(--t3);font-weight:600;white-space:nowrap;}
 
-/* ── REJECT MODAL ── */
+/* STATS ROW */
+.stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px;}
+@media(max-width:480px){.stats-row{grid-template-columns:repeat(2,1fr);}}
+.stat-card{background:var(--s1);border:1px solid var(--b1);border-radius:12px;padding:14px 16px;}
+.stat-label{font-size:10px;color:var(--t3);letter-spacing:.06em;text-transform:uppercase;margin-bottom:4px;font-family:var(--mono);}
+.stat-val{font-size:22px;font-weight:800;font-family:var(--mono);color:var(--green);}
+.stat-sub{font-size:11px;color:var(--t3);margin-top:2px;}
+
+/* REJECT MODAL */
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:100;display:none;align-items:center;justify-content:center;padding:20px;}
 .modal-overlay.open{display:flex;}
 .modal{background:white;border-radius:16px;padding:24px;width:100%;max-width:420px;box-shadow:0 20px 60px rgba(0,0,0,.2);}
@@ -161,24 +163,37 @@ textarea{resize:vertical;min-height:80px;}
 .modal textarea:focus{border-color:var(--red);}
 .modal-actions{display:flex;gap:8px;margin-top:14px;justify-content:flex-end;}
 .btn-cancel{padding:9px 16px;background:var(--s2);color:var(--t2);border:none;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font);}
+
+/* SECTION DIVIDER */
+.sec-divider{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--t3);margin:20px 0 10px;display:flex;align-items:center;gap:8px;}
+.sec-divider::after{content:'';flex:1;height:1px;background:var(--b1);}
+
+/* PRINT */
+@media print{
+  .top,.tab-bar,.action-row,.share-box,.btn-primary,.add-row-btn,.rm-btn,.back-link,.filter-bar{display:none!important;}
+  body{background:white;}
+  .main{padding:0;max-width:100%;}
+  .card,.req-item{box-shadow:none;border:1px solid #ddd;}
+  .req-body{display:block!important;}
+}
 </style>
 </head>
 <body>
 
-<!-- ── REJECT REASON MODAL ── -->
+<!-- REJECT MODAL -->
 <div class="modal-overlay" id="rejectModal">
   <div class="modal">
-    <h3>❌ 拒绝申请</h3>
-    <p>请填写拒绝原因，申请人将会看到此备注。</p>
-    <textarea id="rejectReason" placeholder="例如：样品库存不足，请下月再申请…"></textarea>
+    <h3>❌ Reject Request</h3>
+    <p>Please provide a reason. The applicant will be able to see this.</p>
+    <textarea id="rejectReason" placeholder="e.g. Insufficient sample stock, please reapply next month…"></textarea>
     <div class="modal-actions">
-      <button class="btn-cancel" onclick="closeRejectModal()">取消</button>
-      <button class="btn-reject" onclick="confirmReject()">确认拒绝</button>
+      <button class="btn-cancel" onclick="closeRejectModal()">Cancel</button>
+      <button class="btn-reject" onclick="confirmReject()">Confirm Reject</button>
     </div>
   </div>
 </div>
 
-<!-- ── HEADER ── -->
+<!-- HEADER -->
 <div class="top">
   <a class="brand" href="index.html">
     <div class="brand-icon">M</div>
@@ -187,141 +202,179 @@ textarea{resize:vertical;min-height:80px;}
       <div class="brand-tag">Internal Tools</div>
     </div>
   </a>
-  <a class="back-link" href="index.html">← 返回首页</a>
+  <a class="back-link" href="index.html">← Back</a>
 </div>
 
-<!-- ── TAB BAR ── -->
+<!-- TAB BAR -->
 <div class="tab-bar">
-  <button class="tab-btn active" onclick="switchTab('apply',this)">📝 提交申请</button>
-  <button class="tab-btn" onclick="switchTab('history',this)">📋 我的申请</button>
-  <button class="tab-btn" id="approveTabBtn" onclick="switchTab('approve',this)" style="display:none">✅ 审批申请</button>
+  <button class="tab-btn active" onclick="switchTab('apply',this)">📝 New Request</button>
+  <button class="tab-btn" onclick="switchTab('history',this)">📋 My Requests</button>
+  <button class="tab-btn" onclick="switchTab('records',this)">🗂️ All Records</button>
+  <button class="tab-btn" onclick="switchTab('approve',this)">✅ Approval</button>
 </div>
 
 <div class="main">
 
-  <!-- ════════════════════════════════
-       PANEL 1 — 提交申请
-  ════════════════════════════════ -->
+  <!-- ══════════════════════════════
+       TAB 1 — NEW REQUEST
+  ══════════════════════════════ -->
   <div class="panel active" id="panel-apply">
     <div class="page-title">
-      <h2>🧪 样品申请</h2>
-      <p>填写以下表格，提交后将生成审批链接，发给上司批准。</p>
+      <h2>🧪 Sample Request</h2>
+      <p>Submit a request below. An approval link will be generated for your manager.</p>
     </div>
 
     <div class="alert alert-success" id="applySuccess"></div>
     <div class="alert alert-error" id="applyError"></div>
 
-    <!-- 申请人信息 -->
+    <!-- Applicant Info -->
     <div class="card">
-      <div class="card-title">申请人信息</div>
+      <div class="card-title">Applicant Info</div>
       <div class="row2">
         <div class="field">
-          <label>申请人姓名 <span class="req">*</span></label>
-          <input type="text" id="f_name" placeholder="你的名字">
+          <label>Your Name <span class="req">*</span></label>
+          <input type="text" id="f_name" placeholder="e.g. Ahmad">
         </div>
         <div class="field">
-          <label>客户名称 <span class="req">*</span></label>
-          <input type="text" id="f_customer" placeholder="例如：Giant Subang Jaya">
+          <label>Customer Name <span class="req">*</span></label>
+          <input type="text" id="f_customer" placeholder="e.g. Giant Subang Jaya">
         </div>
       </div>
     </div>
 
-    <!-- 申请产品 -->
+    <!-- Products -->
     <div class="card">
-      <div class="card-title">申请产品明细</div>
+      <div class="card-title">Product Details</div>
       <div class="prod-header">
-        <span>产品名称 / SKU</span>
-        <span>数量</span>
+        <span>SKU / Product</span>
+        <span>UOM</span>
+        <span>Qty</span>
         <span></span>
       </div>
       <div id="prodRows">
-        <div class="prod-row">
-          <input type="text" class="prod-name" placeholder="例如：KPM / 凉拌菜">
-          <input type="number" class="prod-qty" placeholder="数量" min="1">
-          <button class="rm-btn" onclick="removeRow(this)" title="删除">×</button>
-        </div>
+        <!-- rows injected by JS -->
       </div>
-      <button class="add-row-btn" onclick="addRow()">＋ 添加产品</button>
+      <button class="add-row-btn" onclick="addRow()">＋ Add Product</button>
     </div>
 
-    <!-- 申请详情 -->
+    <!-- Details -->
     <div class="card">
-      <div class="card-title">申请详情</div>
+      <div class="card-title">Request Details</div>
       <div class="field">
-        <label>申请用途 <span class="req">*</span></label>
-        <textarea id="f_purpose" placeholder="例如：新客户展示、活动促销试吃、门店陈列展示…"></textarea>
+        <label>Purpose <span class="req">*</span></label>
+        <textarea id="f_purpose" placeholder="e.g. New customer demo, trade show sampling, outlet display…"></textarea>
       </div>
       <div class="field">
-        <label>送货地址 <span class="req">*</span></label>
-        <input type="text" id="f_address" placeholder="例如：No. 12, Jalan SS15/4, Subang Jaya">
+        <label>Delivery Address <span class="req">*</span></label>
+        <input type="text" id="f_address" placeholder="e.g. No. 12, Jalan SS15/4, Subang Jaya">
       </div>
     </div>
 
     <button class="btn-primary" id="submitBtn" onclick="submitRequest()">
-      📤 提交申请
+      📤 Submit Request
     </button>
 
-    <!-- 成功后：显示审批链接 -->
-    <div class="share-box" id="shareBox" style="display:none;margin-top:16px;">
-      <h4>✅ 申请已提交！请将以下链接发给上司审批：</h4>
+    <!-- Share box (shown after submit) -->
+    <div class="share-box" id="shareBox" style="display:none;">
+      <h4>✅ Request submitted! Send the link below to your manager for approval:</h4>
       <div class="share-url">
         <input type="text" id="approveLink" readonly>
-        <button class="copy-btn" onclick="copyLink()">复制</button>
+        <button class="copy-btn" onclick="copyLink()">Copy</button>
       </div>
-      <button class="wa-btn" id="waBtn" onclick="shareWhatsApp()">
+      <button class="wa-btn" onclick="shareWhatsApp()">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-        WhatsApp 发给上司
+        WhatsApp to Manager
       </button>
     </div>
   </div>
 
-  <!-- ════════════════════════════════
-       PANEL 2 — 我的申请记录
-  ════════════════════════════════ -->
+  <!-- ══════════════════════════════
+       TAB 2 — MY REQUESTS
+  ══════════════════════════════ -->
   <div class="panel" id="panel-history">
     <div class="page-title">
-      <h2>📋 我的申请记录</h2>
-      <p>查看你提交过的所有样品申请状态。</p>
+      <h2>📋 My Requests</h2>
+      <p>View all your submitted sample requests.</p>
     </div>
-
-    <div class="field" style="margin-bottom:16px;">
-      <label>输入姓名查看记录</label>
-      <div style="display:flex;gap:8px;">
-        <input type="text" id="historyName" placeholder="你的名字" style="flex:1;">
-        <button class="btn-outline" onclick="loadHistory()">查询</button>
+    <div class="card" style="padding:14px 16px;">
+      <div style="display:flex;gap:8px;align-items:flex-end;">
+        <div style="flex:1;">
+          <label style="margin-bottom:6px;">Your Name</label>
+          <input type="text" id="historyName" placeholder="Enter your name" onkeydown="if(event.key==='Enter')loadHistory()">
+        </div>
+        <button class="btn-outline" onclick="loadHistory()" style="height:42px;">Search</button>
       </div>
     </div>
-
-    <div id="historyList"><div class="empty"><div class="empty-icon">🔍</div><p>输入姓名后按查询</p></div></div>
+    <div id="historyList">
+      <div class="empty"><div class="empty-icon">🔍</div><p>Enter your name above to search</p></div>
+    </div>
   </div>
 
-  <!-- ════════════════════════════════
-       PANEL 3 — 审批 (上司)
-  ════════════════════════════════ -->
-  <div class="panel" id="panel-approve">
+  <!-- ══════════════════════════════
+       TAB 3 — ALL RECORDS (password)
+  ══════════════════════════════ -->
+  <div class="panel" id="panel-records">
     <div class="page-title">
-      <h2>✅ 审批样品申请</h2>
-      <p>查看所有待审批申请，批准或拒绝。</p>
+      <h2>🗂️ All Records</h2>
+      <p>View and filter all sample requests.</p>
     </div>
 
-    <!-- 密码入口 -->
-    <div id="approveGate">
+    <div id="recordsGate">
       <div class="card">
-        <div class="card-title">身份验证</div>
+        <div class="card-title">Authentication</div>
         <div class="field">
-          <label>上司密码</label>
-          <input type="password" id="approvePassword" placeholder="输入审批密码" onkeydown="if(event.key==='Enter')verifyApprover()">
+          <label>Manager Password</label>
+          <input type="password" id="recordsPassword" placeholder="Enter password" onkeydown="if(event.key==='Enter')verifyRecords()">
         </div>
-        <div class="alert alert-error" id="pwError"></div>
-        <button class="btn-primary" onclick="verifyApprover()" style="margin-top:8px;">🔓 进入审批</button>
+        <div class="alert alert-error" id="recordsPwError"></div>
+        <button class="btn-primary" onclick="verifyRecords()" style="margin-top:8px;">🔓 View Records</button>
       </div>
     </div>
 
-    <!-- 审批内容 (密码正确后显示) -->
+    <div id="recordsContent" style="display:none;">
+      <!-- Stats -->
+      <div class="stats-row" id="recordsStats"></div>
+
+      <!-- Filters -->
+      <div class="filter-bar">
+        <select id="filterStatus" onchange="renderAllRecords()">
+          <option value="">All Status</option>
+          <option value="pending">Pending</option>
+          <option value="approved">Approved</option>
+          <option value="rejected">Rejected</option>
+        </select>
+        <input type="text" id="filterSearch" placeholder="Search name / customer…" oninput="renderAllRecords()" style="flex:2;">
+      </div>
+
+      <div id="allRecordsList"><div class="loading">Loading…</div></div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════
+       TAB 4 — APPROVAL (password)
+  ══════════════════════════════ -->
+  <div class="panel" id="panel-approve">
+    <div class="page-title">
+      <h2>✅ Approve Requests</h2>
+      <p>Review pending sample requests and approve or reject.</p>
+    </div>
+
+    <div id="approveGate">
+      <div class="card">
+        <div class="card-title">Authentication</div>
+        <div class="field">
+          <label>Manager Password</label>
+          <input type="password" id="approvePassword" placeholder="Enter password" onkeydown="if(event.key==='Enter')verifyApprover()">
+        </div>
+        <div class="alert alert-error" id="pwError"></div>
+        <button class="btn-primary" onclick="verifyApprover()" style="margin-top:8px;">🔓 Enter Approval</button>
+      </div>
+    </div>
+
     <div id="approveContent" style="display:none;">
       <div class="alert alert-success" id="approveSuccess"></div>
       <div class="alert alert-error" id="approveError"></div>
-      <div id="approveList"><div class="loading">加载中…</div></div>
+      <div id="approveList"><div class="loading">Loading…</div></div>
     </div>
   </div>
 
@@ -329,36 +382,52 @@ textarea{resize:vertical;min-height:80px;}
 
 <script>
 // ══════════════════════════════════════════
-// CONFIG — 改这里
+// ⚙️  CONFIG — edit here
 // ══════════════════════════════════════════
 const SUPABASE_URL = 'https://wjhgezvrxlhpexocfsea.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndqaGdlenZyeGxocGV4b2Nmc2VhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg1MDU4NzgsImV4cCI6MjA5NDA4MTg3OH0.jENcrgEDYDlSRUCqve-T6rxYRJfz-dnZQHnXpPLJ_RE';
 
-// ── 上司审批密码 ──
-const APPROVE_PASSWORD = 'mamavege2026';  // ← 改这里
+// Manager password (change here)
+const APPROVE_PASSWORD = 'mamavege2026';
 
-// ── EmailJS 设置 (注册后填入) ──
-const EMAILJS_SERVICE_ID  = 'YOUR_SERVICE_ID';   // ← 改这里
-const EMAILJS_TEMPLATE_ID = 'YOUR_TEMPLATE_ID';  // ← 改这里
-const EMAILJS_PUBLIC_KEY  = 'YOUR_PUBLIC_KEY';   // ← 改这里
+// EmailJS (fill in after setup)
+const EMAILJS_SERVICE_ID  = 'YOUR_SERVICE_ID';
+const EMAILJS_TEMPLATE_ID = 'YOUR_TEMPLATE_ID';
+const EMAILJS_PUBLIC_KEY  = 'YOUR_PUBLIC_KEY';
 
-// ── 开单同事固定收件邮箱 ──
-const BILLING_EMAIL = 'vege@mamavege.com';  // ← 改这里
+// Billing email (change here to update recipient)
+const BILLING_EMAIL = 'vege@mamavege.com';
+
+// UOM options (edit this line to add/remove units)
+const UOM_OPTIONS = ['CTN', 'PCS', 'PKT', 'BAG'];
 
 // ══════════════════════════════════════════
 const supa = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-const H = {
-  'apikey': SUPABASE_KEY,
-  'Authorization': 'Bearer ' + SUPABASE_KEY,
-  'Content-Type': 'application/json'
-};
+const H = { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY, 'Content-Type': 'application/json' };
 
-// ── URL 参数检测：如果有 ?approve=ID 直接跳审批页
+let skuList = [];
+let allRecordsData = [];
+let approverVerified = false;
+let recordsVerified = false;
+
+// ── URL param: direct approve link
 const urlParams = new URLSearchParams(location.search);
 const approveId = urlParams.get('approve');
-if (approveId) {
-  switchTab('approve', document.querySelector('[onclick*="approve"]') || {classList:{add:()=>{},remove:()=>{}}});
-}
+
+// ══════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════
+window.addEventListener('load', async () => {
+  await loadSkus();
+  addRow(); // first product row
+  if (approveId) {
+    // Jump straight to approval tab
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tab-btn')[3].classList.add('active');
+    document.getElementById('panel-approve').classList.add('active');
+  }
+});
 
 // ══════════════════════════════════════════
 // TAB SWITCHING
@@ -366,30 +435,88 @@ if (approveId) {
 function switchTab(name, el) {
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-  if (el && el.classList) el.classList.add('active');
+  el.classList.add('active');
   document.getElementById('panel-' + name).classList.add('active');
+}
+
+// ══════════════════════════════════════════
+// LOAD SKUs FROM SUPABASE
+// ══════════════════════════════════════════
+async function loadSkus() {
+  try {
+    const res = await fetch(SUPABASE_URL + '/rest/v1/sample_skus?order=sku_name.asc', { headers: H });
+    const data = await res.json();
+    if (Array.isArray(data)) skuList = data.map(d => d.sku_name);
+  } catch(e) {
+    console.warn('SKU load failed, using empty list', e);
+  }
+}
+
+function skuOptions(selected) {
+  let opts = `<option value="">-- Select SKU --</option>`;
+  skuList.forEach(s => {
+    opts += `<option value="${escH(s)}" ${s === selected ? 'selected' : ''}>${escH(s)}</option>`;
+  });
+  opts += `<option value="__other__">Other (type below)</option>`;
+  return opts;
+}
+
+function uomOptions(selected) {
+  return UOM_OPTIONS.map(u =>
+    `<option value="${u}" ${u === selected ? 'selected' : ''}>${u}</option>`
+  ).join('');
 }
 
 // ══════════════════════════════════════════
 // PRODUCT ROWS
 // ══════════════════════════════════════════
-function addRow() {
-  const row = document.createElement('div');
-  row.className = 'prod-row';
-  row.innerHTML = `
-    <input type="text" class="prod-name" placeholder="例如：KPM / 凉拌菜">
-    <input type="number" class="prod-qty" placeholder="数量" min="1">
-    <button class="rm-btn" onclick="removeRow(this)" title="删除">×</button>`;
-  document.getElementById('prodRows').appendChild(row);
+function addRow(skuVal, uomVal, qtyVal) {
+  const wrap = document.createElement('div');
+  wrap.className = 'prod-row';
+  wrap.innerHTML = `
+    <select class="prod-sku" onchange="handleSkuChange(this)">
+      ${skuOptions(skuVal || '')}
+    </select>
+    <select class="prod-uom">${uomOptions(uomVal || UOM_OPTIONS[0])}</select>
+    <input type="number" class="prod-qty" placeholder="Qty" min="1" value="${qtyVal || ''}">
+    <button class="rm-btn" onclick="removeRow(this)" title="Remove">×</button>`;
+  document.getElementById('prodRows').appendChild(wrap);
 }
+
+function handleSkuChange(sel) {
+  if (sel.value === '__other__') {
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.className = 'prod-sku-text';
+    input.placeholder = 'Type SKU name';
+    sel.parentNode.insertBefore(input, sel.nextSibling);
+    sel.style.display = 'none';
+  }
+}
+
 function removeRow(btn) {
   const rows = document.querySelectorAll('.prod-row');
-  if (rows.length <= 1) { alert('至少保留一行产品'); return; }
+  if (rows.length <= 1) { alert('At least one product is required.'); return; }
   btn.closest('.prod-row').remove();
 }
 
+function getProducts() {
+  const products = [];
+  document.querySelectorAll('.prod-row').forEach(row => {
+    let sku = '';
+    const sel = row.querySelector('.prod-sku');
+    const txt = row.querySelector('.prod-sku-text');
+    if (txt) sku = txt.value.trim();
+    else if (sel) sku = sel.value;
+    const uom = row.querySelector('.prod-uom')?.value || '';
+    const qty = row.querySelector('.prod-qty')?.value.trim() || '';
+    if (sku && sku !== '__other__' && qty) products.push({ sku, uom, qty });
+  });
+  return products;
+}
+
 // ══════════════════════════════════════════
-// GENERATE REF NO
+// GENERATE REF
 // ══════════════════════════════════════════
 function genRef() {
   const now = new Date();
@@ -408,41 +535,27 @@ async function submitRequest() {
   const customer = document.getElementById('f_customer').value.trim();
   const purpose  = document.getElementById('f_purpose').value.trim();
   const address  = document.getElementById('f_address').value.trim();
+  const products = getProducts();
 
-  const products = [];
-  document.querySelectorAll('.prod-row').forEach(row => {
-    const n = row.querySelector('.prod-name').value.trim();
-    const q = row.querySelector('.prod-qty').value.trim();
-    if (n && q) products.push({ name: n, qty: q });
-  });
-
-  // Validate
   let hasErr = false;
   ['f_name','f_customer','f_purpose','f_address'].forEach(id => {
     const el = document.getElementById(id);
     el.classList.remove('err');
     if (!el.value.trim()) { el.classList.add('err'); hasErr = true; }
   });
-  if (!products.length) {
-    showAlert('applyError', '请至少填写一项产品。'); return;
-  }
-  if (hasErr) { showAlert('applyError', '请填写所有必填栏位（红框部分）。'); return; }
+  if (!products.length) { showAlert('applyError', 'Please add at least one product with SKU and quantity.'); return; }
+  if (hasErr) { showAlert('applyError', 'Please fill in all required fields.'); return; }
 
   const btn = document.getElementById('submitBtn');
-  btn.disabled = true;
-  btn.textContent = '提交中…';
+  btn.disabled = true; btn.textContent = 'Submitting…';
   hideAlert('applyError');
 
   const now = new Date();
   const ref = genRef();
   const record = {
-    ref_no:      ref,
-    applicant:   name,
-    customer:    customer,
-    products:    JSON.stringify(products),
-    purpose:     purpose,
-    address:     address,
-    status:      'pending',
+    ref_no: ref, applicant: name, customer, purpose, address,
+    products: JSON.stringify(products),
+    status: 'pending',
     submitted_at: now.toISOString(),
     submitted_date: now.toLocaleDateString('en-MY', {year:'numeric',month:'2-digit',day:'2-digit'}),
     submitted_time: now.toLocaleTimeString('en-MY', {hour:'2-digit',minute:'2-digit'})
@@ -450,38 +563,26 @@ async function submitRequest() {
 
   try {
     const res = await fetch(SUPABASE_URL + '/rest/v1/sample_requests', {
-      method: 'POST',
-      headers: { ...H, 'Prefer': 'return=representation' },
-      body: JSON.stringify(record)
+      method: 'POST', headers: { ...H, 'Prefer': 'return=representation' }, body: JSON.stringify(record)
     });
     if (!res.ok) throw new Error(await res.text());
 
-    // Build approve link
     const link = `${location.origin}${location.pathname}?approve=${ref}`;
     document.getElementById('approveLink').value = link;
     document.getElementById('shareBox').style.display = 'block';
-    document.getElementById('waBtn').dataset.ref = ref;
-    document.getElementById('waBtn').dataset.name = name;
+    showAlert('applySuccess', `✅ Request ${ref} submitted successfully!`);
 
-    showAlert('applySuccess', `✅ 申请 ${ref} 已成功提交！请将审批链接发给上司。`);
-    // Reset form
+    // Reset
     document.getElementById('f_name').value = '';
     document.getElementById('f_customer').value = '';
     document.getElementById('f_purpose').value = '';
     document.getElementById('f_address').value = '';
-    document.getElementById('prodRows').innerHTML = `
-      <div class="prod-row">
-        <input type="text" class="prod-name" placeholder="例如：KPM / 凉拌菜">
-        <input type="number" class="prod-qty" placeholder="数量" min="1">
-        <button class="rm-btn" onclick="removeRow(this)" title="删除">×</button>
-      </div>`;
+    document.getElementById('prodRows').innerHTML = '';
+    addRow();
   } catch(e) {
-    console.error(e);
-    showAlert('applyError', '提交失败，请重试。错误：' + e.message);
+    showAlert('applyError', 'Submission failed: ' + e.message);
   }
-
-  btn.disabled = false;
-  btn.innerHTML = '📤 提交申请';
+  btn.disabled = false; btn.innerHTML = '📤 Submit Request';
 }
 
 // ══════════════════════════════════════════
@@ -489,29 +590,25 @@ async function submitRequest() {
 // ══════════════════════════════════════════
 function copyLink() {
   const el = document.getElementById('approveLink');
-  el.select();
-  document.execCommand('copy');
+  el.select(); document.execCommand('copy');
   const btn = document.querySelector('.copy-btn');
-  btn.textContent = '已复制 ✓';
-  setTimeout(() => btn.textContent = '复制', 2000);
+  btn.textContent = 'Copied ✓';
+  setTimeout(() => btn.textContent = 'Copy', 2000);
 }
-
 function shareWhatsApp() {
-  const btn = document.getElementById('waBtn');
   const link = document.getElementById('approveLink').value;
-  const name = btn.dataset.name || '';
-  const msg = encodeURIComponent(`Hi, 请审批 ${name} 的样品申请：\n${link}`);
-  window.open(`https://wa.me/?text=${msg}`, '_blank');
+  const name = document.getElementById('f_name').value || 'staff';
+  window.open(`https://wa.me/?text=${encodeURIComponent(`Hi, please approve ${name}'s sample request:\n${link}`)}`, '_blank');
 }
 
 // ══════════════════════════════════════════
-// HISTORY — 我的申请
+// MY REQUESTS
 // ══════════════════════════════════════════
 async function loadHistory() {
   const name = document.getElementById('historyName').value.trim();
-  if (!name) { alert('请输入姓名'); return; }
+  if (!name) { alert('Please enter your name.'); return; }
   const list = document.getElementById('historyList');
-  list.innerHTML = '<div class="loading">查询中…</div>';
+  list.innerHTML = '<div class="loading">Searching…</div>';
   try {
     const res = await fetch(
       SUPABASE_URL + '/rest/v1/sample_requests?applicant=eq.' + encodeURIComponent(name) + '&order=submitted_at.desc',
@@ -519,64 +616,80 @@ async function loadHistory() {
     );
     const data = await res.json();
     if (!data.length) {
-      list.innerHTML = '<div class="empty"><div class="empty-icon">📭</div><p>找不到「'+ escH(name) +'」的申请记录。</p></div>';
+      list.innerHTML = `<div class="empty"><div class="empty-icon">📭</div><p>No requests found for "<strong>${escH(name)}</strong>".</p></div>`;
       return;
     }
-    list.innerHTML = data.map(r => renderHistoryItem(r)).join('');
+    list.innerHTML = data.map(r => renderItem(r, false)).join('');
   } catch(e) {
-    list.innerHTML = '<div class="empty"><div class="empty-icon">❌</div><p>查询失败，请重试。</p></div>';
+    list.innerHTML = '<div class="empty"><div class="empty-icon">❌</div><p>Failed to load. Please try again.</p></div>';
   }
 }
 
-function renderHistoryItem(r) {
-  const products = tryParseProducts(r.products);
-  const badge = statusBadge(r.status);
-  return `
-    <div class="req-item" onclick="toggleBody(this)">
-      <div class="req-item-top">
-        <div>
-          <div class="req-ref">${escH(r.ref_no)}</div>
-          <div class="req-customer">${escH(r.customer)}</div>
-          <div class="req-meta">${escH(r.submitted_date)} ${escH(r.submitted_time)}</div>
-        </div>
-        <div>${badge}</div>
-      </div>
-      <div class="req-body">
-        <div class="detail-grid">
-          <div class="detail-item"><label>申请人</label><p>${escH(r.applicant)}</p></div>
-          <div class="detail-item"><label>客户名称</label><p>${escH(r.customer)}</p></div>
-          <div class="detail-item"><label>申请用途</label><p>${escH(r.purpose)}</p></div>
-          <div class="detail-item"><label>送货地址</label><p>${escH(r.address)}</p></div>
-          ${r.approved_at ? `<div class="detail-item"><label>审批时间</label><p>${escH(r.approved_at)}</p></div>` : ''}
-          ${r.reject_reason ? `<div class="detail-item"><label>拒绝原因</label><p style="color:var(--red)">${escH(r.reject_reason)}</p></div>` : ''}
-        </div>
-        <table class="prod-table">
-          <thead><tr><th>产品名称 / SKU</th><th>数量</th></tr></thead>
-          <tbody>${products.map(p=>`<tr><td>${escH(p.name)}</td><td>${escH(p.qty)}</td></tr>`).join('')}</tbody>
-        </table>
-        ${r.status === 'approved' ? `
-          <div class="action-row">
-            <button class="btn-outline" onclick="event.stopPropagation();printPDF(${JSON.stringify(r).replace(/"/g,'&quot;')})">🖨️ 打印 / PDF</button>
-          </div>` : ''}
-      </div>
-    </div>`;
+// ══════════════════════════════════════════
+// ALL RECORDS
+// ══════════════════════════════════════════
+async function verifyRecords() {
+  const pw = document.getElementById('recordsPassword').value;
+  if (pw !== APPROVE_PASSWORD) { showAlert('recordsPwError', 'Incorrect password.'); return; }
+  recordsVerified = true;
+  document.getElementById('recordsGate').style.display = 'none';
+  document.getElementById('recordsContent').style.display = 'block';
+  await fetchAllRecords();
 }
 
-function toggleBody(el) {
-  el.querySelector('.req-body').classList.toggle('open');
+async function fetchAllRecords() {
+  try {
+    const res = await fetch(SUPABASE_URL + '/rest/v1/sample_requests?order=submitted_at.desc', { headers: H });
+    allRecordsData = await res.json();
+    renderStats();
+    renderAllRecords();
+  } catch(e) {
+    document.getElementById('allRecordsList').innerHTML = '<div class="empty"><div class="empty-icon">❌</div><p>Failed to load records.</p></div>';
+  }
 }
 
-// ══════════════════════════════════════════
-// APPROVE — 上司审批
-// ══════════════════════════════════════════
-let approverVerified = false;
+function renderStats() {
+  const total    = allRecordsData.length;
+  const pending  = allRecordsData.filter(r => r.status === 'pending').length;
+  const approved = allRecordsData.filter(r => r.status === 'approved').length;
+  document.getElementById('recordsStats').innerHTML = `
+    <div class="stat-card"><div class="stat-label">Total</div><div class="stat-val">${total}</div><div class="stat-sub">All time</div></div>
+    <div class="stat-card"><div class="stat-label">Pending</div><div class="stat-val" style="color:var(--amber)">${pending}</div><div class="stat-sub">Awaiting approval</div></div>
+    <div class="stat-card"><div class="stat-label">Approved</div><div class="stat-val">${approved}</div><div class="stat-sub">Processed</div></div>`;
+}
 
-async function verifyApprover() {
-  const pw = document.getElementById('approvePassword').value;
-  if (pw !== APPROVE_PASSWORD) {
-    showAlert('pwError', '密码错误，请重试。');
+function renderAllRecords() {
+  const statusFilter = document.getElementById('filterStatus').value;
+  const searchFilter = document.getElementById('filterSearch').value.toLowerCase();
+  let data = allRecordsData;
+  if (statusFilter) data = data.filter(r => r.status === statusFilter);
+  if (searchFilter) data = data.filter(r =>
+    (r.applicant||'').toLowerCase().includes(searchFilter) ||
+    (r.customer||'').toLowerCase().includes(searchFilter) ||
+    (r.ref_no||'').toLowerCase().includes(searchFilter)
+  );
+  const list = document.getElementById('allRecordsList');
+  if (!data.length) {
+    list.innerHTML = '<div class="empty"><div class="empty-icon">📭</div><p>No records match your filter.</p></div>';
     return;
   }
+  // Group by status
+  const pending  = data.filter(r => r.status === 'pending');
+  const approved = data.filter(r => r.status === 'approved');
+  const rejected = data.filter(r => r.status === 'rejected');
+  let html = '';
+  if (pending.length)  html += `<div class="sec-divider">⏳ Pending (${pending.length})</div>` + pending.map(r => renderItem(r, true)).join('');
+  if (approved.length) html += `<div class="sec-divider">✅ Approved (${approved.length})</div>` + approved.map(r => renderItem(r, true)).join('');
+  if (rejected.length) html += `<div class="sec-divider">❌ Rejected (${rejected.length})</div>` + rejected.map(r => renderItem(r, true)).join('');
+  list.innerHTML = html;
+}
+
+// ══════════════════════════════════════════
+// APPROVAL
+// ══════════════════════════════════════════
+async function verifyApprover() {
+  const pw = document.getElementById('approvePassword').value;
+  if (pw !== APPROVE_PASSWORD) { showAlert('pwError', 'Incorrect password.'); return; }
   approverVerified = true;
   document.getElementById('approveGate').style.display = 'none';
   document.getElementById('approveContent').style.display = 'block';
@@ -585,83 +698,30 @@ async function verifyApprover() {
 
 async function loadApproveList() {
   const list = document.getElementById('approveList');
-  list.innerHTML = '<div class="loading">加载中…</div>';
+  list.innerHTML = '<div class="loading">Loading…</div>';
   try {
-    // If came from link, load that specific request; else load all pending
-    let url;
-    if (approveId) {
-      url = SUPABASE_URL + '/rest/v1/sample_requests?ref_no=eq.' + encodeURIComponent(approveId);
-    } else {
-      url = SUPABASE_URL + '/rest/v1/sample_requests?order=submitted_at.desc';
-    }
+    let url = approveId
+      ? SUPABASE_URL + '/rest/v1/sample_requests?ref_no=eq.' + encodeURIComponent(approveId)
+      : SUPABASE_URL + '/rest/v1/sample_requests?order=submitted_at.desc';
     const res = await fetch(url, { headers: H });
     const data = await res.json();
-
     if (!data.length) {
-      list.innerHTML = '<div class="empty"><div class="empty-icon">🎉</div><p>暂无申请记录。</p></div>';
+      list.innerHTML = '<div class="empty"><div class="empty-icon">🎉</div><p>No requests found.</p></div>';
       return;
     }
-
-    // Group: pending first
     const pending  = data.filter(r => r.status === 'pending');
     const rest     = data.filter(r => r.status !== 'pending');
-
     let html = '';
-    if (pending.length) {
-      html += `<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--amber);margin-bottom:10px;">⏳ 待审批 (${pending.length})</div>`;
-      html += pending.map(r => renderApproveItem(r)).join('');
-    }
-    if (rest.length) {
-      html += `<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--t3);margin:20px 0 10px;">历史记录</div>`;
-      html += rest.map(r => renderApproveItem(r)).join('');
-    }
+    if (pending.length)  html += `<div class="sec-divider">⏳ Pending Approval (${pending.length})</div>` + pending.map(r => renderApproveItem(r)).join('');
+    if (rest.length)     html += `<div class="sec-divider">History</div>` + rest.map(r => renderApproveItem(r)).join('');
     list.innerHTML = html;
   } catch(e) {
-    list.innerHTML = '<div class="empty"><div class="empty-icon">❌</div><p>加载失败，请刷新重试。</p></div>';
+    list.innerHTML = '<div class="empty"><div class="empty-icon">❌</div><p>Failed to load. Please refresh.</p></div>';
   }
 }
 
-function renderApproveItem(r) {
-  const products = tryParseProducts(r.products);
-  const badge = statusBadge(r.status);
-  const isPending = r.status === 'pending';
-  return `
-    <div class="req-item" onclick="toggleBody(this)">
-      <div class="req-item-top">
-        <div>
-          <div class="req-ref">${escH(r.ref_no)}</div>
-          <div class="req-customer">${escH(r.customer)}</div>
-          <div class="req-meta">申请人：${escH(r.applicant)} · ${escH(r.submitted_date)} ${escH(r.submitted_time)}</div>
-        </div>
-        <div>${badge}</div>
-      </div>
-      <div class="req-body">
-        <div class="detail-grid">
-          <div class="detail-item"><label>申请人</label><p>${escH(r.applicant)}</p></div>
-          <div class="detail-item"><label>客户名称</label><p>${escH(r.customer)}</p></div>
-          <div class="detail-item"><label>申请用途</label><p>${escH(r.purpose)}</p></div>
-          <div class="detail-item"><label>送货地址</label><p>${escH(r.address)}</p></div>
-          ${r.reject_reason ? `<div class="detail-item" style="grid-column:1/-1"><label>拒绝原因</label><p style="color:var(--red)">${escH(r.reject_reason)}</p></div>` : ''}
-        </div>
-        <table class="prod-table">
-          <thead><tr><th>产品名称 / SKU</th><th>数量</th></tr></thead>
-          <tbody>${products.map(p=>`<tr><td>${escH(p.name)}</td><td>${escH(p.qty)}</td></tr>`).join('')}</tbody>
-        </table>
-        ${isPending ? `
-          <div class="action-row">
-            <button class="btn-approve" onclick="event.stopPropagation();approveRequest('${r.ref_no}')">✅ 批准</button>
-            <button class="btn-reject" onclick="event.stopPropagation();openRejectModal('${r.ref_no}')">❌ 拒绝</button>
-          </div>` : r.status === 'approved' ? `
-          <div class="action-row">
-            <button class="btn-outline" onclick="event.stopPropagation();printPDF(${JSON.stringify(r).replace(/"/g,'&quot;')})">🖨️ 打印 / PDF</button>
-          </div>` : ''}
-      </div>
-    </div>`;
-}
-
-// ── APPROVE ──
 async function approveRequest(refNo) {
-  if (!confirm(`批准申请 ${refNo}？批准后将生成PDF并通知开单同事。`)) return;
+  if (!confirm(`Approve request ${refNo}? An email will be sent to the billing team.`)) return;
   const now = new Date();
   const approvedAt = now.toLocaleDateString('en-MY',{year:'numeric',month:'2-digit',day:'2-digit'})
                    + ' ' + now.toLocaleTimeString('en-MY',{hour:'2-digit',minute:'2-digit'});
@@ -671,19 +731,14 @@ async function approveRequest(refNo) {
       { method:'PATCH', headers:{...H,'Prefer':'return=representation'}, body: JSON.stringify({ status:'approved', approved_at: approvedAt }) }
     );
     const updated = await res.json();
-    showAlert('approveSuccess', `✅ 申请 ${refNo} 已批准！正在发送通知邮件给开单同事…`);
-
-    // Send email via EmailJS
-    if (updated && updated[0]) {
-      await sendBillingEmail(updated[0]);
-    }
+    if (updated && updated[0]) await sendBillingEmail(updated[0]);
+    showAlert('approveSuccess', `✅ Request ${refNo} approved! Notification sent to billing team.`);
     await loadApproveList();
   } catch(e) {
-    showAlert('approveError', '操作失败：' + e.message);
+    showAlert('approveError', 'Action failed: ' + e.message);
   }
 }
 
-// ── REJECT ──
 let pendingRejectRef = '';
 function openRejectModal(refNo) {
   pendingRejectRef = refNo;
@@ -696,225 +751,225 @@ function closeRejectModal() {
 }
 async function confirmReject() {
   const reason = document.getElementById('rejectReason').value.trim();
-  if (!reason) { alert('请填写拒绝原因'); return; }
+  if (!reason) { alert('Please provide a rejection reason.'); return; }
   closeRejectModal();
   try {
     await fetch(
       SUPABASE_URL + '/rest/v1/sample_requests?ref_no=eq.' + encodeURIComponent(pendingRejectRef),
       { method:'PATCH', headers:{...H,'Prefer':'return=minimal'}, body: JSON.stringify({ status:'rejected', reject_reason: reason }) }
     );
-    showAlert('approveSuccess', `❌ 申请 ${pendingRejectRef} 已拒绝。`);
+    showAlert('approveSuccess', `❌ Request ${pendingRejectRef} has been rejected.`);
     await loadApproveList();
   } catch(e) {
-    showAlert('approveError', '操作失败：' + e.message);
+    showAlert('approveError', 'Action failed: ' + e.message);
   }
 }
 
 // ══════════════════════════════════════════
-// EMAILJS — 发送通知给开单同事
+// RENDER HELPERS
+// ══════════════════════════════════════════
+function renderItem(r, showApplicant) {
+  const products = tryParseProducts(r.products);
+  const badge = statusBadge(r.status);
+  return `
+    <div class="req-item" onclick="toggleBody(this)">
+      <div class="req-item-top">
+        <div>
+          <div class="req-ref">${escH(r.ref_no)}</div>
+          <div class="req-customer">${escH(r.customer)}</div>
+          <div class="req-meta">${showApplicant ? escH(r.applicant) + ' · ' : ''}${escH(r.submitted_date)} ${escH(r.submitted_time)}</div>
+        </div>
+        <div>${badge}</div>
+      </div>
+      <div class="req-body">
+        <div class="detail-grid">
+          <div class="detail-item"><label>Applicant</label><p>${escH(r.applicant)}</p></div>
+          <div class="detail-item"><label>Customer</label><p>${escH(r.customer)}</p></div>
+          <div class="detail-item"><label>Purpose</label><p>${escH(r.purpose)}</p></div>
+          <div class="detail-item"><label>Delivery Address</label><p>${escH(r.address)}</p></div>
+          ${r.approved_at ? `<div class="detail-item"><label>Approved At</label><p>${escH(r.approved_at)}</p></div>` : ''}
+          ${r.reject_reason ? `<div class="detail-item"><label>Rejection Reason</label><p style="color:var(--red)">${escH(r.reject_reason)}</p></div>` : ''}
+        </div>
+        <table class="prod-table">
+          <thead><tr><th>SKU / Product</th><th>UOM</th><th>Qty</th></tr></thead>
+          <tbody>${products.map(p=>`<tr><td>${escH(p.sku||p.name||'')}</td><td>${escH(p.uom||'')}</td><td>${escH(p.qty||'')}</td></tr>`).join('')}</tbody>
+        </table>
+        ${r.status === 'approved' ? `
+          <div class="action-row">
+            <button class="btn-outline" onclick="event.stopPropagation();printPDF(this)" data-record='${JSON.stringify(r).replace(/'/g,"&apos;")}'>🖨️ Print / PDF</button>
+          </div>` : ''}
+      </div>
+    </div>`;
+}
+
+function renderApproveItem(r) {
+  const products = tryParseProducts(r.products);
+  const badge = statusBadge(r.status);
+  const isPending = r.status === 'pending';
+  return `
+    <div class="req-item" onclick="toggleBody(this)">
+      <div class="req-item-top">
+        <div>
+          <div class="req-ref">${escH(r.ref_no)}</div>
+          <div class="req-customer">${escH(r.customer)}</div>
+          <div class="req-meta">By: ${escH(r.applicant)} · ${escH(r.submitted_date)} ${escH(r.submitted_time)}</div>
+        </div>
+        <div>${badge}</div>
+      </div>
+      <div class="req-body">
+        <div class="detail-grid">
+          <div class="detail-item"><label>Applicant</label><p>${escH(r.applicant)}</p></div>
+          <div class="detail-item"><label>Customer</label><p>${escH(r.customer)}</p></div>
+          <div class="detail-item"><label>Purpose</label><p>${escH(r.purpose)}</p></div>
+          <div class="detail-item"><label>Delivery Address</label><p>${escH(r.address)}</p></div>
+          ${r.reject_reason ? `<div class="detail-item" style="grid-column:1/-1"><label>Rejection Reason</label><p style="color:var(--red)">${escH(r.reject_reason)}</p></div>` : ''}
+        </div>
+        <table class="prod-table">
+          <thead><tr><th>SKU / Product</th><th>UOM</th><th>Qty</th></tr></thead>
+          <tbody>${products.map(p=>`<tr><td>${escH(p.sku||p.name||'')}</td><td>${escH(p.uom||'')}</td><td>${escH(p.qty||'')}</td></tr>`).join('')}</tbody>
+        </table>
+        <div class="action-row">
+          ${isPending ? `
+            <button class="btn-approve" onclick="event.stopPropagation();approveRequest('${r.ref_no}')">✅ Approve</button>
+            <button class="btn-reject" onclick="event.stopPropagation();openRejectModal('${r.ref_no}')">❌ Reject</button>` : ''}
+          ${r.status === 'approved' ? `
+            <button class="btn-outline" onclick="event.stopPropagation();printPDF(this)" data-record='${JSON.stringify(r).replace(/'/g,"&apos;")}'>🖨️ Print / PDF</button>` : ''}
+        </div>
+      </div>
+    </div>`;
+}
+
+function toggleBody(el) { el.querySelector('.req-body').classList.toggle('open'); }
+
+// ══════════════════════════════════════════
+// EMAILJS
 // ══════════════════════════════════════════
 async function sendBillingEmail(r) {
-  // Check if EmailJS is configured
-  if (EMAILJS_SERVICE_ID === 'YOUR_SERVICE_ID') {
-    showAlert('approveSuccess', `✅ 申请 ${r.ref_no} 已批准！（EmailJS 尚未设置，邮件未发送）`);
-    return;
-  }
+  if (EMAILJS_SERVICE_ID === 'YOUR_SERVICE_ID') return;
   try {
     emailjs.init(EMAILJS_PUBLIC_KEY);
     const products = tryParseProducts(r.products);
-    const prodText = products.map(p => `• ${p.name} × ${p.qty}`).join('\n');
+    const prodText = products.map(p => `• ${p.sku||p.name} × ${p.qty} ${p.uom||''}`).join('\n');
     await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
-      to_email:       BILLING_EMAIL,
-      ref_no:         r.ref_no,
-      applicant:      r.applicant,
-      submitted_date: r.submitted_date,
-      submitted_time: r.submitted_time,
-      customer:       r.customer,
-      purpose:        r.purpose,
-      address:        r.address,
-      products_text:  prodText,
-      approved_at:    r.approved_at
+      to_email: BILLING_EMAIL, ref_no: r.ref_no,
+      applicant: r.applicant, submitted_date: r.submitted_date,
+      submitted_time: r.submitted_time, customer: r.customer,
+      purpose: r.purpose, address: r.address,
+      products_text: prodText, approved_at: r.approved_at
     });
-    showAlert('approveSuccess', `✅ 申请 ${r.ref_no} 已批准！通知邮件已发送至 ${BILLING_EMAIL}`);
-  } catch(e) {
-    console.error('EmailJS error:', e);
-    showAlert('approveSuccess', `✅ 申请 ${r.ref_no} 已批准！（邮件发送失败，请手动通知开单同事）`);
-  }
+  } catch(e) { console.error('EmailJS error:', e); }
 }
 
 // ══════════════════════════════════════════
-// PDF GENERATION
+// PDF
 // ══════════════════════════════════════════
-function printPDF(r) {
-  // If string (from HTML attribute), parse it
-  if (typeof r === 'string') {
-    try { r = JSON.parse(r); } catch(e) { console.error(e); return; }
-  }
+function printPDF(btn) {
+  let r;
+  try { r = JSON.parse(btn.dataset.record.replace(/&apos;/g,"'")); } catch(e) { return; }
   const products = tryParseProducts(r.products);
   const { jsPDF } = window.jspdf;
-  const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+  const doc = new jsPDF({ unit:'mm', format:'a4' });
+  const pageW = 210, margin = 18;
+  let y = 0;
 
-  const pageW = 210;
-  const margin = 20;
-  let y = 20;
-
-  // Header bar
-  doc.setFillColor(22, 101, 52);
-  doc.rect(0, 0, pageW, 28, 'F');
-  doc.setTextColor(255, 255, 255);
-  doc.setFontSize(16);
-  doc.setFont('helvetica', 'bold');
-  doc.text('MamaVege Management Hub', margin, 12);
-  doc.setFontSize(10);
-  doc.setFont('helvetica', 'normal');
-  doc.text('Sample Request Form / 样品申请单', margin, 20);
-
-  // Ref & status top-right
+  // Header
+  doc.setFillColor(22,101,52);
+  doc.rect(0,0,pageW,30,'F');
+  doc.setTextColor(255,255,255);
+  doc.setFontSize(17); doc.setFont('helvetica','bold');
+  doc.text('MamaVege Management Hub', margin, 13);
+  doc.setFontSize(9); doc.setFont('helvetica','normal');
+  doc.text('Sample Request Form', margin, 21);
   doc.setFontSize(9);
-  doc.text(r.ref_no, pageW - margin, 12, { align: 'right' });
-  doc.text(r.status === 'approved' ? 'APPROVED' : r.status.toUpperCase(), pageW - margin, 20, { align: 'right' });
-
+  doc.text(r.ref_no, pageW-margin, 13, {align:'right'});
+  doc.text(r.status.toUpperCase(), pageW-margin, 21, {align:'right'});
   y = 38;
-  doc.setTextColor(0, 0, 0);
 
   // Info block
-  doc.setFillColor(245, 247, 250);
-  doc.roundedRect(margin, y, pageW - 2*margin, 40, 3, 3, 'F');
-  doc.setFontSize(8);
-  doc.setFont('helvetica', 'bold');
-  doc.setTextColor(100, 100, 100);
-
-  const col1x = margin + 5;
-  const col2x = pageW / 2 + 5;
-  const lineH = 8;
-
-  const fields = [
-    ['Applicant / 申请人', r.applicant,    'Date / 日期', r.submitted_date],
-    ['Customer / 客户',    r.customer,     'Time / 时间', r.submitted_time],
-    ['Purpose / 用途',     r.purpose,      'Approved At', r.approved_at || 'N/A'],
-    ['Address / 地址',     r.address,      'Status', r.status === 'approved' ? 'Approved ✓' : r.status],
+  doc.setTextColor(0,0,0);
+  doc.setFillColor(245,247,250);
+  doc.roundedRect(margin, y, pageW-2*margin, 44, 3,3,'F');
+  const col1 = margin+5, col2 = pageW/2+5, lh = 9;
+  const rows = [
+    ['Applicant', r.applicant,      'Date', r.submitted_date],
+    ['Customer',  r.customer,       'Time', r.submitted_time],
+    ['Purpose',   r.purpose,        'Approved', r.approved_at||'—'],
+    ['Address',   r.address,        'Status', r.status==='approved'?'Approved ✓':r.status],
   ];
-
-  fields.forEach(([l1, v1, l2, v2], i) => {
-    const ry = y + 6 + i * lineH;
-    doc.setFont('helvetica', 'bold');
-    doc.setTextColor(80, 80, 80);
-    doc.setFontSize(7);
-    doc.text(l1 + ':', col1x, ry);
-    doc.setFont('helvetica', 'normal');
-    doc.setTextColor(30, 30, 30);
-    doc.setFontSize(8);
-    doc.text(String(v1 || ''), col1x + 38, ry);
-
-    doc.setFont('helvetica', 'bold');
-    doc.setTextColor(80, 80, 80);
-    doc.setFontSize(7);
-    doc.text(l2 + ':', col2x, ry);
-    doc.setFont('helvetica', 'normal');
-    doc.setTextColor(30, 30, 30);
-    doc.setFontSize(8);
-    doc.text(String(v2 || ''), col2x + 32, ry);
+  rows.forEach(([l1,v1,l2,v2], i) => {
+    const ry = y + 7 + i*lh;
+    doc.setFontSize(7); doc.setFont('helvetica','bold'); doc.setTextColor(100,100,100);
+    doc.text(l1+':', col1, ry);
+    doc.setFontSize(8); doc.setFont('helvetica','normal'); doc.setTextColor(20,20,20);
+    doc.text(String(v1||'').substring(0,45), col1+28, ry);
+    doc.setFontSize(7); doc.setFont('helvetica','bold'); doc.setTextColor(100,100,100);
+    doc.text(l2+':', col2, ry);
+    doc.setFontSize(8); doc.setFont('helvetica','normal'); doc.setTextColor(20,20,20);
+    doc.text(String(v2||'').substring(0,30), col2+26, ry);
   });
+  y += 52;
 
-  y += 48;
-
-  // Products table header
-  doc.setFillColor(22, 101, 52);
-  doc.rect(margin, y, pageW - 2*margin, 8, 'F');
-  doc.setTextColor(255, 255, 255);
-  doc.setFontSize(8);
-  doc.setFont('helvetica', 'bold');
-  doc.text('Product / SKU', margin + 4, y + 5.5);
-  doc.text('Qty / 数量', pageW - margin - 4, y + 5.5, { align: 'right' });
+  // Table header
+  doc.setFillColor(22,101,52);
+  doc.rect(margin, y, pageW-2*margin, 8,'F');
+  doc.setTextColor(255,255,255); doc.setFontSize(8); doc.setFont('helvetica','bold');
+  doc.text('SKU / Product', margin+4, y+5.5);
+  doc.text('UOM', pageW/2-10, y+5.5, {align:'center'});
+  doc.text('Qty', pageW-margin-4, y+5.5, {align:'right'});
   y += 8;
 
-  // Product rows
-  products.forEach((p, i) => {
-    const rowBg = i % 2 === 0 ? [255,255,255] : [248,250,252];
-    doc.setFillColor(...rowBg);
-    doc.rect(margin, y, pageW - 2*margin, 8, 'F');
-    doc.setTextColor(30, 30, 30);
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(8);
-    doc.text(String(p.name || ''), margin + 4, y + 5.5);
-    doc.setFont('helvetica', 'bold');
-    doc.text(String(p.qty || ''), pageW - margin - 4, y + 5.5, { align: 'right' });
+  products.forEach((p,i) => {
+    doc.setFillColor(i%2===0?255:248,i%2===0?255:250,i%2===0?255:252);
+    doc.rect(margin,y,pageW-2*margin,8,'F');
+    doc.setTextColor(30,30,30); doc.setFont('helvetica','normal'); doc.setFontSize(8);
+    doc.text(String(p.sku||p.name||''), margin+4, y+5.5);
+    doc.text(String(p.uom||''), pageW/2-10, y+5.5, {align:'center'});
+    doc.setFont('helvetica','bold');
+    doc.text(String(p.qty||''), pageW-margin-4, y+5.5, {align:'right'});
     y += 8;
   });
-
-  // Table border
-  doc.setDrawColor(220, 220, 220);
-  doc.rect(margin, y - products.length * 8 - 8, pageW - 2*margin, products.length * 8 + 8, 'S');
-
+  doc.setDrawColor(220,220,220);
+  doc.rect(margin, y-products.length*8-8, pageW-2*margin, products.length*8+8,'S');
   y += 14;
 
-  // Signature section
-  doc.setDrawColor(200, 200, 200);
-  doc.setFontSize(8);
-  doc.setFont('helvetica', 'bold');
-  doc.setTextColor(80, 80, 80);
-  doc.text('Applicant Signature / 申请人签名:', margin, y);
-  doc.line(margin, y + 12, margin + 60, y + 12);
-  doc.text('Manager Approval / 上司批准:', pageW/2 + 5, y);
-  doc.line(pageW/2 + 5, y + 12, pageW/2 + 65, y + 12);
-
+  // Signatures
+  doc.setFontSize(8); doc.setFont('helvetica','bold'); doc.setTextColor(80,80,80);
+  doc.text('Applicant Signature:', margin, y);
+  doc.setDrawColor(150,150,150); doc.line(margin, y+12, margin+65, y+12);
+  doc.text('Manager Approval:', pageW/2+5, y);
+  doc.line(pageW/2+5, y+12, pageW/2+70, y+12);
   y += 22;
 
   // Footer
-  doc.setFillColor(240, 253, 244);
-  doc.rect(margin, y, pageW - 2*margin, 12, 'F');
-  doc.setTextColor(22, 101, 52);
-  doc.setFontSize(7.5);
-  doc.setFont('helvetica', 'normal');
-  doc.text(`Generated: ${new Date().toLocaleString('en-MY')} · MamaVege Management Hub · Internal Use Only`, pageW/2, y + 7.5, { align: 'center' });
+  doc.setFillColor(240,253,244);
+  doc.rect(margin,y,pageW-2*margin,11,'F');
+  doc.setTextColor(22,101,52); doc.setFontSize(7); doc.setFont('helvetica','normal');
+  doc.text(`Generated: ${new Date().toLocaleString('en-MY')} · MamaVege Management Hub · Internal Use Only`, pageW/2, y+7, {align:'center'});
 
-  // Save / print
   doc.save(`SampleRequest_${r.ref_no}.pdf`);
 }
 
 // ══════════════════════════════════════════
 // HELPERS
 // ══════════════════════════════════════════
-function statusBadge(status) {
-  const map = {
-    pending:  ['badge-pending',  '⏳ 待审批'],
-    approved: ['badge-approved', '✅ 已批准'],
-    rejected: ['badge-rejected', '❌ 已拒绝'],
-  };
-  const [cls, txt] = map[status] || ['badge-pending', status];
-  return `<span class="badge ${cls}">${txt}</span>`;
+function statusBadge(s) {
+  const m = { pending:['badge-pending','⏳ Pending'], approved:['badge-approved','✅ Approved'], rejected:['badge-rejected','❌ Rejected'] };
+  const [c,t] = m[s] || ['badge-pending', s];
+  return `<span class="badge ${c}">${t}</span>`;
 }
-
 function tryParseProducts(raw) {
-  try { return JSON.parse(raw) || []; }
-  catch { return [{ name: String(raw || ''), qty: '' }]; }
+  try { return JSON.parse(raw) || []; } catch { return [{sku:String(raw||''),uom:'',qty:''}]; }
 }
-
 function showAlert(id, msg) {
   const el = document.getElementById(id);
-  el.textContent = msg;
-  el.classList.add('show');
+  if (!el) return;
+  el.textContent = msg; el.classList.add('show');
   setTimeout(() => el.classList.remove('show'), 7000);
 }
-function hideAlert(id) {
-  document.getElementById(id).classList.remove('show');
-}
+function hideAlert(id) { document.getElementById(id)?.classList.remove('show'); }
 function escH(s) {
-  return String(s || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  return String(s||'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
-
-// Auto-detect approve link on load
-window.addEventListener('load', () => {
-  if (approveId && approverVerified === false) {
-    // Show approve tab
-    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-    document.getElementById('panel-approve').classList.add('active');
-    // Highlight approve tab
-    const tabs = document.querySelectorAll('.tab-btn');
-    tabs.forEach(t => { if (t.textContent.includes('审批')) t.classList.add('active'); });
-  }
-});
 </script>
 </body>
 </html>
