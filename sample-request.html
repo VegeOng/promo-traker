@@ -768,12 +768,7 @@ async function approveRequest(refNo) {
     setTimeout(() => loadApproveList(), 1000);
   } catch(e) {
     showAlert('approveError', 'Action failed: ' + e.message);
-  }
-}
-}
-    await loadApproveList();
-  } catch(e) {
-    showAlert('approveError', 'Action failed: ' + e.message);
+    
   }
 }
 
