@@ -149,6 +149,17 @@
   .visit-photos img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 6px; cursor: pointer; transition: opacity 0.15s; }
   .visit-photos img:hover { opacity: 0.85; }
 
+
+  .new-my-task-form { background: white; border: 2px solid #166534; border-radius: 12px; padding: 16px; margin-bottom: 16px; display: none; }
+  .new-my-task-form.open { display: block; }
+  .new-my-task-form h3 { font-size: 14px; font-weight: 800; color: #166534; margin-bottom: 12px; }
+  .nmtf-field { margin-bottom: 12px; }
+  .nmtf-field label { display: block; font-size: 11px; font-weight: 700; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 5px; }
+  .nmtf-field input, .nmtf-field textarea { width: 100%; padding: 10px 12px; border: 1.5px solid #e5e7eb; border-radius: 8px; font-size: 14px; font-family: inherit; }
+  .nmtf-field input:focus, .nmtf-field textarea:focus { outline: none; border-color: #166534; }
+  .nmtf-actions { display: flex; gap: 8px; }
+  .btn-add-my-task { width: 100%; padding: 10px; background: #f0fdf4; color: #166534; border: 2px dashed #86efac; border-radius: 10px; font-size: 13px; font-weight: 700; cursor: pointer; margin-bottom: 12px; }
+  .btn-add-my-task:hover { background: #dcfce7; }
   .lightbox { position: fixed; inset: 0; background: rgba(0,0,0,0.92); z-index: 9999; display: none; align-items: center; justify-content: center; padding: 20px; }
   .lightbox.open { display: flex; }
   .lightbox img { max-width: 100%; max-height: 90vh; border-radius: 8px; box-shadow: 0 0 40px rgba(0,0,0,0.5); }
@@ -224,6 +235,26 @@
 
   <!-- MY TASKS -->
   <div class="panel active" id="panel-tasks">
+    <button class="btn-add-my-task" onclick="toggleNewMyTaskForm()">+ Add My Task</button>
+    <div class="new-my-task-form" id="new-my-task-form">
+      <h3>Add New Task</h3>
+      <div class="nmtf-field">
+        <label>Task Description *</label>
+        <textarea id="nmtf-desc" placeholder="What needs to be done?" rows="2"></textarea>
+      </div>
+      <div class="nmtf-field">
+        <label>Due Date</label>
+        <input type="date" id="nmtf-due">
+      </div>
+      <div class="nmtf-field">
+        <label>Related Customer (optional)</label>
+        <input type="text" id="nmtf-customer" placeholder="e.g. Tesco Kepong">
+      </div>
+      <div class="nmtf-actions">
+        <button class="btn-done" onclick="saveMyNewTask()">Save Task</button>
+        <button style="padding:8px 16px;background:#e5e7eb;color:#374151;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer" onclick="toggleNewMyTaskForm()">Cancel</button>
+      </div>
+    </div>
     <div class="task-filter-tabs">
       <span class="tft all active" onclick="filterMyTasks('all',this)">All <span id="my-cnt-all">0</span></span>
       <span class="tft overdue" onclick="filterMyTasks('overdue',this)">🔴 Overdue <span id="my-cnt-overdue">0</span></span>
@@ -632,6 +663,41 @@
     }
   }
 
+
+  function toggleNewMyTaskForm() {
+    const form = document.getElementById('new-my-task-form');
+    form.classList.toggle('open');
+    if (form.classList.contains('open')) {
+      document.getElementById('nmtf-desc').focus();
+    }
+  }
+
+  async function saveMyNewTask() {
+    const desc = document.getElementById('nmtf-desc').value.trim();
+    if (!desc) { alert('Please enter a task description.'); return; }
+    const due = document.getElementById('nmtf-due').value || null;
+    const customer = document.getElementById('nmtf-customer').value.trim() || null;
+    try {
+      await fetch(SUPABASE_URL + '/rest/v1/tasks', {
+        method: 'POST',
+        headers: { ...H, 'Prefer': 'return=minimal' },
+        body: JSON.stringify({
+          description: desc,
+          assigned_to: userName,
+          created_by: userName,
+          source: 'rep_committed',
+          linked_customer: customer,
+          due_date: due,
+          status: 'pending'
+        })
+      });
+      document.getElementById('nmtf-desc').value = '';
+      document.getElementById('nmtf-due').value = '';
+      document.getElementById('nmtf-customer').value = '';
+      document.getElementById('new-my-task-form').classList.remove('open');
+      await loadMyTasks();
+    } catch(e) { alert('Failed to save task.'); }
+  }
   function escHtml(s){return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 
   // Show/hide tools based on role
