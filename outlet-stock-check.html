@@ -130,6 +130,8 @@
   .alert-row-head { font-weight:600; color:var(--ink-muted); font-size:11px; text-transform:uppercase; letter-spacing:.4px; background:var(--surface-2); }
   .lot-tag { font-family:monospace; font-size:11px; background:var(--surface-2); padding:2px 6px; border-radius:4px; color:var(--ink-muted); }
 
+  .btn-delete-row { background:none; border:1px solid var(--red); color:var(--red); padding:3px 8px; border-radius:4px; font-size:11px; font-weight:700; cursor:pointer; white-space:nowrap; }
+  .btn-delete-row:hover { background:var(--red); color:#fff; }
   .loader { display:flex; align-items:center; justify-content:center; padding:40px; color:var(--ink-muted); font-size:13px; gap:10px; }
   .spinner { width:18px; height:18px; border:2px solid var(--border); border-top-color:var(--green); border-radius:50%; animation:spin .7s linear infinite; }
   @keyframes spin { to { transform:rotate(360deg); } }
@@ -360,6 +362,7 @@ async function sbPost(table,body) { const r=await fetch(SB_URL+'/rest/v1/'+table
 async function sbDelete(table,id) { await fetch(SB_URL+'/rest/v1/'+table+'?id=eq.'+id,{method:'DELETE',headers:H}); }
 
 let outlets=[], products=[], productRowId=0;
+const isHQ = sessionStorage.getItem('hq_auth')==='1' || sessionStorage.getItem('userRole')==='hq';
 
 window.addEventListener('DOMContentLoaded', async ()=>{
   document.getElementById('f-date').value = new Date().toISOString().split('T')[0];
@@ -625,6 +628,7 @@ async function loadOverview() {
       <div class="outlet-badges">
         ${b?`<span class="badge ${b[0]}">${b[1]}</span>`:'<span class="badge badge-ok">✓ OK</span>'}
         ${e.hasReturn?'<span class="badge badge-return">↩ Pending Return</span>':''}
+        ${isHQ?`<button class="btn-delete-row" onclick="event.stopPropagation();deleteOutlet('${e.id}','${escH(e.name)}')">🗑 Delete</button>`:''}
       </div>
     </div>`;
   }).join('');
@@ -639,12 +643,13 @@ async function openDetail(outletId, outletName) {
   const today=new Date(); today.setHours(0,0,0,0);
   function cls(d){ if(!d) return ''; const days=Math.ceil((new Date(d)-today)/86400000); if(days<=30) return 'exp-30'; if(days<=90) return 'exp-90'; if(days<=120) return 'exp-120'; if(days<=180) return 'exp-180'; return ''; }
   document.getElementById('detailContent').innerHTML=`<div style="overflow-x:auto"><table class="detail-table">
-    <tr><th>Product</th><th>LOT</th><th>Expiry</th><th>Qty</th><th>Return</th><th>Destination</th><th>Agent</th><th>Date</th></tr>
+    <tr><th>Product</th><th>LOT</th><th>Expiry</th><th>Qty</th><th>Return</th><th>Destination</th><th>Agent</th><th>Date</th>${isHQ?'<th></th>':''}</tr>
     ${data.map(r=>`<tr class="${cls(r.expiry_date)}">
       <td>${escH(r.product_name||'')}</td><td><span class="lot-tag">${escH(r.lot_number||'—')}</span></td>
       <td>${r.expiry_date||'—'}</td><td>${r.quantity||0}</td>
       <td>${r.need_return?`<span style="color:var(--red);font-weight:600">↩ ${r.return_quantity||0} pcs</span>`:'—'}</td>
       <td>${escH(r.return_destination||'—')}</td><td>${escH(r.agent_name||'')}</td><td>${r.check_date||''}</td>
+      ${isHQ?`<td><button class="btn-delete-row" onclick="deleteRecord(${r.id},'${outletId}','${escH(outletName)}')">🗑</button></td>`:''}
     </tr>`).join('')}
   </table></div>`;
 }
@@ -726,6 +731,25 @@ async function saveNewOutlet(){
     showToast('✅ Outlet added: '+name);
     if(document.getElementById('tab-overview').classList.contains('active')) loadOverview();
   } else { showToast('Save failed. Check database setup.', true); }
+}
+
+async function deleteOutlet(outletId, outletName) {
+  if(!confirm(`Delete outlet "${outletName}" and ALL its stock check records?\nThis cannot be undone.`)) return;
+  try {
+    await fetch(SB_URL+'/rest/v1/outlet_stock_checks?outlet_id=eq.'+outletId, {method:'DELETE', headers:H});
+    await fetch(SB_URL+'/rest/v1/outlets?id=eq.'+outletId, {method:'DELETE', headers:H});
+    showToast('✅ Outlet deleted: '+outletName);
+    loadOverview();
+  } catch(e) { showToast('Delete failed.', true); }
+}
+
+async function deleteRecord(recordId, outletId, outletName) {
+  if(!confirm('Delete this stock check record?')) return;
+  try {
+    await fetch(SB_URL+'/rest/v1/outlet_stock_checks?id=eq.'+recordId, {method:'DELETE', headers:H});
+    showToast('✅ Record deleted.');
+    openDetail(outletId, outletName);
+  } catch(e) { showToast('Delete failed.', true); }
 }
 
 function closeModal(id){ document.getElementById(id).classList.remove('open'); }
