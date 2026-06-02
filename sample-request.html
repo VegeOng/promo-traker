@@ -231,13 +231,10 @@ textarea{resize:vertical;min-height:80px;}
     <div class="card">
       <div class="card-title">Applicant Info</div>
       <div class="row2">
-        <div class="field">
-          <label>Your Name <span class="req">*</span></label>
-          <input type="text" id="f_name" placeholder="e.g. Ahmad">
-        </div>
+        
         <div class="field">
           <label>Customer Name <span class="req">*</span></label>
-          <input type="text" id="f_customer" placeholder="e.g. Giant Subang Jaya">
+          <input type="text" id="f_customer" placeholder="e.g. Aeon Subang Jaya">
         </div>
       </div>
     </div>
@@ -422,6 +419,8 @@ function lsGet(key) {
   } catch { return null; }
 }
 const userRole = lsGet('userRole');
+// Auto-fill applicant name from login
+const loggedInName = lsGet('userName') || '';
 if (userRole !== 'hq') {
   document.querySelectorAll('.tab-btn').forEach(btn => {
     if (btn.textContent.includes('Approval') || btn.textContent.includes('All Records')) {
@@ -549,14 +548,14 @@ function genRef() {
 // SUBMIT REQUEST
 // ══════════════════════════════════════════
 async function submitRequest() {
-  const name     = document.getElementById('f_name').value.trim();
+  const name     = loggedInName || document.getElementById('f_name')?.value.trim() || '';
   const customer = document.getElementById('f_customer').value.trim();
   const purpose  = document.getElementById('f_purpose').value.trim();
   const address  = document.getElementById('f_address').value.trim();
   const products = getProducts();
 
   let hasErr = false;
-  ['f_name','f_customer','f_purpose','f_address'].forEach(id => {
+ ['f_customer','f_purpose','f_address'].forEach(id => {
     const el = document.getElementById(id);
     el.classList.remove('err');
     if (!el.value.trim()) { el.classList.add('err'); hasErr = true; }
@@ -711,6 +710,14 @@ async function verifyApprover() {
   approverVerified = true;
   document.getElementById('approveGate').style.display = 'none';
   document.getElementById('approveContent').style.display = 'block';
+  // WhatsApp notify applicant
+    const approvedRecord = updated && updated[0];
+    if (approvedRecord) {
+      const waMsg = encodeURIComponent(`Hi ${approvedRecord.applicant}, your sample request ${approvedRecord.ref_no} for ${approvedRecord.customer} has been APPROVED ✅. Please proceed accordingly.`);
+      const waUrl = `https://wa.me/?text=${waMsg}`;
+      showAlert('approveSuccess', `✅ Request ${refNo} approved!`);
+      setTimeout(() => window.open(waUrl, '_blank'), 1000);
+    }
   await loadApproveList();
 }
 
