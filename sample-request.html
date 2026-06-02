@@ -6,7 +6,6 @@
 <title>Sample Request — MamaVege</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
@@ -17,7 +16,6 @@
   --green:#166534;--green2:#22c55e;--green-bg:#f0fdf4;--green-border:#bbf7d0;
   --red:#dc2626;--red-bg:#fef2f2;--red-border:#fca5a5;
   --amber:#d97706;--amber-bg:#fffbeb;--amber-border:#fde68a;
-  --blue:#1d4ed8;--blue-bg:#eff6ff;--blue-border:#bfdbfe;
   --font:'Plus Jakarta Sans',sans-serif;--mono:'DM Mono',monospace;
 }
 body{background:var(--bg);color:var(--t1);font-family:var(--font);min-height:100vh;}
@@ -28,7 +26,7 @@ body{background:var(--bg);color:var(--t1);font-family:var(--font);min-height:100
 .brand-icon{width:32px;height:32px;background:var(--green);color:white;border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;}
 .brand-name{font-size:13px;font-weight:800;letter-spacing:.02em;}
 .brand-tag{font-size:10px;font-family:var(--mono);color:var(--t3);letter-spacing:.06em;text-transform:uppercase;}
-.back-link{font-size:12px;color:var(--t3);text-decoration:none;display:flex;align-items:center;gap:4px;padding:6px 10px;border:1px solid var(--b1);border-radius:8px;transition:all .15s;}
+.back-link{font-size:12px;color:var(--t3);text-decoration:none;padding:6px 10px;border:1px solid var(--b1);border-radius:8px;transition:all .15s;}
 .back-link:hover{background:var(--s2);color:var(--t2);}
 
 /* TABS */
@@ -63,18 +61,21 @@ textarea{resize:vertical;min-height:80px;}
 .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
 @media(max-width:500px){.row2{grid-template-columns:1fr;}}
 
+/* APPLICANT NAME DISPLAY */
+.name-display{padding:10px 12px;background:var(--green-bg);border:1.5px solid var(--green-border);border-radius:10px;font-size:14px;font-weight:600;color:var(--green);}
+
 /* PRODUCT TABLE */
-.prod-header{display:grid;grid-template-columns:1fr 130px 90px 36px;gap:8px;margin-bottom:6px;}
+.prod-header{display:grid;grid-template-columns:1fr 110px 80px 36px;gap:8px;margin-bottom:6px;}
 .prod-header span{font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.05em;}
-.prod-row{display:grid;grid-template-columns:1fr 130px 90px 36px;gap:8px;margin-bottom:8px;align-items:center;}
+.prod-row{display:grid;grid-template-columns:1fr 110px 80px 36px;gap:8px;margin-bottom:8px;align-items:center;}
 .prod-row select,.prod-row input{font-size:13px;padding:8px 10px;}
 @media(max-width:520px){
-  .prod-header{grid-template-columns:1fr 100px 75px 32px;}
-  .prod-row{grid-template-columns:1fr 100px 75px 32px;}
+  .prod-header{grid-template-columns:1fr 90px 70px 32px;}
+  .prod-row{grid-template-columns:1fr 90px 70px 32px;}
 }
-.rm-btn{width:32px;height:32px;border:none;background:var(--red-bg);color:var(--red);border-radius:8px;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;transition:background .15s;flex-shrink:0;}
+.rm-btn{width:32px;height:32px;border:none;background:var(--red-bg);color:var(--red);border-radius:8px;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
 .rm-btn:hover{background:#fca5a5;}
-.add-row-btn{width:100%;padding:9px;background:var(--green-bg);color:var(--green);border:1.5px dashed var(--green-border);border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:var(--font);transition:background .15s;margin-top:4px;}
+.add-row-btn{width:100%;padding:9px;background:var(--green-bg);color:var(--green);border:1.5px dashed var(--green-border);border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:var(--font);margin-top:4px;}
 .add-row-btn:hover{background:#dcfce7;}
 
 /* BUTTONS */
@@ -83,10 +84,13 @@ textarea{resize:vertical;min-height:80px;}
 .btn-primary:disabled{background:var(--b2);cursor:not-allowed;}
 .btn-outline{padding:9px 16px;background:transparent;color:var(--green);border:1.5px solid var(--green);border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:var(--font);transition:all .15s;display:inline-flex;align-items:center;gap:6px;}
 .btn-outline:hover{background:var(--green-bg);}
-.btn-approve{padding:9px 18px;background:var(--green);color:white;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:var(--font);transition:background .2s;display:inline-flex;align-items:center;gap:6px;}
+.btn-approve{padding:9px 18px;background:var(--green);color:white;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:var(--font);display:inline-flex;align-items:center;gap:6px;}
 .btn-approve:hover{background:#14532d;}
-.btn-reject{padding:9px 18px;background:var(--red);color:white;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:var(--font);transition:background .2s;display:inline-flex;align-items:center;gap:6px;}
+.btn-reject{padding:9px 18px;background:var(--red);color:white;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:var(--font);display:inline-flex;align-items:center;gap:6px;}
 .btn-reject:hover{background:#b91c1c;}
+.btn-wa{padding:9px 16px;background:#25d366;color:white;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:var(--font);display:inline-flex;align-items:center;gap:6px;}
+.btn-wa:hover{background:#22bf5b;}
+.btn-cancel{padding:9px 16px;background:var(--s2);color:var(--t2);border:none;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font);}
 
 /* ALERTS */
 .alert{border-radius:10px;padding:14px 16px;font-size:13px;margin-bottom:16px;display:none;}
@@ -100,7 +104,7 @@ textarea{resize:vertical;min-height:80px;}
 .badge-approved{background:var(--green-bg);color:var(--green);border:1px solid var(--green-border);}
 .badge-rejected{background:var(--red-bg);color:var(--red);border:1px solid var(--red-border);}
 
-/* REQUEST LIST ITEM */
+/* REQUEST ITEM */
 .req-item{background:var(--s1);border:1px solid var(--b1);border-radius:12px;padding:16px;margin-bottom:10px;box-shadow:0 1px 3px rgba(0,0,0,.04);cursor:pointer;transition:all .15s;}
 .req-item:hover{border-color:var(--b2);box-shadow:0 4px 12px rgba(0,0,0,.07);}
 .req-item-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;}
@@ -121,18 +125,17 @@ textarea{resize:vertical;min-height:80px;}
 .prod-table th{background:var(--s2);padding:8px 12px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--t3);}
 .prod-table td{padding:9px 12px;border-top:1px solid var(--b1);}
 .prod-table tr:first-child td{border-top:none;}
-
 .action-row{display:flex;gap:8px;flex-wrap:wrap;}
 
 /* SHARE BOX */
 .share-box{background:var(--green-bg);border:1px solid var(--green-border);border-radius:12px;padding:16px;margin-top:16px;}
 .share-box h4{font-size:13px;font-weight:700;color:var(--green);margin-bottom:10px;}
-.share-url{display:flex;gap:8px;align-items:center;}
+.share-url{display:flex;gap:8px;align-items:center;margin-bottom:10px;}
 .share-url input{flex:1;font-family:var(--mono);font-size:12px;background:white;border-color:var(--green-border);color:var(--t2);}
 .copy-btn{padding:9px 14px;background:var(--green);color:white;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;font-family:var(--font);}
 .copy-btn:hover{background:#14532d;}
-.wa-btn{display:flex;align-items:center;gap:8px;padding:10px 16px;background:#25d366;color:white;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:var(--font);width:100%;justify-content:center;margin-top:10px;}
-.wa-btn:hover{background:#22bf5b;}
+.wa-submit-btn{display:flex;align-items:center;gap:8px;padding:10px 16px;background:#25d366;color:white;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:var(--font);width:100%;justify-content:center;}
+.wa-submit-btn:hover{background:#22bf5b;}
 
 /* EMPTY / LOADING */
 .empty{text-align:center;padding:40px 20px;color:var(--t3);}
@@ -140,12 +143,7 @@ textarea{resize:vertical;min-height:80px;}
 .empty p{font-size:13px;}
 .loading{text-align:center;padding:30px;color:var(--t3);font-size:13px;}
 
-/* FILTER BAR */
-.filter-bar{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;align-items:center;}
-.filter-bar select,.filter-bar input{width:auto;flex:1;min-width:120px;padding:8px 12px;font-size:13px;}
-.filter-label{font-size:12px;color:var(--t3);font-weight:600;white-space:nowrap;}
-
-/* STATS ROW */
+/* STATS */
 .stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px;}
 @media(max-width:480px){.stats-row{grid-template-columns:repeat(2,1fr);}}
 .stat-card{background:var(--s1);border:1px solid var(--b1);border-radius:12px;padding:14px 16px;}
@@ -153,7 +151,15 @@ textarea{resize:vertical;min-height:80px;}
 .stat-val{font-size:22px;font-weight:800;font-family:var(--mono);color:var(--green);}
 .stat-sub{font-size:11px;color:var(--t3);margin-top:2px;}
 
-/* REJECT MODAL */
+/* FILTER */
+.filter-bar{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;}
+.filter-bar select,.filter-bar input{width:auto;flex:1;min-width:120px;padding:8px 12px;font-size:13px;}
+
+/* SECTION DIVIDER */
+.sec-div{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--t3);margin:20px 0 10px;display:flex;align-items:center;gap:8px;}
+.sec-div::after{content:'';flex:1;height:1px;background:var(--b1);}
+
+/* MODAL */
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:100;display:none;align-items:center;justify-content:center;padding:20px;}
 .modal-overlay.open{display:flex;}
 .modal{background:white;border-radius:16px;padding:24px;width:100%;max-width:420px;box-shadow:0 20px 60px rgba(0,0,0,.2);}
@@ -162,15 +168,10 @@ textarea{resize:vertical;min-height:80px;}
 .modal textarea{width:100%;padding:10px 12px;border:1.5px solid var(--b1);border-radius:10px;font-size:14px;font-family:var(--font);min-height:90px;resize:vertical;outline:none;}
 .modal textarea:focus{border-color:var(--red);}
 .modal-actions{display:flex;gap:8px;margin-top:14px;justify-content:flex-end;}
-.btn-cancel{padding:9px 16px;background:var(--s2);color:var(--t2);border:none;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font);}
-
-/* SECTION DIVIDER */
-.sec-divider{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--t3);margin:20px 0 10px;display:flex;align-items:center;gap:8px;}
-.sec-divider::after{content:'';flex:1;height:1px;background:var(--b1);}
 
 /* PRINT */
 @media print{
-  .top,.tab-bar,.action-row,.share-box,.btn-primary,.add-row-btn,.rm-btn,.back-link,.filter-bar{display:none!important;}
+  .top,.tab-bar,.action-row,.share-box,.btn-primary,.add-row-btn,.rm-btn,.back-link,.filter-bar,.modal-overlay{display:none!important;}
   body{background:white;}
   .main{padding:0;max-width:100%;}
   .card,.req-item{box-shadow:none;border:1px solid #ddd;}
@@ -206,55 +207,47 @@ textarea{resize:vertical;min-height:80px;}
 </div>
 
 <!-- TAB BAR -->
-<div class="tab-bar">
+<div class="tab-bar" id="tabBar">
   <button class="tab-btn active" onclick="switchTab('apply',this)">📝 New Request</button>
   <button class="tab-btn" onclick="switchTab('history',this)">📋 My Requests</button>
-  <button class="tab-btn" onclick="switchTab('records',this)">🗂️ All Records</button>
-  <button class="tab-btn" onclick="switchTab('approve',this)">✅ Approval</button>
+  <button class="tab-btn hq-only" onclick="switchTab('records',this)" style="display:none">🗂️ All Records</button>
+  <button class="tab-btn hq-only" onclick="switchTab('approve',this)" style="display:none">✅ Approval</button>
 </div>
 
 <div class="main">
 
-  <!-- ══════════════════════════════
-       TAB 1 — NEW REQUEST
-  ══════════════════════════════ -->
+  <!-- ══ TAB 1: NEW REQUEST ══ -->
   <div class="panel active" id="panel-apply">
     <div class="page-title">
       <h2>🧪 Sample Request</h2>
-      <p>Submit a request below. An approval link will be generated for your manager.</p>
+      <p>Submit a sample request. An approval link will be sent to your manager.</p>
     </div>
-
     <div class="alert alert-success" id="applySuccess"></div>
     <div class="alert alert-error" id="applyError"></div>
 
-    <!-- Applicant Info -->
     <div class="card">
       <div class="card-title">Applicant Info</div>
       <div class="row2">
-        
+        <div class="field">
+          <label>Applicant Name</label>
+          <div class="name-display" id="nameDisplay">—</div>
+        </div>
         <div class="field">
           <label>Customer Name <span class="req">*</span></label>
-          <input type="text" id="f_customer" placeholder="e.g. Aeon Subang Jaya">
+          <input type="text" id="f_customer" placeholder="e.g. Giant Subang Jaya">
         </div>
       </div>
     </div>
 
-    <!-- Products -->
     <div class="card">
       <div class="card-title">Product Details</div>
       <div class="prod-header">
-        <span>SKU / Product</span>
-        <span>UOM</span>
-        <span>Qty</span>
-        <span></span>
+        <span>SKU / Product</span><span>UOM</span><span>Qty</span><span></span>
       </div>
-      <div id="prodRows">
-        <!-- rows injected by JS -->
-      </div>
+      <div id="prodRows"></div>
       <button class="add-row-btn" onclick="addRow()">＋ Add Product</button>
     </div>
 
-    <!-- Details -->
     <div class="card">
       <div class="card-title">Request Details</div>
       <div class="field">
@@ -267,96 +260,58 @@ textarea{resize:vertical;min-height:80px;}
       </div>
     </div>
 
-    <button class="btn-primary" id="submitBtn" onclick="submitRequest()">
-      📤 Submit Request
-    </button>
+    <button class="btn-primary" id="submitBtn" onclick="submitRequest()">📤 Submit Request</button>
 
-    <!-- Share box (shown after submit) -->
     <div class="share-box" id="shareBox" style="display:none;">
-      <h4>✅ Request submitted! Send the link below to your manager for approval:</h4>
+      <h4>✅ Request submitted! Send this link to your manager for approval:</h4>
       <div class="share-url">
         <input type="text" id="approveLink" readonly>
         <button class="copy-btn" onclick="copyLink()">Copy</button>
       </div>
-      <button class="wa-btn" onclick="shareWhatsApp()">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+      <button class="wa-submit-btn" onclick="shareWhatsApp()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
         WhatsApp to Manager
       </button>
     </div>
   </div>
 
-  <!-- ══════════════════════════════
-       TAB 2 — MY REQUESTS
-  ══════════════════════════════ -->
+  <!-- ══ TAB 2: MY REQUESTS ══ -->
   <div class="panel" id="panel-history">
     <div class="page-title">
       <h2>📋 My Requests</h2>
       <p>View all your submitted sample requests.</p>
     </div>
-    <div class="card" style="padding:14px 16px;">
-      <div style="display:flex;gap:8px;align-items:flex-end;">
-        <div style="flex:1;">
-          <label style="margin-bottom:6px;">Your Name</label>
-          <input type="text" id="historyName" placeholder="Enter your name" onkeydown="if(event.key==='Enter')loadHistory()">
-        </div>
-        <button class="btn-outline" onclick="loadHistory()" style="height:42px;">Search</button>
-      </div>
-    </div>
-    <div id="historyList">
-      <div class="empty"><div class="empty-icon">🔍</div><p>Enter your name above to search</p></div>
-    </div>
+    <div id="historyList"><div class="loading">Loading…</div></div>
   </div>
 
-  <!-- ══════════════════════════════
-       TAB 3 — ALL RECORDS (password)
-  ══════════════════════════════ -->
+  <!-- ══ TAB 3: ALL RECORDS (HQ only) ══ -->
   <div class="panel" id="panel-records">
     <div class="page-title">
       <h2>🗂️ All Records</h2>
       <p>View and filter all sample requests.</p>
     </div>
-
-    <div id="recordsGate">
-      <div class="card">
-        <div class="card-title">Authentication</div>
-        <div class="field">
-          <label>Manager Password</label>
-          <input type="password" id="recordsPassword" placeholder="Enter password" onkeydown="if(event.key==='Enter')verifyRecords()">
-        </div>
-        <div class="alert alert-error" id="recordsPwError"></div>
-        <button class="btn-primary" onclick="verifyRecords()" style="margin-top:8px;">🔓 View Records</button>
-      </div>
+    <div class="stats-row" id="recordsStats"></div>
+    <div class="filter-bar">
+      <select id="filterStatus" onchange="renderAllRecords()">
+        <option value="">All Status</option>
+        <option value="pending">Pending</option>
+        <option value="approved">Approved</option>
+        <option value="rejected">Rejected</option>
+      </select>
+      <input type="text" id="filterSearch" placeholder="Search name / customer…" oninput="renderAllRecords()">
     </div>
-
-    <div id="recordsContent" style="display:none;">
-      <!-- Stats -->
-      <div class="stats-row" id="recordsStats"></div>
-
-      <!-- Filters -->
-      <div class="filter-bar">
-        <select id="filterStatus" onchange="renderAllRecords()">
-          <option value="">All Status</option>
-          <option value="pending">Pending</option>
-          <option value="approved">Approved</option>
-          <option value="rejected">Rejected</option>
-        </select>
-        <input type="text" id="filterSearch" placeholder="Search name / customer…" oninput="renderAllRecords()" style="flex:2;">
-      </div>
-
-      <div id="allRecordsList"><div class="loading">Loading…</div></div>
-    </div>
+    <div id="allRecordsList"><div class="loading">Loading…</div></div>
   </div>
 
-  <!-- ══════════════════════════════
-       TAB 4 — APPROVAL (password)
-  ══════════════════════════════ -->
+  <!-- ══ TAB 4: APPROVAL (HQ only) ══ -->
   <div class="panel" id="panel-approve">
     <div class="page-title">
       <h2>✅ Approve Requests</h2>
-      <p>Review pending sample requests and approve or reject.</p>
+      <p>Review and approve or reject pending sample requests.</p>
     </div>
 
-    <div id="approveGate">
+    <!-- Password gate (only if not HQ) -->
+    <div id="approveGate" style="display:none;">
       <div class="card">
         <div class="card-title">Authentication</div>
         <div class="field">
@@ -364,51 +319,37 @@ textarea{resize:vertical;min-height:80px;}
           <input type="password" id="approvePassword" placeholder="Enter password" onkeydown="if(event.key==='Enter')verifyApprover()">
         </div>
         <div class="alert alert-error" id="pwError"></div>
-        <button class="btn-primary" onclick="verifyApprover()" style="margin-top:8px;">🔓 Enter Approval</button>
+        <button class="btn-primary" onclick="verifyApprover()" style="margin-top:8px;">🔓 Enter</button>
       </div>
     </div>
 
-    <div id="approveContent" style="display:none;">
+    <div id="approveContent">
       <div class="alert alert-success" id="approveSuccess"></div>
       <div class="alert alert-error" id="approveError"></div>
       <div id="approveList"><div class="loading">Loading…</div></div>
     </div>
   </div>
 
-</div><!-- /main -->
+</div>
 
 <script>
 // ══════════════════════════════════════════
-// ⚙️  CONFIG — edit here
+// CONFIG
 // ══════════════════════════════════════════
 const SUPABASE_URL = 'https://wjhgezvrxlhpexocfsea.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndqaGdlenZyeGxocGV4b2Nmc2VhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg1MDU4NzgsImV4cCI6MjA5NDA4MTg3OH0.jENcrgEDYDlSRUCqve-T6rxYRJfz-dnZQHnXpPLJ_RE';
 
-// Manager password (change here)
+// ── Manager password (change here) ──
 const APPROVE_PASSWORD = 'mamavege2026';
 
-// EmailJS (fill in after setup)
-const EMAILJS_SERVICE_ID  = 'YOUR_SERVICE_ID';
-const EMAILJS_TEMPLATE_ID = 'YOUR_TEMPLATE_ID';
-const EMAILJS_PUBLIC_KEY  = 'YOUR_PUBLIC_KEY';
-
-// Billing email (change here to update recipient)
-const BILLING_EMAIL = 'vege@mamavege.com';
-
-// UOM options (edit this line to add/remove units)
+// ── UOM options (edit this line to add/remove) ──
 const UOM_OPTIONS = ['CTN', 'PCS', 'PKT', 'BAG'];
 
 // ══════════════════════════════════════════
 const supa = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 const H = { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY, 'Content-Type': 'application/json' };
 
-let skuList = [];
-let allRecordsData = [];
-let approverVerified = false;
-let recordsVerified = false;
-
-// ── URL param: direct approve link
-// ── Role-based tab visibility ──
+// localStorage helper (matches existing system)
 function lsGet(key) {
   const raw = localStorage.getItem(key);
   if (!raw) return null;
@@ -418,16 +359,16 @@ function lsGet(key) {
     return item.value;
   } catch { return null; }
 }
-const userRole = lsGet('userRole');
-// Auto-fill applicant name from login
+
 const loggedInName = lsGet('userName') || '';
-if (userRole !== 'hq') {
-  document.querySelectorAll('.tab-btn').forEach(btn => {
-    if (btn.textContent.includes('Approval') || btn.textContent.includes('All Records')) {
-      btn.style.display = 'none';
-    }
-  });
-}
+const userRole = lsGet('userRole') || '';
+const isHQ = userRole === 'hq';
+
+let skuList = [];
+let allRecordsData = [];
+let pendingRejectRef = '';
+
+// URL param for direct approve link
 const urlParams = new URLSearchParams(location.search);
 const approveId = urlParams.get('approve');
 
@@ -435,14 +376,37 @@ const approveId = urlParams.get('approve');
 // INIT
 // ══════════════════════════════════════════
 window.addEventListener('load', async () => {
+  // Set applicant name display
+  document.getElementById('nameDisplay').textContent = loggedInName || '(Not logged in)';
+
+  // Show HQ-only tabs
+  if (isHQ) {
+    document.querySelectorAll('.hq-only').forEach(el => el.style.display = 'block');
+  }
+
+  // Load SKUs
   await loadSkus();
-  addRow(); // first product row
+  addRow();
+
+  // Load my requests
+  if (loggedInName) loadHistory();
+
+  // If direct approve link, go to approval tab
   if (approveId) {
-    // Jump straight to approval tab
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
     document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
     document.querySelectorAll('.tab-btn')[3].classList.add('active');
     document.getElementById('panel-approve').classList.add('active');
+    // Show gate only if not HQ
+    if (!isHQ) {
+      document.getElementById('approveGate').style.display = 'block';
+      document.getElementById('approveContent').style.display = 'none';
+    } else {
+      loadApproveList();
+    }
+  } else if (isHQ) {
+    // HQ: preload records and approve list quietly
+    fetchAllRecords();
   }
 });
 
@@ -454,34 +418,30 @@ function switchTab(name, el) {
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
   el.classList.add('active');
   document.getElementById('panel-' + name).classList.add('active');
+  if (name === 'records' && isHQ) fetchAllRecords();
+  if (name === 'approve' && isHQ) loadApproveList();
 }
 
 // ══════════════════════════════════════════
-// LOAD SKUs FROM SUPABASE
+// SKU
 // ══════════════════════════════════════════
 async function loadSkus() {
   try {
     const res = await fetch(SUPABASE_URL + '/rest/v1/sample_skus?order=sku_name.asc', { headers: H });
     const data = await res.json();
     if (Array.isArray(data)) skuList = data.map(d => d.sku_name);
-  } catch(e) {
-    console.warn('SKU load failed, using empty list', e);
-  }
+  } catch(e) { skuList = []; }
 }
 
 function skuOptions(selected) {
-  let opts = `<option value="">-- Select SKU --</option>`;
-  skuList.forEach(s => {
-    opts += `<option value="${escH(s)}" ${s === selected ? 'selected' : ''}>${escH(s)}</option>`;
-  });
-  opts += `<option value="__other__">Other (type below)</option>`;
+  let opts = `<option value="">— Select SKU —</option>`;
+  skuList.forEach(s => { opts += `<option value="${escH(s)}" ${s===selected?'selected':''}>${escH(s)}</option>`; });
+  opts += `<option value="__other__">Other…</option>`;
   return opts;
 }
 
 function uomOptions(selected) {
-  return UOM_OPTIONS.map(u =>
-    `<option value="${u}" ${u === selected ? 'selected' : ''}>${u}</option>`
-  ).join('');
+  return UOM_OPTIONS.map(u => `<option value="${u}" ${u===selected?'selected':''}>${u}</option>`).join('');
 }
 
 // ══════════════════════════════════════════
@@ -491,40 +451,30 @@ function addRow(skuVal, uomVal, qtyVal) {
   const wrap = document.createElement('div');
   wrap.className = 'prod-row';
   wrap.innerHTML = `
-    <select class="prod-sku" onchange="handleSkuChange(this)">
-      ${skuOptions(skuVal || '')}
-    </select>
-    <select class="prod-uom">${uomOptions(uomVal || UOM_OPTIONS[0])}</select>
-    <input type="number" class="prod-qty" placeholder="Qty" min="1" value="${qtyVal || ''}">
-    <button class="rm-btn" onclick="removeRow(this)" title="Remove">×</button>`;
+    <select class="prod-sku" onchange="handleSkuChange(this)">${skuOptions(skuVal||'')}</select>
+    <select class="prod-uom">${uomOptions(uomVal||UOM_OPTIONS[0])}</select>
+    <input type="number" class="prod-qty" placeholder="Qty" min="1" value="${qtyVal||''}">
+    <button class="rm-btn" onclick="removeRow(this)">×</button>`;
   document.getElementById('prodRows').appendChild(wrap);
 }
 
 function handleSkuChange(sel) {
-  if (sel.value === '__other__') {
-    const input = document.createElement('input');
-    input.type = 'text';
-    input.className = 'prod-sku-text';
-    input.placeholder = 'Type SKU name';
-    sel.parentNode.insertBefore(input, sel.nextSibling);
-    sel.style.display = 'none';
-  }
+  if (sel.value !== '__other__') return;
+  const input = document.createElement('input');
+  input.type = 'text'; input.className = 'prod-sku-custom'; input.placeholder = 'Type SKU name';
+  sel.parentNode.replaceChild(input, sel);
 }
 
 function removeRow(btn) {
-  const rows = document.querySelectorAll('.prod-row');
-  if (rows.length <= 1) { alert('At least one product is required.'); return; }
+  if (document.querySelectorAll('.prod-row').length <= 1) { alert('At least one product required.'); return; }
   btn.closest('.prod-row').remove();
 }
 
 function getProducts() {
   const products = [];
   document.querySelectorAll('.prod-row').forEach(row => {
-    let sku = '';
-    const sel = row.querySelector('.prod-sku');
-    const txt = row.querySelector('.prod-sku-text');
-    if (txt) sku = txt.value.trim();
-    else if (sel) sku = sel.value;
+    const skuEl = row.querySelector('.prod-sku') || row.querySelector('.prod-sku-custom');
+    const sku = skuEl ? skuEl.value.trim() : '';
     const uom = row.querySelector('.prod-uom')?.value || '';
     const qty = row.querySelector('.prod-qty')?.value.trim() || '';
     if (sku && sku !== '__other__' && qty) products.push({ sku, uom, qty });
@@ -533,29 +483,24 @@ function getProducts() {
 }
 
 // ══════════════════════════════════════════
-// GENERATE REF
+// SUBMIT
 // ══════════════════════════════════════════
 function genRef() {
-  const now = new Date();
-  const yy = String(now.getFullYear()).slice(2);
-  const mm = String(now.getMonth()+1).padStart(2,'0');
-  const dd = String(now.getDate()).padStart(2,'0');
-  const rnd = Math.floor(Math.random()*900+100);
-  return `SR${yy}${mm}${dd}-${rnd}`;
+  const n = new Date();
+  return `SR${String(n.getFullYear()).slice(2)}${String(n.getMonth()+1).padStart(2,'0')}${String(n.getDate()).padStart(2,'0')}-${Math.floor(Math.random()*900+100)}`;
 }
 
-// ══════════════════════════════════════════
-// SUBMIT REQUEST
-// ══════════════════════════════════════════
 async function submitRequest() {
-  const name     = loggedInName || document.getElementById('f_name')?.value.trim() || '';
+  const name     = loggedInName;
   const customer = document.getElementById('f_customer').value.trim();
   const purpose  = document.getElementById('f_purpose').value.trim();
   const address  = document.getElementById('f_address').value.trim();
   const products = getProducts();
 
+  if (!name) { showAlert('applyError', 'Please log in before submitting a request.'); return; }
+
   let hasErr = false;
- ['f_customer','f_purpose','f_address'].forEach(id => {
+  ['f_customer','f_purpose','f_address'].forEach(id => {
     const el = document.getElementById(id);
     el.classList.remove('err');
     if (!el.value.trim()) { el.classList.add('err'); hasErr = true; }
@@ -571,11 +516,10 @@ async function submitRequest() {
   const ref = genRef();
   const record = {
     ref_no: ref, applicant: name, customer, purpose, address,
-    products: JSON.stringify(products),
-    status: 'pending',
+    products: JSON.stringify(products), status: 'pending',
     submitted_at: now.toISOString(),
-    submitted_date: now.toLocaleDateString('en-MY', {year:'numeric',month:'2-digit',day:'2-digit'}),
-    submitted_time: now.toLocaleTimeString('en-MY', {hour:'2-digit',minute:'2-digit'})
+    submitted_date: now.toLocaleDateString('en-MY',{year:'numeric',month:'2-digit',day:'2-digit'}),
+    submitted_time: now.toLocaleTimeString('en-MY',{hour:'2-digit',minute:'2-digit'})
   };
 
   try {
@@ -589,13 +533,15 @@ async function submitRequest() {
     document.getElementById('shareBox').style.display = 'block';
     showAlert('applySuccess', `✅ Request ${ref} submitted successfully!`);
 
-    // Reset
-    // document.getElementById('f_name').value = '';
+    // Reset form
     document.getElementById('f_customer').value = '';
     document.getElementById('f_purpose').value = '';
     document.getElementById('f_address').value = '';
     document.getElementById('prodRows').innerHTML = '';
     addRow();
+
+    // Reload history
+    loadHistory();
   } catch(e) {
     showAlert('applyError', 'Submission failed: ' + e.message);
   }
@@ -603,7 +549,7 @@ async function submitRequest() {
 }
 
 // ══════════════════════════════════════════
-// COPY & WHATSAPP
+// COPY & WHATSAPP (submit)
 // ══════════════════════════════════════════
 function copyLink() {
   const el = document.getElementById('approveLink');
@@ -612,28 +558,28 @@ function copyLink() {
   btn.textContent = 'Copied ✓';
   setTimeout(() => btn.textContent = 'Copy', 2000);
 }
+
 function shareWhatsApp() {
   const link = document.getElementById('approveLink').value;
-  const name = loggedInName || 'staff';
-  window.open(`https://wa.me/?text=${encodeURIComponent(`Hi, please approve ${name}'s sample request:\n${link}`)}`, '_blank');
+  const msg = encodeURIComponent(`Hi, please approve ${loggedInName}'s sample request:\n${link}`);
+  window.open(`https://wa.me/?text=${msg}`, '_blank');
 }
 
 // ══════════════════════════════════════════
 // MY REQUESTS
 // ══════════════════════════════════════════
 async function loadHistory() {
-  const name = document.getElementById('historyName').value.trim();
-  if (!name) { alert('Please enter your name.'); return; }
+  if (!loggedInName) return;
   const list = document.getElementById('historyList');
-  list.innerHTML = '<div class="loading">Searching…</div>';
+  list.innerHTML = '<div class="loading">Loading…</div>';
   try {
     const res = await fetch(
-      SUPABASE_URL + '/rest/v1/sample_requests?applicant=eq.' + encodeURIComponent(name) + '&order=submitted_at.desc',
+      SUPABASE_URL + '/rest/v1/sample_requests?applicant=eq.' + encodeURIComponent(loggedInName) + '&order=submitted_at.desc',
       { headers: H }
     );
     const data = await res.json();
     if (!data.length) {
-      list.innerHTML = `<div class="empty"><div class="empty-icon">📭</div><p>No requests found for "<strong>${escH(name)}</strong>".</p></div>`;
+      list.innerHTML = '<div class="empty"><div class="empty-icon">📭</div><p>No requests found for <strong>' + escH(loggedInName) + '</strong>.</p></div>';
       return;
     }
     list.innerHTML = data.map(r => renderItem(r, false)).join('');
@@ -643,17 +589,8 @@ async function loadHistory() {
 }
 
 // ══════════════════════════════════════════
-// ALL RECORDS
+// ALL RECORDS (HQ)
 // ══════════════════════════════════════════
-async function verifyRecords() {
-  const pw = document.getElementById('recordsPassword').value;
-  if (pw !== APPROVE_PASSWORD) { showAlert('recordsPwError', 'Incorrect password.'); return; }
-  recordsVerified = true;
-  document.getElementById('recordsGate').style.display = 'none';
-  document.getElementById('recordsContent').style.display = 'block';
-  await fetchAllRecords();
-}
-
 async function fetchAllRecords() {
   try {
     const res = await fetch(SUPABASE_URL + '/rest/v1/sample_requests?order=submitted_at.desc', { headers: H });
@@ -661,14 +598,14 @@ async function fetchAllRecords() {
     renderStats();
     renderAllRecords();
   } catch(e) {
-    document.getElementById('allRecordsList').innerHTML = '<div class="empty"><div class="empty-icon">❌</div><p>Failed to load records.</p></div>';
+    document.getElementById('allRecordsList').innerHTML = '<div class="empty"><div class="empty-icon">❌</div><p>Failed to load.</p></div>';
   }
 }
 
 function renderStats() {
   const total    = allRecordsData.length;
-  const pending  = allRecordsData.filter(r => r.status === 'pending').length;
-  const approved = allRecordsData.filter(r => r.status === 'approved').length;
+  const pending  = allRecordsData.filter(r => r.status==='pending').length;
+  const approved = allRecordsData.filter(r => r.status==='approved').length;
   document.getElementById('recordsStats').innerHTML = `
     <div class="stat-card"><div class="stat-label">Total</div><div class="stat-val">${total}</div><div class="stat-sub">All time</div></div>
     <div class="stat-card"><div class="stat-label">Pending</div><div class="stat-val" style="color:var(--amber)">${pending}</div><div class="stat-sub">Awaiting approval</div></div>
@@ -676,28 +613,24 @@ function renderStats() {
 }
 
 function renderAllRecords() {
-  const statusFilter = document.getElementById('filterStatus').value;
-  const searchFilter = document.getElementById('filterSearch').value.toLowerCase();
+  const sf = document.getElementById('filterStatus').value;
+  const kw = document.getElementById('filterSearch').value.toLowerCase();
   let data = allRecordsData;
-  if (statusFilter) data = data.filter(r => r.status === statusFilter);
-  if (searchFilter) data = data.filter(r =>
-    (r.applicant||'').toLowerCase().includes(searchFilter) ||
-    (r.customer||'').toLowerCase().includes(searchFilter) ||
-    (r.ref_no||'').toLowerCase().includes(searchFilter)
+  if (sf) data = data.filter(r => r.status === sf);
+  if (kw) data = data.filter(r =>
+    (r.applicant||'').toLowerCase().includes(kw) ||
+    (r.customer||'').toLowerCase().includes(kw) ||
+    (r.ref_no||'').toLowerCase().includes(kw)
   );
   const list = document.getElementById('allRecordsList');
-  if (!data.length) {
-    list.innerHTML = '<div class="empty"><div class="empty-icon">📭</div><p>No records match your filter.</p></div>';
-    return;
-  }
-  // Group by status
-  const pending  = data.filter(r => r.status === 'pending');
-  const approved = data.filter(r => r.status === 'approved');
-  const rejected = data.filter(r => r.status === 'rejected');
+  if (!data.length) { list.innerHTML = '<div class="empty"><div class="empty-icon">📭</div><p>No records match.</p></div>'; return; }
+  const pending  = data.filter(r => r.status==='pending');
+  const approved = data.filter(r => r.status==='approved');
+  const rejected = data.filter(r => r.status==='rejected');
   let html = '';
-  if (pending.length)  html += `<div class="sec-divider">⏳ Pending (${pending.length})</div>` + pending.map(r => renderItem(r, true)).join('');
-  if (approved.length) html += `<div class="sec-divider">✅ Approved (${approved.length})</div>` + approved.map(r => renderItem(r, true)).join('');
-  if (rejected.length) html += `<div class="sec-divider">❌ Rejected (${rejected.length})</div>` + rejected.map(r => renderItem(r, true)).join('');
+  if (pending.length)  html += `<div class="sec-div">⏳ Pending (${pending.length})</div>` + pending.map(r=>renderItem(r,true)).join('');
+  if (approved.length) html += `<div class="sec-div">✅ Approved (${approved.length})</div>` + approved.map(r=>renderItem(r,true)).join('');
+  if (rejected.length) html += `<div class="sec-div">❌ Rejected (${rejected.length})</div>` + rejected.map(r=>renderItem(r,true)).join('');
   list.innerHTML = html;
 }
 
@@ -711,30 +644,25 @@ async function verifyApprover() {
   document.getElementById('approveContent').style.display = 'block';
   loadApproveList();
 }
-  await loadApproveList();
-}
 
 async function loadApproveList() {
   const list = document.getElementById('approveList');
   list.innerHTML = '<div class="loading">Loading…</div>';
   try {
-    let url = approveId
+    const url = approveId
       ? SUPABASE_URL + '/rest/v1/sample_requests?ref_no=eq.' + encodeURIComponent(approveId)
       : SUPABASE_URL + '/rest/v1/sample_requests?order=submitted_at.desc';
     const res = await fetch(url, { headers: H });
     const data = await res.json();
-    if (!data.length) {
-      list.innerHTML = '<div class="empty"><div class="empty-icon">🎉</div><p>No requests found.</p></div>';
-      return;
-    }
-    const pending  = data.filter(r => r.status === 'pending');
-    const rest     = data.filter(r => r.status !== 'pending');
+    if (!data.length) { list.innerHTML = '<div class="empty"><div class="empty-icon">🎉</div><p>No requests found.</p></div>'; return; }
+    const pending = data.filter(r => r.status==='pending');
+    const rest    = data.filter(r => r.status!=='pending');
     let html = '';
-    if (pending.length)  html += `<div class="sec-divider">⏳ Pending Approval (${pending.length})</div>` + pending.map(r => renderApproveItem(r)).join('');
-    if (rest.length)     html += `<div class="sec-divider">History</div>` + rest.map(r => renderApproveItem(r)).join('');
+    if (pending.length) html += `<div class="sec-div">⏳ Pending (${pending.length})</div>` + pending.map(r=>renderApproveItem(r)).join('');
+    if (rest.length)    html += `<div class="sec-div">History</div>` + rest.map(r=>renderApproveItem(r)).join('');
     list.innerHTML = html;
   } catch(e) {
-    list.innerHTML = '<div class="empty"><div class="empty-icon">❌</div><p>Failed to load. Please refresh.</p></div>';
+    list.innerHTML = '<div class="empty"><div class="empty-icon">❌</div><p>Failed to load.</p></div>';
   }
 }
 
@@ -750,22 +678,18 @@ async function approveRequest(refNo) {
     );
     const updated = await res.json();
     showAlert('approveSuccess', `✅ Request ${refNo} approved!`);
-    // WhatsApp notify
     if (updated && updated[0]) {
       const r = updated[0];
-      const waMsg = encodeURIComponent(`Hi ${r.applicant}, your sample request ${r.ref_no} for ${r.customer} has been APPROVED ✅.`);
-      setTimeout(() => window.open(`https://wa.me/?text=${waMsg}`, '_blank'), 800);
-      sendBillingEmail(r);
+      const msg = encodeURIComponent(`Hi ${r.applicant}, your sample request ${r.ref_no} for ${r.customer} has been APPROVED ✅. Please proceed accordingly.`);
+      setTimeout(() => window.open(`https://wa.me/?text=${msg}`, '_blank'), 600);
     }
-    // Reload list
-    setTimeout(() => loadApproveList(), 1000);
+    loadApproveList();
+    if (isHQ) fetchAllRecords();
   } catch(e) {
     showAlert('approveError', 'Action failed: ' + e.message);
-    
   }
 }
 
-let pendingRejectRef = '';
 function openRejectModal(refNo) {
   pendingRejectRef = refNo;
   document.getElementById('rejectReason').value = '';
@@ -785,7 +709,8 @@ async function confirmReject() {
       { method:'PATCH', headers:{...H,'Prefer':'return=minimal'}, body: JSON.stringify({ status:'rejected', reject_reason: reason }) }
     );
     showAlert('approveSuccess', `❌ Request ${pendingRejectRef} has been rejected.`);
-    await loadApproveList();
+    loadApproveList();
+    if (isHQ) fetchAllRecords();
   } catch(e) {
     showAlert('approveError', 'Action failed: ' + e.message);
   }
@@ -796,16 +721,15 @@ async function confirmReject() {
 // ══════════════════════════════════════════
 function renderItem(r, showApplicant) {
   const products = tryParseProducts(r.products);
-  const badge = statusBadge(r.status);
   return `
     <div class="req-item" onclick="toggleBody(this)">
       <div class="req-item-top">
         <div>
           <div class="req-ref">${escH(r.ref_no)}</div>
           <div class="req-customer">${escH(r.customer)}</div>
-          <div class="req-meta">${showApplicant ? escH(r.applicant) + ' · ' : ''}${escH(r.submitted_date)} ${escH(r.submitted_time)}</div>
+          <div class="req-meta">${showApplicant ? escH(r.applicant)+' · ':''} ${escH(r.submitted_date)} ${escH(r.submitted_time)}</div>
         </div>
-        <div>${badge}</div>
+        <div>${statusBadge(r.status)}</div>
       </div>
       <div class="req-body">
         <div class="detail-grid">
@@ -813,24 +737,23 @@ function renderItem(r, showApplicant) {
           <div class="detail-item"><label>Customer</label><p>${escH(r.customer)}</p></div>
           <div class="detail-item"><label>Purpose</label><p>${escH(r.purpose)}</p></div>
           <div class="detail-item"><label>Delivery Address</label><p>${escH(r.address)}</p></div>
-          ${r.approved_at ? `<div class="detail-item"><label>Approved At</label><p>${escH(r.approved_at)}</p></div>` : ''}
-          ${r.reject_reason ? `<div class="detail-item"><label>Rejection Reason</label><p style="color:var(--red)">${escH(r.reject_reason)}</p></div>` : ''}
+          ${r.approved_at?`<div class="detail-item"><label>Approved At</label><p>${escH(r.approved_at)}</p></div>`:''}
+          ${r.reject_reason?`<div class="detail-item"><label>Rejection Reason</label><p style="color:var(--red)">${escH(r.reject_reason)}</p></div>`:''}
         </div>
         <table class="prod-table">
           <thead><tr><th>SKU / Product</th><th>UOM</th><th>Qty</th></tr></thead>
           <tbody>${products.map(p=>`<tr><td>${escH(p.sku||p.name||'')}</td><td>${escH(p.uom||'')}</td><td>${escH(p.qty||'')}</td></tr>`).join('')}</tbody>
         </table>
-        ${r.status === 'approved' ? `
+        ${r.status==='approved'?`
           <div class="action-row">
-            <button class="btn-outline" onclick="event.stopPropagation();printPDF(this)" data-record='${JSON.stringify(r).replace(/'/g,"&apos;")}'>🖨️ Print / PDF</button>
-          </div>` : ''}
+            <button class="btn-outline" onclick="event.stopPropagation();printPDF(this)" data-r='${JSON.stringify(r).replace(/'/g,"&#39;")}'>🖨️ Print / PDF</button>
+          </div>`:''}
       </div>
     </div>`;
 }
 
 function renderApproveItem(r) {
   const products = tryParseProducts(r.products);
-  const badge = statusBadge(r.status);
   const isPending = r.status === 'pending';
   return `
     <div class="req-item" onclick="toggleBody(this)">
@@ -840,7 +763,7 @@ function renderApproveItem(r) {
           <div class="req-customer">${escH(r.customer)}</div>
           <div class="req-meta">By: ${escH(r.applicant)} · ${escH(r.submitted_date)} ${escH(r.submitted_time)}</div>
         </div>
-        <div>${badge}</div>
+        <div>${statusBadge(r.status)}</div>
       </div>
       <div class="req-body">
         <div class="detail-grid">
@@ -848,18 +771,18 @@ function renderApproveItem(r) {
           <div class="detail-item"><label>Customer</label><p>${escH(r.customer)}</p></div>
           <div class="detail-item"><label>Purpose</label><p>${escH(r.purpose)}</p></div>
           <div class="detail-item"><label>Delivery Address</label><p>${escH(r.address)}</p></div>
-          ${r.reject_reason ? `<div class="detail-item" style="grid-column:1/-1"><label>Rejection Reason</label><p style="color:var(--red)">${escH(r.reject_reason)}</p></div>` : ''}
+          ${r.reject_reason?`<div class="detail-item" style="grid-column:1/-1"><label>Rejection Reason</label><p style="color:var(--red)">${escH(r.reject_reason)}</p></div>`:''}
         </div>
         <table class="prod-table">
           <thead><tr><th>SKU / Product</th><th>UOM</th><th>Qty</th></tr></thead>
           <tbody>${products.map(p=>`<tr><td>${escH(p.sku||p.name||'')}</td><td>${escH(p.uom||'')}</td><td>${escH(p.qty||'')}</td></tr>`).join('')}</tbody>
         </table>
         <div class="action-row">
-          ${isPending ? `
+          ${isPending?`
             <button class="btn-approve" onclick="event.stopPropagation();approveRequest('${r.ref_no}')">✅ Approve</button>
-            <button class="btn-reject" onclick="event.stopPropagation();openRejectModal('${r.ref_no}')">❌ Reject</button>` : ''}
-          ${r.status === 'approved' ? `
-            <button class="btn-outline" onclick="event.stopPropagation();printPDF(this)" data-record='${JSON.stringify(r).replace(/'/g,"&apos;")}'>🖨️ Print / PDF</button>` : ''}
+            <button class="btn-reject" onclick="event.stopPropagation();openRejectModal('${r.ref_no}')">❌ Reject</button>`:''}
+          ${r.status==='approved'?`
+            <button class="btn-outline" onclick="event.stopPropagation();printPDF(this)" data-r='${JSON.stringify(r).replace(/'/g,"&#39;")}'>🖨️ Print / PDF</button>`:''}
         </div>
       </div>
     </div>`;
@@ -868,30 +791,11 @@ function renderApproveItem(r) {
 function toggleBody(el) { el.querySelector('.req-body').classList.toggle('open'); }
 
 // ══════════════════════════════════════════
-// EMAILJS
-// ══════════════════════════════════════════
-async function sendBillingEmail(r) {
-  if (EMAILJS_SERVICE_ID === 'YOUR_SERVICE_ID') return;
-  try {
-    emailjs.init(EMAILJS_PUBLIC_KEY);
-    const products = tryParseProducts(r.products);
-    const prodText = products.map(p => `• ${p.sku||p.name} × ${p.qty} ${p.uom||''}`).join('\n');
-    await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
-      to_email: BILLING_EMAIL, ref_no: r.ref_no,
-      applicant: r.applicant, submitted_date: r.submitted_date,
-      submitted_time: r.submitted_time, customer: r.customer,
-      purpose: r.purpose, address: r.address,
-      products_text: prodText, approved_at: r.approved_at
-    });
-  } catch(e) { console.error('EmailJS error:', e); }
-}
-
-// ══════════════════════════════════════════
 // PDF
 // ══════════════════════════════════════════
 function printPDF(btn) {
   let r;
-  try { r = JSON.parse(btn.dataset.record.replace(/&apos;/g,"'")); } catch(e) { return; }
+  try { r = JSON.parse(btn.dataset.r.replace(/&#39;/g,"'")); } catch(e) { return; }
   const products = tryParseProducts(r.products);
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF({ unit:'mm', format:'a4' });
@@ -902,56 +806,52 @@ function printPDF(btn) {
   doc.setFillColor(22,101,52);
   doc.rect(0,0,pageW,30,'F');
   doc.setTextColor(255,255,255);
-  doc.setFontSize(17); doc.setFont('helvetica','bold');
+  doc.setFontSize(16); doc.setFont('helvetica','bold');
   doc.text('MamaVege Management Hub', margin, 13);
   doc.setFontSize(9); doc.setFont('helvetica','normal');
   doc.text('Sample Request Form', margin, 21);
-  doc.setFontSize(9);
   doc.text(r.ref_no, pageW-margin, 13, {align:'right'});
-  doc.text(r.status.toUpperCase(), pageW-margin, 21, {align:'right'});
+  doc.text('APPROVED', pageW-margin, 21, {align:'right'});
   y = 38;
 
   // Info block
   doc.setTextColor(0,0,0);
   doc.setFillColor(245,247,250);
-  doc.roundedRect(margin, y, pageW-2*margin, 44, 3,3,'F');
-  const col1 = margin+5, col2 = pageW/2+5, lh = 9;
-  const rows = [
-    ['Applicant', r.applicant,      'Date', r.submitted_date],
-    ['Customer',  r.customer,       'Time', r.submitted_time],
+  doc.roundedRect(margin,y,pageW-2*margin,44,3,3,'F');
+  const c1=margin+5, c2=pageW/2+5, lh=9;
+  [
+    ['Applicant', r.applicant,      'Date',     r.submitted_date],
+    ['Customer',  r.customer,       'Time',     r.submitted_time],
     ['Purpose',   r.purpose,        'Approved', r.approved_at||'—'],
-    ['Address',   r.address,        'Status', r.status==='approved'?'Approved ✓':r.status],
-  ];
-  rows.forEach(([l1,v1,l2,v2], i) => {
-    const ry = y + 7 + i*lh;
+    ['Address',   r.address,        'Status',   'Approved ✓'],
+  ].forEach(([l1,v1,l2,v2],i) => {
+    const ry = y+7+i*lh;
     doc.setFontSize(7); doc.setFont('helvetica','bold'); doc.setTextColor(100,100,100);
-    doc.text(l1+':', col1, ry);
+    doc.text(l1+':', c1, ry);
     doc.setFontSize(8); doc.setFont('helvetica','normal'); doc.setTextColor(20,20,20);
-    doc.text(String(v1||'').substring(0,45), col1+28, ry);
+    doc.text(String(v1||'').substring(0,45), c1+28, ry);
     doc.setFontSize(7); doc.setFont('helvetica','bold'); doc.setTextColor(100,100,100);
-    doc.text(l2+':', col2, ry);
+    doc.text(l2+':', c2, ry);
     doc.setFontSize(8); doc.setFont('helvetica','normal'); doc.setTextColor(20,20,20);
-    doc.text(String(v2||'').substring(0,30), col2+26, ry);
+    doc.text(String(v2||'').substring(0,30), c2+26, ry);
   });
   y += 52;
 
-  // Table header
+  // Products table
   doc.setFillColor(22,101,52);
-  doc.rect(margin, y, pageW-2*margin, 8,'F');
+  doc.rect(margin,y,pageW-2*margin,8,'F');
   doc.setTextColor(255,255,255); doc.setFontSize(8); doc.setFont('helvetica','bold');
   doc.text('SKU / Product', margin+4, y+5.5);
-  doc.text('UOM', pageW/2-10, y+5.5, {align:'center'});
+  doc.text('UOM', pageW/2, y+5.5, {align:'center'});
   doc.text('Qty', pageW-margin-4, y+5.5, {align:'right'});
   y += 8;
-
   products.forEach((p,i) => {
-    doc.setFillColor(i%2===0?255:248,i%2===0?255:250,i%2===0?255:252);
+    doc.setFillColor(i%2===0?255:248, i%2===0?255:250, i%2===0?255:252);
     doc.rect(margin,y,pageW-2*margin,8,'F');
-    doc.setTextColor(30,30,30); doc.setFont('helvetica','normal'); doc.setFontSize(8);
-    doc.text(String(p.sku||p.name||''), margin+4, y+5.5);
-    doc.text(String(p.uom||''), pageW/2-10, y+5.5, {align:'center'});
-    doc.setFont('helvetica','bold');
-    doc.text(String(p.qty||''), pageW-margin-4, y+5.5, {align:'right'});
+    doc.setTextColor(30,30,30); doc.setFontSize(8);
+    doc.setFont('helvetica','normal'); doc.text(String(p.sku||p.name||''), margin+4, y+5.5);
+    doc.text(String(p.uom||''), pageW/2, y+5.5, {align:'center'});
+    doc.setFont('helvetica','bold'); doc.text(String(p.qty||''), pageW-margin-4, y+5.5, {align:'right'});
     y += 8;
   });
   doc.setDrawColor(220,220,220);
@@ -961,9 +861,9 @@ function printPDF(btn) {
   // Signatures
   doc.setFontSize(8); doc.setFont('helvetica','bold'); doc.setTextColor(80,80,80);
   doc.text('Applicant Signature:', margin, y);
-  doc.setDrawColor(150,150,150); doc.line(margin, y+12, margin+65, y+12);
+  doc.setDrawColor(150,150,150); doc.line(margin,y+12,margin+65,y+12);
   doc.text('Manager Approval:', pageW/2+5, y);
-  doc.line(pageW/2+5, y+12, pageW/2+70, y+12);
+  doc.line(pageW/2+5,y+12,pageW/2+70,y+12);
   y += 22;
 
   // Footer
@@ -976,15 +876,15 @@ function printPDF(btn) {
 }
 
 // ══════════════════════════════════════════
-// HELPERS
+// UTILS
 // ══════════════════════════════════════════
 function statusBadge(s) {
   const m = { pending:['badge-pending','⏳ Pending'], approved:['badge-approved','✅ Approved'], rejected:['badge-rejected','❌ Rejected'] };
-  const [c,t] = m[s] || ['badge-pending', s];
+  const [c,t] = m[s]||['badge-pending',s];
   return `<span class="badge ${c}">${t}</span>`;
 }
 function tryParseProducts(raw) {
-  try { return JSON.parse(raw) || []; } catch { return [{sku:String(raw||''),uom:'',qty:''}]; }
+  try { return JSON.parse(raw)||[]; } catch { return [{sku:String(raw||''),uom:'',qty:''}]; }
 }
 function showAlert(id, msg) {
   const el = document.getElementById(id);
@@ -994,7 +894,7 @@ function showAlert(id, msg) {
 }
 function hideAlert(id) { document.getElementById(id)?.classList.remove('show'); }
 function escH(s) {
-  return String(s||'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
 </script>
 </body>
