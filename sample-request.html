@@ -706,18 +706,11 @@ function renderAllRecords() {
 // ══════════════════════════════════════════
 async function verifyApprover() {
   const pw = document.getElementById('approvePassword').value;
-  if (pw !== APPROVE_PASSWORD) { showAlert('pwError', 'Incorrect password.'); return; }
-  approverVerified = true;
+  if (pw !== APPROVE_PASSWORD) { showAlert('pwError','Incorrect password.'); return; }
   document.getElementById('approveGate').style.display = 'none';
   document.getElementById('approveContent').style.display = 'block';
-  // WhatsApp notify applicant
-    const approvedRecord = updated && updated[0];
-    if (approvedRecord) {
-      const waMsg = encodeURIComponent(`Hi ${approvedRecord.applicant}, your sample request ${approvedRecord.ref_no} for ${approvedRecord.customer} has been APPROVED ✅. Please proceed accordingly.`);
-      const waUrl = `https://wa.me/?text=${waMsg}`;
-      showAlert('approveSuccess', `✅ Request ${refNo} approved!`);
-      setTimeout(() => window.open(waUrl, '_blank'), 1000);
-    }
+  loadApproveList();
+}
   await loadApproveList();
 }
 
