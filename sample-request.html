@@ -614,7 +614,7 @@ function copyLink() {
 }
 function shareWhatsApp() {
   const link = document.getElementById('approveLink').value;
-  const name = document.getElementById('f_name').value || 'staff';
+  const name = loggedInName || 'staff';
   window.open(`https://wa.me/?text=${encodeURIComponent(`Hi, please approve ${name}'s sample request:\n${link}`)}`, '_blank');
 }
 
