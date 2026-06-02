@@ -166,6 +166,13 @@
     <div class="header-brand">🥬 MamaVege</div>
     <div class="header-sub">Outlet Stock Check & Return</div>
   </div>
+  <div id="hq-login-area">
+    <button id="hq-login-btn" onclick="openHQLogin()" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.4);color:#fff;padding:6px 14px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;">🔒 HQ Login</button>
+    <span id="hq-logged-in" style="display:none;font-size:12px;color:rgba(255,255,255,.9);display:none;align-items:center;gap:8px;">
+      <span>✅ HQ Mode</span>
+      <button onclick="logoutHQLocal()" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.4);color:#fff;padding:4px 10px;border-radius:6px;font-size:11px;cursor:pointer;">Logout</button>
+    </span>
+  </div>
 </header>
 
 <div class="tabs">
@@ -350,6 +357,21 @@
   </div>
 </div>
 
+<!-- Modal: HQ Login -->
+<div class="modal-backdrop" id="hqLoginModal">
+  <div class="modal" style="max-width:340px;text-align:center">
+    <div style="font-size:36px;margin-bottom:8px">🔒</div>
+    <h3 style="margin-bottom:6px">HQ Login</h3>
+    <p style="font-size:13px;color:var(--ink-muted);margin-bottom:16px">Enter HQ password to enable delete access.</p>
+    <input type="password" id="hqPwInput" placeholder="Password" style="text-align:center;letter-spacing:.1em;margin-bottom:10px" onkeydown="if(event.key==='Enter')submitHQLogin()">
+    <div id="hqPwError" style="font-size:12px;color:var(--red);margin-bottom:10px;display:none">Incorrect password.</div>
+    <div class="modal-footer" style="justify-content:center">
+      <button class="btn btn-ghost" onclick="closeModal('hqLoginModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="submitHQLogin()">Enter</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -362,10 +384,52 @@ async function sbPost(table,body) { const r=await fetch(SB_URL+'/rest/v1/'+table
 async function sbDelete(table,id) { await fetch(SB_URL+'/rest/v1/'+table+'?id=eq.'+id,{method:'DELETE',headers:H}); }
 
 let outlets=[], products=[], productRowId=0;
-const isHQ = sessionStorage.getItem('hq_auth')==='1' || sessionStorage.getItem('userRole')==='hq';
+function isHQ() { return sessionStorage.getItem('hq_auth')==='1' || sessionStorage.getItem('userRole')==='hq'; }
+
+function openHQLogin() {
+  document.getElementById('hqPwInput').value='';
+  document.getElementById('hqPwError').style.display='none';
+  document.getElementById('hqLoginModal').classList.add('open');
+  setTimeout(()=>document.getElementById('hqPwInput').focus(), 100);
+}
+async function submitHQLogin() {
+  const pw = document.getElementById('hqPwInput').value.trim();
+  if(!pw) return;
+  try {
+    const r = await fetch(SB_URL+'/rest/v1/settings?key=eq.hq_password&select=value', {headers:H});
+    const data = await r.json();
+    if(data.length && data[0].value === pw) {
+      sessionStorage.setItem('hq_auth','1');
+      closeModal('hqLoginModal');
+      updateHQUI();
+      showToast('✅ HQ Mode enabled. Delete buttons are now visible.');
+      // refresh current tab
+      const activeTab = document.querySelector('.tab.active')?.dataset?.tab;
+      if(activeTab==='overview') loadOverview();
+    } else {
+      document.getElementById('hqPwError').style.display='block';
+      document.getElementById('hqPwInput').value='';
+      document.getElementById('hqPwInput').focus();
+    }
+  } catch(e) { showToast('Connection error.', true); }
+}
+function logoutHQLocal() {
+  sessionStorage.removeItem('hq_auth');
+  updateHQUI();
+  showToast('HQ mode disabled.');
+  const activeTab = document.querySelector('.tab.active')?.dataset?.tab;
+  if(activeTab==='overview') loadOverview();
+}
+function updateHQUI() {
+  const logged = isHQ();
+  document.getElementById('hq-login-btn').style.display = logged ? 'none' : '';
+  const loggedInEl = document.getElementById('hq-logged-in');
+  loggedInEl.style.display = logged ? 'flex' : 'none';
+}
 
 window.addEventListener('DOMContentLoaded', async ()=>{
   document.getElementById('f-date').value = new Date().toISOString().split('T')[0];
+  updateHQUI();
   await Promise.all([loadOutlets(), loadProducts()]);
   addProductRow();
   loadAlerts(true);
@@ -628,7 +692,7 @@ async function loadOverview() {
       <div class="outlet-badges">
         ${b?`<span class="badge ${b[0]}">${b[1]}</span>`:'<span class="badge badge-ok">✓ OK</span>'}
         ${e.hasReturn?'<span class="badge badge-return">↩ Pending Return</span>':''}
-        ${isHQ?`<button class="btn-delete-row" onclick="event.stopPropagation();deleteOutlet('${e.id}','${escH(e.name)}')">🗑 Delete</button>`:''}
+        ${isHQ()?`<button class="btn-delete-row" onclick="event.stopPropagation();deleteOutlet('${e.id}','${escH(e.name)}')">🗑 Delete</button>`:''}
       </div>
     </div>`;
   }).join('');
@@ -643,13 +707,13 @@ async function openDetail(outletId, outletName) {
   const today=new Date(); today.setHours(0,0,0,0);
   function cls(d){ if(!d) return ''; const days=Math.ceil((new Date(d)-today)/86400000); if(days<=30) return 'exp-30'; if(days<=90) return 'exp-90'; if(days<=120) return 'exp-120'; if(days<=180) return 'exp-180'; return ''; }
   document.getElementById('detailContent').innerHTML=`<div style="overflow-x:auto"><table class="detail-table">
-    <tr><th>Product</th><th>LOT</th><th>Expiry</th><th>Qty</th><th>Return</th><th>Destination</th><th>Agent</th><th>Date</th>${isHQ?'<th></th>':''}</tr>
+    <tr><th>Product</th><th>LOT</th><th>Expiry</th><th>Qty</th><th>Return</th><th>Destination</th><th>Agent</th><th>Date</th>${isHQ()?'<th></th>':''}</tr>
     ${data.map(r=>`<tr class="${cls(r.expiry_date)}">
       <td>${escH(r.product_name||'')}</td><td><span class="lot-tag">${escH(r.lot_number||'—')}</span></td>
       <td>${r.expiry_date||'—'}</td><td>${r.quantity||0}</td>
       <td>${r.need_return?`<span style="color:var(--red);font-weight:600">↩ ${r.return_quantity||0} pcs</span>`:'—'}</td>
       <td>${escH(r.return_destination||'—')}</td><td>${escH(r.agent_name||'')}</td><td>${r.check_date||''}</td>
-      ${isHQ?`<td><button class="btn-delete-row" onclick="deleteRecord(${r.id},'${outletId}','${escH(outletName)}')">🗑</button></td>`:''}
+      ${isHQ()?`<td><button class="btn-delete-row" onclick="deleteRecord(${r.id},'${outletId}','${escH(outletName)}')">🗑</button></td>`:''}
     </tr>`).join('')}
   </table></div>`;
 }
