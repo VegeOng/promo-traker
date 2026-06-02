@@ -746,7 +746,7 @@ async function loadApproveList() {
 }
 
 async function approveRequest(refNo) {
-  if (!confirm(`Approve request ${refNo}? An email will be sent to the billing team.`)) return;
+  if (!confirm(`Approve request ${refNo}?`)) return;
   const now = new Date();
   const approvedAt = now.toLocaleDateString('en-MY',{year:'numeric',month:'2-digit',day:'2-digit'})
                    + ' ' + now.toLocaleTimeString('en-MY',{hour:'2-digit',minute:'2-digit'});
@@ -756,13 +756,20 @@ async function approveRequest(refNo) {
       { method:'PATCH', headers:{...H,'Prefer':'return=representation'}, body: JSON.stringify({ status:'approved', approved_at: approvedAt }) }
     );
     const updated = await res.json();
-    if (updated && updated[0]) await sendBillingEmail(updated[0]);
+    showAlert('approveSuccess', `✅ Request ${refNo} approved!`);
+    // WhatsApp notify
     if (updated && updated[0]) {
-  // WhatsApp notify applicant
-  const r = updated[0];
-  const waMsg = encodeURIComponent(`Hi ${r.applicant}, your sample request ${r.ref_no} for ${r.customer} has been APPROVED ✅. Please proceed accordingly.`);
-  setTimeout(() => window.open(`https://wa.me/?text=${waMsg}`, '_blank'), 500);
-  sendBillingEmail(r); // non-blocking
+      const r = updated[0];
+      const waMsg = encodeURIComponent(`Hi ${r.applicant}, your sample request ${r.ref_no} for ${r.customer} has been APPROVED ✅.`);
+      setTimeout(() => window.open(`https://wa.me/?text=${waMsg}`, '_blank'), 800);
+      sendBillingEmail(r);
+    }
+    // Reload list
+    setTimeout(() => loadApproveList(), 1000);
+  } catch(e) {
+    showAlert('approveError', 'Action failed: ' + e.message);
+  }
+}
 }
     await loadApproveList();
   } catch(e) {
