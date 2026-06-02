@@ -757,7 +757,13 @@ async function approveRequest(refNo) {
     );
     const updated = await res.json();
     if (updated && updated[0]) await sendBillingEmail(updated[0]);
-    showAlert('approveSuccess', `✅ Request ${refNo} approved! Notification sent to billing team.`);
+    if (updated && updated[0]) {
+  // WhatsApp notify applicant
+  const r = updated[0];
+  const waMsg = encodeURIComponent(`Hi ${r.applicant}, your sample request ${r.ref_no} for ${r.customer} has been APPROVED ✅. Please proceed accordingly.`);
+  setTimeout(() => window.open(`https://wa.me/?text=${waMsg}`, '_blank'), 500);
+  sendBillingEmail(r); // non-blocking
+}
     await loadApproveList();
   } catch(e) {
     showAlert('approveError', 'Action failed: ' + e.message);
