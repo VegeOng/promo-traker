@@ -157,6 +157,7 @@ table.dt tr.clickable:hover td{background:var(--primary-light)}
   <button onclick="go('products',this)">🏷️ 产品</button>
   <button onclick="go('skutop',this)">🔍 SKU客户</button>
   <button onclick="go('team',this)">👤 团队</button>
+  <button onclick="go('profit',this)">💰 利润</button>
   <button onclick="go('admin',this)">⚙️ 目标</button>
 </nav>
 
@@ -198,6 +199,17 @@ const SB='https://wjhgezvrxlhpexocfsea.supabase.co/rest/v1';
 const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndqaGdlenZyeGxocGV4b2Nmc2VhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg1MDU4NzgsImV4cCI6MjA5NDA4MTg3OH0.jENcrgEDYDlSRUCqve-T6rxYRJfz-dnZQHnXpPLJ_RE';
 const SB_HDR={'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json','Prefer':'return=representation'};
 const SKUS=['KPM','CLM','SHCR','SHTY','SHSS','SPM - BBQ','BBQ (BAG)','SPM - MALA','MALA (BAG)','MRBR','TYSN','TYSP','TMSP','SMTS','SMCL','SPTS','SPCL','CMBR','KETUPAT'];
+
+// Profit config: customer → SKU → {w: wholesale price, c: cost, d: total deduction rate}
+const PC={
+'7 ELEVEN':{'SPM - BBQ':{w:1,c:.39,d:.21},'SPM - MALA':{w:1,c:.39,d:.21},'SMTS':{w:3.8,c:4.08,d:.21},'SMCL':{w:3.8,c:4.11,d:.21}},
+"LOTUS'S":{'KPM':{w:15.9,c:9.16,d:.139},'SPM - BBQ':{w:1,c:.39,d:.139},'SPM - MALA':{w:1,c:.39,d:.139},'SHTY':{w:13.9,c:8.56,d:.139},'SHCR':{w:13.9,c:7.89,d:.139}},
+'MYNEWS / MYCU':{'KPM':{w:3.6,c:2.4,d:.09},'CLM':{w:3.6,c:2.4,d:.09},'SPM - BBQ':{w:1,c:.39,d:.09},'SPM - MALA':{w:1,c:.39,d:.09},'SMTS':{w:3.8,c:4.3,d:.09},'SMCL':{w:3.8,c:4.28,d:.09},'SHTY':{w:14.2,c:8.56,d:.09},'SHCR':{w:14.2,c:7.89,d:.09}},
+'JAYA GROCER':{'KPM':{w:14.9,c:9.16,d:.065},'CLM':{w:14.9,c:9.85,d:.10},'SMTS':{w:4.7,c:4.3,d:.055},'SMCL':{w:4.7,c:4.28,d:.055},'SHTY':{w:13,c:8.56,d:.115},'SHCR':{w:13,c:7.89,d:.115}},
+'AEON CO.':{'KPM':{w:15.9,c:9.16,d:.10},'CLM':{w:15.9,c:9.85,d:.10},'SMTS':{w:3.8,c:4.08,d:.10},'SMCL':{w:3.8,c:4.11,d:.10},'SHTY':{w:14.2,c:8.56,d:.10},'SHCR':{w:14.2,c:7.89,d:.10}},
+'AEON BIG':{'KPM':{w:15.9,c:9.16,d:.115},'CLM':{w:15.9,c:9.85,d:.115}},
+'VILLAGE GROCER':{'KPM':{w:15.9,c:9.16,d:.04},'CLM':{w:15.9,c:9.85,d:.10},'SHTY':{w:15.9,c:8.56,d:.04},'SHCR':{w:15.9,c:7.89,d:.04}}
+};
 
 let allData=[], state={year:0,month:0,tab:'overview',targets:{monthly:500000,annual:6000000}};
 let custSearchTerm='', custSPFilter='';
@@ -313,6 +325,7 @@ function render(){
     case'customers':c.innerHTML=rCustomers();break;
     case'products':c.innerHTML=rProducts();break;
     case'skutop':c.innerHTML=rSkuTop();break;
+    case'profit':c.innerHTML=rProfit();break;
     case'team':c.innerHTML=rTeam();break;
     case'admin':rAdmin();break;
   }
@@ -463,6 +476,100 @@ function rTeam(){
   team.forEach((t,i)=>{const share=totalRev?t.rev/totalRev:0;h+=`<div class="team-card"><div class="team-avatar" style="background:${colors[i%5]}">${t.name.charAt(0)}</div><div class="team-info"><div class="team-name">${t.name}</div><div class="team-stats">${fmt(t.rev)} · ${t.orders} 单 · ${t.custs.size} 家客户 · 占比 ${(share*100).toFixed(1)}%</div><div class="team-bar"><div class="team-bar-fill" style="width:${Math.min(share*100,100)}%;background:${colors[i%5]}"></div></div></div><div class="team-pct" style="color:${colors[i%5]}">${(share*100).toFixed(0)}%</div></div>`;});
   if(team.length){const mx=Math.max(...team.map(t=>t.rev));h+=`<div class="card" style="margin-top:12px"><h3><span class="dot"></span>贡献对比</h3><div class="bar-chart">`;team.forEach((t,i)=>{h+=`<div class="bar-row"><div class="bar-label">${t.name.substring(0,5)}</div><div class="bar-track"><div class="bar-fill g" style="width:${(t.rev/mx*100).toFixed(1)}%;background:${colors[i%5]}"></div><div class="bar-val">${fmtK(t.rev)}</div></div><div class="bar-pct">${(t.rev/totalRev*100).toFixed(0)}%</div></div>`;});h+=`</div></div>`;}
   return h;
+}
+
+function profitStats(){
+  const data=filtered();const custMap={};
+  data.forEach(r=>{
+    const cust=r['COMPANY']||'Unknown';const cfg=PC[cust];if(!cfg)return;
+    if(!custMap[cust])custMap[cust]={name:cust,grossRev:0,deductions:0,netRev:0,cost:0,profit:0,skus:{},sp:r['SALES PERSON']||''};
+    const cm=custMap[cust];
+    SKUS.forEach(sku=>{
+      const qty=parseFloat(r[sku])||0;if(!qty||!cfg[sku])return;
+      const s=cfg[sku],gross=qty*s.w,ded=gross*s.d,net=gross-ded,cst=qty*s.c,pft=net-cst;
+      cm.grossRev+=gross;cm.deductions+=ded;cm.netRev+=net;cm.cost+=cst;cm.profit+=pft;
+      if(!cm.skus[sku])cm.skus[sku]={sku,qty:0,gross:0,ded:0,net:0,cost:0,profit:0,margin:0,wp:s.w,cp:s.c,dr:s.d};
+      const sk=cm.skus[sku];sk.qty+=qty;sk.gross+=gross;sk.ded+=ded;sk.net+=net;sk.cost+=cst;sk.profit+=pft;
+    });
+    if(r['SALES PERSON'])cm.sp=r['SALES PERSON'];
+  });
+  Object.values(custMap).forEach(c=>{c.margin=c.netRev?c.profit/c.netRev:0;Object.values(c.skus).forEach(s=>{s.margin=s.net?s.profit/s.net:0;});});
+  return Object.values(custMap).sort((a,b)=>b.profit-a.profit);
+}
+
+function rProfit(){
+  const custs=profitStats();
+  if(!custs.length)return'<div class="empty">💰 当前筛选条件下无利润数据<br><small>仅分析已配置利润参数的客户</small></div>';
+  const label=state.month>0?`${state.year}年${state.month}月`:`${state.year}年 YTD`;
+  const totalGross=custs.reduce((s,c)=>s+c.grossRev,0);
+  const totalNet=custs.reduce((s,c)=>s+c.netRev,0);
+  const totalCost=custs.reduce((s,c)=>s+c.cost,0);
+  const totalProfit=custs.reduce((s,c)=>s+c.profit,0);
+  const totalMargin=totalNet?totalProfit/totalNet:0;
+  const lossCusts=custs.filter(c=>c.profit<0);
+
+  let h=`<div style="background:${totalProfit<0?'var(--danger-light)':'var(--primary-light)'};border-radius:8px;padding:8px 12px;margin-bottom:10px;font-size:13px;font-weight:600;color:${totalProfit<0?'var(--danger)':'var(--primary)'}">💰 利润分析 — ${label}</div>
+  <div class="kpi-grid">
+    <div class="kpi green"><div class="label">总毛收入</div><div class="value">${fmtK(totalGross)}</div><div class="sub">扣款前</div></div>
+    <div class="kpi gold"><div class="label">总净收入</div><div class="value">${fmtK(totalNet)}</div><div class="sub">扣款后</div></div>
+    <div class="kpi blue"><div class="label">总成本</div><div class="value">${fmtK(totalCost)}</div></div>
+    <div class="kpi ${totalProfit>=0?'green':'red'}"><div class="label">总毛利</div><div class="value">${fmt(totalProfit)}</div><div class="sub">综合 Margin ${(totalMargin*100).toFixed(1)}%</div></div>
+  </div>`;
+
+  if(lossCusts.length){
+    h+=`<div class="alert-card red" style="margin-bottom:12px"><div><div class="alert-title">⚠️ ${lossCusts.length} 家客户在亏钱</div><div class="alert-sub">${lossCusts.map(c=>c.name+' ('+fmt(c.profit)+')').join(' · ')}</div></div></div>`;
+  }
+
+  h+=`<div class="card"><h3><span class="dot"></span>客户利润排名 · 点击查看 SKU 明细</h3>
+    <div style="overflow-x:auto"><table class="dt" id="profitTable"><tr><th>客户</th><th>毛收入</th><th>扣款</th><th>净收入</th><th>成本</th><th>毛利</th><th>Margin</th></tr>`;
+  custs.forEach(c=>{
+    const isLoss=c.profit<0;const esc=c.name.replace(/'/g,"\\'");
+    h+=`<tr class="clickable" onclick="toggleProfitDetail('${esc}',this)" style="${isLoss?'background:var(--danger-light)':''}">
+      <td><strong>${isLoss?'🔴':'🟢'} ${c.name}</strong><br><span style="font-size:11px;color:var(--text3)">${c.sp}</span></td>
+      <td>${fmtK(c.grossRev)}</td>
+      <td style="color:var(--danger)">-${fmtK(c.deductions)}</td>
+      <td>${fmtK(c.netRev)}</td>
+      <td>${fmtK(c.cost)}</td>
+      <td style="font-weight:700;color:${isLoss?'var(--danger)':'var(--primary)'}">${fmt(c.profit)}</td>
+      <td><span class="tag ${isLoss?'dn':'up'}">${(c.margin*100).toFixed(1)}%</span></td>
+    </tr>`;
+  });
+  h+=`</table></div></div>`;
+
+  // Loss-making SKUs summary
+  const lossSkus=[];
+  custs.forEach(c=>{Object.values(c.skus).forEach(s=>{if(s.profit<0)lossSkus.push({cust:c.name,...s});});});
+  lossSkus.sort((a,b)=>a.profit-b.profit);
+  if(lossSkus.length){
+    h+=`<div class="section-title">🔴 亏损 SKU 清单 — 建议停止/调价</div>`;
+    lossSkus.forEach(s=>{
+      h+=`<div class="alert-card red"><div>
+        <div class="alert-title">${s.cust} × ${s.sku}</div>
+        <div class="alert-sub">批发 RM ${s.wp.toFixed(2)} · 成本 RM ${s.cp.toFixed(2)} · 扣款 ${(s.dr*100).toFixed(1)}% · 数量 ${s.qty.toLocaleString()}</div>
+        <div class="alert-sub" style="font-weight:700;color:var(--danger)">亏损 ${fmt(s.profit)} · Margin ${(s.margin*100).toFixed(1)}%</div>
+      </div></div>`;
+    });
+  }
+  return h;
+}
+
+function toggleProfitDetail(name,row){
+  const next=row.nextElementSibling;
+  if(next&&next.classList.contains('detail-row')){next.remove();return;}
+  document.querySelectorAll('#profitTable .detail-row').forEach(r=>r.remove());
+  const cust=profitStats().find(c=>c.name===name);if(!cust)return;
+  const skus=Object.values(cust.skus).sort((a,b)=>b.profit-a.profit);
+  let html=`<td colspan="7" style="padding:12px 16px!important;background:#f8faf8!important">
+    <div style="font-weight:700;font-size:13px;color:var(--primary);margin-bottom:6px">📦 ${name} — SKU 利润明细</div>
+    <table class="detail-table"><tr><th>SKU</th><th>批发价</th><th>成本</th><th>扣款率</th><th>数量</th><th>净收入</th><th>成本合计</th><th>毛利</th><th>Margin</th></tr>`;
+  skus.forEach(s=>{
+    const isLoss=s.profit<0;
+    html+=`<tr style="${isLoss?'background:#fee2e2':''}"><td>${s.sku}</td><td>RM ${s.wp.toFixed(2)}</td><td>RM ${s.cp.toFixed(2)}</td><td>${(s.dr*100).toFixed(1)}%</td><td>${s.qty.toLocaleString()}</td><td>${fmt(s.net)}</td><td>${fmt(s.cost)}</td><td style="font-weight:700;color:${isLoss?'var(--danger)':'var(--primary)'}">${fmt(s.profit)}</td><td><span class="tag ${isLoss?'dn':'up'}">${(s.margin*100).toFixed(1)}%</span></td></tr>`;
+  });
+  const totNet=skus.reduce((s,sk)=>s+sk.net,0),totCost=skus.reduce((s,sk)=>s+sk.cost,0),totP=skus.reduce((s,sk)=>s+sk.profit,0);
+  html+=`<tr><td>合计</td><td></td><td></td><td></td><td></td><td>${fmt(totNet)}</td><td>${fmt(totCost)}</td><td style="font-weight:700">${fmt(totP)}</td><td>${(totNet?totP/totNet*100:0).toFixed(1)}%</td></tr></table></td>`;
+  const tr=document.createElement('tr');tr.className='detail-row';tr.innerHTML=html;
+  row.after(tr);
 }
 
 function rAdmin(){
