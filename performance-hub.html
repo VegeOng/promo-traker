@@ -3,839 +3,473 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MamaVege 业绩管理中心</title>
+<title>MamaVege | 业绩管理中心</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Serif+Display&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-:root{--bg:#fafafa;--primary:#166534;--primary-light:#f0fdf4;--primary-mid:#dcfce7;--danger:#dc2626;--danger-light:#fef2f2;--warn:#f59e0b;--warn-light:#fffbeb;--text:#1f2937;--text2:#6b7280;--text3:#9ca3af;--border:#e5e7eb;--white:#fff;--shadow:0 1px 3px rgba(0,0,0,.08)}
+:root{--bg:#f4f6f3;--primary:#166534;--primary-light:#dcfce7;--primary-mid:#16a34a;--danger:#dc2626;--danger-light:#fee2e2;--warn:#d97706;--warn-light:#fef3c7;--text:#1a1a1a;--text2:#6b7280;--text3:#9ca3af;--border:#e5e7eb;--card:#ffffff;--white:#fafafa}
 body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
 h1,h2,h3,.serif{font-family:'DM Serif Display',serif}
 
-header{background:var(--primary);color:#fff;padding:20px 24px 16px;position:sticky;top:0;z-index:100}
-header h1{font-size:20px;font-weight:400;letter-spacing:.5px}
-header .sub{font-size:12px;opacity:.7;margin-top:2px}
-.controls{display:flex;gap:8px;margin-top:12px}
-.controls select{padding:6px 10px;border:1px solid rgba(255,255,255,.3);border-radius:6px;background:rgba(255,255,255,.15);color:#fff;font-family:inherit;font-size:13px;cursor:pointer}
-.controls select option{color:var(--text);background:#fff}
+.header{background:var(--primary);color:#fff;padding:0 2rem;display:flex;align-items:center;justify-content:space-between;height:64px;position:sticky;top:0;z-index:100;box-shadow:0 2px 12px rgba(22,101,52,.3)}
+.header-left{display:flex;align-items:center;gap:1rem}
+.logo{font-family:'DM Serif Display',serif;font-size:1.4rem;color:#dc2626}
+.badge{background:rgba(255,255,255,.15);padding:4px 12px;border-radius:20px;font-size:.75rem;font-weight:500}
+.header-right{display:flex;align-items:center;gap:1rem}
+.header-right a{color:rgba(255,255,255,.8);text-decoration:none;font-size:13px;font-weight:600}
+.header-right a:hover{color:#fff}
+.btn-refresh{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:#fff;padding:6px 16px;border-radius:6px;cursor:pointer;font-size:.8rem;font-family:inherit}
+.btn-refresh:hover{background:rgba(255,255,255,.25)}
+.last-updated{font-size:.75rem;opacity:.7}
 
-nav.tabs{display:flex;gap:0;background:var(--white);border-bottom:1px solid var(--border);overflow-x:auto;position:sticky;top:76px;z-index:99}
-nav.tabs button{flex:1;padding:12px 8px;border:none;background:none;font-family:inherit;font-size:13px;color:var(--text2);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;transition:.2s}
-nav.tabs button.active{color:var(--primary);border-bottom-color:var(--primary);font-weight:600}
-nav.tabs button:hover{background:var(--primary-light)}
+nav.tabs{background:var(--card);border-bottom:1px solid var(--border);padding:0 2rem;display:flex;gap:0;overflow-x:auto}
+nav.tabs button{padding:14px 20px;border:none;background:none;font-family:inherit;font-size:.85rem;font-weight:500;color:var(--text2);cursor:pointer;border-bottom:3px solid transparent;white-space:nowrap;transition:.2s}
+nav.tabs button.active{color:var(--primary);border-bottom-color:var(--primary)}
+nav.tabs button:hover{color:var(--primary)}
 
-main{padding:16px;max-width:900px;margin:0 auto}
-.card{background:var(--white);border-radius:10px;padding:16px;box-shadow:var(--shadow);margin-bottom:12px}
-.card h3{font-size:14px;color:var(--text2);font-family:'DM Sans',sans-serif;font-weight:600;margin-bottom:12px}
+.filters{background:var(--card);padding:.75rem 2rem;display:flex;gap:.75rem;align-items:center;flex-wrap:wrap;border-bottom:1px solid var(--border)}
+.filter-label{font-size:.8rem;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.5px}
+.filter-select{padding:7px 14px;border:1px solid var(--border);border-radius:8px;font-family:inherit;font-size:.85rem;color:var(--text);background:var(--white);cursor:pointer}
 
-.kpi-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
-.kpi{background:var(--white);border-radius:10px;padding:14px;box-shadow:var(--shadow)}
-.kpi .label{font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:.5px}
-.kpi .value{font-family:'DM Serif Display',serif;font-size:22px;color:var(--primary);margin-top:4px}
-.kpi .sub{font-size:11px;color:var(--text3);margin-top:2px}
-.kpi.danger .value{color:var(--danger)}
-.kpi.warn .value{color:var(--warn)}
+main{padding:1.5rem 2rem;max-width:1100px;margin:0 auto}
+.card{background:var(--card);border-radius:12px;padding:1.25rem;border:1px solid var(--border);margin-bottom:1rem;transition:box-shadow .2s}
+.card:hover{box-shadow:0 4px 16px rgba(0,0,0,.06)}
+.card h3{font-size:.9rem;font-family:'DM Sans',sans-serif;font-weight:600;color:var(--text2);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.card h3 .dot{width:8px;height:8px;border-radius:50%;background:var(--primary)}
 
-.progress-wrap{margin-bottom:16px}
-.progress-bar{height:28px;background:var(--border);border-radius:14px;overflow:hidden;position:relative}
-.progress-fill{height:100%;background:linear-gradient(90deg,#166534,#22c55e);border-radius:14px;transition:width .8s ease;min-width:2px}
-.progress-label{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:12px;font-weight:600;color:var(--text)}
-.progress-info{display:flex;justify-content:space-between;margin-top:6px;font-size:11px;color:var(--text2)}
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin-bottom:1rem}
+.kpi{background:var(--card);border-radius:12px;padding:1.1rem;border:1px solid var(--border);position:relative;overflow:hidden;transition:transform .2s,box-shadow .2s}
+.kpi:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,.08)}
+.kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
+.kpi.green::before{background:var(--primary)}.kpi.red::before{background:var(--danger)}.kpi.gold::before{background:var(--warn)}.kpi.blue::before{background:#3b82f6}
+.kpi .label{font-size:.72rem;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.5px}
+.kpi .value{font-family:'DM Serif Display',serif;font-size:1.6rem;line-height:1;margin-top:4px}
+.kpi.green .value{color:var(--primary)}.kpi.red .value{color:var(--danger)}.kpi.gold .value{color:var(--warn)}.kpi.blue .value{color:#3b82f6}
+.kpi .sub{font-size:.72rem;color:var(--text3);margin-top:3px}
 
-.bar-chart .bar-row{display:flex;align-items:center;margin-bottom:8px;gap:8px}
-.bar-chart .bar-label{width:32px;font-size:12px;font-weight:600;color:var(--text2);text-align:right;flex-shrink:0}
-.bar-chart .bar-track{flex:1;height:28px;background:var(--border);border-radius:6px;overflow:hidden;position:relative}
+.progress-bar{height:24px;background:var(--border);border-radius:12px;overflow:hidden;position:relative}
+.progress-fill{height:100%;background:linear-gradient(90deg,#166534,#22c55e);border-radius:12px;transition:width .8s ease}
+.progress-label{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:12px;font-weight:700;color:var(--text)}
+.progress-info{display:flex;justify-content:space-between;margin-top:4px;font-size:11px;color:var(--text2)}
+
+.bar-chart .bar-row{display:flex;align-items:center;margin-bottom:6px;gap:8px}
+.bar-chart .bar-label{width:36px;font-size:12px;font-weight:600;color:var(--text2);text-align:right;flex-shrink:0}
+.bar-chart .bar-track{flex:1;height:26px;background:#f3f4f6;border-radius:6px;overflow:hidden;position:relative}
 .bar-chart .bar-fill{height:100%;border-radius:6px;transition:width .6s ease}
-.bar-chart .bar-fill.green{background:linear-gradient(90deg,#166534,#22c55e)}
-.bar-chart .bar-fill.red{background:linear-gradient(90deg,#dc2626,#f87171)}
+.bar-chart .bar-fill.g{background:linear-gradient(90deg,#166534,#22c55e)}
+.bar-chart .bar-fill.r{background:linear-gradient(90deg,#dc2626,#f87171)}
 .bar-chart .bar-val{position:absolute;right:8px;top:50%;transform:translateY(-50%);font-size:11px;font-weight:600;color:var(--text)}
 .bar-chart .bar-pct{width:44px;font-size:11px;color:var(--text2);text-align:right;flex-shrink:0}
-.bar-chart .target-line{position:absolute;right:0;top:0;height:100%;width:2px;background:var(--primary);opacity:.4}
 
-table.data{width:100%;border-collapse:collapse;font-size:13px}
-table.data th{text-align:left;padding:8px 6px;border-bottom:2px solid var(--border);font-weight:600;color:var(--text2);font-size:11px;text-transform:uppercase;letter-spacing:.3px}
-table.data td{padding:8px 6px;border-bottom:1px solid var(--border)}
-table.data tr:hover{background:var(--primary-light)}
+table.dt{width:100%;border-collapse:collapse;font-size:.85rem}
+table.dt th{text-align:left;padding:10px 8px;border-bottom:2px solid var(--border);font-weight:600;color:var(--text2);font-size:.72rem;text-transform:uppercase;letter-spacing:.3px;background:#f9fafb;white-space:nowrap}
+table.dt td{padding:10px 8px;border-bottom:1px solid #f3f4f6}
+table.dt tr:hover td{background:#fafafa}
 .rank{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;font-size:11px;font-weight:700}
-.rank.gold{background:#fef3c7;color:#92400e}
-.rank.silver{background:#f3f4f6;color:#374151}
-.rank.bronze{background:#fed7aa;color:#9a3412}
-.rank.normal{background:var(--border);color:var(--text2)}
-.tag{display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600}
-.tag.up{background:#dcfce7;color:#166534}
-.tag.down{background:#fef2f2;color:#dc2626}
-.tag.new{background:#dbeafe;color:#1e40af}
-.tag.flat{background:#f3f4f6;color:#6b7280}
+.rank.g{background:#dcfce7;color:#166534}.rank.s{background:#f3f4f6;color:#374151}.rank.b{background:#fed7aa;color:#9a3412}.rank.n{background:#f3f4f6;color:var(--text2)}
+.tag{display:inline-block;padding:2px 8px;border-radius:4px;font-size:.72rem;font-weight:600}
+.tag.up{background:#dcfce7;color:#166534}.tag.dn{background:#fee2e2;color:#dc2626}.tag.nw{background:#dbeafe;color:#1e40af}
 
-.alert-card{padding:12px;border-radius:8px;margin-bottom:8px;display:flex;align-items:flex-start;gap:10px}
+.alert-card{padding:12px;border-radius:8px;margin-bottom:6px;display:flex;align-items:flex-start;gap:10px}
 .alert-card.red{background:var(--danger-light);border-left:3px solid var(--danger)}
 .alert-card.yellow{background:var(--warn-light);border-left:3px solid var(--warn)}
-.alert-card.green{background:var(--primary-light);border-left:3px solid var(--primary)}
-.alert-card .alert-title{font-weight:600;font-size:13px}
-.alert-card .alert-sub{font-size:12px;color:var(--text2);margin-top:2px}
+.alert-card.green{background:#dcfce7;border-left:3px solid var(--primary)}
+.alert-title{font-weight:600;font-size:13px}
+.alert-sub{font-size:12px;color:var(--text2);margin-top:2px}
 
-.team-card{display:flex;align-items:center;gap:14px;padding:14px;background:var(--white);border-radius:10px;box-shadow:var(--shadow);margin-bottom:10px}
-.team-avatar{width:42px;height:42px;border-radius:50%;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:16px;flex-shrink:0}
-.team-info{flex:1}
-.team-name{font-weight:600;font-size:15px}
-.team-stats{font-size:12px;color:var(--text2);margin-top:2px}
+.team-card{display:flex;align-items:center;gap:14px;padding:14px;background:var(--card);border-radius:12px;border:1px solid var(--border);margin-bottom:8px;transition:all .2s}
+.team-card:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(0,0,0,.08)}
+.team-avatar{width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:16px;flex-shrink:0;color:#fff}
+.team-info{flex:1}.team-name{font-weight:600;font-size:15px}.team-stats{font-size:12px;color:var(--text2);margin-top:2px}
 .team-bar{width:100%;height:6px;background:var(--border);border-radius:3px;margin-top:6px}
-.team-bar-fill{height:100%;border-radius:3px;background:var(--primary);transition:width .6s}
-.team-pct{font-size:20px;font-weight:700;color:var(--primary);font-family:'DM Serif Display',serif}
+.team-bar-fill{height:100%;border-radius:3px;transition:width .6s}
+.team-pct{font-size:20px;font-weight:700;font-family:'DM Serif Display',serif}
 
-.form-group{margin-bottom:14px}
+.section-title{font-family:'DM Serif Display',serif;font-size:1.1rem;color:var(--text);margin:20px 0 10px;padding-bottom:6px;border-bottom:2px solid var(--primary-light)}
+
+.form-group{margin-bottom:12px}
 .form-group label{display:block;font-size:12px;font-weight:600;color:var(--text2);margin-bottom:4px}
-.form-group input,.form-group select,.form-group textarea{width:100%;padding:10px;border:1px solid var(--border);border-radius:8px;font-family:inherit;font-size:14px}
-.form-group textarea{height:160px;font-size:12px;font-family:'Courier New',monospace}
-.btn{padding:10px 20px;border:none;border-radius:8px;font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;transition:.2s}
-.btn-primary{background:var(--primary);color:#fff}
-.btn-primary:hover{background:#15803d}
-.btn-danger{background:var(--danger);color:#fff}
-.btn-outline{background:none;border:2px solid var(--primary);color:var(--primary)}
-.btn-outline:hover{background:var(--primary-light)}
-.btn-sm{padding:6px 14px;font-size:12px}
-.btn+.btn{margin-left:8px}
+.form-group input{width:100%;padding:8px;border:1px solid var(--border);border-radius:8px;font-family:inherit;font-size:14px}
+.btn{padding:8px 18px;border:none;border-radius:8px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;transition:.2s}
+.btn-primary{background:var(--primary);color:#fff}.btn-primary:hover{background:#15803d}
+.btn-outline{background:none;border:2px solid var(--primary);color:var(--primary)}.btn-outline:hover{background:var(--primary-light)}
 
-.empty{text-align:center;padding:40px 20px;color:var(--text3)}
-.empty .icon{font-size:40px;margin-bottom:10px}
-.empty p{font-size:14px}
+.empty{text-align:center;padding:3rem;color:var(--text3);font-size:.9rem}
+.loading{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:4rem;color:var(--text2);gap:1rem}
+.spinner{width:36px;height:36px;border:3px solid var(--border);border-top-color:var(--primary);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
 
 .modal-bg{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);z-index:200;display:none;align-items:center;justify-content:center;padding:20px}
 .modal-bg.show{display:flex}
-.modal{background:var(--white);border-radius:12px;padding:24px;max-width:420px;width:100%;max-height:80vh;overflow-y:auto}
+.modal{background:var(--card);border-radius:12px;padding:24px;max-width:400px;width:100%}
 .modal h2{font-size:18px;margin-bottom:16px}
 
-.section-title{font-size:16px;font-weight:700;margin:20px 0 12px;padding-bottom:8px;border-bottom:2px solid var(--primary)}
-.chip-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
-.chip{padding:4px 12px;border-radius:20px;font-size:12px;border:1px solid var(--border);cursor:pointer;transition:.2s}
-.chip.active{background:var(--primary);color:#fff;border-color:var(--primary)}
-
-.setup-box{background:var(--white);border-radius:12px;padding:24px;margin:20px auto;max-width:700px;box-shadow:var(--shadow)}
-.setup-box h2{color:var(--primary);margin-bottom:12px}
-.setup-box pre{background:#1f2937;color:#e5e7eb;padding:14px;border-radius:8px;font-size:12px;overflow-x:auto;margin:10px 0;line-height:1.5}
-.setup-box .step{display:flex;gap:10px;margin-bottom:16px}
-.setup-box .step-num{width:28px;height:28px;border-radius:50%;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0}
-
 .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);padding:10px 20px;border-radius:8px;font-size:13px;font-weight:600;color:#fff;z-index:300;opacity:0;transition:.3s}
-.toast.show{opacity:1}
-.toast.success{background:var(--primary)}
-.toast.error{background:var(--danger)}
+.toast.show{opacity:1}.toast.ok{background:var(--primary)}.toast.err{background:var(--danger)}
 
-@media(max-width:600px){
-  .kpi-grid{grid-template-columns:1fr 1fr}
-  .kpi .value{font-size:18px}
-  header h1{font-size:17px}
-  table.data{font-size:12px}
-  table.data th,table.data td{padding:6px 4px}
+.footer-nav{background:var(--card);border-top:1px solid var(--border);padding:.75rem 2rem;display:flex;gap:1rem;align-items:center;font-size:.8rem;color:var(--text2)}
+.footer-nav a{color:var(--primary);text-decoration:none}.footer-nav a:hover{text-decoration:underline}
+
+@media(max-width:700px){
+  .header{padding:0 1rem;height:56px}.header .logo{font-size:1.1rem}
+  nav.tabs{padding:0 1rem}nav.tabs button{padding:12px 14px;font-size:.8rem}
+  .filters{padding:.5rem 1rem}main{padding:1rem}
+  .kpi-grid{grid-template-columns:1fr 1fr}.kpi .value{font-size:1.3rem}
+  table.dt{font-size:.78rem}table.dt th,table.dt td{padding:8px 4px}
 }
 </style>
 </head>
 <body>
 
-<header>
-  <h1>MamaVege 业绩管理中心</h1>
-  <div class="sub">Performance Management Hub</div>
-  <div class="controls">
-    <select id="selYear" onchange="onYearChange()"></select>
-    <select id="selMonth" onchange="onMonthChange()">
-      <option value="0">📅 全年 YTD</option>
-      <option value="1">1月</option><option value="2">2月</option><option value="3">3月</option>
-      <option value="4">4月</option><option value="5">5月</option><option value="6">6月</option>
-      <option value="7">7月</option><option value="8">8月</option><option value="9">9月</option>
-      <option value="10">10月</option><option value="11">11月</option><option value="12">12月</option>
-    </select>
+<div class="header">
+  <div class="header-left">
+    <div class="logo">MamaVege</div>
+    <div class="badge">🎯 业绩管理中心</div>
   </div>
-</header>
+  <div class="header-right">
+    <a href="sales-dashboard.html">← 销售仪表板</a>
+    <a href="index.html">🏠 Hub</a>
+    <span class="last-updated" id="lastUpdated">—</span>
+    <button class="btn-refresh" onclick="loadData()">⟳ 刷新</button>
+  </div>
+</div>
 
 <nav class="tabs">
-  <button class="active" onclick="switchTab('overview',this)">📊 总览</button>
-  <button onclick="switchTab('customers',this)">👥 客户</button>
-  <button onclick="switchTab('products',this)">🏷️ 产品</button>
-  <button onclick="switchTab('team',this)">👤 团队</button>
-  <button onclick="switchTab('admin',this)">⚙️ 管理</button>
+  <button class="active" onclick="go('overview',this)">📊 总览</button>
+  <button onclick="go('customers',this)">👥 客户</button>
+  <button onclick="go('products',this)">🏷️ 产品</button>
+  <button onclick="go('team',this)">👤 团队</button>
+  <button onclick="go('admin',this)">⚙️ 目标</button>
 </nav>
 
-<main id="content"></main>
+<div class="filters">
+  <span class="filter-label">筛选</span>
+  <select class="filter-select" id="selYear" onchange="onFilter()"></select>
+  <select class="filter-select" id="selMonth" onchange="onFilter()">
+    <option value="0">📅 全年 YTD</option>
+    <option value="1">1月</option><option value="2">2月</option><option value="3">3月</option>
+    <option value="4">4月</option><option value="5">5月</option><option value="6">6月</option>
+    <option value="7">7月</option><option value="8">8月</option><option value="9">9月</option>
+    <option value="10">10月</option><option value="11">11月</option><option value="12">12月</option>
+  </select>
+</div>
+
+<main id="content"><div class="loading"><div class="spinner"></div><span>正在加载销售数据...</span></div></main>
 
 <div class="modal-bg" id="authModal">
   <div class="modal">
     <h2>🔐 HQ 验证</h2>
-    <div class="form-group">
-      <label>请输入 HQ 密码</label>
-      <input type="password" id="authPwd" placeholder="密码" onkeydown="if(event.key==='Enter')verifyHQ()">
-    </div>
+    <div class="form-group"><label>请输入 HQ 密码</label><input type="password" id="authPwd" placeholder="密码" onkeydown="if(event.key==='Enter')verifyHQ()"></div>
     <button class="btn btn-primary" onclick="verifyHQ()">验证</button>
     <button class="btn btn-outline" onclick="closeAuth()" style="margin-left:8px">取消</button>
   </div>
 </div>
 
+<div class="footer-nav">
+  <span>MamaVege Management Hub</span><span>|</span>
+  <a href="index.html">🏠 首页</a>
+  <a href="sales-dashboard.html">📊 销售仪表板</a>
+  <a href="promo-hq.html">📋 HQ仪表板</a>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
+const API_URL='https://script.google.com/macros/s/AKfycbwxt23ZB0od7EeBSNvjurKTbkDcM7HLgrWhuoqHc3meKWmhbB0XQzfOdB-X2Pj5O_MY/exec';
 const SB='https://wjhgezvrxlhpexocfsea.supabase.co/rest/v1';
-const KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndqaGdlenZyeGxocGV4b2Nmc2VhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg1MDU4NzgsImV4cCI6MjA5NDA4MTg3OH0.jENcrgEDYDlSRUCqve-T6rxYRJfz-dnZQHnXpPLJ_RE';
-const HDR={'apikey':KEY,'Authorization':'Bearer '+KEY,'Content-Type':'application/json','Prefer':'return=representation'};
+const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndqaGdlenZyeGxocGV4b2Nmc2VhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg1MDU4NzgsImV4cCI6MjA5NDA4MTg3OH0.jENcrgEDYDlSRUCqve-T6rxYRJfz-dnZQHnXpPLJ_RE';
+const SB_HDR={'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json','Prefer':'return=representation'};
+const SKUS=['KPM','CLM','SHCR','SHTY','SHSS','SPM - BBQ','BBQ (BAG)','SPM - MALA','MALA (BAG)','MRBR','TYSN','TYSP','TMSP','SMTS','SMCL','SPTS','SPCL','CMBR','KETUPAT'];
 
-let state={year:2026,month:0,tab:'overview',orders:[],targets:null,ready:false,dbOk:false};
+let allData=[],state={year:0,month:0,tab:'overview',targets:{monthly:500000,annual:6000000}};
 
-// ===== API =====
-async function sbGet(table,q=''){
-  const r=await fetch(`${SB}/${table}?${q}`,{headers:HDR});
-  if(!r.ok) throw new Error(r.status);
-  return r.json();
-}
-async function sbPost(table,data){
-  const r=await fetch(`${SB}/${table}`,{method:'POST',headers:{...HDR,'Prefer':'return=minimal'},body:JSON.stringify(data)});
-  if(!r.ok){const t=await r.text();throw new Error(t);}
-  return true;
-}
-async function sbDelete(table,q){
-  const r=await fetch(`${SB}/${table}?${q}`,{method:'DELETE',headers:HDR});
-  return r.ok;
-}
-
-// ===== INIT =====
-async function init(){
-  const y=document.getElementById('selYear');
-  for(let i=2026;i<=2030;i++){const o=document.createElement('option');o.value=i;o.textContent=i+'年';y.appendChild(o);}
-  y.value=state.year;
-  try{
-    await loadData();
-    state.dbOk=true;
-  }catch(e){
-    state.dbOk=false;
-    renderSetup();
-    return;
-  }
-  state.ready=true;
-  render();
-}
+function getTotal(r){for(const k of Object.keys(r)){if(k.replace(/[^A-Za-z]/g,'').toUpperCase()==='TOTALRM')return parseFloat(r[k])||0;}return 0;}
+function fmt(n){return'RM '+Number(n).toLocaleString('en',{minimumFractionDigits:0,maximumFractionDigits:0});}
+function fmtK(n){return n>=10000?'RM '+(n/1000).toFixed(0)+'K':fmt(n);}
 
 async function loadData(){
-  const yStart=state.year+'-01-01',yEnd=state.year+'-12-31';
-  state.orders=await sbGet('sales_orders',`order_date=gte.${yStart}&order_date=lte.${yEnd}&order=order_date.asc`);
+  document.getElementById('content').innerHTML='<div class="loading"><div class="spinner"></div><span>正在加载销售数据...</span></div>';
+  document.getElementById('lastUpdated').textContent='加载中...';
   try{
-    const t=await sbGet('sales_targets',`year=eq.${state.year}`);
-    state.targets=t.length?t[0]:{monthly_target:500000,annual_target:6000000};
-  }catch(e){state.targets={monthly_target:500000,annual_target:6000000};}
+    const res=await fetch(API_URL);
+    const json=await res.json();
+    allData=json.data||[];
+    document.getElementById('lastUpdated').textContent='更新: '+new Date().toLocaleTimeString('zh-MY');
+    populateYears();
+    await loadTargets();
+    render();
+  }catch(e){
+    document.getElementById('content').innerHTML='<div class="empty">❌ 无法加载数据<br><small>'+e.message+'</small></div>';
+  }
 }
 
-// ===== ANALYTICS =====
-function filtered(){
-  if(state.month===0)return state.orders;
-  return state.orders.filter(o=>{const m=new Date(o.order_date).getMonth()+1;return m===state.month;});
+async function loadTargets(){
+  try{
+    const r=await fetch(SB+'/sales_targets?year=eq.'+state.year,{headers:SB_HDR});
+    if(r.ok){const d=await r.json();if(d.length){state.targets={monthly:d[0].monthly_target,annual:d[0].annual_target};return;}}
+  }catch(e){}
+  state.targets={monthly:500000,annual:6000000};
 }
-function monthNum(d){return new Date(d).getMonth()+1;}
+
+function populateYears(){
+  const years=[...new Set(allData.map(r=>String(r['YEAR'])).filter(Boolean))].sort();
+  const sel=document.getElementById('selYear');
+  sel.innerHTML=years.map(y=>`<option value="${y}">${y}年</option>`).join('');
+  if(!state.year||!years.includes(String(state.year)))state.year=years.length?parseInt(years[years.length-1]):2026;
+  sel.value=state.year;
+}
+
+function filtered(){
+  let d=allData.filter(r=>String(r['YEAR'])===String(state.year));
+  if(state.month>0)d=d.filter(r=>parseInt(r['MONTH'])===state.month);
+  return d;
+}
+function yearData(){return allData.filter(r=>String(r['YEAR'])===String(state.year));}
 
 function monthlyStats(){
   const map={};
-  state.orders.forEach(o=>{
-    const m=monthNum(o.order_date);
-    if(!map[m])map[m]={month:m,revenue:0,orders:0,customers:new Set()};
-    map[m].revenue+=parseFloat(o.amount)||0;
-    map[m].orders++;
-    map[m].customers.add(o.customer_name);
-  });
-  return Object.values(map).sort((a,b)=>a.month-b.month);
+  yearData().forEach(r=>{const m=parseInt(r['MONTH']);if(!m)return;if(!map[m])map[m]={m,rev:0,orders:0,custs:new Set()};map[m].rev+=getTotal(r);map[m].orders++;map[m].custs.add(r['COMPANY']);});
+  return Object.values(map).sort((a,b)=>a.m-b.m);
 }
 
 function customerStats(){
-  const data=filtered();
   const map={};
-  data.forEach(o=>{
-    const k=o.customer_name;
-    if(!map[k])map[k]={name:k,revenue:0,salesperson:o.salesperson,orders:0,months:new Set()};
-    map[k].revenue+=parseFloat(o.amount)||0;
-    map[k].orders++;
-    map[k].months.add(monthNum(o.order_date));
-    if(o.salesperson)map[k].salesperson=o.salesperson;
-  });
-  return Object.values(map).sort((a,b)=>b.revenue-a.revenue);
+  filtered().forEach(r=>{const c=r['COMPANY']||'Unknown';if(!map[c])map[c]={name:c,rev:0,sp:r['SALES PERSON']||'',orders:0,type:r['TYPE']||''};map[c].rev+=getTotal(r);map[c].orders++;if(r['SALES PERSON'])map[c].sp=r['SALES PERSON'];});
+  return Object.values(map).sort((a,b)=>b.rev-a.rev);
 }
 
 function skuStats(){
   const map={};
-  state.orders.forEach(o=>{
-    if(!o.product_sku)return;
-    const s=o.product_sku;
-    const m=monthNum(o.order_date);
-    if(!map[s])map[s]={sku:s,total:0,months:{}};
-    if(!map[s].months[m])map[s].months[m]=0;
-    map[s].months[m]+=parseInt(o.quantity)||0;
-    map[s].total+=parseInt(o.quantity)||0;
-  });
+  yearData().forEach(r=>{const m=parseInt(r['MONTH']);SKUS.forEach(s=>{const v=parseFloat(r[s])||0;if(!v)return;if(!map[s])map[s]={sku:s,total:0,months:{}};if(!map[s].months[m])map[s].months[m]=0;map[s].months[m]+=v;map[s].total+=v;});});
   return Object.values(map).sort((a,b)=>b.total-a.total);
 }
 
 function teamStats(){
-  const data=filtered();
   const map={};
-  data.forEach(o=>{
-    const s=o.salesperson||'未知';
-    if(!map[s])map[s]={name:s,revenue:0,orders:0,customers:new Set()};
-    map[s].revenue+=parseFloat(o.amount)||0;
-    map[s].orders++;
-    map[s].customers.add(o.customer_name);
-  });
-  return Object.values(map).sort((a,b)=>b.revenue-a.revenue);
+  filtered().forEach(r=>{const s=r['SALES PERSON']||'Unknown';if(!map[s])map[s]={name:s,rev:0,orders:0,custs:new Set()};map[s].rev+=getTotal(r);map[s].orders++;map[s].custs.add(r['COMPANY']);});
+  return Object.values(map).sort((a,b)=>b.rev-a.rev);
 }
 
 function churnAnalysis(){
-  const months=monthlyStats().map(m=>m.month);
-  if(months.length<2)return[];
-  const latestM=state.month>0?state.month:Math.max(...months);
-  const prevM=latestM-1;
-  if(prevM<1)return[];
-  const prevCust={},currCust=new Set();
-  state.orders.forEach(o=>{
-    const m=monthNum(o.order_date);
-    if(m===prevM){
-      const k=o.customer_name;
-      if(!prevCust[k])prevCust[k]={name:k,revenue:0,salesperson:o.salesperson,lastDate:o.order_date};
-      prevCust[k].revenue+=parseFloat(o.amount)||0;
-      if(o.order_date>prevCust[k].lastDate)prevCust[k].lastDate=o.order_date;
-      if(o.salesperson)prevCust[k].salesperson=o.salesperson;
-    }
-    if(m===latestM)currCust.add(o.customer_name);
+  const ms=monthlyStats().map(m=>m.m);
+  if(ms.length<2)return[];
+  const latest=state.month>0?state.month:Math.max(...ms);
+  const prev=latest-1;if(prev<1)return[];
+  const prevC={},currC=new Set();
+  yearData().forEach(r=>{
+    const m=parseInt(r['MONTH']),c=r['COMPANY'];
+    if(m===prev){if(!prevC[c])prevC[c]={name:c,rev:0,sp:r['SALES PERSON']||''};prevC[c].rev+=getTotal(r);if(r['SALES PERSON'])prevC[c].sp=r['SALES PERSON'];}
+    if(m===latest)currC.add(c);
   });
-  const churned=[];
-  Object.values(prevCust).forEach(c=>{
-    if(!currCust.has(c.name)){
-      const days=Math.floor((new Date()-new Date(c.lastDate))/(86400000));
-      let priority='low';
-      if(c.revenue>=10000)priority='high';
-      else if(c.revenue>=3000)priority='medium';
-      churned.push({...c,days,priority,currentMonth:latestM,prevMonth:prevM});
+  const out=[];
+  Object.values(prevC).forEach(c=>{
+    if(!currC.has(c.name)){
+      let p='low';if(c.rev>=10000)p='high';else if(c.rev>=3000)p='med';
+      out.push({...c,priority:p,prevM:prev,currM:latest});
     }
   });
-  return churned.sort((a,b)=>b.revenue-a.revenue);
+  return out.sort((a,b)=>b.rev-a.rev);
 }
 
-function momChange(custName,currentMonth){
-  if(currentMonth<=1)return null;
-  let curr=0,prev=0;
-  state.orders.forEach(o=>{
-    if(o.customer_name!==custName)return;
-    const m=monthNum(o.order_date);
-    if(m===currentMonth)curr+=parseFloat(o.amount)||0;
-    if(m===currentMonth-1)prev+=parseFloat(o.amount)||0;
-  });
-  if(prev===0&&curr===0)return null;
-  if(prev===0)return{pct:999,isNew:true};
-  return{pct:((curr-prev)/prev*100),isNew:false};
+function momChange(name,curM){
+  if(curM<=1)return null;
+  let cur=0,prev=0;
+  yearData().forEach(r=>{if(r['COMPANY']!==name)return;const m=parseInt(r['MONTH']);if(m===curM)cur+=getTotal(r);if(m===curM-1)prev+=getTotal(r);});
+  if(!prev&&!cur)return null;
+  if(!prev)return{pct:999,nw:true};
+  return{pct:(cur-prev)/prev*100,nw:false};
 }
 
 // ===== RENDER =====
 function render(){
-  if(!state.ready)return;
   const c=document.getElementById('content');
   switch(state.tab){
-    case'overview':c.innerHTML=renderOverview();break;
-    case'customers':c.innerHTML=renderCustomers();break;
-    case'products':c.innerHTML=renderProducts();break;
-    case'team':c.innerHTML=renderTeam();break;
-    case'admin':renderAdmin();break;
+    case'overview':c.innerHTML=rOverview();break;
+    case'customers':c.innerHTML=rCustomers();break;
+    case'products':c.innerHTML=rProducts();break;
+    case'team':c.innerHTML=rTeam();break;
+    case'admin':rAdmin();break;
   }
 }
 
-function fmt(n){return'RM '+n.toLocaleString('en',{minimumFractionDigits:0,maximumFractionDigits:0});}
-function fmtK(n){return n>=1000?'RM '+(n/1000).toFixed(0)+'K':fmt(n);}
-function pct(n){return(n*100).toFixed(1)+'%';}
-
-function renderOverview(){
-  const ms=monthlyStats();
-  const tgt=state.targets;
-  const ytd=ms.reduce((s,m)=>s+m.revenue,0);
-  const activeMonths=ms.length||1;
-  const monthAvg=ytd/activeMonths;
-  const annualPct=ytd/tgt.annual_target;
-  const gap=tgt.annual_target-ytd;
-  const expectedPct=activeMonths/12;
-  const onTrack=annualPct>=expectedPct;
+function rOverview(){
+  const ms=monthlyStats(),tgt=state.targets;
+  const ytd=ms.reduce((s,m)=>s+m.rev,0);
+  const am=ms.length||1,avg=ytd/am;
+  const ap=ytd/tgt.annual;
+  const gap=tgt.annual-ytd;
+  const ep=am/12,onTrack=ap>=ep;
   const latestM=ms.length?ms[ms.length-1]:null;
-  const latestPct=latestM?latestM.revenue/tgt.monthly_target:0;
+  const lp=latestM?latestM.rev/tgt.monthly:0;
   const churn=churnAnalysis();
-  const bigOrders=customerStats().filter(c=>c.revenue>=10000);
-
-  let html=`
-    <div class="kpi-grid">
-      <div class="kpi"><div class="label">年度累计 YTD</div><div class="value">${fmt(ytd)}</div><div class="sub">${activeMonths} 个月数据</div></div>
-      <div class="kpi ${onTrack?'':'danger'}"><div class="label">年度达成率</div><div class="value">${pct(annualPct)}</div><div class="sub">预期 ${pct(expectedPct)}${onTrack?' ✅':' ⚠️ 落后'}</div></div>
-      <div class="kpi"><div class="label">月均营业额</div><div class="value">${fmtK(monthAvg)}</div><div class="sub">目标 ${fmtK(tgt.monthly_target)}</div></div>
-      <div class="kpi danger"><div class="label">距离年度目标</div><div class="value">${fmtK(gap)}</div><div class="sub">还需 ${Math.ceil(gap/tgt.monthly_target)} 个满月</div></div>
-    </div>
-
-    <div class="card">
-      <h3>📊 年度目标进度</h3>
-      <div class="progress-wrap">
-        <div class="progress-bar">
-          <div class="progress-fill" style="width:${Math.min(annualPct*100,100)}%"></div>
-          <div class="progress-label">${pct(annualPct)}</div>
-        </div>
-        <div class="progress-info">
-          <span>${fmt(ytd)}</span>
-          <span>目标 ${fmt(tgt.annual_target)}</span>
-        </div>
-      </div>
-    </div>
-
-    <div class="card">
-      <h3>📈 月度业绩对比</h3>
-      <div class="bar-chart">`;
-
-  const maxVal=Math.max(tgt.monthly_target,...ms.map(m=>m.revenue));
-  ms.forEach(m=>{
-    const w=(m.revenue/maxVal*100).toFixed(1);
-    const mp=m.revenue/tgt.monthly_target;
-    const color=mp>=0.8?'green':'red';
-    html+=`<div class="bar-row">
-      <div class="bar-label">${m.month}月</div>
-      <div class="bar-track">
-        <div class="bar-fill ${color}" style="width:${w}%"></div>
-        <div class="bar-val">${fmtK(m.revenue)}</div>
-      </div>
-      <div class="bar-pct">${(mp*100).toFixed(0)}%</div>
-    </div>`;
-  });
-  html+=`</div></div>`;
-
-  if(churn.length||bigOrders.length){
-    html+=`<div class="card"><h3>⚡ 快速提醒</h3>`;
-    if(churn.length){
-      const highP=churn.filter(c=>c.priority==='high');
-      html+=`<div class="alert-card red"><div><div class="alert-title">⚠️ ${churn.length} 家客户流失预警</div><div class="alert-sub">${highP.length?highP.map(c=>c.name).join('、')+' 需立即跟进':'切换到"客户"查看详情'}</div></div></div>`;
-    }
-    const team=teamStats();
-    if(team.length>1){
-      const top=team[0];
-      const totalRev=team.reduce((s,t)=>s+t.revenue,0);
-      html+=`<div class="alert-card ${top.revenue/totalRev>0.7?'yellow':'green'}"><div><div class="alert-title">👤 ${top.name} 贡献 ${(top.revenue/totalRev*100).toFixed(0)}% 营业额</div><div class="alert-sub">${top.revenue/totalRev>0.7?'⚠️ 人员依赖风险高，需分散业绩来源':'团队分配健康'}</div></div></div>`;
-    }
-    html+=`</div>`;
-  }
-  return html;
-}
-
-function renderCustomers(){
-  const custs=customerStats();
-  const totalRev=custs.reduce((s,c)=>s+c.revenue,0);
-  const ms=monthlyStats();
-  const latestM=state.month>0?state.month:(ms.length?Math.max(...ms.map(m=>m.month)):0);
-  const churn=churnAnalysis();
-
-  let html=`<div class="card"><h3>🏆 客户排名 ${state.month>0?state.month+'月':'(YTD累计)'} — Top ${Math.min(custs.length,20)}</h3>
-    <div style="overflow-x:auto"><table class="data">
-    <tr><th>排名</th><th>客户</th><th>营业额</th><th>占比</th><th>销售员</th><th>环比</th></tr>`;
-
-  custs.slice(0,20).forEach((c,i)=>{
-    const rCls=i===0?'gold':i===1?'silver':i===2?'bronze':'normal';
-    const share=(c.revenue/totalRev*100).toFixed(1);
-    let momTag='';
-    if(latestM>1){
-      const ch=momChange(c.name,latestM);
-      if(ch){
-        if(ch.isNew)momTag='<span class="tag new">🆕 新</span>';
-        else if(ch.pct>0)momTag=`<span class="tag up">▲ ${ch.pct.toFixed(0)}%</span>`;
-        else if(ch.pct<0)momTag=`<span class="tag down">▼ ${Math.abs(ch.pct).toFixed(0)}%</span>`;
-        else momTag='<span class="tag flat">— 持平</span>';
-      }
-    }
-    html+=`<tr>
-      <td><span class="rank ${rCls}">${i+1}</span></td>
-      <td style="font-weight:600">${c.name}</td>
-      <td>${fmt(c.revenue)}</td>
-      <td>${share}%</td>
-      <td>${c.salesperson||'-'}</td>
-      <td>${momTag}</td>
-    </tr>`;
-  });
-  html+=`</table></div></div>`;
-
-  if(churn.length){
-    html+=`<div class="section-title">⚠️ 客户流失预警 — ${churn[0].prevMonth}月有单, ${churn[0].currentMonth}月未回购</div>`;
-    churn.forEach(c=>{
-      const cls=c.priority==='high'?'red':c.priority==='medium'?'yellow':'green';
-      const label=c.priority==='high'?'🔴 高优先级 — 立即致电':c.priority==='medium'?'🟡 中优先级 — 本周内联络':'⚪ 低优先级 — 月内跟进';
-      html+=`<div class="alert-card ${cls}"><div>
-        <div class="alert-title">${c.name}</div>
-        <div class="alert-sub">${c.prevMonth}月营业额 ${fmt(c.revenue)} · ${c.salesperson} 负责 · 已 ${c.days} 天未下单</div>
-        <div class="alert-sub" style="margin-top:4px;font-weight:600">${label}</div>
-      </div></div>`;
-    });
-  }
-  return html;
-}
-
-function renderProducts(){
-  const skus=skuStats();
-  if(!skus.length)return`<div class="empty"><div class="icon">🏷️</div><p>暂无 SKU 数据</p><p style="font-size:12px;margin-top:8px">在"管理"页导入含 SKU 的订单数据</p></div>`;
-
-  const ms=monthlyStats().map(m=>m.month);
-  let html=`<div class="card"><h3>🏷️ SKU 产品销量排名</h3>
-    <div style="overflow-x:auto"><table class="data">
-    <tr><th>产品</th>`;
-  ms.forEach(m=>{html+=`<th>${m}月</th>`;});
-  html+=`<th>累计</th><th>趋势</th></tr>`;
-
-  skus.forEach(s=>{
-    html+=`<tr><td style="font-weight:600">${s.sku}</td>`;
-    let prevVal=0;
-    ms.forEach(m=>{
-      const v=s.months[m]||0;
-      html+=`<td>${v?v.toLocaleString():'—'}</td>`;
-      prevVal=v;
-    });
-    html+=`<td style="font-weight:600">${s.total.toLocaleString()}</td>`;
-    if(ms.length>=2){
-      const last=s.months[ms[ms.length-1]]||0;
-      const prev=s.months[ms[ms.length-2]]||0;
-      if(prev===0&&last>0)html+=`<td><span class="tag new">🆕</span></td>`;
-      else if(prev===0)html+=`<td>—</td>`;
-      else{
-        const ch=((last-prev)/prev*100);
-        html+=`<td><span class="tag ${ch>=0?'up':'down'}">${ch>=0?'▲':'▼'} ${Math.abs(ch).toFixed(0)}%</span></td>`;
-      }
-    }else html+=`<td>—</td>`;
-    html+=`</tr>`;
-  });
-  html+=`</table></div></div>`;
-  return html;
-}
-
-function renderTeam(){
   const team=teamStats();
-  const totalRev=team.reduce((s,t)=>s+t.revenue,0);
-  const tgt=state.targets;
-  const colors=['#166534','#2563eb','#9333ea','#ea580c'];
+  const topPerson=team.length?team[0]:null;
+  const totalRev=team.reduce((s,t)=>s+t.rev,0);
 
-  let html=`<div class="section-title">👤 团队业绩 ${state.month>0?state.month+'月':'(YTD)'}</div>`;
-  team.forEach((t,i)=>{
-    const share=totalRev?t.revenue/totalRev:0;
-    const target=state.month>0?tgt.monthly_target:tgt.annual_target;
-    const achieve=t.revenue/target;
-    html+=`<div class="team-card">
-      <div class="team-avatar" style="background:${colors[i%colors.length]}">${t.name.charAt(0)}</div>
-      <div class="team-info">
-        <div class="team-name">${t.name}</div>
-        <div class="team-stats">${fmt(t.revenue)} · ${t.orders} 单 · ${t.customers.size} 家客户 · 占比 ${(share*100).toFixed(1)}%</div>
-        <div class="team-bar"><div class="team-bar-fill" style="width:${Math.min(share*100,100)}%;background:${colors[i%colors.length]}"></div></div>
-      </div>
-      <div class="team-pct" style="color:${colors[i%colors.length]}">${(share*100).toFixed(0)}%</div>
-    </div>`;
+  let h=`<div class="kpi-grid">
+    <div class="kpi green"><div class="label">年度累计 YTD</div><div class="value">${fmt(ytd)}</div><div class="sub">${am} 个月数据</div></div>
+    <div class="kpi ${onTrack?'green':'red'}"><div class="label">年度达成率</div><div class="value">${(ap*100).toFixed(1)}%</div><div class="sub">预期 ${(ep*100).toFixed(0)}%${onTrack?' ✅':' ⚠️ 落后'}</div></div>
+    <div class="kpi gold"><div class="label">月均营业额</div><div class="value">${fmtK(avg)}</div><div class="sub">目标 ${fmtK(tgt.monthly)}</div></div>
+    <div class="kpi red"><div class="label">距年度目标</div><div class="value">${fmtK(gap)}</div><div class="sub">还需 ${Math.ceil(gap/tgt.monthly)} 个满月</div></div>
+  </div>
+  <div class="card"><h3><span class="dot"></span>年度目标进度</h3>
+    <div class="progress-bar"><div class="progress-fill" style="width:${Math.min(ap*100,100)}%"></div><div class="progress-label">${(ap*100).toFixed(1)}%</div></div>
+    <div class="progress-info"><span>${fmt(ytd)}</span><span>目标 ${fmt(tgt.annual)}</span></div>
+  </div>
+  <div class="card"><h3><span class="dot"></span>月度业绩对比</h3><div class="bar-chart">`;
+  const maxV=Math.max(tgt.monthly,...ms.map(m=>m.rev));
+  ms.forEach(m=>{
+    const w=(m.rev/maxV*100).toFixed(1),mp=m.rev/tgt.monthly;
+    h+=`<div class="bar-row"><div class="bar-label">${m.m}月</div><div class="bar-track"><div class="bar-fill ${mp>=.8?'g':'r'}" style="width:${w}%"></div><div class="bar-val">${fmtK(m.rev)}</div></div><div class="bar-pct">${(mp*100).toFixed(0)}%</div></div>`;
   });
+  h+=`</div></div>`;
 
-  if(team.length){
-    html+=`<div class="card" style="margin-top:16px"><h3>📊 贡献占比分布</h3>`;
-    const maxRev=Math.max(...team.map(t=>t.revenue));
-    html+=`<div class="bar-chart">`;
-    team.forEach((t,i)=>{
-      const w=(t.revenue/maxRev*100).toFixed(1);
-      html+=`<div class="bar-row">
-        <div class="bar-label">${t.name.substring(0,4)}</div>
-        <div class="bar-track"><div class="bar-fill green" style="width:${w}%;background:${colors[i%colors.length]}"></div><div class="bar-val">${fmtK(t.revenue)}</div></div>
-        <div class="bar-pct">${(t.revenue/totalRev*100).toFixed(0)}%</div>
-      </div>`;
+  h+=`<div class="card"><h3><span class="dot" style="background:var(--warn)"></span>快速提醒</h3>`;
+  if(churn.length){
+    const hi=churn.filter(c=>c.priority==='high');
+    h+=`<div class="alert-card red"><div><div class="alert-title">⚠️ ${churn.length} 家客户流失预警</div><div class="alert-sub">${hi.length?hi.map(c=>c.name).join('、')+' 需立即跟进':'切换到"客户"查看详情'}</div></div></div>`;
+  }
+  if(topPerson&&totalRev){
+    const share=topPerson.rev/totalRev;
+    h+=`<div class="alert-card ${share>.7?'yellow':'green'}"><div><div class="alert-title">👤 ${topPerson.name} 贡献 ${(share*100).toFixed(0)}% 营业额</div><div class="alert-sub">${share>.7?'⚠️ 人员依赖风险高':'团队分配正常'}</div></div></div>`;
+  }
+  if(latestM){
+    const bigC=customerStats().filter(c=>c.rev>=10000);
+    h+=`<div class="alert-card green"><div><div class="alert-title">⭐ ${bigC.length} 家大订单客户（≥RM 10K）</div><div class="alert-sub">${bigC.slice(0,3).map(c=>c.name).join('、')}${bigC.length>3?' 等':''}</div></div></div>`;
+  }
+  h+=`</div>`;
+  return h;
+}
+
+function rCustomers(){
+  const custs=customerStats(),totalRev=custs.reduce((s,c)=>s+c.rev,0);
+  const ms=monthlyStats(),latestM=state.month>0?state.month:(ms.length?Math.max(...ms.map(m=>m.m)):0);
+  const churn=churnAnalysis();
+  let h=`<div class="card"><h3><span class="dot"></span>客户排名 ${state.month>0?state.month+'月':'(YTD)'} — Top ${Math.min(custs.length,20)}</h3>
+    <div style="overflow-x:auto"><table class="dt"><tr><th>排名</th><th>客户</th><th>类型</th><th>营业额</th><th>占比</th><th>销售员</th><th>环比</th></tr>`;
+  custs.slice(0,20).forEach((c,i)=>{
+    const rc=i===0?'g':i===1?'s':i===2?'b':'n';
+    const sh=(c.rev/totalRev*100).toFixed(1);
+    let mt='';
+    if(latestM>1){const ch=momChange(c.name,latestM);if(ch){if(ch.nw)mt='<span class="tag nw">🆕</span>';else if(ch.pct>0)mt=`<span class="tag up">▲${ch.pct.toFixed(0)}%</span>`;else if(ch.pct<0)mt=`<span class="tag dn">▼${Math.abs(ch.pct).toFixed(0)}%</span>`;}}
+    h+=`<tr><td><span class="rank ${rc}">${i+1}</span></td><td><strong>${c.name}</strong></td><td><span class="tag" style="background:var(--warn-light);color:var(--warn)">${c.type||'-'}</span></td><td class="serif" style="color:var(--primary);font-weight:600">${fmt(c.rev)}</td><td>${sh}%</td><td>${c.sp}</td><td>${mt}</td></tr>`;
+  });
+  h+=`</table></div></div>`;
+  if(churn.length){
+    h+=`<div class="section-title">⚠️ 客户流失预警 — ${churn[0].prevM}月有单，${churn[0].currM}月未回购</div>`;
+    churn.forEach(c=>{
+      const cls=c.priority==='high'?'red':c.priority==='med'?'yellow':'green';
+      const lb=c.priority==='high'?'🔴 高优先级 — 立即致电':c.priority==='med'?'🟡 中优先级 — 本周联络':'⚪ 低优先级 — 月内跟进';
+      h+=`<div class="alert-card ${cls}"><div><div class="alert-title">${c.name}</div><div class="alert-sub">${c.prevM}月营业额 ${fmt(c.rev)} · ${c.sp} 负责</div><div class="alert-sub" style="margin-top:2px;font-weight:600">${lb}</div></div></div>`;
     });
-    html+=`</div></div>`;
   }
-  return html;
+  return h;
 }
 
-function renderAdmin(){
+function rProducts(){
+  const skus=skuStats(),ms=monthlyStats().map(m=>m.m);
+  if(!skus.length)return'<div class="empty">🏷️ 暂无 SKU 数据</div>';
+  const mns=['','1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
+  let h=`<div class="card"><h3><span class="dot" style="background:#3b82f6"></span>SKU 产品销量排名</h3><div style="overflow-x:auto"><table class="dt"><tr><th>产品</th>`;
+  ms.forEach(m=>{h+=`<th>${mns[m]}</th>`;});
+  h+=`<th>累计</th><th>趋势</th></tr>`;
+  skus.forEach(s=>{
+    h+=`<tr><td><strong>${s.sku}</strong></td>`;
+    ms.forEach(m=>{const v=s.months[m]||0;h+=`<td>${v?v.toLocaleString():'—'}</td>`;});
+    h+=`<td style="font-weight:700">${s.total.toLocaleString()}</td>`;
+    if(ms.length>=2){
+      const last=s.months[ms[ms.length-1]]||0,prev=s.months[ms[ms.length-2]]||0;
+      if(!prev&&last)h+=`<td><span class="tag nw">🆕</span></td>`;
+      else if(!prev)h+=`<td>—</td>`;
+      else{const ch=(last-prev)/prev*100;h+=`<td><span class="tag ${ch>=0?'up':'dn'}">${ch>=0?'▲':'▼'}${Math.abs(ch).toFixed(0)}%</span></td>`;}
+    }else h+=`<td>—</td>`;
+    h+=`</tr>`;
+  });
+  h+=`</table></div></div>`;return h;
+}
+
+function rTeam(){
+  const team=teamStats(),totalRev=team.reduce((s,t)=>s+t.rev,0);
+  const colors=['#166534','#dc2626','#d97706','#3b82f6','#8b5cf6'];
+  let h=`<div class="section-title">👤 团队业绩 ${state.month>0?state.month+'月':'(YTD)'}</div>`;
+  team.forEach((t,i)=>{
+    const share=totalRev?t.rev/totalRev:0;
+    h+=`<div class="team-card"><div class="team-avatar" style="background:${colors[i%5]}">${t.name.charAt(0)}</div><div class="team-info"><div class="team-name">${t.name}</div><div class="team-stats">${fmt(t.rev)} · ${t.orders} 单 · ${t.custs.size} 家客户 · 占比 ${(share*100).toFixed(1)}%</div><div class="team-bar"><div class="team-bar-fill" style="width:${Math.min(share*100,100)}%;background:${colors[i%5]}"></div></div></div><div class="team-pct" style="color:${colors[i%5]}">${(share*100).toFixed(0)}%</div></div>`;
+  });
+  if(team.length){
+    const mx=Math.max(...team.map(t=>t.rev));
+    h+=`<div class="card" style="margin-top:12px"><h3><span class="dot"></span>贡献对比</h3><div class="bar-chart">`;
+    team.forEach((t,i)=>{
+      h+=`<div class="bar-row"><div class="bar-label">${t.name.substring(0,5)}</div><div class="bar-track"><div class="bar-fill g" style="width:${(t.rev/mx*100).toFixed(1)}%;background:${colors[i%5]}"></div><div class="bar-val">${fmtK(t.rev)}</div></div><div class="bar-pct">${(t.rev/totalRev*100).toFixed(0)}%</div></div>`;
+    });
+    h+=`</div></div>`;
+  }
+  return h;
+}
+
+function rAdmin(){
   const c=document.getElementById('content');
-  if(sessionStorage.getItem('hq_auth')!=='1'){
-    document.getElementById('authModal').classList.add('show');
-    c.innerHTML=`<div class="empty"><div class="icon">🔐</div><p>请先验证 HQ 密码</p></div>`;
-    return;
-  }
-
+  if(sessionStorage.getItem('hq_auth')!=='1'){document.getElementById('authModal').classList.add('show');c.innerHTML='<div class="empty">🔐 请先验证 HQ 密码</div>';return;}
   c.innerHTML=`
-    <div class="section-title">🎯 目标设置</div>
+    <div class="section-title">🎯 年度目标设置 (${state.year}年)</div>
     <div class="card">
-      <div style="display:flex;gap:10px;flex-wrap:wrap">
-        <div class="form-group" style="flex:1;min-width:140px">
-          <label>月度目标 (RM)</label>
-          <input type="number" id="fMonthly" value="${state.targets?.monthly_target||500000}">
-        </div>
-        <div class="form-group" style="flex:1;min-width:140px">
-          <label>年度目标 (RM)</label>
-          <input type="number" id="fAnnual" value="${state.targets?.annual_target||6000000}">
-        </div>
+      <div style="display:flex;gap:12px;flex-wrap:wrap">
+        <div class="form-group" style="flex:1;min-width:140px"><label>月度目标 (RM)</label><input type="number" id="fM" value="${state.targets.monthly}"></div>
+        <div class="form-group" style="flex:1;min-width:140px"><label>年度目标 (RM)</label><input type="number" id="fA" value="${state.targets.annual}"></div>
       </div>
-      <button class="btn btn-primary btn-sm" onclick="saveTargets()">💾 保存目标</button>
+      <button class="btn btn-primary" onclick="saveTargets()">💾 保存目标</button>
+      <p style="font-size:11px;color:var(--text3);margin-top:8px">目标存储在 Supabase sales_targets 表。如表不存在，将使用默认值 (月 RM 500K / 年 RM 6M)。</p>
     </div>
-
-    <div class="section-title">📥 批量导入订单</div>
+    <div class="section-title">🛠️ 首次使用：创建目标表</div>
     <div class="card">
-      <p style="font-size:12px;color:var(--text2);margin-bottom:8px">
-        粘贴 Tab 分隔数据。<strong>格式A</strong>（营业额）：日期 ⇥ 客户 ⇥ 销售员 ⇥ 金额<br>
-        <strong>格式B</strong>（含SKU）：日期 ⇥ 客户 ⇥ 销售员 ⇥ 产品 ⇥ 数量 ⇥ 金额<br>
-        日期格式：YYYY-MM-DD（如 2026-01-15）
-      </p>
-      <div class="form-group">
-        <textarea id="importData" placeholder="2026-01-15&#9;7 ELEVEN&#9;VEGE&#9;86848&#10;2026-01-15&#9;LOTUS'S&#9;VEGE&#9;46907.20"></textarea>
-      </div>
-      <button class="btn btn-primary btn-sm" onclick="importBulk()">📥 导入</button>
-      <button class="btn btn-outline btn-sm" onclick="loadSeed()">📋 加载示例数据 (1-3月)</button>
-    </div>
-
-    <div class="section-title">➕ 添加单条订单</div>
-    <div class="card">
-      <div style="display:flex;gap:10px;flex-wrap:wrap">
-        <div class="form-group" style="flex:1;min-width:130px"><label>日期</label><input type="date" id="fDate"></div>
-        <div class="form-group" style="flex:1;min-width:130px"><label>客户</label><input id="fCust" placeholder="客户名称"></div>
-        <div class="form-group" style="flex:1;min-width:100px"><label>销售员</label>
-          <select id="fPerson"><option>VEGE</option><option>CAROL</option><option>WAN</option></select>
-        </div>
-      </div>
-      <div style="display:flex;gap:10px;flex-wrap:wrap">
-        <div class="form-group" style="flex:1;min-width:100px"><label>产品SKU（可选）</label><input id="fSku" placeholder="如 SPM - BBQ"></div>
-        <div class="form-group" style="flex:1;min-width:80px"><label>数量</label><input type="number" id="fQty" value="0"></div>
-        <div class="form-group" style="flex:1;min-width:100px"><label>金额 (RM)</label><input type="number" id="fAmt" step="0.01"></div>
-      </div>
-      <button class="btn btn-primary btn-sm" onclick="addSingle()">➕ 添加</button>
-    </div>
-
-    <div class="section-title" style="color:var(--danger)">🗑️ 数据管理</div>
-    <div class="card">
-      <p style="font-size:12px;color:var(--text2);margin-bottom:10px">清除当前年份 (${state.year}) 所有订单数据。此操作不可撤销。</p>
-      <button class="btn btn-danger btn-sm" onclick="clearYear()">🗑️ 清除 ${state.year} 年数据</button>
-    </div>
-
-    <div class="section-title">🛠️ 数据库初始化 SQL</div>
-    <div class="card">
-      <p style="font-size:12px;color:var(--text2);margin-bottom:8px">首次使用前，请在 Supabase SQL Editor 中运行以下命令：</p>
-      <pre style="background:#1f2937;color:#e5e7eb;padding:12px;border-radius:8px;font-size:11px;overflow-x:auto;white-space:pre-wrap">${sqlSetup()}</pre>
-      <button class="btn btn-outline btn-sm" onclick="navigator.clipboard.writeText(sqlSetup());toast('已复制 SQL','success')">📋 复制 SQL</button>
-    </div>`;
-}
-
-function sqlSetup(){
-  return`-- 1) 创建 sales_orders 表
-CREATE TABLE IF NOT EXISTS sales_orders (
-  id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
-  order_date date NOT NULL,
-  customer_name text NOT NULL,
-  salesperson text NOT NULL DEFAULT '',
-  product_sku text DEFAULT '',
-  quantity integer DEFAULT 0,
-  amount numeric(12,2) DEFAULT 0,
-  created_at timestamptz DEFAULT now()
-);
-
-ALTER TABLE sales_orders ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "Allow all access" ON sales_orders FOR ALL USING (true) WITH CHECK (true);
-
--- 2) 创建 sales_targets 表
-CREATE TABLE IF NOT EXISTS sales_targets (
+      <p style="font-size:12px;color:var(--text2);margin-bottom:8px">如需自定义目标，请在 Supabase SQL Editor 运行：</p>
+      <pre style="background:#1f2937;color:#e5e7eb;padding:12px;border-radius:8px;font-size:11px;overflow-x:auto;white-space:pre-wrap">CREATE TABLE IF NOT EXISTS sales_targets (
   id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
   year integer NOT NULL UNIQUE,
   monthly_target numeric(12,2) DEFAULT 500000,
   annual_target numeric(12,2) DEFAULT 6000000,
   created_at timestamptz DEFAULT now()
 );
-
 ALTER TABLE sales_targets ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "Allow all access" ON sales_targets FOR ALL USING (true) WITH CHECK (true);
-
--- 3) 插入默认目标
-INSERT INTO sales_targets (year, monthly_target, annual_target)
-VALUES (2026, 500000, 6000000)
-ON CONFLICT (year) DO NOTHING;`;
-}
-
-// ===== SETUP SCREEN =====
-function renderSetup(){
-  document.getElementById('content').innerHTML=`
-    <div class="setup-box">
-      <h2>🛠️ 首次设置</h2>
-      <p style="color:var(--text2);margin-bottom:20px">检测到数据库表尚未创建。请按以下步骤完成初始化：</p>
-      <div class="step"><div class="step-num">1</div><div>
-        <strong>打开 Supabase SQL Editor</strong><br>
-        <a href="https://supabase.com/dashboard/project/wjhgezvrxlhpexocfsea/sql" target="_blank" style="color:var(--primary)">点击这里打开 →</a>
-      </div></div>
-      <div class="step"><div class="step-num">2</div><div>
-        <strong>运行以下 SQL</strong>
-        <pre style="background:#1f2937;color:#e5e7eb;padding:12px;border-radius:8px;font-size:11px;overflow-x:auto;white-space:pre-wrap;margin-top:6px">${sqlSetup()}</pre>
-        <button class="btn btn-outline btn-sm" style="margin-top:6px" onclick="navigator.clipboard.writeText(sqlSetup());toast('已复制','success')">📋 复制 SQL</button>
-      </div></div>
-      <div class="step"><div class="step-num">3</div><div>
-        <strong>完成后刷新此页面</strong>
-        <br><button class="btn btn-primary" style="margin-top:10px" onclick="location.reload()">🔄 刷新页面</button>
-      </div></div>
+CREATE POLICY "Allow all" ON sales_targets FOR ALL USING (true) WITH CHECK (true);
+INSERT INTO sales_targets (year, monthly_target, annual_target) VALUES (2026, 500000, 6000000) ON CONFLICT (year) DO NOTHING;</pre>
+      <button class="btn btn-outline" style="margin-top:8px" onclick="copySQL()">📋 复制 SQL</button>
     </div>`;
 }
 
-// ===== ACTIONS =====
-async function importBulk(){
-  const raw=document.getElementById('importData').value.trim();
-  if(!raw){toast('请粘贴数据','error');return;}
-  const lines=raw.split('\n').filter(l=>l.trim());
-  const records=[];
-  let errors=0;
-  lines.forEach((line,i)=>{
-    const cols=line.split('\t');
-    if(cols.length===4){
-      records.push({order_date:cols[0].trim(),customer_name:cols[1].trim(),salesperson:cols[2].trim(),product_sku:'',quantity:0,amount:parseFloat(cols[3])||0});
-    }else if(cols.length>=6){
-      records.push({order_date:cols[0].trim(),customer_name:cols[1].trim(),salesperson:cols[2].trim(),product_sku:cols[3].trim(),quantity:parseInt(cols[4])||0,amount:parseFloat(cols[5])||0});
-    }else{errors++;}
-  });
-  if(!records.length){toast('格式不正确，请检查','error');return;}
-  try{
-    const chunk=200;
-    for(let i=0;i<records.length;i+=chunk){
-      await sbPost('sales_orders',records.slice(i,i+chunk));
-    }
-    toast(`✅ 成功导入 ${records.length} 条${errors?' ('+errors+' 行格式错误跳过)':''}`, 'success');
-    document.getElementById('importData').value='';
-    await loadData();render();
-  }catch(e){toast('导入失败: '+e.message,'error');}
-}
-
-async function addSingle(){
-  const d=document.getElementById('fDate').value;
-  const c=document.getElementById('fCust').value.trim();
-  const s=document.getElementById('fPerson').value;
-  const sku=document.getElementById('fSku').value.trim();
-  const q=parseInt(document.getElementById('fQty').value)||0;
-  const a=parseFloat(document.getElementById('fAmt').value)||0;
-  if(!d||!c||!a){toast('请填写日期、客户和金额','error');return;}
-  try{
-    await sbPost('sales_orders',[{order_date:d,customer_name:c,salesperson:s,product_sku:sku,quantity:q,amount:a}]);
-    toast('✅ 已添加','success');
-    document.getElementById('fCust').value='';
-    document.getElementById('fAmt').value='';
-    document.getElementById('fSku').value='';
-    document.getElementById('fQty').value='0';
-    await loadData();render();
-  }catch(e){toast('添加失败: '+e.message,'error');}
+function copySQL(){
+  const sql=document.querySelector('#content pre').textContent;
+  navigator.clipboard.writeText(sql);toast('已复制 SQL','ok');
 }
 
 async function saveTargets(){
-  const m=parseFloat(document.getElementById('fMonthly').value)||500000;
-  const a=parseFloat(document.getElementById('fAnnual').value)||6000000;
+  const m=parseFloat(document.getElementById('fM').value)||500000;
+  const a=parseFloat(document.getElementById('fA').value)||6000000;
   try{
-    await sbDelete('sales_targets',`year=eq.${state.year}`);
-    await sbPost('sales_targets',[{year:state.year,monthly_target:m,annual_target:a}]);
-    state.targets={monthly_target:m,annual_target:a};
-    toast('✅ 目标已保存','success');
-  }catch(e){toast('保存失败','error');}
+    await fetch(SB+'/sales_targets?year=eq.'+state.year,{method:'DELETE',headers:SB_HDR});
+    const r=await fetch(SB+'/sales_targets',{method:'POST',headers:{...SB_HDR,'Prefer':'return=minimal'},body:JSON.stringify([{year:state.year,monthly_target:m,annual_target:a}])});
+    if(!r.ok)throw new Error('保存失败');
+    state.targets={monthly:m,annual:a};
+    toast('✅ 目标已保存','ok');
+  }catch(e){toast('保存失败（目标表可能未创建）','err');}
 }
 
-async function clearYear(){
-  if(!confirm(`确定清除 ${state.year} 年所有订单数据？此操作不可撤销！`))return;
-  try{
-    await sbDelete('sales_orders',`order_date=gte.${state.year}-01-01&order_date=lte.${state.year}-12-31`);
-    toast('✅ 数据已清除','success');
-    await loadData();render();
-  }catch(e){toast('清除失败','error');}
-}
-
-function loadSeed(){
-  const seed=[
-    // === 1月 ===
-    '2026-01-15\t7 ELEVEN\tVEGE\t86848',
-    '2026-01-15\tLOTUS\'S\tVEGE\t46907.20',
-    '2026-01-15\tMYNEWS / MYCU\tVEGE\t33962.40',
-    '2026-01-15\tVGENERATION MARKETING\tVEGE\t21592',
-    '2026-01-15\tSUNBREEZE (PENANG) SDN BHD\tVEGE\t17528',
-    '2026-01-15\tVGENERATION SDN. BHD.\tVEGE\t15619.60',
-    '2026-01-15\tJAYA GROCER\tVEGE\t12293.60',
-    '2026-01-15\tAEON CO.\tVEGE\t11687.01',
-    '2026-01-15\tEXPRESSWAY VENTURE SDN. BHD.\tVEGE\t6451.60',
-    '2026-01-15\t其他VEGE客户\tVEGE\t29629.40',
-    '2026-01-15\tENSURE HEALTH MART\tCAROL\t14400',
-    '2026-01-15\tKST\tCAROL\t12800',
-    '2026-01-15\tMEIPLUS INTERNATIONAL SDN. BHD.\tCAROL\t10870.80',
-    '2026-01-15\tKOON YIK VEGE FOOD SDN BHD\tCAROL\t9696',
-    '2026-01-15\tRLS\tCAROL\t7040',
-    '2026-01-15\tMIAO MIAO JB\tCAROL\t6355.60',
-    '2026-01-15\tEAST POWER TRADING SDN. BHD.\tCAROL\t2816',
-    '2026-01-15\t其他CAROL客户\tCAROL\t16783.80',
-    '2026-01-15\t其他客户\tWAN\t730.60',
-    // === 2月 ===
-    '2026-02-15\tLOTUS\'S\tVEGE\t73027',
-    '2026-02-15\tVGENERATION MARKETING\tVEGE\t55360',
-    '2026-02-15\t7 ELEVEN\tVEGE\t21216',
-    '2026-02-15\tJAYA GROCER\tVEGE\t20380',
-    '2026-02-15\tMYNEWS / MYCU\tVEGE\t13320',
-    '2026-02-15\tAEON CO.\tVEGE\t12003.64',
-    '2026-02-15\tAEON BIG\tVEGE\t7894.80',
-    '2026-02-15\tEXPRESSWAY VENTURE SDN. BHD.\tVEGE\t6168',
-    '2026-02-15\tVGENERATION SDN. BHD.\tVEGE\t5852.20',
-    '2026-02-15\tYOONGTEK VEGE SDN BHD\tVEGE\t614.40',
-    '2026-02-15\tVICTOR WONG\tVEGE\t335.40',
-    '2026-02-15\t其他VEGE客户\tVEGE\t36070.16',
-    '2026-02-15\tNAIZI SDN BHD\tCAROL\t23920',
-    '2026-02-15\tEAST POWER TRADING SDN. BHD.\tCAROL\t22886.40',
-    '2026-02-15\tENSURE HEALTH MART\tCAROL\t9000',
-    '2026-02-15\tJB YAP BROTHER FOOD SDN BHD\tCAROL\t7028',
-    '2026-02-15\tMEIPLUS INTERNATIONAL SDN. BHD.\tCAROL\t7038',
-    '2026-02-15\tSHING TIK VEGETARIAN SDN BHD\tCAROL\t2751.60',
-    '2026-02-15\tKOON YIK VEGE FOOD SDN BHD\tCAROL\t2508',
-    '2026-02-15\t其他CAROL客户\tCAROL\t7070.32',
-    '2026-02-15\t其他客户\tWAN\t282',
-    // === 3月 ===
-    '2026-03-15\t7 ELEVEN\tVEGE\t103404.80',
-    '2026-03-15\tVGENERATION MARKETING\tVEGE\t49207.60',
-    '2026-03-15\tLOTUS\'S\tVEGE\t41987.20',
-    '2026-03-15\tAEON CO.\tVEGE\t16734.30',
-    '2026-03-15\tJAYA GROCER\tVEGE\t16304',
-    '2026-03-15\tSUNBREEZE (PENANG) SDN BHD\tVEGE\t13132',
-    '2026-03-15\tAEON BIG\tVEGE\t7004.40',
-    '2026-03-15\tVGENERATION SDN. BHD.\tVEGE\t3549.20',
-    '2026-03-15\t其他VEGE客户\tVEGE\t19692.60',
-    '2026-03-15\tEAST POWER TRADING SDN. BHD.\tCAROL\t33043.60',
-    '2026-03-15\tENSURE HEALTH MART\tCAROL\t14400',
-    '2026-03-15\tMEIPLUS INTERNATIONAL SDN. BHD.\tCAROL\t12378.40',
-    '2026-03-15\tKST\tCAROL\t5680',
-    '2026-03-15\tSHING TIK VEGETARIAN SDN BHD\tCAROL\t4752',
-    '2026-03-15\tRLS\tCAROL\t3840',
-    '2026-03-15\t其他CAROL客户\tCAROL\t12996.60',
-    '2026-03-15\t其他客户\tWAN\t520'
-  ];
-  document.getElementById('importData').value=seed.join('\n');
-  toast('示例数据已加载，点击"导入"按钮写入数据库','success');
-}
-
-// ===== AUTH =====
 async function verifyHQ(){
   const pwd=document.getElementById('authPwd').value;
   try{
-    const r=await sbGet('settings','key=eq.hq_password');
-    if(r.length&&r[0].value===pwd){
-      sessionStorage.setItem('hq_auth','1');
-      closeAuth();
-      render();
-    }else{toast('密码错误','error');}
-  }catch(e){toast('验证失败','error');}
+    const r=await fetch(SB+'/settings?key=eq.hq_password',{headers:SB_HDR});
+    const d=await r.json();
+    if(d.length&&d[0].value===pwd){sessionStorage.setItem('hq_auth','1');closeAuth();render();}
+    else toast('密码错误','err');
+  }catch(e){toast('验证失败','err');}
 }
-function closeAuth(){
-  document.getElementById('authModal').classList.remove('show');
-  document.getElementById('authPwd').value='';
-  if(state.tab==='admin'&&sessionStorage.getItem('hq_auth')!=='1'){
-    switchTab('overview',document.querySelector('nav.tabs button'));
-  }
-}
+function closeAuth(){document.getElementById('authModal').classList.remove('show');document.getElementById('authPwd').value='';if(state.tab==='admin'&&sessionStorage.getItem('hq_auth')!=='1'){go('overview',document.querySelector('nav.tabs button'));}}
 
-// ===== NAV =====
-function switchTab(tab,btn){
-  state.tab=tab;
-  document.querySelectorAll('nav.tabs button').forEach(b=>b.classList.remove('active'));
-  if(btn)btn.classList.add('active');
-  render();
-}
-function onYearChange(){state.year=parseInt(document.getElementById('selYear').value);loadData().then(()=>render());}
-function onMonthChange(){state.month=parseInt(document.getElementById('selMonth').value);render();}
+function go(tab,btn){state.tab=tab;document.querySelectorAll('nav.tabs button').forEach(b=>b.classList.remove('active'));if(btn)btn.classList.add('active');render();}
+function onFilter(){state.year=parseInt(document.getElementById('selYear').value);state.month=parseInt(document.getElementById('selMonth').value);loadTargets().then(()=>render());}
+function toast(msg,t){const el=document.getElementById('toast');el.textContent=msg;el.className='toast show '+t;setTimeout(()=>el.classList.remove('show'),3000);}
 
-// ===== TOAST =====
-function toast(msg,type='success'){
-  const t=document.getElementById('toast');
-  t.textContent=msg;t.className='toast show '+type;
-  setTimeout(()=>t.classList.remove('show'),3000);
-}
-
-init();
+loadData();
 </script>
 </body>
 </html>
