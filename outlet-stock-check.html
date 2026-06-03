@@ -180,6 +180,7 @@
   <button class="tab" data-tab="overview" onclick="switchTab('overview')">🏪 Outlet Overview</button>
   <button class="tab" data-tab="stats" onclick="switchTab('stats')">📊 Return Stats</button>
   <button class="tab" data-tab="alerts" onclick="switchTab('alerts')">⚠️ Expiry Alerts <span class="tab-badge" id="alertBadge">0</span></button>
+  <button class="tab" data-tab="hqstats" onclick="switchTab('hqstats')" id="tab-hqstats-btn" style="display:none">📈 HQ Stats</button>
 </div>
 
 <!-- TAB 1: CHECK-IN FORM -->
@@ -222,7 +223,7 @@
       </div>
       <div class="form-group">
         <label>Outlet Name / Code</label>
-        <input type="text" id="f-agent" placeholder="e.g. MY-PG-001">
+        <input type="text" id="f-agent" placeholder="e.g. MY-PG-001" oninput="populateOutletSelect()">
       </div>
     </div>
   </div>
@@ -292,6 +293,65 @@
     </select>
   </div>
   <div id="alertsContent"><div class="loader"><div class="spinner"></div>Loading…</div></div>
+</div>
+
+<!-- TAB 5: HQ STATS -->
+<div class="panel" id="tab-hqstats">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px;">
+    <div style="font-family:'DM Serif Display',serif;font-size:18px;color:var(--green)">HQ Stats</div>
+    <select id="hqstats-month" onchange="loadHQStats()" style="padding:8px 12px;border:1.5px solid var(--border);border-radius:8px;font-family:inherit;font-size:13px;background:var(--bg);"></select>
+  </div>
+
+  <!-- Summary cards -->
+  <div id="hqstats-summary" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin-bottom:20px;"></div>
+
+  <!-- Per agent table -->
+  <div class="card">
+    <div class="card-title">👤 Sales Agent Performance</div>
+    <div style="overflow-x:auto">
+      <table style="width:100%;border-collapse:collapse;font-size:13px" id="hqstats-table">
+        <thead>
+          <tr style="background:var(--surface-2)">
+            <th style="text-align:left;padding:8px 10px;font-size:11px;text-transform:uppercase;letter-spacing:.4px;color:var(--ink-muted);font-weight:600">Agent</th>
+            <th style="text-align:center;padding:8px 10px;font-size:11px;text-transform:uppercase;letter-spacing:.4px;color:var(--ink-muted);font-weight:600">KPI Target</th>
+            <th style="text-align:center;padding:8px 10px;font-size:11px;text-transform:uppercase;letter-spacing:.4px;color:var(--ink-muted);font-weight:600">Outlets Visited</th>
+            <th style="text-align:center;padding:8px 10px;font-size:11px;text-transform:uppercase;letter-spacing:.4px;color:var(--ink-muted);font-weight:600">Achievement</th>
+            <th style="text-align:center;padding:8px 10px;font-size:11px;text-transform:uppercase;letter-spacing:.4px;color:var(--ink-muted);font-weight:600">Items Checked</th>
+            <th style="text-align:center;padding:8px 10px;font-size:11px;text-transform:uppercase;letter-spacing:.4px;color:var(--ink-muted);font-weight:600">🔴 Red Alerts</th>
+          </tr>
+        </thead>
+        <tbody id="hqstats-tbody">
+          <tr><td colspan="6" style="text-align:center;padding:30px;color:var(--ink-muted)">Loading…</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Unchecked this month -->
+  <div class="card">
+    <div class="card-title">❌ Outlets Not Checked This Month</div>
+    <div id="hqstats-unchecked"><div class="loader"><div class="spinner"></div>Loading…</div></div>
+  </div>
+
+  <!-- Last visited ranking -->
+  <div class="card">
+    <div class="card-title">🕐 Outlets by Last Check Date (Oldest First)</div>
+    <div id="hqstats-lastvisit"><div class="loader"><div class="spinner"></div>Loading…</div></div>
+  </div>
+
+  <!-- Outlet assignment -->
+  <div class="card">
+    <div class="card-title">🏪 Outlet Assignment</div>
+    <div style="font-size:12px;color:var(--ink-muted);margin-bottom:12px">Assign outlets to Sales agents. Agents will only see their assigned outlets when filling in check-in forms.</div>
+    <div id="outlet-assignment-list"><div class="loader"><div class="spinner"></div>Loading…</div></div>
+  </div>
+
+  <!-- KPI settings -->
+  <div class="card">
+    <div class="card-title">🎯 KPI Settings</div>
+    <div style="font-size:12px;color:var(--ink-muted);margin-bottom:12px">Set monthly outlet visit KPI for each Sales agent.</div>
+    <div id="kpi-settings-list"><div class="loader"><div class="spinner"></div>Loading…</div></div>
+  </div>
 </div>
 
 <!-- Modal: Add Outlet -->
@@ -425,6 +485,7 @@ function updateHQUI() {
   document.getElementById('hq-login-btn').style.display = logged ? 'none' : '';
   const loggedInEl = document.getElementById('hq-logged-in');
   loggedInEl.style.display = logged ? 'flex' : 'none';
+  document.getElementById('tab-hqstats-btn').style.display = logged ? '' : 'none';
 }
 
 window.addEventListener('DOMContentLoaded', async ()=>{
@@ -437,15 +498,17 @@ window.addEventListener('DOMContentLoaded', async ()=>{
 
 // ── Outlets ──
 async function loadOutlets() {
-  outlets = await sbGet('outlets?select=*&order=name.asc');
+  outlets = await sbGet('outlets?select=*&order=name.asc'); 
   if(!Array.isArray(outlets)) outlets=[];
   populateOutletSelect();
 }
 function populateOutletSelect() {
   const sel=document.getElementById('f-outlet');
   const cur=sel.value;
+  const agentName=document.getElementById('f-agent').value.trim();
   sel.innerHTML='<option value="">— Select Outlet —</option>';
-  outlets.forEach(o=>{ const opt=document.createElement('option'); opt.value=o.id; opt.textContent=o.name+(o.region?` (${o.region})`:''); sel.appendChild(opt); });
+  const filtered = agentName ? outlets.filter(o=>!o.assigned_to||o.assigned_to===agentName) : outlets;
+  filtered.forEach(o=>{ const opt=document.createElement('option'); opt.value=o.id; opt.textContent=o.name+(o.region?` (${o.region})`:''); sel.appendChild(opt); });
   if(cur) sel.value=cur;
 }
 
@@ -507,6 +570,7 @@ function switchTab(t) {
   if(t==='overview') loadOverview();
   if(t==='stats') loadStats();
   if(t==='alerts') loadAlerts(false);
+  if(t==='hqstats') loadHQStats();
 }
 
 // ── Product rows ──
@@ -524,8 +588,8 @@ function addProductRow() {
         </select>
       </div>
       <div class="form-group">
-        <label>LOT No.</label>
-        <input type="text" placeholder="e.g. A240101" id="pl-${id}">
+        <label>Batch Code</label>
+        <input type="text" placeholder="e.g. BC240101" id="pl-${id}">
       </div>
       <div class="form-group">
         <label>Expiry Date</label>
@@ -707,7 +771,7 @@ async function openDetail(outletId, outletName) {
   const today=new Date(); today.setHours(0,0,0,0);
   function cls(d){ if(!d) return ''; const days=Math.ceil((new Date(d)-today)/86400000); if(days<=30) return 'exp-30'; if(days<=90) return 'exp-90'; if(days<=120) return 'exp-120'; if(days<=180) return 'exp-180'; return ''; }
   document.getElementById('detailContent').innerHTML=`<div style="overflow-x:auto"><table class="detail-table">
-    <tr><th>Product</th><th>LOT</th><th>Expiry</th><th>Qty</th><th>Return</th><th>Destination</th><th>Agent</th><th>Date</th>${isHQ()?'<th></th>':''}</tr>
+    <tr><th>Product</th><th>Batch Code</th><th>Expiry</th><th>Qty</th><th>Return</th><th>Destination</th><th>Agent</th><th>Date</th>${isHQ()?'<th></th>':''}</tr>
     ${data.map(r=>`<tr class="${cls(r.expiry_date)}">
       <td>${escH(r.product_name||'')}</td><td><span class="lot-tag">${escH(r.lot_number||'—')}</span></td>
       <td>${r.expiry_date||'—'}</td><td>${r.quantity||0}</td>
@@ -766,7 +830,7 @@ function renderAlerts() {
     return '<div class="alert-section">'
       +'<div class="alert-header '+cls+'">'+label+' <span style="font-weight:400;font-size:12px">('+items.length+' item'+(items.length>1?'s':'')+')</span></div>'
       +'<div class="alert-body">'
-      +'<div class="alert-row alert-row-head"><div>Product</div><div>LOT</div><div>Outlet</div><div>State</div><div>Expiry / Days</div></div>'
+      +'<div class="alert-row alert-row-head"><div>Product</div><div>Batch Code</div><div>Outlet</div><div>State</div><div>Expiry / Days</div></div>'
       +items.map(r=>'<div class="alert-row">'
         +'<div>'+escH(r.product_name||'')+'</div>'
         +'<div><span class="lot-tag">'+escH(r.lot_number||'—')+'</span></div>'
@@ -795,6 +859,211 @@ async function saveNewOutlet(){
     showToast('✅ Outlet added: '+name);
     if(document.getElementById('tab-overview').classList.contains('active')) loadOverview();
   } else { showToast('Save failed. Check database setup.', true); }
+}
+
+// ── HQ Stats ──
+let hqMembers = [];
+async function loadHQStats() {
+  // populate month selector if empty
+  const sel = document.getElementById('hqstats-month');
+  if(!sel.options.length) {
+    const now = new Date();
+    for(let i=0;i<12;i++){
+      const d=new Date(now.getFullYear(),now.getMonth()-i,1);
+      const o=document.createElement('option');
+      o.value=d.toISOString().slice(0,7);
+      o.textContent=d.toLocaleString('en',{year:'numeric',month:'long'});
+      sel.appendChild(o);
+    }
+  }
+  const month = sel.value;
+  const [year, mon] = month.split('-');
+  const firstDay = `${year}-${mon}-01`;
+  const lastDay = `${year}-${mon}-${new Date(year,mon,0).getDate()}`;
+
+  // load members (sales only)
+  const membersData = await sbGet('members?select=*&order=name');
+  hqMembers = Array.isArray(membersData) ? membersData.filter(m=>(m.role||'sales')==='sales') : [];
+
+  // load checks for this month
+  const checks = await sbGet(`outlet_stock_checks?check_date=gte.${firstDay}&check_date=lte.${lastDay}&select=agent_name,outlet_id,quantity,expiry_date`);
+  if(!Array.isArray(checks)) return;
+
+  const today = new Date(); today.setHours(0,0,0,0);
+  function daysLeft(d){ const dt=new Date(d); dt.setHours(0,0,0,0); return Math.ceil((dt-today)/86400000); }
+
+  // aggregate per agent
+  const agentStats = {};
+  hqMembers.forEach(m=>{ agentStats[m.name]={visited:new Set(),items:0,redAlerts:0,kpi:m.outlet_visit_kpi||0}; });
+
+  checks.forEach(c=>{
+    const a = c.agent_name;
+    if(!agentStats[a]) agentStats[a]={visited:new Set(),items:0,redAlerts:0,kpi:0};
+    if(c.outlet_id) agentStats[a].visited.add(c.outlet_id);
+    agentStats[a].items += (c.quantity||0);
+    if(c.expiry_date && daysLeft(c.expiry_date)<=90) agentStats[a].redAlerts++;
+  });
+
+  // summary
+  const totalVisited = new Set(checks.map(c=>c.outlet_id)).size;
+  const totalRed = checks.filter(c=>c.expiry_date&&daysLeft(c.expiry_date)<=90).length;
+  document.getElementById('hqstats-summary').innerHTML = `
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;text-align:center">
+      <div style="font-size:22px;font-weight:700;color:var(--green)">${hqMembers.length}</div>
+      <div style="font-size:11px;color:var(--ink-muted);text-transform:uppercase;margin-top:4px">Sales Agents</div>
+    </div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;text-align:center">
+      <div style="font-size:22px;font-weight:700;color:var(--green)">${totalVisited}</div>
+      <div style="font-size:11px;color:var(--ink-muted);text-transform:uppercase;margin-top:4px">Outlets Visited</div>
+    </div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;text-align:center">
+      <div style="font-size:22px;font-weight:700;color:var(--red)">${totalRed}</div>
+      <div style="font-size:11px;color:var(--ink-muted);text-transform:uppercase;margin-top:4px">🔴 Red Alerts</div>
+    </div>
+  `;
+
+  // per agent table
+  const tbody = document.getElementById('hqstats-tbody');
+  if(!hqMembers.length){ tbody.innerHTML='<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--ink-muted)">No sales members found.</td></tr>'; }
+  else {
+    tbody.innerHTML = hqMembers.map(m=>{
+      const s = agentStats[m.name]||{visited:new Set(),items:0,redAlerts:0,kpi:m.outlet_visit_kpi||0};
+      const visited = s.visited.size;
+      const kpi = s.kpi;
+      const pct = kpi>0 ? Math.round(visited/kpi*100) : null;
+      const pctColor = pct===null?'var(--ink-muted)':pct>=100?'var(--green)':pct>=60?'var(--amber)':'var(--red)';
+      return `<tr style="border-top:1px solid var(--border)">
+        <td style="padding:10px">${escH(m.name)}</td>
+        <td style="text-align:center;padding:10px">${kpi||'—'}</td>
+        <td style="text-align:center;padding:10px;font-weight:600">${visited}</td>
+        <td style="text-align:center;padding:10px">
+          ${pct!==null?`<span style="font-weight:700;color:${pctColor}">${pct}%</span>`:'<span style="color:var(--ink-muted)">—</span>'}
+        </td>
+        <td style="text-align:center;padding:10px">${s.items}</td>
+        <td style="text-align:center;padding:10px">
+          ${s.redAlerts>0?`<span style="color:var(--red);font-weight:700">🔴 ${s.redAlerts}</span>`:'<span style="color:var(--green)">✓ 0</span>'}
+        </td>
+      </tr>`;
+    }).join('');
+  }
+
+  // outlet assignment
+  renderOutletAssignment();
+  renderKPISettings();
+
+  // ── Outlets not checked this month ──
+  const checkedOutletIds = new Set(checks.map(c=>String(c.outlet_id)));
+  const unchecked = outlets.filter(o=>!checkedOutletIds.has(String(o.id)));
+  const uncheckedEl = document.getElementById('hqstats-unchecked');
+  if(!unchecked.length) {
+    uncheckedEl.innerHTML='<div class="empty">✅ All outlets checked this month!</div>';
+  } else {
+    uncheckedEl.innerHTML=`<div style="display:flex;flex-direction:column;gap:6px">`+
+      unchecked.map(o=>`
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:#fff9f9;border:1px solid #fca5a5;border-radius:8px;flex-wrap:wrap;gap:6px">
+          <div>
+            <span style="font-weight:600;font-size:13px">${escH(o.name)}</span>
+            ${o.region?`<span style="font-size:11px;color:var(--ink-muted);margin-left:6px">${escH(o.region)}</span>`:''}
+          </div>
+          <div style="display:flex;align-items:center;gap:8px">
+            ${o.assigned_to?`<span style="font-size:11px;background:var(--green-light);color:var(--green);padding:2px 8px;border-radius:20px;font-weight:600">${escH(o.assigned_to)}</span>`:'<span style="font-size:11px;color:var(--ink-muted)">Unassigned</span>'}
+            <span style="font-size:11px;font-weight:700;color:var(--red)">NOT CHECKED</span>
+          </div>
+        </div>`).join('')+
+      '</div>';
+  }
+
+  // ── Last visit ranking (oldest first) ──
+  // Get last check date per outlet from all-time data
+  const allChecks = await sbGet('outlet_stock_checks?select=outlet_id,outlet_name,check_date&order=check_date.desc');
+  const lastVisitMap = {};
+  if(Array.isArray(allChecks)) {
+    allChecks.forEach(c=>{
+      if(!lastVisitMap[c.outlet_id]) lastVisitMap[c.outlet_id]={date:c.check_date,name:c.outlet_name};
+    });
+  }
+  const today2 = new Date(); today2.setHours(0,0,0,0);
+  const outletsSorted = [...outlets].map(o=>{
+    const last = lastVisitMap[o.id];
+    const daysSince = last ? Math.ceil((today2-new Date(last.date))/86400000) : null;
+    return {...o, lastDate: last?.date||null, daysSince};
+  }).sort((a,b)=>{
+    if(a.daysSince===null && b.daysSince===null) return 0;
+    if(a.daysSince===null) return -1;
+    if(b.daysSince===null) return -1;
+    return b.daysSince - a.daysSince;
+  });
+
+  const lastVisitEl = document.getElementById('hqstats-lastvisit');
+  lastVisitEl.innerHTML=`<div style="display:flex;flex-direction:column;gap:6px">`+
+    outletsSorted.map((o,i)=>{
+      const ds = o.daysSince;
+      const color = ds===null?'var(--red)':ds>60?'var(--red)':ds>30?'var(--amber)':'var(--green)';
+      const label = ds===null?'Never checked':`${ds} days ago`;
+      return `<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:var(--surface);border:1px solid var(--border);border-radius:8px;flex-wrap:wrap;gap:6px">
+        <div style="display:flex;align-items:center;gap:10px">
+          <span style="font-size:12px;font-weight:700;color:var(--ink-muted);width:22px">${i+1}</span>
+          <div>
+            <span style="font-weight:600;font-size:13px">${escH(o.name)}</span>
+            ${o.region?`<span style="font-size:11px;color:var(--ink-muted);margin-left:6px">${escH(o.region)}</span>`:''}
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          ${o.assigned_to?`<span style="font-size:11px;background:var(--green-light);color:var(--green);padding:2px 8px;border-radius:20px;font-weight:600">${escH(o.assigned_to)}</span>`:''}
+          <span style="font-size:12px;font-weight:700;color:${color}">${label}</span>
+          ${o.lastDate?`<span style="font-size:11px;color:var(--ink-muted)">${o.lastDate}</span>`:''}
+        </div>
+      </div>`;
+    }).join('')+
+  '</div>';
+}
+
+function renderOutletAssignment() {
+  const el = document.getElementById('outlet-assignment-list');
+  if(!outlets.length){ el.innerHTML='<div class="empty">No outlets found.</div>'; return; }
+  el.innerHTML = `<div style="display:flex;flex-direction:column;gap:8px">` +
+    outlets.map(o=>`
+      <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--surface-2);border-radius:8px;flex-wrap:wrap">
+        <div style="flex:1;font-weight:500;font-size:13px">${escH(o.name)}${o.region?` <span style="color:var(--ink-muted);font-size:11px">(${escH(o.region)})</span>`:''}</div>
+        <select onchange="assignOutlet(${o.id},this.value)" style="padding:6px 10px;border:1.5px solid var(--border);border-radius:6px;font-family:inherit;font-size:12px;background:var(--bg)">
+          <option value="">— Unassigned —</option>
+          ${hqMembers.map(m=>`<option value="${escH(m.name)}" ${o.assigned_to===m.name?'selected':''}>${escH(m.name)}</option>`).join('')}
+        </select>
+      </div>
+    `).join('') + '</div>';
+}
+
+async function assignOutlet(outletId, agentName) {
+  await fetch(SB_URL+'/rest/v1/outlets?id=eq.'+outletId, {method:'PATCH', headers:H, body:JSON.stringify({assigned_to:agentName||null})});
+  const o = outlets.find(o=>o.id==outletId);
+  if(o) o.assigned_to = agentName||null;
+  showToast(agentName ? `✅ Assigned to ${agentName}` : '✅ Unassigned');
+}
+
+function renderKPISettings() {
+  const el = document.getElementById('kpi-settings-list');
+  if(!hqMembers.length){ el.innerHTML='<div class="empty">No sales members.</div>'; return; }
+  el.innerHTML = `<div style="display:flex;flex-direction:column;gap:8px">` +
+    hqMembers.map(m=>`
+      <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--surface-2);border-radius:8px;flex-wrap:wrap">
+        <div style="flex:1;font-weight:500;font-size:13px">${escH(m.name)}</div>
+        <div style="display:flex;align-items:center;gap:6px">
+          <span style="font-size:12px;color:var(--ink-muted)">Monthly KPI:</span>
+          <input type="number" min="0" value="${m.outlet_visit_kpi||0}" id="kpi-${m.id}"
+            style="width:70px;padding:6px 8px;border:1.5px solid var(--border);border-radius:6px;font-family:inherit;font-size:13px;text-align:center">
+          <span style="font-size:12px;color:var(--ink-muted)">outlets</span>
+          <button onclick="saveKPISetting(${m.id})" style="padding:6px 12px;background:var(--green);color:#fff;border:none;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer">Save</button>
+        </div>
+      </div>
+    `).join('') + '</div>';
+}
+
+async function saveKPISetting(memberId) {
+  const val = parseInt(document.getElementById('kpi-'+memberId).value)||0;
+  await fetch(SB_URL+'/rest/v1/members?id=eq.'+memberId, {method:'PATCH', headers:H, body:JSON.stringify({outlet_visit_kpi:val})});
+  const m = hqMembers.find(m=>m.id===memberId);
+  if(m) m.outlet_visit_kpi=val;
+  showToast('✅ KPI saved');
 }
 
 async function deleteOutlet(outletId, outletName) {
