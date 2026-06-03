@@ -65,10 +65,19 @@ table.dt{width:100%;border-collapse:collapse;font-size:.85rem}
 table.dt th{text-align:left;padding:10px 8px;border-bottom:2px solid var(--border);font-weight:600;color:var(--text2);font-size:.72rem;text-transform:uppercase;letter-spacing:.3px;background:#f9fafb;white-space:nowrap}
 table.dt td{padding:10px 8px;border-bottom:1px solid #f3f4f6}
 table.dt tr:hover td{background:#fafafa}
+table.dt tr.clickable{cursor:pointer}
+table.dt tr.clickable:hover td{background:var(--primary-light)}
 .rank{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;font-size:11px;font-weight:700}
 .rank.g{background:#dcfce7;color:#166534}.rank.s{background:#f3f4f6;color:#374151}.rank.b{background:#fed7aa;color:#9a3412}.rank.n{background:#f3f4f6;color:var(--text2)}
 .tag{display:inline-block;padding:2px 8px;border-radius:4px;font-size:.72rem;font-weight:600}
 .tag.up{background:#dcfce7;color:#166534}.tag.dn{background:#fee2e2;color:#dc2626}.tag.nw{background:#dbeafe;color:#1e40af}
+
+.detail-row td{background:#f8faf8!important;padding:12px 16px!important}
+.detail-table{width:100%;border-collapse:collapse;font-size:.8rem;margin-top:4px}
+.detail-table th{background:var(--primary);color:#fff;padding:6px 8px;font-size:.7rem;text-transform:uppercase;letter-spacing:.3px}
+.detail-table td{padding:6px 8px;border-bottom:1px solid var(--border);text-align:center}
+.detail-table td:first-child{text-align:left;font-weight:600}
+.detail-table tr:last-child td{font-weight:700;background:#dcfce7}
 
 .alert-card{padding:12px;border-radius:8px;margin-bottom:6px;display:flex;align-items:flex-start;gap:10px}
 .alert-card.red{background:var(--danger-light);border-left:3px solid var(--danger)}
@@ -86,6 +95,13 @@ table.dt tr:hover td{background:#fafafa}
 .team-pct{font-size:20px;font-weight:700;font-family:'DM Serif Display',serif}
 
 .section-title{font-family:'DM Serif Display',serif;font-size:1.1rem;color:var(--text);margin:20px 0 10px;padding-bottom:6px;border-bottom:2px solid var(--primary-light)}
+.inline-filters{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
+.inline-filters input,.inline-filters select{padding:6px 10px;border:1px solid var(--border);border-radius:6px;font-family:inherit;font-size:.82rem}
+.inline-filters input{min-width:160px}
+
+.sku-block{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:10px}
+.sku-block h4{font-size:.9rem;font-weight:700;color:var(--primary);margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.sku-block h4 .sku-total{font-weight:400;font-size:.75rem;color:var(--text2)}
 
 .form-group{margin-bottom:12px}
 .form-group label{display:block;font-size:12px;font-weight:600;color:var(--text2);margin-bottom:4px}
@@ -116,6 +132,7 @@ table.dt tr:hover td{background:#fafafa}
   .filters{padding:.5rem 1rem}main{padding:1rem}
   .kpi-grid{grid-template-columns:1fr 1fr}.kpi .value{font-size:1.3rem}
   table.dt{font-size:.78rem}table.dt th,table.dt td{padding:8px 4px}
+  .inline-filters{flex-direction:column;align-items:stretch}
 }
 </style>
 </head>
@@ -138,6 +155,7 @@ table.dt tr:hover td{background:#fafafa}
   <button class="active" onclick="go('overview',this)">📊 总览</button>
   <button onclick="go('customers',this)">👥 客户</button>
   <button onclick="go('products',this)">🏷️ 产品</button>
+  <button onclick="go('skutop',this)">🔍 SKU客户</button>
   <button onclick="go('team',this)">👤 团队</button>
   <button onclick="go('admin',this)">⚙️ 目标</button>
 </nav>
@@ -181,32 +199,32 @@ const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZ
 const SB_HDR={'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json','Prefer':'return=representation'};
 const SKUS=['KPM','CLM','SHCR','SHTY','SHSS','SPM - BBQ','BBQ (BAG)','SPM - MALA','MALA (BAG)','MRBR','TYSN','TYSP','TMSP','SMTS','SMCL','SPTS','SPCL','CMBR','KETUPAT'];
 
-let allData=[],state={year:0,month:0,tab:'overview',targets:{monthly:500000,annual:6000000}};
+let allData=[], state={year:0,month:0,tab:'overview',targets:{monthly:500000,annual:6000000}};
+let custSearchTerm='', custSPFilter='';
 
 function getTotal(r){for(const k of Object.keys(r)){if(k.replace(/[^A-Za-z]/g,'').toUpperCase()==='TOTALRM')return parseFloat(r[k])||0;}return 0;}
 function fmt(n){return'RM '+Number(n).toLocaleString('en',{minimumFractionDigits:0,maximumFractionDigits:0});}
 function fmtK(n){return n>=10000?'RM '+(n/1000).toFixed(0)+'K':fmt(n);}
+function fi(n){return n?Math.round(n).toLocaleString():'—';}
 
+// ===== DATA =====
 async function loadData(){
   document.getElementById('content').innerHTML='<div class="loading"><div class="spinner"></div><span>正在加载销售数据...</span></div>';
   document.getElementById('lastUpdated').textContent='加载中...';
   try{
-    const res=await fetch(API_URL);
-    const json=await res.json();
+    const res=await fetch(API_URL);const json=await res.json();
     allData=json.data||[];
     document.getElementById('lastUpdated').textContent='更新: '+new Date().toLocaleTimeString('zh-MY');
     populateYears();
-    await loadTargets();
     render();
-  }catch(e){
-    document.getElementById('content').innerHTML='<div class="empty">❌ 无法加载数据<br><small>'+e.message+'</small></div>';
-  }
+    loadTargets();
+  }catch(e){document.getElementById('content').innerHTML='<div class="empty">❌ 无法加载数据<br><small>'+e.message+'</small></div>';}
 }
 
 async function loadTargets(){
   try{
     const r=await fetch(SB+'/sales_targets?year=eq.'+state.year,{headers:SB_HDR});
-    if(r.ok){const d=await r.json();if(d.length){state.targets={monthly:d[0].monthly_target,annual:d[0].annual_target};return;}}
+    if(r.ok){const d=await r.json();if(d.length){state.targets={monthly:d[0].monthly_target,annual:d[0].annual_target};render();return;}}
   }catch(e){}
   state.targets={monthly:500000,annual:6000000};
 }
@@ -219,42 +237,44 @@ function populateYears(){
   sel.value=state.year;
 }
 
+// ===== FILTERS =====
+function yearData(){return allData.filter(r=>String(r['YEAR'])===String(state.year));}
 function filtered(){
-  let d=allData.filter(r=>String(r['YEAR'])===String(state.year));
+  let d=yearData();
   if(state.month>0)d=d.filter(r=>parseInt(r['MONTH'])===state.month);
   return d;
 }
-function yearData(){return allData.filter(r=>String(r['YEAR'])===String(state.year));}
+function onFilter(){
+  state.year=parseInt(document.getElementById('selYear').value);
+  state.month=parseInt(document.getElementById('selMonth').value);
+  render();
+  loadTargets();
+}
 
+// ===== ANALYTICS =====
 function monthlyStats(){
   const map={};
   yearData().forEach(r=>{const m=parseInt(r['MONTH']);if(!m)return;if(!map[m])map[m]={m,rev:0,orders:0,custs:new Set()};map[m].rev+=getTotal(r);map[m].orders++;map[m].custs.add(r['COMPANY']);});
   return Object.values(map).sort((a,b)=>a.m-b.m);
 }
-
 function customerStats(){
   const map={};
   filtered().forEach(r=>{const c=r['COMPANY']||'Unknown';if(!map[c])map[c]={name:c,rev:0,sp:r['SALES PERSON']||'',orders:0,type:r['TYPE']||''};map[c].rev+=getTotal(r);map[c].orders++;if(r['SALES PERSON'])map[c].sp=r['SALES PERSON'];});
   return Object.values(map).sort((a,b)=>b.rev-a.rev);
 }
-
-function skuStats(){
-  const map={};
-  yearData().forEach(r=>{const m=parseInt(r['MONTH']);SKUS.forEach(s=>{const v=parseFloat(r[s])||0;if(!v)return;if(!map[s])map[s]={sku:s,total:0,months:{}};if(!map[s].months[m])map[s].months[m]=0;map[s].months[m]+=v;map[s].total+=v;});});
-  return Object.values(map).sort((a,b)=>b.total-a.total);
-}
-
 function teamStats(){
   const map={};
   filtered().forEach(r=>{const s=r['SALES PERSON']||'Unknown';if(!map[s])map[s]={name:s,rev:0,orders:0,custs:new Set()};map[s].rev+=getTotal(r);map[s].orders++;map[s].custs.add(r['COMPANY']);});
   return Object.values(map).sort((a,b)=>b.rev-a.rev);
 }
-
+function skuStats(){
+  const map={};
+  yearData().forEach(r=>{const m=parseInt(r['MONTH']);SKUS.forEach(s=>{const v=parseFloat(r[s])||0;if(!v)return;if(!map[s])map[s]={sku:s,total:0,months:{}};if(!map[s].months[m])map[s].months[m]=0;map[s].months[m]+=v;map[s].total+=v;});});
+  return Object.values(map).sort((a,b)=>b.total-a.total);
+}
 function churnAnalysis(){
-  const ms=monthlyStats().map(m=>m.m);
-  if(ms.length<2)return[];
-  const latest=state.month>0?state.month:Math.max(...ms);
-  const prev=latest-1;if(prev<1)return[];
+  const ms=monthlyStats().map(m=>m.m);if(ms.length<2)return[];
+  const latest=state.month>0?state.month:Math.max(...ms);const prev=latest-1;if(prev<1)return[];
   const prevC={},currC=new Set();
   yearData().forEach(r=>{
     const m=parseInt(r['MONTH']),c=r['COMPANY'];
@@ -262,22 +282,26 @@ function churnAnalysis(){
     if(m===latest)currC.add(c);
   });
   const out=[];
-  Object.values(prevC).forEach(c=>{
-    if(!currC.has(c.name)){
-      let p='low';if(c.rev>=10000)p='high';else if(c.rev>=3000)p='med';
-      out.push({...c,priority:p,prevM:prev,currM:latest});
-    }
-  });
+  Object.values(prevC).forEach(c=>{if(!currC.has(c.name)){let p='low';if(c.rev>=10000)p='high';else if(c.rev>=3000)p='med';out.push({...c,priority:p,prevM:prev,currM:latest});}});
   return out.sort((a,b)=>b.rev-a.rev);
 }
-
 function momChange(name,curM){
-  if(curM<=1)return null;
-  let cur=0,prev=0;
+  if(curM<=1)return null;let cur=0,prev=0;
   yearData().forEach(r=>{if(r['COMPANY']!==name)return;const m=parseInt(r['MONTH']);if(m===curM)cur+=getTotal(r);if(m===curM-1)prev+=getTotal(r);});
-  if(!prev&&!cur)return null;
-  if(!prev)return{pct:999,nw:true};
-  return{pct:(cur-prev)/prev*100,nw:false};
+  if(!prev&&!cur)return null;if(!prev)return{pct:999,nw:true};return{pct:(cur-prev)/prev*100,nw:false};
+}
+function customerSkuDetail(name){
+  const map={};const ms=new Set();
+  yearData().forEach(r=>{
+    if(r['COMPANY']!==name)return;const m=parseInt(r['MONTH']);ms.add(m);
+    SKUS.forEach(s=>{const v=parseFloat(r[s])||0;if(!v)return;if(!map[s])map[s]={sku:s,months:{},total:0};if(!map[s].months[m])map[s].months[m]=0;map[s].months[m]+=v;map[s].total+=v;});
+  });
+  return{skus:Object.values(map).sort((a,b)=>b.total-a.total),months:[...ms].sort((a,b)=>a-b)};
+}
+function skuTopCustomers(sku){
+  const map={};
+  filtered().forEach(r=>{const v=parseFloat(r[sku])||0;if(!v)return;const c=r['COMPANY']||'Unknown';if(!map[c])map[c]={name:c,qty:0,sp:r['SALES PERSON']||''};map[c].qty+=v;if(r['SALES PERSON'])map[c].sp=r['SALES PERSON'];});
+  return Object.values(map).sort((a,b)=>b.qty-a.qty).slice(0,10);
 }
 
 // ===== RENDER =====
@@ -287,6 +311,7 @@ function render(){
     case'overview':c.innerHTML=rOverview();break;
     case'customers':c.innerHTML=rCustomers();break;
     case'products':c.innerHTML=rProducts();break;
+    case'skutop':c.innerHTML=rSkuTop();break;
     case'team':c.innerHTML=rTeam();break;
     case'admin':rAdmin();break;
   }
@@ -294,18 +319,9 @@ function render(){
 
 function rOverview(){
   const ms=monthlyStats(),tgt=state.targets;
-  const ytd=ms.reduce((s,m)=>s+m.rev,0);
-  const am=ms.length||1,avg=ytd/am;
-  const ap=ytd/tgt.annual;
-  const gap=tgt.annual-ytd;
-  const ep=am/12,onTrack=ap>=ep;
-  const latestM=ms.length?ms[ms.length-1]:null;
-  const lp=latestM?latestM.rev/tgt.monthly:0;
-  const churn=churnAnalysis();
-  const team=teamStats();
-  const topPerson=team.length?team[0]:null;
-  const totalRev=team.reduce((s,t)=>s+t.rev,0);
-
+  const ytd=ms.reduce((s,m)=>s+m.rev,0);const am=ms.length||1,avg=ytd/am;
+  const ap=ytd/tgt.annual,gap=tgt.annual-ytd,ep=am/12,onTrack=ap>=ep;
+  const churn=churnAnalysis(),team=teamStats(),topP=team.length?team[0]:null,totalRev=team.reduce((s,t)=>s+t.rev,0);
   let h=`<div class="kpi-grid">
     <div class="kpi green"><div class="label">年度累计 YTD</div><div class="value">${fmt(ytd)}</div><div class="sub">${am} 个月数据</div></div>
     <div class="kpi ${onTrack?'green':'red'}"><div class="label">年度达成率</div><div class="value">${(ap*100).toFixed(1)}%</div><div class="sub">预期 ${(ep*100).toFixed(0)}%${onTrack?' ✅':' ⚠️ 落后'}</div></div>
@@ -318,112 +334,130 @@ function rOverview(){
   </div>
   <div class="card"><h3><span class="dot"></span>月度业绩对比</h3><div class="bar-chart">`;
   const maxV=Math.max(tgt.monthly,...ms.map(m=>m.rev));
-  ms.forEach(m=>{
-    const w=(m.rev/maxV*100).toFixed(1),mp=m.rev/tgt.monthly;
-    h+=`<div class="bar-row"><div class="bar-label">${m.m}月</div><div class="bar-track"><div class="bar-fill ${mp>=.8?'g':'r'}" style="width:${w}%"></div><div class="bar-val">${fmtK(m.rev)}</div></div><div class="bar-pct">${(mp*100).toFixed(0)}%</div></div>`;
-  });
-  h+=`</div></div>`;
-
-  h+=`<div class="card"><h3><span class="dot" style="background:var(--warn)"></span>快速提醒</h3>`;
-  if(churn.length){
-    const hi=churn.filter(c=>c.priority==='high');
-    h+=`<div class="alert-card red"><div><div class="alert-title">⚠️ ${churn.length} 家客户流失预警</div><div class="alert-sub">${hi.length?hi.map(c=>c.name).join('、')+' 需立即跟进':'切换到"客户"查看详情'}</div></div></div>`;
-  }
-  if(topPerson&&totalRev){
-    const share=topPerson.rev/totalRev;
-    h+=`<div class="alert-card ${share>.7?'yellow':'green'}"><div><div class="alert-title">👤 ${topPerson.name} 贡献 ${(share*100).toFixed(0)}% 营业额</div><div class="alert-sub">${share>.7?'⚠️ 人员依赖风险高':'团队分配正常'}</div></div></div>`;
-  }
-  if(latestM){
-    const bigC=customerStats().filter(c=>c.rev>=10000);
-    h+=`<div class="alert-card green"><div><div class="alert-title">⭐ ${bigC.length} 家大订单客户（≥RM 10K）</div><div class="alert-sub">${bigC.slice(0,3).map(c=>c.name).join('、')}${bigC.length>3?' 等':''}</div></div></div>`;
-  }
-  h+=`</div>`;
-  return h;
+  ms.forEach(m=>{const w=(m.rev/maxV*100).toFixed(1),mp=m.rev/tgt.monthly;h+=`<div class="bar-row"><div class="bar-label">${m.m}月</div><div class="bar-track"><div class="bar-fill ${mp>=.8?'g':'r'}" style="width:${w}%"></div><div class="bar-val">${fmtK(m.rev)}</div></div><div class="bar-pct">${(mp*100).toFixed(0)}%</div></div>`;});
+  h+=`</div></div><div class="card"><h3><span class="dot" style="background:var(--warn)"></span>快速提醒</h3>`;
+  if(churn.length){const hi=churn.filter(c=>c.priority==='high');h+=`<div class="alert-card red"><div><div class="alert-title">⚠️ ${churn.length} 家客户流失预警</div><div class="alert-sub">${hi.length?hi.map(c=>c.name).join('、')+' 需立即跟进':'切换到"客户"查看详情'}</div></div></div>`;}
+  if(topP&&totalRev){const sh=topP.rev/totalRev;h+=`<div class="alert-card ${sh>.7?'yellow':'green'}"><div><div class="alert-title">👤 ${topP.name} 贡献 ${(sh*100).toFixed(0)}% 营业额</div><div class="alert-sub">${sh>.7?'⚠️ 人员依赖风险高':'团队分配正常'}</div></div></div>`;}
+  const bigC=customerStats().filter(c=>c.rev>=10000);
+  if(bigC.length)h+=`<div class="alert-card green"><div><div class="alert-title">⭐ ${bigC.length} 家大订单客户 (≥RM 10K)</div><div class="alert-sub">${bigC.slice(0,3).map(c=>c.name).join('、')}${bigC.length>3?' 等':''}</div></div></div>`;
+  h+=`</div>`;return h;
 }
 
 function rCustomers(){
-  const custs=customerStats(),totalRev=custs.reduce((s,c)=>s+c.rev,0);
+  const allCusts=customerStats(),totalRev=allCusts.reduce((s,c)=>s+c.rev,0);
   const ms=monthlyStats(),latestM=state.month>0?state.month:(ms.length?Math.max(...ms.map(m=>m.m)):0);
   const churn=churnAnalysis();
-  let h=`<div class="card"><h3><span class="dot"></span>客户排名 ${state.month>0?state.month+'月':'(YTD)'} — Top ${Math.min(custs.length,20)}</h3>
-    <div style="overflow-x:auto"><table class="dt"><tr><th>排名</th><th>客户</th><th>类型</th><th>营业额</th><th>占比</th><th>销售员</th><th>环比</th></tr>`;
+  const spList=[...new Set(allCusts.map(c=>c.sp).filter(Boolean))].sort();
+  let custs=allCusts;
+  if(custSPFilter)custs=custs.filter(c=>c.sp===custSPFilter);
+  if(custSearchTerm)custs=custs.filter(c=>c.name.toLowerCase().includes(custSearchTerm.toLowerCase()));
+  let h=`<div class="card"><h3><span class="dot"></span>客户排名 ${state.month>0?state.month+'月':'(YTD)'}</h3>
+    <div class="inline-filters">
+      <input type="text" placeholder="🔍 搜索客户..." value="${custSearchTerm}" oninput="custSearchTerm=this.value;render()">
+      <select onchange="custSPFilter=this.value;render()">
+        <option value="">全部销售员</option>${spList.map(s=>`<option value="${s}"${s===custSPFilter?' selected':''}>${s}</option>`).join('')}
+      </select>
+      <span style="font-size:12px;color:var(--text3)">共 ${custs.length} 家 · 点击客户查看拿货明细</span>
+    </div>
+    <div style="overflow-x:auto"><table class="dt" id="custTable"><tr><th>排名</th><th>客户</th><th>类型</th><th>营业额</th><th>占比</th><th>销售员</th><th>环比</th></tr>`;
   custs.slice(0,20).forEach((c,i)=>{
-    const rc=i===0?'g':i===1?'s':i===2?'b':'n';
-    const sh=(c.rev/totalRev*100).toFixed(1);
+    const rc=i===0?'g':i===1?'s':i===2?'b':'n',sh=(c.rev/totalRev*100).toFixed(1);
     let mt='';
     if(latestM>1){const ch=momChange(c.name,latestM);if(ch){if(ch.nw)mt='<span class="tag nw">🆕</span>';else if(ch.pct>0)mt=`<span class="tag up">▲${ch.pct.toFixed(0)}%</span>`;else if(ch.pct<0)mt=`<span class="tag dn">▼${Math.abs(ch.pct).toFixed(0)}%</span>`;}}
-    h+=`<tr><td><span class="rank ${rc}">${i+1}</span></td><td><strong>${c.name}</strong></td><td><span class="tag" style="background:var(--warn-light);color:var(--warn)">${c.type||'-'}</span></td><td class="serif" style="color:var(--primary);font-weight:600">${fmt(c.rev)}</td><td>${sh}%</td><td>${c.sp}</td><td>${mt}</td></tr>`;
+    const esc=c.name.replace(/'/g,"\\'");
+    h+=`<tr class="clickable" onclick="toggleDetail('${esc}',this)"><td><span class="rank ${rc}">${i+1}</span></td><td><strong>📋 ${c.name}</strong></td><td><span class="tag" style="background:var(--warn-light);color:var(--warn)">${c.type||'-'}</span></td><td class="serif" style="color:var(--primary);font-weight:600">${fmt(c.rev)}</td><td>${sh}%</td><td>${c.sp}</td><td>${mt}</td></tr>`;
   });
   h+=`</table></div></div>`;
   if(churn.length){
     h+=`<div class="section-title">⚠️ 客户流失预警 — ${churn[0].prevM}月有单，${churn[0].currM}月未回购</div>`;
-    churn.forEach(c=>{
-      const cls=c.priority==='high'?'red':c.priority==='med'?'yellow':'green';
-      const lb=c.priority==='high'?'🔴 高优先级 — 立即致电':c.priority==='med'?'🟡 中优先级 — 本周联络':'⚪ 低优先级 — 月内跟进';
-      h+=`<div class="alert-card ${cls}"><div><div class="alert-title">${c.name}</div><div class="alert-sub">${c.prevM}月营业额 ${fmt(c.rev)} · ${c.sp} 负责</div><div class="alert-sub" style="margin-top:2px;font-weight:600">${lb}</div></div></div>`;
-    });
+    churn.forEach(c=>{const cls=c.priority==='high'?'red':c.priority==='med'?'yellow':'green';const lb=c.priority==='high'?'🔴 高优先级 — 立即致电':c.priority==='med'?'🟡 中优先级 — 本周联络':'⚪ 低优先级 — 月内跟进';h+=`<div class="alert-card ${cls}"><div><div class="alert-title">${c.name}</div><div class="alert-sub">${c.prevM}月营业额 ${fmt(c.rev)} · ${c.sp} 负责</div><div class="alert-sub" style="margin-top:2px;font-weight:600">${lb}</div></div></div>`;});
   }
   return h;
+}
+
+function toggleDetail(name,row){
+  const next=row.nextElementSibling;
+  if(next&&next.classList.contains('detail-row')){next.remove();return;}
+  document.querySelectorAll('.detail-row').forEach(r=>r.remove());
+  const d=customerSkuDetail(name);
+  if(!d.skus.length){toast('该客户无 SKU 数据','err');return;}
+  const mns=['','1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
+  let html=`<td colspan="7" style="padding:12px 16px!important;background:#f8faf8!important">
+    <div style="font-weight:700;font-size:13px;color:var(--primary);margin-bottom:6px">📦 ${name} — SKU 拿货明细</div>
+    <table class="detail-table"><tr><th>产品 SKU</th>`;
+  d.months.forEach(m=>{html+=`<th>${mns[m]}</th>`;});
+  html+=`<th>累计</th></tr>`;
+  d.skus.forEach(s=>{
+    html+=`<tr><td>${s.sku}</td>`;
+    d.months.forEach(m=>{html+=`<td>${fi(s.months[m]||0)}</td>`;});
+    html+=`<td>${fi(s.total)}</td></tr>`;
+  });
+  const totals={};d.skus.forEach(s=>{d.months.forEach(m=>{totals[m]=(totals[m]||0)+(s.months[m]||0);});});
+  const grandTotal=d.skus.reduce((s,sk)=>s+sk.total,0);
+  html+=`<tr><td>合计</td>`;d.months.forEach(m=>{html+=`<td>${fi(totals[m])}</td>`;});
+  html+=`<td>${fi(grandTotal)}</td></tr></table></td>`;
+  const tr=document.createElement('tr');tr.className='detail-row';tr.innerHTML=html;
+  row.after(tr);
 }
 
 function rProducts(){
   const skus=skuStats(),ms=monthlyStats().map(m=>m.m);
   if(!skus.length)return'<div class="empty">🏷️ 暂无 SKU 数据</div>';
   const mns=['','1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
-  let h=`<div class="card"><h3><span class="dot" style="background:#3b82f6"></span>SKU 产品销量排名</h3><div style="overflow-x:auto"><table class="dt"><tr><th>产品</th>`;
-  ms.forEach(m=>{h+=`<th>${mns[m]}</th>`;});
-  h+=`<th>累计</th><th>趋势</th></tr>`;
+  let h=`<div class="card"><h3><span class="dot" style="background:#3b82f6"></span>SKU 产品销量排名 (${state.year}年)</h3><div style="overflow-x:auto"><table class="dt"><tr><th>产品</th>`;
+  ms.forEach(m=>{h+=`<th>${mns[m]}</th>`;});h+=`<th>累计</th><th>趋势</th></tr>`;
   skus.forEach(s=>{
     h+=`<tr><td><strong>${s.sku}</strong></td>`;
     ms.forEach(m=>{const v=s.months[m]||0;h+=`<td>${v?v.toLocaleString():'—'}</td>`;});
     h+=`<td style="font-weight:700">${s.total.toLocaleString()}</td>`;
-    if(ms.length>=2){
-      const last=s.months[ms[ms.length-1]]||0,prev=s.months[ms[ms.length-2]]||0;
-      if(!prev&&last)h+=`<td><span class="tag nw">🆕</span></td>`;
-      else if(!prev)h+=`<td>—</td>`;
-      else{const ch=(last-prev)/prev*100;h+=`<td><span class="tag ${ch>=0?'up':'dn'}">${ch>=0?'▲':'▼'}${Math.abs(ch).toFixed(0)}%</span></td>`;}
-    }else h+=`<td>—</td>`;
+    if(ms.length>=2){const last=s.months[ms[ms.length-1]]||0,prev=s.months[ms[ms.length-2]]||0;if(!prev&&last)h+=`<td><span class="tag nw">🆕</span></td>`;else if(!prev)h+=`<td>—</td>`;else{const ch=(last-prev)/prev*100;h+=`<td><span class="tag ${ch>=0?'up':'dn'}">${ch>=0?'▲':'▼'}${Math.abs(ch).toFixed(0)}%</span></td>`;}}else h+=`<td>—</td>`;
     h+=`</tr>`;
   });
   h+=`</table></div></div>`;return h;
+}
+
+function rSkuTop(){
+  const data=filtered();
+  const activeSkus=SKUS.filter(s=>data.some(r=>(parseFloat(r[s])||0)>0));
+  if(!activeSkus.length)return'<div class="empty">🔍 当前筛选条件下无 SKU 数据</div>';
+  const label=state.month>0?`${state.year}年${state.month}月`:`${state.year}年 YTD`;
+  let h=`<div class="section-title">🔍 每个 SKU 的 Top 10 客户 — ${label}</div>`;
+  activeSkus.forEach(sku=>{
+    const tops=skuTopCustomers(sku);if(!tops.length)return;
+    const maxQ=tops[0].qty;const totalQ=tops.reduce((s,t)=>s+t.qty,0);
+    h+=`<div class="sku-block"><h4>📦 ${sku} <span class="sku-total">总量 ${totalQ.toLocaleString()}</span></h4>
+      <table class="dt"><tr><th>#</th><th>客户</th><th>销售员</th><th>数量</th><th>占比</th><th>占比条</th></tr>`;
+    tops.forEach((c,i)=>{
+      const rc=i===0?'g':i===1?'s':i===2?'b':'n';
+      const pct=(c.qty/totalQ*100).toFixed(1);const bw=(c.qty/maxQ*100).toFixed(1);
+      h+=`<tr><td><span class="rank ${rc}">${i+1}</span></td><td><strong>${c.name}</strong></td><td>${c.sp}</td><td style="font-weight:600">${c.qty.toLocaleString()}</td><td>${pct}%</td><td><div style="background:var(--border);border-radius:4px;height:6px;min-width:80px"><div style="height:100%;border-radius:4px;background:var(--primary);width:${bw}%"></div></div></td></tr>`;
+    });
+    h+=`</table></div>`;
+  });
+  return h;
 }
 
 function rTeam(){
   const team=teamStats(),totalRev=team.reduce((s,t)=>s+t.rev,0);
   const colors=['#166534','#dc2626','#d97706','#3b82f6','#8b5cf6'];
   let h=`<div class="section-title">👤 团队业绩 ${state.month>0?state.month+'月':'(YTD)'}</div>`;
-  team.forEach((t,i)=>{
-    const share=totalRev?t.rev/totalRev:0;
-    h+=`<div class="team-card"><div class="team-avatar" style="background:${colors[i%5]}">${t.name.charAt(0)}</div><div class="team-info"><div class="team-name">${t.name}</div><div class="team-stats">${fmt(t.rev)} · ${t.orders} 单 · ${t.custs.size} 家客户 · 占比 ${(share*100).toFixed(1)}%</div><div class="team-bar"><div class="team-bar-fill" style="width:${Math.min(share*100,100)}%;background:${colors[i%5]}"></div></div></div><div class="team-pct" style="color:${colors[i%5]}">${(share*100).toFixed(0)}%</div></div>`;
-  });
-  if(team.length){
-    const mx=Math.max(...team.map(t=>t.rev));
-    h+=`<div class="card" style="margin-top:12px"><h3><span class="dot"></span>贡献对比</h3><div class="bar-chart">`;
-    team.forEach((t,i)=>{
-      h+=`<div class="bar-row"><div class="bar-label">${t.name.substring(0,5)}</div><div class="bar-track"><div class="bar-fill g" style="width:${(t.rev/mx*100).toFixed(1)}%;background:${colors[i%5]}"></div><div class="bar-val">${fmtK(t.rev)}</div></div><div class="bar-pct">${(t.rev/totalRev*100).toFixed(0)}%</div></div>`;
-    });
-    h+=`</div></div>`;
-  }
+  team.forEach((t,i)=>{const share=totalRev?t.rev/totalRev:0;h+=`<div class="team-card"><div class="team-avatar" style="background:${colors[i%5]}">${t.name.charAt(0)}</div><div class="team-info"><div class="team-name">${t.name}</div><div class="team-stats">${fmt(t.rev)} · ${t.orders} 单 · ${t.custs.size} 家客户 · 占比 ${(share*100).toFixed(1)}%</div><div class="team-bar"><div class="team-bar-fill" style="width:${Math.min(share*100,100)}%;background:${colors[i%5]}"></div></div></div><div class="team-pct" style="color:${colors[i%5]}">${(share*100).toFixed(0)}%</div></div>`;});
+  if(team.length){const mx=Math.max(...team.map(t=>t.rev));h+=`<div class="card" style="margin-top:12px"><h3><span class="dot"></span>贡献对比</h3><div class="bar-chart">`;team.forEach((t,i)=>{h+=`<div class="bar-row"><div class="bar-label">${t.name.substring(0,5)}</div><div class="bar-track"><div class="bar-fill g" style="width:${(t.rev/mx*100).toFixed(1)}%;background:${colors[i%5]}"></div><div class="bar-val">${fmtK(t.rev)}</div></div><div class="bar-pct">${(t.rev/totalRev*100).toFixed(0)}%</div></div>`;});h+=`</div></div>`;}
   return h;
 }
 
 function rAdmin(){
   const c=document.getElementById('content');
   if(sessionStorage.getItem('hq_auth')!=='1'){document.getElementById('authModal').classList.add('show');c.innerHTML='<div class="empty">🔐 请先验证 HQ 密码</div>';return;}
-  c.innerHTML=`
-    <div class="section-title">🎯 年度目标设置 (${state.year}年)</div>
-    <div class="card">
-      <div style="display:flex;gap:12px;flex-wrap:wrap">
-        <div class="form-group" style="flex:1;min-width:140px"><label>月度目标 (RM)</label><input type="number" id="fM" value="${state.targets.monthly}"></div>
-        <div class="form-group" style="flex:1;min-width:140px"><label>年度目标 (RM)</label><input type="number" id="fA" value="${state.targets.annual}"></div>
-      </div>
-      <button class="btn btn-primary" onclick="saveTargets()">💾 保存目标</button>
-      <p style="font-size:11px;color:var(--text3);margin-top:8px">目标存储在 Supabase sales_targets 表。如表不存在，将使用默认值 (月 RM 500K / 年 RM 6M)。</p>
-    </div>
+  c.innerHTML=`<div class="section-title">🎯 年度目标设置 (${state.year}年)</div>
+    <div class="card"><div style="display:flex;gap:12px;flex-wrap:wrap">
+      <div class="form-group" style="flex:1;min-width:140px"><label>月度目标 (RM)</label><input type="number" id="fM" value="${state.targets.monthly}"></div>
+      <div class="form-group" style="flex:1;min-width:140px"><label>年度目标 (RM)</label><input type="number" id="fA" value="${state.targets.annual}"></div>
+    </div><button class="btn btn-primary" onclick="saveTargets()">💾 保存目标</button>
+    <p style="font-size:11px;color:var(--text3);margin-top:8px">目标存储在 Supabase sales_targets 表。如表不存在将使用默认值。</p></div>
     <div class="section-title">🛠️ 首次使用：创建目标表</div>
-    <div class="card">
-      <p style="font-size:12px;color:var(--text2);margin-bottom:8px">如需自定义目标，请在 Supabase SQL Editor 运行：</p>
-      <pre style="background:#1f2937;color:#e5e7eb;padding:12px;border-radius:8px;font-size:11px;overflow-x:auto;white-space:pre-wrap">CREATE TABLE IF NOT EXISTS sales_targets (
+    <div class="card"><p style="font-size:12px;color:var(--text2);margin-bottom:8px">在 Supabase SQL Editor 运行：</p>
+    <pre id="sqlPre" style="background:#1f2937;color:#e5e7eb;padding:12px;border-radius:8px;font-size:11px;overflow-x:auto;white-space:pre-wrap">CREATE TABLE IF NOT EXISTS sales_targets (
   id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
   year integer NOT NULL UNIQUE,
   monthly_target numeric(12,2) DEFAULT 500000,
@@ -433,40 +467,26 @@ function rAdmin(){
 ALTER TABLE sales_targets ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Allow all" ON sales_targets FOR ALL USING (true) WITH CHECK (true);
 INSERT INTO sales_targets (year, monthly_target, annual_target) VALUES (2026, 500000, 6000000) ON CONFLICT (year) DO NOTHING;</pre>
-      <button class="btn btn-outline" style="margin-top:8px" onclick="copySQL()">📋 复制 SQL</button>
-    </div>`;
-}
-
-function copySQL(){
-  const sql=document.querySelector('#content pre').textContent;
-  navigator.clipboard.writeText(sql);toast('已复制 SQL','ok');
+    <button class="btn btn-outline" style="margin-top:8px" onclick="navigator.clipboard.writeText(document.getElementById('sqlPre').textContent);toast('已复制','ok')">📋 复制 SQL</button></div>`;
 }
 
 async function saveTargets(){
-  const m=parseFloat(document.getElementById('fM').value)||500000;
-  const a=parseFloat(document.getElementById('fA').value)||6000000;
-  try{
-    await fetch(SB+'/sales_targets?year=eq.'+state.year,{method:'DELETE',headers:SB_HDR});
+  const m=parseFloat(document.getElementById('fM').value)||500000,a=parseFloat(document.getElementById('fA').value)||6000000;
+  try{await fetch(SB+'/sales_targets?year=eq.'+state.year,{method:'DELETE',headers:SB_HDR});
     const r=await fetch(SB+'/sales_targets',{method:'POST',headers:{...SB_HDR,'Prefer':'return=minimal'},body:JSON.stringify([{year:state.year,monthly_target:m,annual_target:a}])});
-    if(!r.ok)throw new Error('保存失败');
-    state.targets={monthly:m,annual:a};
-    toast('✅ 目标已保存','ok');
+    if(!r.ok)throw new Error();state.targets={monthly:m,annual:a};toast('✅ 目标已保存','ok');
   }catch(e){toast('保存失败（目标表可能未创建）','err');}
 }
 
 async function verifyHQ(){
   const pwd=document.getElementById('authPwd').value;
-  try{
-    const r=await fetch(SB+'/settings?key=eq.hq_password',{headers:SB_HDR});
-    const d=await r.json();
-    if(d.length&&d[0].value===pwd){sessionStorage.setItem('hq_auth','1');closeAuth();render();}
-    else toast('密码错误','err');
+  try{const r=await fetch(SB+'/settings?key=eq.hq_password',{headers:SB_HDR});const d=await r.json();
+    if(d.length&&d[0].value===pwd){sessionStorage.setItem('hq_auth','1');closeAuth();render();}else toast('密码错误','err');
   }catch(e){toast('验证失败','err');}
 }
-function closeAuth(){document.getElementById('authModal').classList.remove('show');document.getElementById('authPwd').value='';if(state.tab==='admin'&&sessionStorage.getItem('hq_auth')!=='1'){go('overview',document.querySelector('nav.tabs button'));}}
+function closeAuth(){document.getElementById('authModal').classList.remove('show');document.getElementById('authPwd').value='';if(state.tab==='admin'&&sessionStorage.getItem('hq_auth')!=='1')go('overview',document.querySelector('nav.tabs button'));}
 
-function go(tab,btn){state.tab=tab;document.querySelectorAll('nav.tabs button').forEach(b=>b.classList.remove('active'));if(btn)btn.classList.add('active');render();}
-function onFilter(){state.year=parseInt(document.getElementById('selYear').value);state.month=parseInt(document.getElementById('selMonth').value);loadTargets().then(()=>render());}
+function go(tab,btn){state.tab=tab;custSearchTerm='';custSPFilter='';document.querySelectorAll('nav.tabs button').forEach(b=>b.classList.remove('active'));if(btn)btn.classList.add('active');render();}
 function toast(msg,t){const el=document.getElementById('toast');el.textContent=msg;el.className='toast show '+t;setTimeout(()=>el.classList.remove('show'),3000);}
 
 loadData();
