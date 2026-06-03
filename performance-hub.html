@@ -241,9 +241,10 @@ function populateYears(){
 function yearData(){return allData.filter(r=>String(r['YEAR'])===String(state.year));}
 function filtered(){
   let d=yearData();
-  if(state.month>0)d=d.filter(r=>parseInt(r['MONTH'])===state.month);
+  if(state.month>0)d=d.filter(r=>String(r['MONTH']).trim()===String(state.month));
   return d;
 }
+function getMonth(r){return parseInt(String(r['MONTH']).trim())||0;}
 function onFilter(){
   state.year=parseInt(document.getElementById('selYear').value);
   state.month=parseInt(document.getElementById('selMonth').value);
@@ -254,7 +255,7 @@ function onFilter(){
 // ===== ANALYTICS =====
 function monthlyStats(){
   const map={};
-  yearData().forEach(r=>{const m=parseInt(r['MONTH']);if(!m)return;if(!map[m])map[m]={m,rev:0,orders:0,custs:new Set()};map[m].rev+=getTotal(r);map[m].orders++;map[m].custs.add(r['COMPANY']);});
+  yearData().forEach(r=>{const m=getMonth(r);if(!m)return;if(!map[m])map[m]={m,rev:0,orders:0,custs:new Set()};map[m].rev+=getTotal(r);map[m].orders++;map[m].custs.add(r['COMPANY']);});
   return Object.values(map).sort((a,b)=>a.m-b.m);
 }
 function customerStats(){
@@ -269,7 +270,7 @@ function teamStats(){
 }
 function skuStats(){
   const map={};
-  yearData().forEach(r=>{const m=parseInt(r['MONTH']);SKUS.forEach(s=>{const v=parseFloat(r[s])||0;if(!v)return;if(!map[s])map[s]={sku:s,total:0,months:{}};if(!map[s].months[m])map[s].months[m]=0;map[s].months[m]+=v;map[s].total+=v;});});
+  yearData().forEach(r=>{const m=getMonth(r);SKUS.forEach(s=>{const v=parseFloat(r[s])||0;if(!v)return;if(!map[s])map[s]={sku:s,total:0,months:{}};if(!map[s].months[m])map[s].months[m]=0;map[s].months[m]+=v;map[s].total+=v;});});
   return Object.values(map).sort((a,b)=>b.total-a.total);
 }
 function churnAnalysis(){
@@ -277,7 +278,7 @@ function churnAnalysis(){
   const latest=state.month>0?state.month:Math.max(...ms);const prev=latest-1;if(prev<1)return[];
   const prevC={},currC=new Set();
   yearData().forEach(r=>{
-    const m=parseInt(r['MONTH']),c=r['COMPANY'];
+    const m=getMonth(r),c=r['COMPANY'];
     if(m===prev){if(!prevC[c])prevC[c]={name:c,rev:0,sp:r['SALES PERSON']||''};prevC[c].rev+=getTotal(r);if(r['SALES PERSON'])prevC[c].sp=r['SALES PERSON'];}
     if(m===latest)currC.add(c);
   });
@@ -287,13 +288,13 @@ function churnAnalysis(){
 }
 function momChange(name,curM){
   if(curM<=1)return null;let cur=0,prev=0;
-  yearData().forEach(r=>{if(r['COMPANY']!==name)return;const m=parseInt(r['MONTH']);if(m===curM)cur+=getTotal(r);if(m===curM-1)prev+=getTotal(r);});
+  yearData().forEach(r=>{if(r['COMPANY']!==name)return;const m=getMonth(r);if(m===curM)cur+=getTotal(r);if(m===curM-1)prev+=getTotal(r);});
   if(!prev&&!cur)return null;if(!prev)return{pct:999,nw:true};return{pct:(cur-prev)/prev*100,nw:false};
 }
 function customerSkuDetail(name){
   const map={};const ms=new Set();
   yearData().forEach(r=>{
-    if(r['COMPANY']!==name)return;const m=parseInt(r['MONTH']);ms.add(m);
+    if(r['COMPANY']!==name)return;const m=getMonth(r);ms.add(m);
     SKUS.forEach(s=>{const v=parseFloat(r[s])||0;if(!v)return;if(!map[s])map[s]={sku:s,months:{},total:0};if(!map[s].months[m])map[s].months[m]=0;map[s].months[m]+=v;map[s].total+=v;});
   });
   return{skus:Object.values(map).sort((a,b)=>b.total-a.total),months:[...ms].sort((a,b)=>a-b)};
@@ -319,27 +320,45 @@ function render(){
 
 function rOverview(){
   const ms=monthlyStats(),tgt=state.targets;
-  const ytd=ms.reduce((s,m)=>s+m.rev,0);const am=ms.length||1,avg=ytd/am;
-  const ap=ytd/tgt.annual,gap=tgt.annual-ytd,ep=am/12,onTrack=ap>=ep;
+  const ytd=ms.reduce((s,m)=>s+m.rev,0);const am=ms.length||1;
+  const isMonth=state.month>0;
+  const curMonthData=isMonth?ms.find(m=>m.m===state.month):null;
+  const curRev=isMonth?(curMonthData?curMonthData.rev:0):ytd;
+  const curTarget=isMonth?tgt.monthly:tgt.annual;
+  const curPct=curTarget?curRev/curTarget:0;
+  const gap=curTarget-curRev;
+  const prevMonthData=isMonth&&state.month>1?ms.find(m=>m.m===state.month-1):null;
+  const momPct=prevMonthData&&prevMonthData.rev?((curRev-prevMonthData.rev)/prevMonthData.rev*100):null;
+  const avg=ytd/am;const ep=am/12;const onTrack=(ytd/tgt.annual)>=ep;
   const churn=churnAnalysis(),team=teamStats(),topP=team.length?team[0]:null,totalRev=team.reduce((s,t)=>s+t.rev,0);
-  let h=`<div class="kpi-grid">
-    <div class="kpi green"><div class="label">年度累计 YTD</div><div class="value">${fmt(ytd)}</div><div class="sub">${am} 个月数据</div></div>
-    <div class="kpi ${onTrack?'green':'red'}"><div class="label">年度达成率</div><div class="value">${(ap*100).toFixed(1)}%</div><div class="sub">预期 ${(ep*100).toFixed(0)}%${onTrack?' ✅':' ⚠️ 落后'}</div></div>
+  const label=isMonth?`${state.month}月`:'YTD';
+
+  let h=`<div style="background:${isMonth?'var(--primary-light)':'transparent'};border-radius:8px;padding:${isMonth?'8px 12px':'0'};margin-bottom:10px;font-size:13px;color:var(--primary);font-weight:600">${isMonth?'📅 当前显示：'+state.year+'年'+state.month+'月':'📅 '+state.year+'年 全年累计 YTD'}</div>
+  <div class="kpi-grid">`;
+  if(isMonth){
+    h+=`<div class="kpi green"><div class="label">${state.month}月营业额</div><div class="value">${fmt(curRev)}</div><div class="sub">目标 ${fmtK(tgt.monthly)}</div></div>
+    <div class="kpi ${curPct>=.8?'green':'red'}"><div class="label">${state.month}月达成率</div><div class="value">${(curPct*100).toFixed(1)}%</div><div class="sub">${curPct>=1?'✅ 已达标':curPct>=.8?'⚡ 接近目标':'⚠️ 未达标'}</div></div>
+    <div class="kpi ${momPct!==null&&momPct>=0?'green':'gold'}"><div class="label">环比上月</div><div class="value">${momPct!==null?(momPct>=0?'▲':'▼')+Math.abs(momPct).toFixed(1)+'%':'—'}</div><div class="sub">${prevMonthData?'上月 '+fmtK(prevMonthData.rev):'无上月数据'}</div></div>
+    <div class="kpi ${gap>0?'red':'green'}"><div class="label">距月目标</div><div class="value">${gap>0?fmtK(gap):'✅ 已超额'}</div><div class="sub">${gap>0?'还差 '+(curPct*100).toFixed(0)+'% → 100%':'超额 '+fmtK(-gap)}</div></div>`;
+  }else{
+    h+=`<div class="kpi green"><div class="label">年度累计 YTD</div><div class="value">${fmt(ytd)}</div><div class="sub">${am} 个月数据</div></div>
+    <div class="kpi ${onTrack?'green':'red'}"><div class="label">年度达成率</div><div class="value">${(ytd/tgt.annual*100).toFixed(1)}%</div><div class="sub">预期 ${(ep*100).toFixed(0)}%${onTrack?' ✅':' ⚠️ 落后'}</div></div>
     <div class="kpi gold"><div class="label">月均营业额</div><div class="value">${fmtK(avg)}</div><div class="sub">目标 ${fmtK(tgt.monthly)}</div></div>
-    <div class="kpi red"><div class="label">距年度目标</div><div class="value">${fmtK(gap)}</div><div class="sub">还需 ${Math.ceil(gap/tgt.monthly)} 个满月</div></div>
-  </div>
-  <div class="card"><h3><span class="dot"></span>年度目标进度</h3>
-    <div class="progress-bar"><div class="progress-fill" style="width:${Math.min(ap*100,100)}%"></div><div class="progress-label">${(ap*100).toFixed(1)}%</div></div>
-    <div class="progress-info"><span>${fmt(ytd)}</span><span>目标 ${fmt(tgt.annual)}</span></div>
+    <div class="kpi red"><div class="label">距年度目标</div><div class="value">${fmtK(tgt.annual-ytd)}</div><div class="sub">还需 ${Math.ceil((tgt.annual-ytd)/tgt.monthly)} 个满月</div></div>`;
+  }
+  h+=`</div>
+  <div class="card"><h3><span class="dot"></span>${isMonth?state.month+'月目标进度':'年度目标进度'}</h3>
+    <div class="progress-bar"><div class="progress-fill" style="width:${Math.min(curPct*100,100)}%"></div><div class="progress-label">${(curPct*100).toFixed(1)}%</div></div>
+    <div class="progress-info"><span>${fmt(curRev)}</span><span>目标 ${fmt(curTarget)}</span></div>
   </div>
   <div class="card"><h3><span class="dot"></span>月度业绩对比</h3><div class="bar-chart">`;
   const maxV=Math.max(tgt.monthly,...ms.map(m=>m.rev));
-  ms.forEach(m=>{const w=(m.rev/maxV*100).toFixed(1),mp=m.rev/tgt.monthly;h+=`<div class="bar-row"><div class="bar-label">${m.m}月</div><div class="bar-track"><div class="bar-fill ${mp>=.8?'g':'r'}" style="width:${w}%"></div><div class="bar-val">${fmtK(m.rev)}</div></div><div class="bar-pct">${(mp*100).toFixed(0)}%</div></div>`;});
+  ms.forEach(m=>{const w=(m.rev/maxV*100).toFixed(1),mp=m.rev/tgt.monthly;const hl=isMonth&&m.m===state.month;h+=`<div class="bar-row" style="${hl?'background:var(--primary-light);border-radius:6px;padding:2px 4px':''}"><div class="bar-label" style="${hl?'color:var(--primary);font-weight:700':''}">${m.m}月</div><div class="bar-track"><div class="bar-fill ${mp>=.8?'g':'r'}" style="width:${w}%"></div><div class="bar-val">${fmtK(m.rev)}</div></div><div class="bar-pct" style="${hl?'font-weight:700;color:var(--primary)':''}">${(mp*100).toFixed(0)}%</div></div>`;});
   h+=`</div></div><div class="card"><h3><span class="dot" style="background:var(--warn)"></span>快速提醒</h3>`;
   if(churn.length){const hi=churn.filter(c=>c.priority==='high');h+=`<div class="alert-card red"><div><div class="alert-title">⚠️ ${churn.length} 家客户流失预警</div><div class="alert-sub">${hi.length?hi.map(c=>c.name).join('、')+' 需立即跟进':'切换到"客户"查看详情'}</div></div></div>`;}
-  if(topP&&totalRev){const sh=topP.rev/totalRev;h+=`<div class="alert-card ${sh>.7?'yellow':'green'}"><div><div class="alert-title">👤 ${topP.name} 贡献 ${(sh*100).toFixed(0)}% 营业额</div><div class="alert-sub">${sh>.7?'⚠️ 人员依赖风险高':'团队分配正常'}</div></div></div>`;}
+  if(topP&&totalRev){const sh=topP.rev/totalRev;h+=`<div class="alert-card ${sh>.7?'yellow':'green'}"><div><div class="alert-title">👤 ${topP.name} 贡献 ${(sh*100).toFixed(0)}% ${label}营业额</div><div class="alert-sub">${sh>.7?'⚠️ 人员依赖风险高':'团队分配正常'}</div></div></div>`;}
   const bigC=customerStats().filter(c=>c.rev>=10000);
-  if(bigC.length)h+=`<div class="alert-card green"><div><div class="alert-title">⭐ ${bigC.length} 家大订单客户 (≥RM 10K)</div><div class="alert-sub">${bigC.slice(0,3).map(c=>c.name).join('、')}${bigC.length>3?' 等':''}</div></div></div>`;
+  if(bigC.length)h+=`<div class="alert-card green"><div><div class="alert-title">⭐ ${bigC.length} 家大订单客户 (≥RM 10K) — ${label}</div><div class="alert-sub">${bigC.slice(0,3).map(c=>c.name).join('、')}${bigC.length>3?' 等':''}</div></div></div>`;
   h+=`</div>`;return h;
 }
 
