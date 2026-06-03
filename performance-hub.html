@@ -231,8 +231,14 @@ const PDD={
   'SHCR':{items:[['Fix Rebate','2.0%'],['A/P','2.0%']],total:'4.0%'}}}
 };
 
-let allData=[], state={year:0,month:0,tab:'overview',targets:{monthly:500000,annual:6000000}};
-let custSearchTerm='', custSPFilter='';
+let allData=[], profitDB=[], state={year:0,month:0,tab:'overview',targets:{monthly:500000,annual:6000000}};
+let custSearchTerm='', custSPFilter='', cfgForm=null;
+
+async function loadProfitConfig(){
+  try{const r=await fetch(SB+'/profit_config?order=customer_name',{headers:SB_HDR});if(r.ok)profitDB=await r.json();else profitDB=[];}catch(e){profitDB=[];}
+}
+function getMergedPC(){const m={...PC};profitDB.forEach(r=>{if(r.skus)m[r.customer_name]=r.skus;});return m;}
+function getMergedPDD(){const m={...PDD};profitDB.forEach(r=>{if(r.deductions)m[r.customer_name]=r.deductions;});return m;}
 
 function getTotal(r){for(const k of Object.keys(r)){if(k.replace(/[^A-Za-z]/g,'').toUpperCase()==='TOTALRM')return parseFloat(r[k])||0;}return 0;}
 function fmt(n){return'RM '+Number(n).toLocaleString('en',{minimumFractionDigits:0,maximumFractionDigits:0});}
@@ -248,6 +254,7 @@ async function loadData(){
     allData=json.data||[];
     document.getElementById('lastUpdated').textContent='更新: '+new Date().toLocaleTimeString('zh-MY');
     populateYears();
+    await loadProfitConfig();
     render();
     loadTargets();
   }catch(e){document.getElementById('content').innerHTML='<div class="empty">❌ 无法加载数据<br><small>'+e.message+'</small></div>';}
@@ -499,9 +506,9 @@ function rTeam(){
 }
 
 function profitStats(){
-  const data=filtered();const custMap={};
+  const data=filtered();const custMap={};const mpc=getMergedPC();
   data.forEach(r=>{
-    const cust=r['COMPANY']||'Unknown';const cfg=PC[cust];if(!cfg)return;
+    const cust=r['COMPANY']||'Unknown';const cfg=mpc[cust];if(!cfg)return;
     if(!custMap[cust])custMap[cust]={name:cust,grossRev:0,deductions:0,netRev:0,cost:0,profit:0,skus:{},sp:r['SALES PERSON']||''};
     const cm=custMap[cust];
     SKUS.forEach(sku=>{
@@ -544,7 +551,7 @@ function rProfit(){
     <div style="overflow-x:auto"><table class="dt" id="profitTable"><tr><th>客户</th><th>扣款明细</th><th>毛收入</th><th>扣款额</th><th>净收入</th><th>成本</th><th>毛利</th><th>Margin</th></tr>`;
   custs.forEach(c=>{
     const isLoss=c.profit<0;const esc=c.name.replace(/'/g,"\\'");
-    const dd=PDD[c.name];
+    const dd=getMergedPDD()[c.name];
     let ddHtml='—';
     if(dd){
       if(dd.uniform){ddHtml=dd.items.map(i=>'<span style="background:#f3f4f6;padding:1px 5px;border-radius:3px;margin:1px;display:inline-block;font-size:10px">'+i[0]+' '+i[1]+'</span>').join(' ')+'<br><span style="font-weight:700;font-size:11px">合计 '+dd.total+'</span>';}
@@ -586,7 +593,7 @@ function toggleProfitDetail(name,row){
   document.querySelectorAll('#profitTable .detail-row').forEach(r=>r.remove());
   const cust=profitStats().find(c=>c.name===name);if(!cust)return;
   const skus=Object.values(cust.skus).sort((a,b)=>b.profit-a.profit);
-  const dd=PDD[name];
+  const dd=getMergedPDD()[name];
   let html=`<td colspan="8" style="padding:14px 16px!important;background:#f8faf8!important">`;
 
   // Deduction breakdown section
@@ -622,18 +629,136 @@ function toggleProfitDetail(name,row){
   row.after(tr);
 }
 
+function rProfitCfgList(){
+  const mpc=getMergedPC(),mpd=getMergedPDD();
+  const allNames=[...new Set([...Object.keys(PC),...profitDB.map(r=>r.customer_name)])].sort();
+  const dbNames=new Set(profitDB.map(r=>r.customer_name));
+  let h=`<div class="section-title">💰 利润配置管理</div>
+    <div class="card"><h3><span class="dot" style="background:var(--warn)"></span>已配置客户 (${allNames.length})</h3>
+    <p style="font-size:11px;color:var(--text3);margin-bottom:8px">内置 = 代码里的默认配置 · 自定义 = 存在 Supabase 可编辑</p>`;
+  allNames.forEach(name=>{
+    const isDB=dbNames.has(name);const cfg=mpc[name]||{};const dd=mpd[name];
+    const skuCount=Object.keys(cfg).length;
+    const dedSummary=dd?(dd.uniform?dd.total:(dd.bysku?'按产品不同':'—')):'—';
+    const esc=name.replace(/'/g,"\\'");
+    h+=`<div style="display:flex;align-items:center;justify-content:space-between;padding:8px;border-bottom:1px solid var(--border)">
+      <div><strong>${name}</strong>
+        <span style="font-size:10px;padding:2px 6px;border-radius:3px;margin-left:4px;${isDB?'background:#dbeafe;color:#1e40af':'background:#f3f4f6;color:var(--text3)'}">${isDB?'✏️ 自定义':'📌 内置'}</span>
+        <br><span style="font-size:11px;color:var(--text2)">${skuCount} 个SKU · 扣款 ${dedSummary}</span>
+      </div>
+      <div style="display:flex;gap:4px">
+        <button class="btn btn-outline" style="font-size:11px;padding:4px 10px" onclick="initCfgForm('${esc}',true)">✏️ 编辑</button>
+        ${isDB?`<button class="btn" style="font-size:11px;padding:4px 10px;color:var(--danger);border:1px solid var(--danger);background:none" onclick="deleteProfitCfg('${esc}')">🗑️</button>`:''}
+      </div>
+    </div>`;
+  });
+  h+=`<button class="btn btn-primary" style="margin-top:10px;width:100%" onclick="initCfgForm('',false)">➕ 添加新客户</button></div>`;
+  if(cfgForm)h+=rProfitCfgForm();
+  h+=`<div class="card" style="margin-top:10px"><p style="font-size:11px;color:var(--text2)">⚠️ 需先在 Supabase 创建 profit_config 表才能保存自定义配置。SQL 在下方"数据库表"区域。</p></div>`;
+  return h;
+}
+
+function initCfgForm(name,isEdit){
+  if(isEdit){
+    const pc=getMergedPC()[name]||{};const pdd=getMergedPDD()[name]||{};
+    cfgForm={name,isEdit:true,uniform:pdd.uniform!==false,
+      deds:pdd.items?pdd.items.map(i=>({n:i[0],r:i[1].replace('%','')})):[{n:'',r:''}],
+      skus:Object.entries(pc).map(([sku,v])=>({sku,w:String(v.w),c:String(v.c),d:(v.d*100).toFixed(1),
+        dd:pdd.bysku&&pdd.bysku[sku]?pdd.bysku[sku].items.map(i=>i[0]+' '+i[1]).join(' + '):''}))};
+    if(!cfgForm.skus.length)cfgForm.skus=[{sku:'',w:'',c:'',d:'',dd:''}];
+    if(!cfgForm.deds.length)cfgForm.deds=[{n:'',r:''}];
+  }else{cfgForm={name:'',isEdit:false,uniform:true,deds:[{n:'',r:''}],skus:[{sku:'',w:'',c:'',d:'',dd:''}]};}
+  render();
+}
+
+function rProfitCfgForm(){
+  const f=cfgForm;
+  let h=`<div class="card" style="border:2px solid var(--primary);margin-top:10px">
+    <h3><span class="dot"></span>${f.isEdit?'✏️ 编辑':'➕ 添加'}客户利润配置</h3>
+    <div class="form-group"><label>客户名称（必须与 Google Sheet 的 COMPANY 列完全一致）</label>
+      <input id="cfgName" value="${f.name}" ${f.isEdit?'disabled':''}></div>
+    <div style="margin-bottom:10px"><label style="font-size:12px;font-weight:600;color:var(--text2)">扣款模式</label>
+      <div style="display:flex;gap:8px;margin-top:4px">
+        <button class="btn ${f.uniform?'btn-primary':'btn-outline'}" style="font-size:12px" onclick="cfgForm.uniform=true;render()">统一扣款</button>
+        <button class="btn ${!f.uniform?'btn-primary':'btn-outline'}" style="font-size:12px" onclick="cfgForm.uniform=false;render()">按产品不同</button>
+      </div></div>`;
+  if(f.uniform){
+    h+=`<div style="background:var(--warn-light);padding:10px;border-radius:8px;margin-bottom:10px">
+      <label style="font-size:12px;font-weight:600;color:var(--warn)">扣款项目</label>`;
+    f.deds.forEach((d,i)=>{
+      h+=`<div style="display:flex;gap:6px;align-items:center;margin-top:4px">
+        <input style="flex:1;padding:6px;border:1px solid var(--border);border-radius:4px;font-size:13px" placeholder="名称如 DC" value="${d.n}" onchange="cfgForm.deds[${i}].n=this.value">
+        <input style="width:70px;padding:6px;border:1px solid var(--border);border-radius:4px;font-size:13px;text-align:right" placeholder="0.0" value="${d.r}" onchange="cfgForm.deds[${i}].r=this.value"><span style="font-size:13px">%</span>
+        <button style="border:none;background:none;color:var(--danger);cursor:pointer;font-size:16px" onclick="cfgForm.deds.splice(${i},1);if(!cfgForm.deds.length)cfgForm.deds=[{n:'',r:''}];render()">✕</button></div>`;
+    });
+    const tot=f.deds.reduce((s,d)=>s+(parseFloat(d.r)||0),0);
+    h+=`<div style="display:flex;justify-content:space-between;margin-top:6px;align-items:center">
+      <button class="btn btn-outline" style="font-size:11px;padding:4px 10px" onclick="cfgForm.deds.push({n:'',r:''});render()">+ 添加扣款项</button>
+      <span style="font-weight:700;font-size:13px;color:var(--primary)">合计: ${tot.toFixed(1)}%</span></div></div>`;
+  }
+  h+=`<div style="margin-bottom:10px"><label style="font-size:12px;font-weight:600;color:var(--text2)">产品配置</label>`;
+  f.skus.forEach((s,i)=>{
+    h+=`<div style="display:flex;gap:4px;align-items:center;margin-top:4px;flex-wrap:wrap">
+      <select style="flex:2;min-width:100px;padding:6px;border:1px solid var(--border);border-radius:4px;font-size:12px" onchange="cfgForm.skus[${i}].sku=this.value">
+        <option value="">选择SKU</option>${SKUS.map(sk=>`<option value="${sk}"${sk===s.sku?' selected':''}>${sk}</option>`).join('')}</select>
+      <input style="width:60px;padding:6px;border:1px solid var(--border);border-radius:4px;font-size:12px;text-align:right" placeholder="批发价" value="${s.w}" onchange="cfgForm.skus[${i}].w=this.value">
+      <input style="width:60px;padding:6px;border:1px solid var(--border);border-radius:4px;font-size:12px;text-align:right" placeholder="成本" value="${s.c}" onchange="cfgForm.skus[${i}].c=this.value">`;
+    if(!f.uniform){
+      h+=`<input style="width:50px;padding:6px;border:1px solid var(--border);border-radius:4px;font-size:12px;text-align:right" placeholder="扣%" value="${s.d}" onchange="cfgForm.skus[${i}].d=this.value">
+      <input style="flex:2;min-width:100px;padding:6px;border:1px solid var(--border);border-radius:4px;font-size:11px" placeholder="明细如 DC 3.5% + Rebate 2%" value="${s.dd||''}" onchange="cfgForm.skus[${i}].dd=this.value">`;}
+    h+=`<button style="border:none;background:none;color:var(--danger);cursor:pointer;font-size:16px" onclick="cfgForm.skus.splice(${i},1);if(!cfgForm.skus.length)cfgForm.skus=[{sku:'',w:'',c:'',d:'',dd:''}];render()">✕</button></div>`;
+  });
+  h+=`<button class="btn btn-outline" style="font-size:11px;padding:4px 10px;margin-top:6px" onclick="cfgForm.skus.push({sku:'',w:'',c:'',d:'',dd:''});render()">+ 添加产品</button></div>
+    <div style="display:flex;gap:8px;margin-top:12px">
+      <button class="btn btn-primary" onclick="saveProfitCfg()">💾 保存到 Supabase</button>
+      <button class="btn btn-outline" onclick="cfgForm=null;render()">取消</button></div></div>`;
+  return h;
+}
+
+async function saveProfitCfg(){
+  const name=cfgForm.isEdit?cfgForm.name:(document.getElementById('cfgName').value||'').trim();
+  if(!name){toast('请填写客户名称','err');return;}
+  const skus={};const totDR=cfgForm.uniform?cfgForm.deds.reduce((s,d)=>s+(parseFloat(d.r)||0),0)/100:0;
+  cfgForm.skus.forEach(s=>{if(!s.sku)return;skus[s.sku]={w:parseFloat(s.w)||0,c:parseFloat(s.c)||0,d:cfgForm.uniform?totDR:(parseFloat(s.d)||0)/100};});
+  let deductions={};
+  if(cfgForm.uniform){
+    deductions={uniform:true,items:cfgForm.deds.filter(d=>d.n&&d.r).map(d=>[d.n,parseFloat(d.r).toFixed(1)+'%']),total:(totDR*100).toFixed(1)+'%'};
+  }else{
+    deductions={uniform:false,bysku:{}};
+    cfgForm.skus.forEach(s=>{if(!s.sku||!s.d)return;
+      const items=s.dd?s.dd.split('+').map(x=>{const p=x.trim().split(/\s+/);return p.length>=2?[p.slice(0,-1).join(' '),p[p.length-1]]:[x.trim(),''];}):[];
+      deductions.bysku[s.sku]={items,total:parseFloat(s.d).toFixed(1)+'%'};});
+  }
+  try{
+    await fetch(SB+'/profit_config?customer_name=eq.'+encodeURIComponent(name),{method:'DELETE',headers:SB_HDR});
+    const r=await fetch(SB+'/profit_config',{method:'POST',headers:{...SB_HDR,'Prefer':'return=minimal'},body:JSON.stringify([{customer_name:name,skus,deductions}])});
+    if(!r.ok)throw new Error('保存失败');
+    toast('✅ 已保存 '+name+' 的配置','ok');cfgForm=null;await loadProfitConfig();render();
+  }catch(e){toast('保存失败（profit_config 表可能未创建）','err');}
+}
+
+async function deleteProfitCfg(name){
+  if(!confirm('确定删除 '+name+' 的自定义配置？'))return;
+  try{await fetch(SB+'/profit_config?customer_name=eq.'+encodeURIComponent(name),{method:'DELETE',headers:SB_HDR});
+    toast('✅ 已删除','ok');await loadProfitConfig();render();
+  }catch(e){toast('删除失败','err');}
+}
+
 function rAdmin(){
   const c=document.getElementById('content');
   if(sessionStorage.getItem('hq_auth')!=='1'){document.getElementById('authModal').classList.add('show');c.innerHTML='<div class="empty">🔐 请先验证 HQ 密码</div>';return;}
-  c.innerHTML=`<div class="section-title">🎯 年度目标设置 (${state.year}年)</div>
+  c.innerHTML=`
+    <div class="section-title">🎯 年度目标设置 (${state.year}年)</div>
     <div class="card"><div style="display:flex;gap:12px;flex-wrap:wrap">
       <div class="form-group" style="flex:1;min-width:140px"><label>月度目标 (RM)</label><input type="number" id="fM" value="${state.targets.monthly}"></div>
       <div class="form-group" style="flex:1;min-width:140px"><label>年度目标 (RM)</label><input type="number" id="fA" value="${state.targets.annual}"></div>
-    </div><button class="btn btn-primary" onclick="saveTargets()">💾 保存目标</button>
-    <p style="font-size:11px;color:var(--text3);margin-top:8px">目标存储在 Supabase sales_targets 表。如表不存在将使用默认值。</p></div>
-    <div class="section-title">🛠️ 首次使用：创建目标表</div>
-    <div class="card"><p style="font-size:12px;color:var(--text2);margin-bottom:8px">在 Supabase SQL Editor 运行：</p>
-    <pre id="sqlPre" style="background:#1f2937;color:#e5e7eb;padding:12px;border-radius:8px;font-size:11px;overflow-x:auto;white-space:pre-wrap">CREATE TABLE IF NOT EXISTS sales_targets (
+    </div><button class="btn btn-primary" onclick="saveTargets()">💾 保存目标</button></div>
+
+    ${rProfitCfgList()}
+
+    <div class="section-title">🛠️ 数据库表（首次使用请运行）</div>
+    <div class="card"><pre id="sqlPre" style="background:#1f2937;color:#e5e7eb;padding:12px;border-radius:8px;font-size:11px;overflow-x:auto;white-space:pre-wrap">-- 目标表
+CREATE TABLE IF NOT EXISTS sales_targets (
   id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
   year integer NOT NULL UNIQUE,
   monthly_target numeric(12,2) DEFAULT 500000,
@@ -642,7 +767,18 @@ function rAdmin(){
 );
 ALTER TABLE sales_targets ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Allow all" ON sales_targets FOR ALL USING (true) WITH CHECK (true);
-INSERT INTO sales_targets (year, monthly_target, annual_target) VALUES (2026, 500000, 6000000) ON CONFLICT (year) DO NOTHING;</pre>
+INSERT INTO sales_targets (year, monthly_target, annual_target) VALUES (2026, 500000, 6000000) ON CONFLICT (year) DO NOTHING;
+
+-- 利润配置表
+CREATE TABLE IF NOT EXISTS profit_config (
+  id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+  customer_name text NOT NULL UNIQUE,
+  skus jsonb NOT NULL DEFAULT '{}',
+  deductions jsonb NOT NULL DEFAULT '{}',
+  created_at timestamptz DEFAULT now()
+);
+ALTER TABLE profit_config ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Allow all" ON profit_config FOR ALL USING (true) WITH CHECK (true);</pre>
     <button class="btn btn-outline" style="margin-top:8px" onclick="navigator.clipboard.writeText(document.getElementById('sqlPre').textContent);toast('已复制','ok')">📋 复制 SQL</button></div>`;
 }
 
