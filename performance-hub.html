@@ -560,9 +560,10 @@ function rProfit(){
 
   h+=`<div class="card"><h3><span class="dot"></span>客户利润排名 · 点击查看 SKU 明细</h3>
     <div style="overflow-x:auto"><table class="dt" id="profitTable"><tr><th>客户</th><th>扣款明细</th><th>毛收入</th><th>扣款额</th><th>净收入</th><th>成本</th><th>毛利</th><th>Margin</th></tr>`;
+  const ms=monthlyStats();
+  const latestYM=state.month>0?state.year+'-'+String(state.month).padStart(2,'0'):state.year+'-'+String(ms.length?Math.max(...ms.map(m=>m.m)):1).padStart(2,'0');
   custs.forEach(c=>{
     const isLoss=c.profit<0;const esc=c.name.replace(/'/g,"\\'");
-    const latestYM=state.month>0?state.year+'-'+String(state.month).padStart(2,'0'):state.year+'-'+String(ms.length?Math.max(...ms.map(m=>m.m)):1).padStart(2,'0');
     const effCfg=getEffectiveConfig(c.name,latestYM);
     const dd=effCfg?effCfg.deds:null;
     let ddHtml='—';
