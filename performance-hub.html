@@ -355,6 +355,7 @@ function skuTopCustomers(sku){
 // ===== RENDER =====
 function render(){
   const c=document.getElementById('content');
+  try{
   switch(state.tab){
     case'overview':c.innerHTML=rOverview();break;
     case'customers':c.innerHTML=rCustomers();break;
@@ -364,6 +365,7 @@ function render(){
     case'team':c.innerHTML=rTeam();break;
     case'admin':rAdmin();break;
   }
+  }catch(e){c.innerHTML=`<div class="card" style="border:2px solid var(--danger)"><h3 style="color:var(--danger)">❌ 渲染错误</h3><pre style="font-size:12px;white-space:pre-wrap">${e.message}\n${e.stack}</pre></div>`;}
 }
 
 function rOverview(){
