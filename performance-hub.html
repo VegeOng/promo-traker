@@ -537,7 +537,17 @@ function profitStats(){
 
 function rProfit(){
   const custs=profitStats();
-  if(!custs.length)return'<div class="empty">💰 当前筛选条件下无利润数据<br><small>仅分析已配置利润参数的客户</small></div>';
+  if(!custs.length){
+    const data=filtered();
+    const apiNames=[...new Set(data.map(r=>r['COMPANY']||'Unknown'))].sort();
+    const cfgNames=Object.keys(PC).sort();
+    return`<div class="empty">💰 当前筛选条件下无利润数据</div>
+    <div class="card"><h3><span class="dot" style="background:var(--danger)"></span>诊断信息</h3>
+    <p style="font-size:12px;margin-bottom:6px"><strong>API 数据客户名 (${apiNames.length}):</strong></p>
+    <p style="font-size:11px;color:var(--text2);word-break:break-all">${apiNames.map(n=>'「'+n+'」').join(' · ')}</p>
+    <p style="font-size:12px;margin:8px 0 6px"><strong>利润配置客户名 (${cfgNames.length}):</strong></p>
+    <p style="font-size:11px;color:var(--text2);word-break:break-all">${cfgNames.map(n=>'「'+n+'」').join(' · ')}</p>
+    <p style="font-size:12px;color:var(--danger);margin-top:8px">⚠️ 两边名称必须完全一致才能匹配。请检查空格、大小写、特殊符号。</p></div>`;}
   const label=state.month>0?`${state.year}年${state.month}月`:`${state.year}年 YTD`;
   const totalGross=custs.reduce((s,c)=>s+c.grossRev,0);
   const totalNet=custs.reduce((s,c)=>s+c.netRev,0);
