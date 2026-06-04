@@ -225,6 +225,12 @@
         <label>Outlet Name / Code</label>
         <input type="text" id="f-agent" placeholder="e.g. MY-PG-001" oninput="populateOutletSelect()">
       </div>
+      <div class="form-group">
+        <label>Check By <span style="color:var(--red)">*</span></label>
+        <select id="f-checkby">
+          <option value="">— Select Agent —</option>
+        </select>
+      </div>
     </div>
   </div>
 
@@ -491,12 +497,22 @@ function updateHQUI() {
 window.addEventListener('DOMContentLoaded', async ()=>{
   document.getElementById('f-date').value = new Date().toISOString().split('T')[0];
   updateHQUI();
+  await loadSalesMembers();
   await Promise.all([loadOutlets(), loadProducts()]);
   addProductRow();
   loadAlerts(true);
 });
 
 // ── Outlets ──
+async function loadSalesMembers() {
+  const data = await sbGet('members?select=id,name,role&order=name.asc');
+  const sel = document.getElementById('f-checkby');
+  if(!Array.isArray(data)) return;
+  const sales = data.filter(m=>(m.role||'sales')==='sales');
+  sel.innerHTML = '<option value="">— Select Agent —</option>';
+  sales.forEach(m=>{ const o=document.createElement('option'); o.value=m.name; o.textContent=m.name; sel.appendChild(o); });
+}
+
 async function loadOutlets() {
   outlets = await sbGet('outlets?select=*&order=name.asc'); 
   if(!Array.isArray(outlets)) outlets=[];
@@ -676,6 +692,7 @@ function removeRow(id) { document.getElementById('pr-'+id)?.remove(); }
 function resetForm() {
   document.getElementById('f-region').value='';
   document.getElementById('f-agent').value='';
+  document.getElementById('f-checkby').value='';
   document.getElementById('f-outlet').value='';
   document.getElementById('f-date').value=new Date().toISOString().split('T')[0];
   document.getElementById('productsList').innerHTML='';
@@ -708,7 +725,7 @@ async function submitForm() {
   if(prods.length===0){ showToast('Please add at least one product.', true); return; }
 
   const outlet=outlets.find(o=>o.id==outletId);
-  const payload=prods.map(p=>({outlet_id:outletId,outlet_name:outlet?.name||'',region,check_date:date,agent_name:agent,...p}));
+  const payload=prods.map(p=>({outlet_id:outletId,outlet_name:outlet?.name||'',region,check_date:date,agent_name:checkBy,outlet_code:agent,...p}));
 
   try {
     const res=await sbPost('outlet_stock_checks',payload);
