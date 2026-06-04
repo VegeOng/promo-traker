@@ -682,6 +682,19 @@ function clearPhoto(inputId, btnId, iconId, clearId) {
   document.getElementById(clearId).style.display='none';
 }
 
+async function uploadPhoto(file, folder) {
+  if(!file) return null;
+  const ext = file.name.split('.').pop() || 'jpg';
+  const filename = `${folder}/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
+  const r = await fetch(`${SB_URL}/storage/v1/object/outlet-photos/${filename}`, {
+    method: 'POST',
+    headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY, 'Content-Type': file.type || 'image/jpeg' },
+    body: file
+  });
+  if(!r.ok) return null;
+  return `${SB_URL}/storage/v1/object/public/outlet-photos/${filename}`;
+}
+
 function toggleReturn(id) {
   const checked=document.getElementById('rc-'+id).checked;
   document.getElementById('rr-'+id).style.display=checked?'grid':'none';
@@ -725,7 +738,25 @@ async function submitForm() {
   if(prods.length===0){ showToast('Please add at least one product.', true); return; }
 
   const outlet=outlets.find(o=>o.id==outletId);
-  const payload=prods.map(p=>({outlet_id:outletId,outlet_name:outlet?.name||'',region,check_date:date,agent_name:checkBy,outlet_code:agent,...p}));
+
+  // Upload photos for each product row
+  showToast('Uploading photos…');
+  const rows2=document.querySelectorAll('#productsList .product-row');
+  const photoMap={};
+  for(const row of rows2){
+    const rid=row.id.split('-')[1];
+    const folder=`${outletId}_${date}`.replace(/[^a-zA-Z0-9_-]/g,'_');
+    const bFile=document.getElementById('pi-before-'+rid)?.files[0];
+    const aFile=document.getElementById('pi-after-'+rid)?.files[0];
+    const [bUrl, aUrl] = await Promise.all([uploadPhoto(bFile, folder), uploadPhoto(aFile, folder)]);
+    photoMap[rid]={before:bUrl||null, after:aUrl||null};
+  }
+
+  const payload=prods.map((p,i)=>{
+    const rid=Array.from(rows2)[i]?.id?.split('-')[1];
+    const photos=photoMap[rid]||{before:null,after:null};
+    return {outlet_id:outletId,outlet_name:outlet?.name||'',region,check_date:date,agent_name:checkBy,outlet_code:agent,photo_before:photos.before,photo_after:photos.after,...p};
+  });
 
   try {
     const res=await sbPost('outlet_stock_checks',payload);
