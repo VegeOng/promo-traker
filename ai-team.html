@@ -8,13 +8,18 @@
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&family=Space+Grotesk:wght@400;600;700&display=swap" rel="stylesheet" />
   <style>
     :root {
-      --bg: #0d0f14;
-      --surface: #151820;
-      --surface2: #1c2030;
-      --border: #252a3a;
-      --text: #e8eaf0;
+      --bg: #fafafa;
+      --surface: #ffffff;
+      --surface2: #f3f4f6;
+      --border: #e5e7eb;
+      --text: #111827;
       --text-muted: #6b7280;
-      --text-dim: #9ca3af;
+      --text-dim: #374151;
+      --accent: #166534;
+      --accent-light: #dcfce7;
+      --accent-hover: #14532d;
+      --danger: #dc2626;
+      --danger-light: #fee2e2;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
@@ -38,7 +43,7 @@
     }
     .logo {
       width: 36px; height: 36px;
-      background: linear-gradient(135deg, #10b981, #06b6d4);
+      background: linear-gradient(135deg, #166534, #16a34a);
       border-radius: 9px;
       display: flex; align-items: center; justify-content: center;
       font-size: 18px;
@@ -58,7 +63,7 @@
     }
     .status-dot {
       width: 6px; height: 6px; border-radius: 50%;
-      background: #10b981;
+      background: #166534;
       animation: pulse 2s infinite;
     }
     @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
@@ -109,9 +114,9 @@
       white-space: nowrap;
     }
     .mode-btn.active {
-      background: var(--surface2);
-      color: var(--text);
-      border: 1px solid var(--border);
+      background: #166534;
+      color: #ffffff;
+      border: 1px solid #166534;
     }
 
     /* Multi-select hint */
@@ -202,7 +207,7 @@
       width: 100%;
       padding: 9px;
       border: none; border-radius: 8px;
-      background: #6366f1;
+      background: #166534;
       color: white;
       font-size: 13px; font-weight: 600;
       font-family: inherit;
@@ -288,7 +293,7 @@
       border-radius: 18px; cursor: pointer;
       font-size: 12px; font-family: inherit; transition: all .15s;
     }
-    .quick-btn:hover { border-color: #6366f1; color: var(--text); }
+    .quick-btn:hover { border-color: #166534; color: #166534; }
 
     /* Single message */
     .message {
@@ -407,7 +412,7 @@
     }
     .typing-dot {
       width: 6px; height: 6px; border-radius: 50%;
-      background: var(--text-muted);
+      background: #166534;
       animation: typing 1.2s ease infinite;
     }
     .typing-dot:nth-child(2) { animation-delay: .2s; }
@@ -432,7 +437,7 @@
       border-radius: 12px; padding: 9px 12px;
       transition: border-color .15s;
     }
-    .input-wrapper:focus-within { border-color: #6366f1; }
+    .input-wrapper:focus-within { border-color: #166534; }
     #chat-input {
       flex: 1; background: none; border: none; outline: none;
       color: var(--text); font-family: inherit;
@@ -445,7 +450,7 @@
       border: none; cursor: pointer;
       display: flex; align-items: center; justify-content: center;
       font-size: 15px; transition: all .15s; flex-shrink: 0;
-      background: #6366f1; color: white;
+      background: #166534; color: white;
     }
     .send-btn:hover { opacity: .85; transform: scale(1.05); }
     .send-btn:disabled { opacity: .4; cursor: not-allowed; transform: none; }
@@ -461,8 +466,8 @@
       transition: all .25s; max-width: 280px;
     }
     .toast.show { transform: translateY(0); opacity: 1; }
-    .toast.error { border-color: #ef4444; }
-    .toast.success { border-color: #10b981; }
+    .toast.error { border-color: #dc2626; }
+    .toast.success { border-color: #166534; }
   </style>
 </head>
 <body>
@@ -511,7 +516,7 @@
   <!-- Chat -->
   <section class="chat-area">
     <div class="chat-header" id="chat-header">
-      <div class="chat-header-avatar" id="header-avatar" style="background:#1c2030">🤖</div>
+      <div class="chat-header-avatar" id="header-avatar" style="background:#f3f4f6">🤖</div>
       <div class="chat-header-info">
         <h2 id="header-name">选择 AI 总监</h2>
         <p id="header-desc">从左侧选择一个或多个 AI 总监</p>
@@ -599,10 +604,10 @@ async function testConnection() {
       }
     });
     el.textContent = r.ok ? 'Supabase 已连接' : 'Supabase 异常';
-    el.style.color = r.ok ? '#10b981' : '#f59e0b';
+    el.style.color = r.ok ? '#166534' : '#dc2626';
   } catch {
     el.textContent = '连接失败';
-    el.style.color = '#ef4444';
+    el.style.color = '#dc2626';
   }
 }
 
@@ -662,7 +667,7 @@ function selectSingle(id) {
   h.style.background = `${activeDirector.color}22`;
   document.getElementById('header-name').textContent = `${activeDirector.name} · ${activeDirector.title}`;
   document.getElementById('header-desc').textContent = activeDirector.description;
-  document.querySelector('.send-btn').style.background = activeDirector.color;
+  document.querySelector('.send-btn').style.background = activeDirector.color || '#166534';
 
   enableInput(`问 ${activeDirector.name}...`);
   renderSingleMessages();
@@ -751,7 +756,7 @@ function updateMultiHeader() {
   const selected = [...selectedDirectors];
   if (selected.length === 0) {
     document.getElementById('header-avatar').textContent = '🤖';
-    document.getElementById('header-avatar').style.background = '#1c2030';
+    document.getElementById('header-avatar').style.background = '#f3f4f6';
     document.getElementById('header-name').textContent = '多问模式';
     document.getElementById('header-desc').textContent = '勾选左侧总监，同时向多人提问';
     return;
@@ -897,7 +902,7 @@ async function sendMulti(text) {
       if (card) {
         card.classList.remove('loading');
         card.querySelector('.director-response-body').innerHTML =
-          `<span style="color:#ef4444">⚠️ 错误：${escHtml(e.message)}</span>`;
+          `<span style="color:#dc2626">⚠️ 错误：${escHtml(e.message)}</span>`;
       }
     }
   });
