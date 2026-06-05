@@ -1065,10 +1065,12 @@ async function fetchMarketingData() {
 // ── 根据角色返回数据 ──
 async function fetchDataForRole(roleId) {
   if (roleId === 'xuanxuan') {
-    const [salesData, opsData, calendarEvents] = await Promise.all([
+    const [salesData, opsData, cal] = await Promise.all([
       fetchSalesData(), fetchOpsData(), fetchCalendar()
     ]);
-    return { ...salesData, ...opsData, calendarEvents };
+    const combined = Object.assign({}, salesData, opsData);
+    combined.calendarEvents = cal;  // 明确赋值，不用 spread
+    return combined;
   }
   const loaders = {
     xiaoxiao:   fetchSalesData,
