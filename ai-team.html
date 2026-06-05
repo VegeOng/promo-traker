@@ -943,6 +943,19 @@ async function fetchGoogleSheets() {
 }
 
 // ── 主数据获取函数 ──
+// ── 读取 Google Calendar ──
+async function fetchCalendar() {
+  try {
+    const r = await fetch('/api/calendar');
+    if (!r.ok) return [];
+    const data = await r.json();
+    return data.events || [];
+  } catch (e) {
+    console.warn('Calendar fetch failed:', e.message);
+    return [];
+  }
+}
+
 async function fetchSalesData() {
   const { year, month, yesterday, weekAgo, today } = getDateRanges();
 
@@ -1016,8 +1029,10 @@ async function fetchMarketingData() {
 // ── 根据角色返回数据 ──
 async function fetchDataForRole(roleId) {
   if (roleId === 'xuanxuan') {
-    const [salesData, opsData] = await Promise.all([fetchSalesData(), fetchOpsData()]);
-    return { ...salesData, ...opsData };
+    const [salesData, opsData, calendarEvents] = await Promise.all([
+      fetchSalesData(), fetchOpsData(), fetchCalendar()
+    ]);
+    return { ...salesData, ...opsData, calendarEvents };
   }
   const loaders = {
     xiaoxiao:   fetchSalesData,
@@ -1205,6 +1220,26 @@ function formatDataAsContext(data) {
     if (low.length > 0) {
       ctx += `\n📦 库存告急门店：${low.length} 家\n`;
       low.slice(0, 5).forEach(s => ctx += `  - ${s.outlet_name || s.outlet_id}: ${s.product_code || ''}\n`);
+    }
+  }
+
+  // ── 日历行程（萱萱专用）──
+  if (data.calendarEvents !== undefined) {
+    const { today } = getDateRanges();
+    const todayStr = today;
+    const in3Days = new Date(Date.now() + 3 * 86400000).toISOString().split('T')[0];
+
+    if (data.calendarEvents && data.calendarEvents.length > 0) {
+      ctx += `\n📅 未来3天行程：\n`;
+      data.calendarEvents.forEach(e => {
+        const start = e.start ? new Date(e.start) : null;
+        const dateStr = start ? start.toLocaleDateString('zh-MY', { month: 'short', day: 'numeric', weekday: 'short' }) : '-';
+        const timeStr = e.allDay ? '全天' : start ? start.toLocaleTimeString('zh-MY', { hour: '2-digit', minute: '2-digit' }) : '';
+        const loc = e.location ? ` 📍${e.location}` : '';
+        ctx += `  - ${dateStr} ${timeStr}：${e.title}${loc}\n`;
+      });
+    } else {
+      ctx += `\n📅 未来3天行程：暂无行程\n`;
     }
   }
 

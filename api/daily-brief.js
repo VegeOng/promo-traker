@@ -44,83 +44,134 @@ module.exports = async function handler(req, res) {
 // ── 拉取数据 ──
 async function fetchAllData() {
   const now = new Date();
-  const today = now.toISOString().split('T')[0];
-  const yesterday = new Date(now - 86400000).toISOString().split('T')[0];
-  const monthStart = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`;
-  const weekAgo = new Date(now - 7 * 86400000).toISOString().split('T')[0];
+  const myt = new Date(now.getTime() + 8 * 60 * 60 * 1000);
+  const today = myt.toISOString().split('T')[0];
+  const yesterday = new Date(myt - 86400000).toISOString().split('T')[0];
+  const year = myt.getFullYear();
+  const month = myt.getMonth() + 1;
+  const weekAgo = new Date(myt - 7 * 86400000).toISOString().split('T')[0];
 
-  const headers = {
+  const sbHeaders = {
     'apikey': SUPABASE_KEY,
     'Authorization': `Bearer ${SUPABASE_KEY}`,
-    'Content-Type': 'application/json',
   };
 
   async function query(table, params = '') {
     try {
-      const r = await fetch(`${SUPABASE_URL}/rest/v1/${table}${params ? '?' + params : ''}`, { headers });
+      const r = await fetch(`${SUPABASE_URL}/rest/v1/${table}${params ? '?' + params : ''}`, { headers: sbHeaders });
       if (!r.ok) return [];
       return await r.json();
     } catch { return []; }
   }
 
-  const [orders, targets, visits, reports, tasks, products] = await Promise.all([
-    query('sales_orders', `created_at=gte.${monthStart}&order=created_at.desc&limit=200`),
-    query('sales_targets', `limit=20`),
+  // Google Sheets sales data
+  async function fetchSheets() {
+    try {
+      const r = await fetch('https://script.google.com/macros/s/AKfycbwxt23ZB0od7EeBSNvjurKTbkDcM7HLgrWhuoqHc3meKWmhbB0XQzfOdB-X2Pj5O_MY/exec');
+      const json = await r.json();
+      return json.data || [];
+    } catch { return []; }
+  }
+
+  // Google Calendar
+  async function fetchCalendar() {
+    try {
+      const calId = encodeURIComponent('ohy4896@gmail.com');
+      const timeMin = new Date(myt.getFullYear(), myt.getMonth(), myt.getDate()).toISOString();
+      const timeMax = new Date(myt.getFullYear(), myt.getMonth(), myt.getDate() + 4).toISOString();
+      const url = `https://www.googleapis.com/calendar/v3/calendars/${calId}/events?key=${process.env.GOOGLE_CALENDAR_API_KEY}&timeMin=${timeMin}&timeMax=${timeMax}&singleEvents=true&orderBy=startTime&maxResults=10`;
+      const r = await fetch(url);
+      const data = await r.json();
+      return (data.items || []).map(e => ({
+        title: e.summary || '(无标题)',
+        start: e.start?.dateTime || e.start?.date,
+        allDay: !!e.start?.date && !e.start?.dateTime,
+        location: e.location || '',
+      }));
+    } catch { return []; }
+  }
+
+  const [allOrders, visits, reports, tasks, calendarEvents] = await Promise.all([
+    fetchSheets(),
     query('visit_records', `visit_date=gte.${yesterday}&visit_date=lte.${today}&limit=100`),
     query('daily_reports', `date=gte.${yesterday}&limit=20`),
     query('tasks', `limit=50`),
-    query('products', `limit=50`),
+    fetchCalendar(),
   ]);
 
-  return { orders, targets, visits, reports, tasks, products, today, yesterday, monthStart };
+  const thisMonthOrders = allOrders.filter(r => parseInt(r['YEAR']) === year && parseInt(r['MONTH']) === month);
+  const totalSalesThisMonth = thisMonthOrders.reduce((s, r) => s + (parseFloat(r['TOTAL (RM)']) || 0), 0);
+
+  return { allOrders, thisMonthOrders, totalSalesThisMonth, visits, reports, tasks, calendarEvents, today, yesterday, year, month };
 }
 
 // ── 生成简报 ──
 async function generateBrief(data) {
-  const { orders, targets, visits, reports, tasks, today } = data;
+  const { thisMonthOrders, totalSalesThisMonth, visits, reports, tasks, calendarEvents, today, year, month } = data;
 
-  // 汇总销售数据
-  const totalSales = orders.reduce((s, o) => s + (parseFloat(o.total_amount) || parseFloat(o.amount) || 0), 0);
-
-  const bySalesperson = {};
-  orders.forEach(o => {
-    const name = o.rep_name || o.salesperson_name || o.name || 'Unknown';
-    bySalesperson[name] = (bySalesperson[name] || 0) + (parseFloat(o.total_amount) || parseFloat(o.amount) || 0);
+  // 各销售员本月业绩
+  const targets = { VEGE: 200000, CAROL: 100000, CHRIS: 100000, CHIN: 50000, RAYMOND: 50000 };
+  const bySP = {};
+  thisMonthOrders.forEach(o => {
+    const name = (o['SALES PERSON'] || 'Unknown').toUpperCase();
+    bySP[name] = (bySP[name] || 0) + (parseFloat(o['TOTAL (RM)']) || 0);
   });
 
+  const spSummary = Object.entries(targets).map(([name, target]) => {
+    const actual = bySP[name] || 0;
+    const pct = ((actual / target) * 100).toFixed(1);
+    return `- ${name}: RM ${actual.toFixed(2)} / 目标 RM ${target.toLocaleString()} (${pct}%)`;
+  }).join('\n');
+
+  // 拜访
   const byVisit = {};
   visits.forEach(v => {
-    const name = v.rep_name || 'Unknown';
+    const name = (v.rep_name || 'Unknown').toUpperCase();
     byVisit[name] = (byVisit[name] || 0) + 1;
   });
+  const visitSummary = ['VEGE','CAROL','CHRIS','CHIN','RAYMOND'].map(n =>
+    `- ${n}: ${byVisit[n] || 0} 家${!byVisit[n] ? ' ⚠️ 零拜访' : ''}`
+  ).join('\n');
 
-  const submittedReports = reports.map(r => r.name || r.rep_name || '-');
-  const allSales = ['VEGE', 'CAROL', 'CHRIS', 'CHIN', 'RAYMOND'];
-  const notSubmitted = allSales.filter(n => !submittedReports.some(s => s.toUpperCase() === n));
+  // 日报
+  const submitted = reports.map(r => (r.name || '').toUpperCase());
+  const notSubmitted = ['VEGE','CAROL','CHRIS','CHIN','RAYMOND'].filter(n => !submitted.includes(n));
 
-  const overdueTask = tasks.filter(t => t.due_date && new Date(t.due_date) < new Date(today));
+  // 逾期任务
+  const overdue = tasks.filter(t => t.due_date && new Date(t.due_date) < new Date(today));
+
+  // 日历
+  const calSummary = calendarEvents && calendarEvents.length > 0
+    ? calendarEvents.map(e => {
+        const start = e.start ? new Date(e.start) : null;
+        const dateStr = start ? start.toLocaleDateString('zh-MY', { month: 'short', day: 'numeric', weekday: 'short' }) : '';
+        const timeStr = e.allDay ? '全天' : start ? start.toLocaleTimeString('zh-MY', { hour: '2-digit', minute: '2-digit' }) : '';
+        return `- ${dateStr} ${timeStr}：${e.title}${e.location ? ' 📍' + e.location : ''}`;
+      }).join('\n')
+    : '暂无行程';
 
   const dataContext = `
-今天日期：${today}
-本月销售总额：RM ${totalSales.toFixed(2)}
-月目标：RM 500,000
-YTD：RM 1,915,395（截至6月）年度目标 RM 6,000,000
+今天日期：${today}（${year}年${month}月）
+本月销售总额：RM ${totalSalesThisMonth.toFixed(2)} / 月目标 RM 500,000（${((totalSalesThisMonth/500000)*100).toFixed(1)}%）
+YTD 年度目标：RM 6,000,000
 
-各销售员本月业绩：
-${Object.entries(bySalesperson).sort((a,b)=>b[1]-a[1]).map(([n,v])=>`- ${n}: RM ${v.toFixed(2)}`).join('\n') || '暂无数据'}
-
-个人月目标：Vege RM200K / Carol RM100K / Chris RM100K / Chin RM50K / Raymond RM50K
+各销售员本月业绩 vs 目标：
+${spSummary}
 
 昨日拜访记录：
-${Object.entries(byVisit).map(([n,c])=>`- ${n}: ${c} 家`).join('\n') || '暂无拜访记录'}
+${visitSummary}
 
-已提交日报：${submittedReports.join(', ') || '无'}
-未提交日报：${notSubmitted.join(', ') || '全部已提交 ✅'}
+日报提交：
+已提交：${submitted.join(', ') || '无'}
+未提交：${notSubmitted.join(', ') || '全部已提交 ✅'}
 
-逾期任务（${overdueTask.length} 个）：
-${overdueTask.slice(0,5).map(t=>`- ${t.description || t.title}（${t.assigned_to || '-'}）`).join('\n') || '无逾期任务 ✅'}
+逾期任务（${overdue.length} 个）：
+${overdue.slice(0,5).map(t=>`- ${t.description}（${t.assigned_to}）截止 ${t.due_date}`).join('\n') || '无逾期任务 ✅'}
 
-7-Eleven 特别注意：YTD 结构性亏损 RM 63,868，每卖一杯 Shakemee 亏一杯。
+📅 未来3天行程：
+${calSummary}
+
+⚠️ 7-Eleven：YTD 结构性亏损，每卖一杯亏一杯，不要建议提高销量。
 `;
 
   const systemPrompt = `你是萱萱，MamaVege 的 CEO助理。每天早上产出简洁有力的 HQ 日报。
@@ -130,10 +181,11 @@ ${overdueTask.slice(0,5).map(t=>`- ${t.description || t.title}（${t.assigned_to
   const userPrompt = `根据以下数据，产出今天的 HQ 日报：\n${dataContext}
 
 日报格式（固定）：
-1. 📊 昨日业绩 & 本月进度
-2. 👣 地面执行（拜访情况）
-3. ⚠️ 需要关注的事（财务警报/逾期任务/未提交报告）
-4. ✅ 今天 HQ 必做 3 件事`;
+1. 📊 本月业绩进度
+2. 👣 昨日地面执行（拜访情况）
+3. 📅 今天及未来3天重要行程
+4. ⚠️ 需要关注的事（逾期任务/未提交报告）
+5. ✅ 今天 HQ 必做 3 件事`;
 
   const r = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
