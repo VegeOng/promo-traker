@@ -15,18 +15,8 @@
       --text: #e8eaf0;
       --text-muted: #6b7280;
       --text-dim: #9ca3af;
-
-      --xuanxuan: #6366f1;
-      --xiaoxiao: #10b981;
-      --qianqian: #f59e0b;
-      --chongchong: #ec4899;
-      --shunshun: #8b5cf6;
-      --diandian: #06b6d4;
-      --longlong: #ef4444;
     }
-
     * { box-sizing: border-box; margin: 0; padding: 0; }
-
     body {
       background: var(--bg);
       color: var(--text);
@@ -38,836 +28,1004 @@
 
     /* ── Header ── */
     header {
-      padding: 20px 32px;
-      border-bottom: 1px solid var(--border);
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      background: var(--surface);
-    }
-    .logo {
-      width: 40px; height: 40px;
-      background: linear-gradient(135deg, #10b981, #06b6d4);
-      border-radius: 10px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 20px;
-    }
-    .header-title h1 {
-      font-size: 18px; font-weight: 700; letter-spacing: -0.3px;
-    }
-    .header-title p {
-      font-size: 12px; color: var(--text-muted); margin-top: 1px;
-    }
-    .header-status {
-      margin-left: auto;
-      font-size: 12px;
-      color: var(--text-muted);
-      display: flex; align-items: center; gap: 6px;
-    }
-    .status-dot {
-      width: 7px; height: 7px; border-radius: 50%;
-      background: #10b981;
-      animation: pulse 2s infinite;
-    }
-    @keyframes pulse {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.4; }
-    }
-
-    /* ── Main Layout ── */
-    .main {
-      display: flex;
-      flex: 1;
-      overflow: hidden;
-      height: calc(100vh - 73px);
-    }
-
-    /* ── Sidebar — Director Cards ── */
-    .sidebar {
-      width: 260px;
-      min-width: 260px;
-      border-right: 1px solid var(--border);
-      overflow-y: auto;
-      padding: 16px 12px;
-      background: var(--surface);
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
-    .sidebar-label {
-      font-size: 10px;
-      font-weight: 600;
-      letter-spacing: 1.2px;
-      color: var(--text-muted);
-      text-transform: uppercase;
-      padding: 4px 8px 8px;
-    }
-
-    .director-card {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 12px 14px;
-      border-radius: 10px;
-      cursor: pointer;
-      border: 1px solid transparent;
-      transition: all 0.15s ease;
-      position: relative;
-    }
-    .director-card:hover {
-      background: var(--surface2);
-      border-color: var(--border);
-    }
-    .director-card.active {
-      background: var(--surface2);
-      border-color: var(--active-color, #6366f1);
-    }
-    .director-card.active::before {
-      content: '';
-      position: absolute;
-      left: 0; top: 20%; bottom: 20%;
-      width: 3px;
-      border-radius: 0 2px 2px 0;
-      background: var(--active-color, #6366f1);
-    }
-
-    .director-avatar {
-      width: 40px; height: 40px;
-      border-radius: 10px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 20px;
-      flex-shrink: 0;
-    }
-    .director-info { flex: 1; min-width: 0; }
-    .director-name {
-      font-size: 14px; font-weight: 600;
-      display: flex; align-items: center; gap: 6px;
-    }
-    .director-role {
-      font-size: 11px; color: var(--text-muted);
-      margin-top: 1px;
-    }
-    .director-badge {
-      width: 7px; height: 7px; border-radius: 50%;
-      flex-shrink: 0;
-    }
-
-    /* ── Chat Area ── */
-    .chat-area {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-    }
-
-    /* Director Header */
-    .chat-header {
-      padding: 18px 28px;
+      padding: 16px 28px;
       border-bottom: 1px solid var(--border);
       display: flex;
       align-items: center;
       gap: 14px;
       background: var(--surface);
+      flex-shrink: 0;
     }
-    .chat-header-avatar {
-      width: 46px; height: 46px;
-      border-radius: 12px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 24px;
-    }
-    .chat-header-info h2 {
-      font-size: 16px; font-weight: 700;
-    }
-    .chat-header-info p {
-      font-size: 12px; color: var(--text-muted); margin-top: 2px;
-    }
-    .chat-header-actions {
-      margin-left: auto;
-      display: flex; gap: 8px;
-    }
-    .btn-icon {
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      color: var(--text-dim);
-      padding: 7px 10px;
-      border-radius: 8px;
-      cursor: pointer;
-      font-size: 13px;
-      transition: all 0.15s;
-    }
-    .btn-icon:hover {
-      color: var(--text);
-      border-color: var(--text-muted);
-    }
-
-    /* Messages */
-    .messages {
-      flex: 1;
-      overflow-y: auto;
-      padding: 24px 28px;
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
-      scroll-behavior: smooth;
-    }
-    .messages::-webkit-scrollbar { width: 4px; }
-    .messages::-webkit-scrollbar-track { background: transparent; }
-    .messages::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
-
-    /* Welcome Screen */
-    .welcome {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 12px;
-      color: var(--text-muted);
-      padding: 32px;
-      text-align: center;
-    }
-    .welcome-emoji { font-size: 48px; margin-bottom: 8px; }
-    .welcome h3 { font-size: 18px; font-weight: 600; color: var(--text-dim); }
-    .welcome p { font-size: 14px; max-width: 380px; line-height: 1.6; }
-
-    /* Quick Prompts */
-    .quick-prompts {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      justify-content: center;
-      margin-top: 8px;
-    }
-    .quick-btn {
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      color: var(--text-dim);
-      padding: 8px 14px;
-      border-radius: 20px;
-      cursor: pointer;
-      font-size: 12px;
-      font-family: inherit;
-      transition: all 0.15s;
-    }
-    .quick-btn:hover {
-      border-color: var(--active-color, #6366f1);
-      color: var(--text);
-    }
-
-    /* Message Bubbles */
-    .message {
-      display: flex;
-      gap: 12px;
-      max-width: 800px;
-    }
-    .message.user {
-      flex-direction: row-reverse;
-      align-self: flex-end;
-    }
-    .message-avatar {
+    .logo {
       width: 36px; height: 36px;
+      background: linear-gradient(135deg, #10b981, #06b6d4);
       border-radius: 9px;
       display: flex; align-items: center; justify-content: center;
       font-size: 18px;
-      flex-shrink: 0;
-      align-self: flex-start;
     }
-    .message.user .message-avatar {
+    .header-title h1 { font-size: 16px; font-weight: 700; }
+    .header-title p { font-size: 11px; color: var(--text-muted); }
+    .header-right {
+      margin-left: auto;
+      display: flex; align-items: center; gap: 12px;
+    }
+    .status-pill {
+      font-size: 11px; color: var(--text-muted);
+      display: flex; align-items: center; gap: 5px;
       background: var(--surface2);
       border: 1px solid var(--border);
-      font-size: 14px;
-      color: var(--text-dim);
+      padding: 4px 10px; border-radius: 20px;
     }
-    .message-content {
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 14px 18px;
-      font-size: 14px;
-      line-height: 1.7;
-      max-width: calc(100% - 48px);
+    .status-dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: #10b981;
+      animation: pulse 2s infinite;
     }
-    .message.user .message-content {
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+
+    /* ── Layout ── */
+    .main {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+      height: calc(100vh - 65px);
+    }
+
+    /* ── Sidebar ── */
+    .sidebar {
+      width: 240px; min-width: 240px;
+      border-right: 1px solid var(--border);
       background: var(--surface);
-      border-color: var(--border);
+      display: flex; flex-direction: column;
+      overflow: hidden;
     }
-    .message-content p { margin: 0 0 8px; }
-    .message-content p:last-child { margin-bottom: 0; }
-    .message-content strong { color: var(--text); }
-    .message-content ul, .message-content ol {
-      padding-left: 20px;
-      margin: 6px 0;
+    .sidebar-top {
+      padding: 14px 12px 10px;
+      border-bottom: 1px solid var(--border);
     }
-    .message-content li { margin: 3px 0; }
-    .message-content pre {
+    .sidebar-label {
+      font-size: 10px; font-weight: 600;
+      letter-spacing: 1.2px; color: var(--text-muted);
+      text-transform: uppercase; padding: 0 4px 8px;
+    }
+
+    /* Mode toggle */
+    .mode-toggle {
+      display: flex;
       background: var(--bg);
       border: 1px solid var(--border);
       border-radius: 8px;
-      padding: 12px;
-      overflow-x: auto;
-      font-size: 12px;
-      margin: 8px 0;
+      padding: 3px;
+      gap: 2px;
     }
-    .message-content code {
-      background: var(--bg);
-      padding: 1px 5px;
-      border-radius: 4px;
-      font-size: 12px;
-      font-family: monospace;
+    .mode-btn {
+      flex: 1; padding: 6px 4px;
+      border: none; border-radius: 6px;
+      cursor: pointer; font-size: 11px; font-weight: 600;
+      font-family: inherit;
+      color: var(--text-muted);
+      background: transparent;
+      transition: all .15s;
+      white-space: nowrap;
+    }
+    .mode-btn.active {
+      background: var(--surface2);
+      color: var(--text);
+      border: 1px solid var(--border);
     }
 
-    /* Loading indicator */
+    /* Multi-select hint */
+    .multi-hint {
+      font-size: 11px; color: var(--text-muted);
+      padding: 6px 4px 0;
+      display: none;
+    }
+    .multi-hint.show { display: block; }
+
+    /* Director cards */
+    .directors-list {
+      flex: 1; overflow-y: auto;
+      padding: 10px 10px;
+      display: flex; flex-direction: column; gap: 4px;
+    }
+    .directors-list::-webkit-scrollbar { width: 3px; }
+    .directors-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+    .director-card {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 12px;
+      border-radius: 9px;
+      cursor: pointer;
+      border: 1px solid transparent;
+      transition: all .15s;
+      position: relative;
+      user-select: none;
+    }
+    .director-card:hover { background: var(--surface2); border-color: var(--border); }
+
+    /* Single mode active */
+    .director-card.single-active {
+      background: var(--surface2);
+      border-color: var(--card-color);
+    }
+    .director-card.single-active::before {
+      content: '';
+      position: absolute; left: 0; top: 20%; bottom: 20%;
+      width: 3px; border-radius: 0 2px 2px 0;
+      background: var(--card-color);
+    }
+
+    /* Multi mode selected */
+    .director-card.multi-selected {
+      background: var(--surface2);
+      border-color: var(--card-color);
+    }
+
+    .director-avatar {
+      width: 36px; height: 36px; border-radius: 9px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px; flex-shrink: 0;
+    }
+    .director-info { flex: 1; min-width: 0; }
+    .director-name {
+      font-size: 13px; font-weight: 600;
+      display: flex; align-items: center; gap: 5px;
+    }
+    .director-title { font-size: 10px; color: var(--text-muted); margin-top: 1px; }
+
+    /* Checkbox for multi mode */
+    .director-check {
+      width: 18px; height: 18px;
+      border: 2px solid var(--border);
+      border-radius: 5px;
+      flex-shrink: 0;
+      display: none;
+      align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 700;
+      transition: all .15s;
+    }
+    .multi-mode .director-check { display: flex; }
+    .director-card.multi-selected .director-check {
+      background: var(--card-color);
+      border-color: var(--card-color);
+      color: white;
+    }
+
+    /* Ask selected button */
+    .ask-selected-wrap {
+      padding: 10px 12px;
+      border-top: 1px solid var(--border);
+      display: none;
+    }
+    .ask-selected-wrap.show { display: block; }
+    .ask-selected-btn {
+      width: 100%;
+      padding: 9px;
+      border: none; border-radius: 8px;
+      background: #6366f1;
+      color: white;
+      font-size: 13px; font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      transition: opacity .15s;
+    }
+    .ask-selected-btn:hover { opacity: .85; }
+    .ask-selected-btn:disabled { opacity: .4; cursor: not-allowed; }
+    .selected-count {
+      font-size: 11px; color: var(--text-muted);
+      text-align: center; margin-top: 5px;
+    }
+
+    /* ── Chat area ── */
+    .chat-area {
+      flex: 1; display: flex; flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* Chat header */
+    .chat-header {
+      padding: 14px 24px;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface);
+      display: flex; align-items: center; gap: 12px;
+      flex-shrink: 0;
+    }
+    .chat-header-avatar {
+      width: 40px; height: 40px; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px;
+    }
+    /* Multi header — show all selected avatars */
+    .multi-avatars {
+      display: flex; gap: -8px;
+    }
+    .multi-avatars span {
+      width: 32px; height: 32px; border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px; border: 2px solid var(--surface);
+      margin-left: -6px;
+    }
+    .multi-avatars span:first-child { margin-left: 0; }
+
+    .chat-header-info h2 { font-size: 15px; font-weight: 700; }
+    .chat-header-info p { font-size: 11px; color: var(--text-muted); margin-top: 1px; }
+    .chat-header-actions { margin-left: auto; display: flex; gap: 6px; }
+    .btn-icon {
+      background: var(--surface2); border: 1px solid var(--border);
+      color: var(--text-dim); padding: 6px 10px;
+      border-radius: 7px; cursor: pointer; font-size: 12px;
+      transition: all .15s; font-family: inherit;
+    }
+    .btn-icon:hover { color: var(--text); border-color: var(--text-muted); }
+
+    /* Messages */
+    .messages {
+      flex: 1; overflow-y: auto;
+      padding: 20px 24px;
+      display: flex; flex-direction: column; gap: 16px;
+      scroll-behavior: smooth;
+    }
+    .messages::-webkit-scrollbar { width: 4px; }
+    .messages::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+    /* Welcome */
+    .welcome {
+      flex: 1; display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 10px; color: var(--text-muted);
+      padding: 32px; text-align: center;
+    }
+    .welcome-emoji { font-size: 44px; margin-bottom: 4px; }
+    .welcome h3 { font-size: 17px; font-weight: 600; color: var(--text-dim); }
+    .welcome p { font-size: 13px; max-width: 360px; line-height: 1.6; }
+    .quick-prompts {
+      display: flex; flex-wrap: wrap; gap: 7px;
+      justify-content: center; margin-top: 6px;
+    }
+    .quick-btn {
+      background: var(--surface2); border: 1px solid var(--border);
+      color: var(--text-dim); padding: 7px 13px;
+      border-radius: 18px; cursor: pointer;
+      font-size: 12px; font-family: inherit; transition: all .15s;
+    }
+    .quick-btn:hover { border-color: #6366f1; color: var(--text); }
+
+    /* Single message */
+    .message {
+      display: flex; gap: 10px;
+      max-width: 820px;
+    }
+    .message.user { flex-direction: row-reverse; align-self: flex-end; }
+    .message-avatar {
+      width: 34px; height: 34px; border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 17px; flex-shrink: 0; align-self: flex-start;
+    }
+    .message.user .message-avatar {
+      background: var(--surface2); border: 1px solid var(--border);
+      font-size: 12px; color: var(--text-dim);
+    }
+    .message-content {
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 11px; padding: 12px 16px;
+      font-size: 13.5px; line-height: 1.75;
+      max-width: calc(100% - 44px);
+    }
+    .message.user .message-content { background: var(--surface); }
+    .message-content p { margin: 0 0 7px; }
+    .message-content p:last-child { margin-bottom: 0; }
+    .message-content strong { color: var(--text); }
+    .message-content ul, .message-content ol { padding-left: 18px; margin: 5px 0; }
+    .message-content li { margin: 3px 0; }
+    .message-content h3, .message-content h4 {
+      margin: 10px 0 5px; color: var(--text);
+    }
+    .message-content code {
+      background: var(--bg); padding: 1px 5px;
+      border-radius: 4px; font-size: 12px; font-family: monospace;
+    }
+    .message-content pre {
+      background: var(--bg); border: 1px solid var(--border);
+      border-radius: 7px; padding: 10px; overflow-x: auto;
+      font-size: 12px; margin: 7px 0;
+    }
+
+    /* ── Multi-response block ── */
+    .multi-response-block {
+      display: flex; flex-direction: column; gap: 12px;
+      max-width: 100%;
+    }
+
+    /* User message in multi mode */
+    .multi-user-msg {
+      display: flex; gap: 10px;
+      flex-direction: row-reverse; align-self: flex-end;
+    }
+    .multi-user-msg .message-avatar {
+      width: 34px; height: 34px; border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      background: var(--surface2); border: 1px solid var(--border);
+      font-size: 12px; color: var(--text-dim); flex-shrink: 0;
+    }
+    .multi-user-msg .message-content {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 11px; padding: 12px 16px;
+      font-size: 13.5px; line-height: 1.75;
+    }
+
+    /* Director responses grid */
+    .director-responses {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+      gap: 12px;
+    }
+    .director-response-card {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    .director-response-header {
+      display: flex; align-items: center; gap: 9px;
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--border);
+      font-size: 13px; font-weight: 600;
+    }
+    .director-response-header span { font-size: 18px; }
+    .director-response-header .title-tag {
+      font-size: 10px; font-weight: 400;
+      padding: 2px 7px; border-radius: 10px;
+      margin-left: auto;
+    }
+    .director-response-body {
+      padding: 14px;
+      font-size: 13px; line-height: 1.75;
+      color: var(--text);
+    }
+    .director-response-body p { margin: 0 0 7px; }
+    .director-response-body p:last-child { margin-bottom: 0; }
+    .director-response-body strong { color: var(--text); }
+    .director-response-body ul, .director-response-body ol {
+      padding-left: 18px; margin: 5px 0;
+    }
+    .director-response-body li { margin: 2px 0; }
+    .director-response-body h3, .director-response-body h4 {
+      margin: 8px 0 4px; color: var(--text);
+    }
+    .director-response-body code {
+      background: var(--bg); padding: 1px 5px;
+      border-radius: 4px; font-size: 12px; font-family: monospace;
+    }
+
+    /* Loading card */
+    .director-response-card.loading .director-response-body {
+      display: flex; align-items: center; gap: 10px;
+      color: var(--text-muted); font-size: 12px;
+    }
     .typing-indicator {
-      display: flex;
-      gap: 4px;
-      padding: 6px 2px;
-      align-items: center;
+      display: flex; gap: 4px; align-items: center;
     }
     .typing-dot {
-      width: 7px; height: 7px; border-radius: 50%;
+      width: 6px; height: 6px; border-radius: 50%;
       background: var(--text-muted);
       animation: typing 1.2s ease infinite;
     }
-    .typing-dot:nth-child(2) { animation-delay: 0.2s; }
-    .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+    .typing-dot:nth-child(2) { animation-delay: .2s; }
+    .typing-dot:nth-child(3) { animation-delay: .4s; }
     @keyframes typing {
-      0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
-      30% { transform: translateY(-6px); opacity: 1; }
+      0%,60%,100%{transform:translateY(0);opacity:.4}
+      30%{transform:translateY(-5px);opacity:1}
     }
+    @keyframes spin { from{transform:rotate(0)} to{transform:rotate(360deg)} }
+    .spin { animation: spin 1s linear infinite; display: inline-block; }
 
-    /* Data loading badge */
-    .data-loading-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 11px;
-      color: var(--text-muted);
-      background: var(--bg);
-      border: 1px solid var(--border);
-      padding: 4px 10px;
-      border-radius: 20px;
-      margin-bottom: 8px;
-    }
-    .data-loading-badge .spin {
-      animation: spin 1s linear infinite;
-      display: inline-block;
-    }
-    @keyframes spin {
-      from { transform: rotate(0deg); }
-      to { transform: rotate(360deg); }
-    }
-
-    /* Input Area */
+    /* Input area */
     .input-area {
-      padding: 16px 28px 24px;
+      padding: 14px 24px 20px;
       border-top: 1px solid var(--border);
       background: var(--surface);
+      flex-shrink: 0;
     }
     .input-wrapper {
-      display: flex;
-      gap: 10px;
-      align-items: flex-end;
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 10px 14px;
-      transition: border-color 0.15s;
+      display: flex; gap: 9px; align-items: flex-end;
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 12px; padding: 9px 12px;
+      transition: border-color .15s;
     }
-    .input-wrapper:focus-within {
-      border-color: var(--active-color, #6366f1);
-    }
+    .input-wrapper:focus-within { border-color: #6366f1; }
     #chat-input {
-      flex: 1;
-      background: none;
-      border: none;
-      outline: none;
-      color: var(--text);
-      font-family: inherit;
-      font-size: 14px;
-      line-height: 1.5;
-      resize: none;
-      max-height: 120px;
-      min-height: 24px;
+      flex: 1; background: none; border: none; outline: none;
+      color: var(--text); font-family: inherit;
+      font-size: 13.5px; line-height: 1.5;
+      resize: none; max-height: 120px; min-height: 22px;
     }
     #chat-input::placeholder { color: var(--text-muted); }
     .send-btn {
-      width: 36px; height: 36px;
-      border-radius: 9px;
-      border: none;
-      cursor: pointer;
+      width: 34px; height: 34px; border-radius: 8px;
+      border: none; cursor: pointer;
       display: flex; align-items: center; justify-content: center;
-      font-size: 16px;
-      transition: all 0.15s;
-      flex-shrink: 0;
-      background: var(--active-color, #6366f1);
-      color: white;
+      font-size: 15px; transition: all .15s; flex-shrink: 0;
+      background: #6366f1; color: white;
     }
-    .send-btn:hover { opacity: 0.85; transform: scale(1.05); }
-    .send-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+    .send-btn:hover { opacity: .85; transform: scale(1.05); }
+    .send-btn:disabled { opacity: .4; cursor: not-allowed; transform: none; }
+    .input-hint { font-size: 11px; color: var(--text-muted); margin-top: 6px; text-align: center; }
 
-    .input-hint {
-      font-size: 11px;
-      color: var(--text-muted);
-      margin-top: 8px;
-      text-align: center;
-    }
-
-    /* Toast Notification */
+    /* Toast */
     .toast {
-      position: fixed;
-      bottom: 24px; right: 24px;
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 12px 18px;
-      font-size: 13px;
-      color: var(--text);
-      z-index: 1000;
-      transform: translateY(10px);
-      opacity: 0;
-      transition: all 0.25s ease;
-      max-width: 300px;
+      position: fixed; bottom: 22px; right: 22px;
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 9px; padding: 10px 16px;
+      font-size: 13px; color: var(--text);
+      z-index: 1000; transform: translateY(10px); opacity: 0;
+      transition: all .25s; max-width: 280px;
     }
-    .toast.show {
-      transform: translateY(0);
-      opacity: 1;
-    }
+    .toast.show { transform: translateY(0); opacity: 1; }
     .toast.error { border-color: #ef4444; }
     .toast.success { border-color: #10b981; }
-
-    /* Scrollbar for sidebar */
-    .sidebar::-webkit-scrollbar { width: 3px; }
-    .sidebar::-webkit-scrollbar-track { background: transparent; }
-    .sidebar::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
-
-    /* Mobile responsive */
-    @media (max-width: 640px) {
-      .sidebar { width: 200px; min-width: 200px; }
-      .messages { padding: 16px; }
-      .input-area { padding: 12px 16px 20px; }
-      .chat-header { padding: 14px 16px; }
-    }
   </style>
 </head>
 <body>
 
-<!-- Header -->
 <header>
   <div class="logo">🥗</div>
   <div class="header-title">
     <h1>MamaVege AI 管理团队</h1>
     <p>7 个 AI 总监 · 实时 Supabase 数据</p>
   </div>
-  <div class="header-status">
-    <div class="status-dot"></div>
-    <span id="connection-status">连接中...</span>
+  <div class="header-right">
+    <div class="status-pill">
+      <div class="status-dot"></div>
+      <span id="connection-status">连接中...</span>
+    </div>
   </div>
 </header>
 
-<!-- Main -->
 <div class="main">
 
   <!-- Sidebar -->
-  <aside class="sidebar">
-    <div class="sidebar-label">AI 管理团队</div>
-    <!-- Cards injected by JS -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-top">
+      <div class="sidebar-label">AI 管理团队</div>
+      <!-- Mode toggle -->
+      <div class="mode-toggle">
+        <button class="mode-btn active" id="btn-single" onclick="setMode('single')">👤 单问</button>
+        <button class="mode-btn" id="btn-multi" onclick="setMode('multi')">👥 多问</button>
+      </div>
+      <div class="multi-hint" id="multi-hint">勾选要问的总监，再输入问题</div>
+    </div>
+
+    <div class="directors-list" id="directors-list">
+      <!-- injected by JS -->
+    </div>
+
+    <!-- Ask selected button (multi mode) -->
+    <div class="ask-selected-wrap" id="ask-selected-wrap">
+      <button class="ask-selected-btn" id="ask-selected-btn" onclick="triggerMultiAsk()" disabled>
+        问选中的总监
+      </button>
+      <div class="selected-count" id="selected-count">请勾选至少 1 位总监</div>
+    </div>
   </aside>
 
-  <!-- Chat Area -->
+  <!-- Chat -->
   <section class="chat-area">
-
-    <!-- Director Header -->
     <div class="chat-header" id="chat-header">
-      <div class="chat-header-avatar" id="header-avatar" style="background: #1c2030">🤖</div>
+      <div class="chat-header-avatar" id="header-avatar" style="background:#1c2030">🤖</div>
       <div class="chat-header-info">
         <h2 id="header-name">选择 AI 总监</h2>
-        <p id="header-desc">从左侧选择一个 AI 总监开始对话</p>
+        <p id="header-desc">从左侧选择一个或多个 AI 总监</p>
       </div>
       <div class="chat-header-actions">
-        <button class="btn-icon" onclick="clearChat()" title="清空对话">🗑️ 清空</button>
-        <button class="btn-icon" onclick="refreshData()" title="刷新数据" id="refresh-btn">🔄 刷新数据</button>
+        <button class="btn-icon" onclick="clearChat()">🗑️ 清空</button>
+        <button class="btn-icon" onclick="refreshData()">🔄 刷新数据</button>
       </div>
     </div>
 
-    <!-- Messages -->
     <div class="messages" id="messages">
       <div class="welcome" id="welcome-screen">
         <div class="welcome-emoji">👋</div>
         <h3>你好，HQ！</h3>
-        <p>选择左侧任意 AI 总监，直接提问即可。<br/>每次回答前会自动读取最新 Supabase 数据。</p>
+        <p>
+          <b>单问模式</b>：左侧点一个总监，直接提问<br/>
+          <b>多问模式</b>：切换到"多问"，勾选多个总监同时提问
+        </p>
       </div>
     </div>
 
-    <!-- Input -->
     <div class="input-area">
       <div class="input-wrapper">
-        <textarea
-          id="chat-input"
-          placeholder="问 AI 总监任何问题..."
-          rows="1"
-          disabled
-        ></textarea>
+        <textarea id="chat-input" placeholder="问 AI 总监..." rows="1" disabled></textarea>
         <button class="send-btn" id="send-btn" onclick="sendMessage()" disabled>➤</button>
       </div>
       <div class="input-hint">Enter 发送 · Shift+Enter 换行</div>
     </div>
-
   </section>
 </div>
 
-<!-- Toast -->
 <div class="toast" id="toast"></div>
 
-<!-- Scripts -->
 <script type="module">
-  import AI_TEAM from './js/ai-team-prompts.js';
-  import { fetchDataForRole, formatDataAsContext } from './js/ai-team-data.js';
+import AI_TEAM from './js/ai-team-prompts.js';
+import { fetchDataForRole, formatDataAsContext } from './js/ai-team-data.js';
 
-  // ── State ──
-  let activeDirector = null;
-  let conversationHistory = {};  // roleId -> [{role, content}]
-  let isLoading = false;
-  let cachedData = {};           // roleId -> { data, timestamp }
-  const CACHE_TTL = 60 * 1000;  // 1 minute cache
+// ── State ──
+let mode = 'single';                  // 'single' | 'multi'
+let activeDirector = null;            // single mode
+let selectedDirectors = new Set();    // multi mode
+let singleHistory = {};               // roleId -> [{role,content}]
+let multiHistory = [];                // [{question, responses:[{director,content}]}]
+let isLoading = false;
 
-  // ── Init ──
-  window.addEventListener('DOMContentLoaded', () => {
-    renderSidebar();
-    testSupabaseConnection();
+const directors = Object.values(AI_TEAM);
+
+// ── Init ──
+window.addEventListener('DOMContentLoaded', () => {
+  renderSidebar();
+  testConnection();
+  directors.forEach(d => singleHistory[d.id] = []);
+});
+
+function renderSidebar() {
+  const list = document.getElementById('directors-list');
+  directors.forEach(d => {
+    const card = document.createElement('div');
+    card.className = 'director-card';
+    card.id = `card-${d.id}`;
+    card.style.setProperty('--card-color', d.color);
+    card.onclick = () => handleCardClick(d.id);
+    card.innerHTML = `
+      <div class="director-avatar" style="background:${d.color}22">${d.emoji}</div>
+      <div class="director-info">
+        <div class="director-name">
+          ${d.name}
+          <span style="font-size:10px;font-weight:400;color:${d.color}">${d.title}</span>
+        </div>
+        <div class="director-title">${d.description}</div>
+      </div>
+      <div class="director-check">✓</div>
+    `;
+    list.appendChild(card);
   });
+}
 
-  function renderSidebar() {
-    const sidebar = document.querySelector('.sidebar');
-    const label = sidebar.querySelector('.sidebar-label');
-
-    Object.values(AI_TEAM).forEach(director => {
-      const card = document.createElement('div');
-      card.className = 'director-card';
-      card.id = `card-${director.id}`;
-      card.style.setProperty('--active-color', director.color);
-      card.onclick = () => selectDirector(director.id);
-      card.innerHTML = `
-        <div class="director-avatar" style="background: ${director.color}22">
-          ${director.emoji}
-        </div>
-        <div class="director-info">
-          <div class="director-name">
-            ${director.name}
-            <span style="font-size:11px; font-weight:400; color:${director.color}">
-              ${director.title}
-            </span>
-          </div>
-          <div class="director-role">${director.description}</div>
-        </div>
-        <div class="director-badge" style="background: ${director.color}"></div>
-      `;
-      sidebar.appendChild(card);
-
-      // Init conversation history
-      conversationHistory[director.id] = [];
+async function testConnection() {
+  const el = document.getElementById('connection-status');
+  try {
+    const r = await fetch('https://wjhgezvrxlhpexocfsea.supabase.co/rest/v1/sales_orders?limit=1', {
+      headers: {
+        'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndqaGdlenZyeGxocGV4b2Nmc2VhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg1MDU4NzgsImV4cCI6MjA5NDA4MTg3OH0.jENcrgEDYDlSRUCqve-T6rxYRJfz-dnZQHnXpPLJ_RE',
+        'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndqaGdlenZyeGxocGV4b2Nmc2VhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg1MDU4NzgsImV4cCI6MjA5NDA4MTg3OH0.jENcrgEDYDlSRUCqve-T6rxYRJfz-dnZQHnXpPLJ_RE',
+      }
     });
+    el.textContent = r.ok ? 'Supabase 已连接' : 'Supabase 异常';
+    el.style.color = r.ok ? '#10b981' : '#f59e0b';
+  } catch {
+    el.textContent = '连接失败';
+    el.style.color = '#ef4444';
+  }
+}
+
+// ── Mode switching ──
+window.setMode = function(m) {
+  mode = m;
+  document.getElementById('btn-single').classList.toggle('active', m === 'single');
+  document.getElementById('btn-multi').classList.toggle('active', m === 'multi');
+  document.getElementById('multi-hint').classList.toggle('show', m === 'multi');
+  document.getElementById('ask-selected-wrap').classList.toggle('show', m === 'multi');
+  document.getElementById('sidebar').classList.toggle('multi-mode', m === 'multi');
+
+  // Reset selections
+  selectedDirectors.clear();
+  updateMultiUI();
+
+  // In single mode, re-activate previously selected director
+  if (m === 'single') {
+    document.querySelectorAll('.director-card').forEach(c => {
+      c.classList.remove('multi-selected');
+    });
+    if (activeDirector) {
+      document.getElementById(`card-${activeDirector.id}`)?.classList.add('single-active');
+      enableInput(`问 ${activeDirector.name}...`);
+    } else {
+      disableInput();
+    }
+    renderSingleMessages();
+  } else {
+    // multi mode — remove single-active highlights
+    document.querySelectorAll('.director-card').forEach(c => {
+      c.classList.remove('single-active');
+    });
+    disableInput();
+    updateMultiHeader();
+  }
+};
+
+// ── Card click ──
+function handleCardClick(id) {
+  if (mode === 'single') {
+    selectSingle(id);
+  } else {
+    toggleMultiSelect(id);
+  }
+}
+
+// ── Single mode ──
+function selectSingle(id) {
+  activeDirector = AI_TEAM[id];
+  document.querySelectorAll('.director-card').forEach(c => c.classList.remove('single-active'));
+  document.getElementById(`card-${id}`).classList.add('single-active');
+
+  // Header
+  const h = document.getElementById('header-avatar');
+  h.textContent = activeDirector.emoji;
+  h.style.background = `${activeDirector.color}22`;
+  document.getElementById('header-name').textContent = `${activeDirector.name} · ${activeDirector.title}`;
+  document.getElementById('header-desc').textContent = activeDirector.description;
+  document.querySelector('.send-btn').style.background = activeDirector.color;
+
+  enableInput(`问 ${activeDirector.name}...`);
+  renderSingleMessages();
+}
+
+function renderSingleMessages() {
+  if (!activeDirector) return;
+  const msgs = document.getElementById('messages');
+  const history = singleHistory[activeDirector.id];
+  if (history.length === 0) {
+    msgs.innerHTML = getSingleWelcome();
+  } else {
+    msgs.innerHTML = '';
+    history.forEach(m => appendSingleMessage(m.role, m.content));
+  }
+  scrollToBottom();
+}
+
+function getSingleWelcome() {
+  const d = activeDirector;
+  const prompts = getQuickPrompts(d.id);
+  const btns = prompts.map(p =>
+    `<button class="quick-btn" style="--active:#6366f1" onclick="useQuickPrompt('${p.replace(/'/g,"\\'")}')">
+      ${p}
+    </button>`
+  ).join('');
+  return `
+    <div class="welcome">
+      <div class="welcome-emoji">${d.emoji}</div>
+      <h3>我是${d.name}</h3>
+      <p style="color:${d.color};font-weight:600">${d.title}</p>
+      <p style="margin-top:5px">${d.description}</p>
+      <div class="quick-prompts">${btns}</div>
+    </div>`;
+}
+
+function appendSingleMessage(role, content) {
+  const container = document.getElementById('messages');
+  const div = document.createElement('div');
+  div.className = `message ${role}`;
+  const avatarContent = role === 'user' ? 'HQ' : activeDirector.emoji;
+  const avatarStyle = role === 'assistant' ? `background:${activeDirector.color}22` : '';
+  div.innerHTML = `
+    <div class="message-avatar" style="${avatarStyle}">${avatarContent}</div>
+    <div class="message-content">${md(content)}</div>
+  `;
+  container.appendChild(div);
+}
+
+// ── Multi mode ──
+function toggleMultiSelect(id) {
+  const card = document.getElementById(`card-${id}`);
+  if (selectedDirectors.has(id)) {
+    selectedDirectors.delete(id);
+    card.classList.remove('multi-selected');
+  } else {
+    selectedDirectors.add(id);
+    card.classList.add('multi-selected');
+  }
+  updateMultiUI();
+}
+
+function updateMultiUI() {
+  const count = selectedDirectors.size;
+  const btn = document.getElementById('ask-selected-btn');
+  const countEl = document.getElementById('selected-count');
+
+  btn.disabled = count === 0 || isLoading;
+  countEl.textContent = count === 0
+    ? '请勾选至少 1 位总监'
+    : `已选 ${count} 位总监`;
+
+  if (count > 0) {
+    const names = [...selectedDirectors].map(id => AI_TEAM[id].name).join('、');
+    btn.textContent = `问 ${names}`;
+    enableInput('输入问题，问选中的总监...');
+    updateMultiHeader();
+  } else {
+    btn.textContent = '问选中的总监';
+    disableInput();
+    updateMultiHeader();
+  }
+}
+
+function updateMultiHeader() {
+  const selected = [...selectedDirectors];
+  if (selected.length === 0) {
+    document.getElementById('header-avatar').textContent = '🤖';
+    document.getElementById('header-avatar').style.background = '#1c2030';
+    document.getElementById('header-name').textContent = '多问模式';
+    document.getElementById('header-desc').textContent = '勾选左侧总监，同时向多人提问';
+    return;
+  }
+  const avatars = selected.map(id =>
+    `<span style="background:${AI_TEAM[id].color}22">${AI_TEAM[id].emoji}</span>`
+  ).join('');
+  const headerAvatar = document.getElementById('header-avatar');
+  headerAvatar.innerHTML = `<div class="multi-avatars">${avatars}</div>`;
+  headerAvatar.style.background = 'transparent';
+  const names = selected.map(id => AI_TEAM[id].name).join('、');
+  document.getElementById('header-name').textContent = names;
+  document.getElementById('header-desc').textContent = `${selected.length} 位总监同时回答你的问题`;
+}
+
+// Trigger multi ask from button click
+window.triggerMultiAsk = function() {
+  const input = document.getElementById('chat-input');
+  if (input.value.trim()) {
+    sendMessage();
+  } else {
+    input.focus();
+    showToast('请先输入问题 👆', '');
+  }
+};
+
+// ── Send ──
+window.sendMessage = async function() {
+  if (isLoading) return;
+  const input = document.getElementById('chat-input');
+  const text = input.value.trim();
+  if (!text) return;
+
+  if (mode === 'single' && !activeDirector) {
+    showToast('请先选择一个 AI 总监', 'error'); return;
+  }
+  if (mode === 'multi' && selectedDirectors.size === 0) {
+    showToast('请先勾选至少一位总监', 'error'); return;
   }
 
-  async function testSupabaseConnection() {
-    const statusEl = document.getElementById('connection-status');
+  input.value = '';
+  input.style.height = 'auto';
+  isLoading = true;
+  document.getElementById('send-btn').disabled = true;
+  document.getElementById('ask-selected-btn').disabled = true;
+
+  if (mode === 'single') {
+    await sendSingle(text);
+  } else {
+    await sendMulti(text);
+  }
+
+  isLoading = false;
+  document.getElementById('send-btn').disabled = false;
+  if (mode === 'multi') document.getElementById('ask-selected-btn').disabled = selectedDirectors.size === 0;
+  input.focus();
+};
+
+// Single send
+async function sendSingle(text) {
+  singleHistory[activeDirector.id].push({ role: 'user', content: text });
+  document.getElementById('messages').innerHTML = '';
+  singleHistory[activeDirector.id].forEach(m => appendSingleMessage(m.role, m.content));
+
+  // Typing indicator
+  const typingEl = addSingleTyping();
+  scrollToBottom();
+
+  try {
+    const data = await fetchDataForRole(activeDirector.id);
+    const context = formatDataAsContext(data);
+    const messages = singleHistory[activeDirector.id].map(m => ({
+      role: m.role,
+      content: m.role === 'user' && m === singleHistory[activeDirector.id].at(-1)
+        ? text + context : m.content
+    }));
+
+    const reply = await callClaude(activeDirector.systemPrompt, messages);
+    typingEl.remove();
+    singleHistory[activeDirector.id].push({ role: 'assistant', content: reply });
+    appendSingleMessage('assistant', reply);
+    scrollToBottom();
+  } catch (e) {
+    typingEl.remove();
+    singleHistory[activeDirector.id].pop();
+    showToast(`错误：${e.message}`, 'error');
+    renderSingleMessages();
+  }
+}
+
+// Multi send
+async function sendMulti(text) {
+  const msgs = document.getElementById('messages');
+
+  // Show question
+  const block = document.createElement('div');
+  block.className = 'multi-response-block';
+
+  const userMsgHtml = `
+    <div class="multi-user-msg" style="align-self:flex-end">
+      <div class="message-avatar">HQ</div>
+      <div class="message-content">${escHtml(text)}</div>
+    </div>`;
+
+  // Build loading cards for each selected director
+  const selectedIds = [...selectedDirectors];
+  const cardsHtml = selectedIds.map(id => {
+    const d = AI_TEAM[id];
+    return `
+      <div class="director-response-card loading" id="resp-${id}">
+        <div class="director-response-header" style="border-bottom-color:${d.color}33">
+          <span>${d.emoji}</span>
+          <span>${d.name}</span>
+          <span class="title-tag" style="background:${d.color}22;color:${d.color}">${d.title}</span>
+        </div>
+        <div class="director-response-body">
+          <span class="spin" style="margin-right:6px">⟳</span>
+          <span style="color:var(--text-muted);font-size:12px">正在读取数据并思考...</span>
+        </div>
+      </div>`;
+  }).join('');
+
+  block.innerHTML = userMsgHtml + `<div class="director-responses">${cardsHtml}</div>`;
+  msgs.appendChild(block);
+  scrollToBottom();
+
+  // Fetch all in parallel
+  const promises = selectedIds.map(async (id) => {
+    const d = AI_TEAM[id];
     try {
-      const resp = await fetch(
-        'https://wjhgezvrxlhpexocfsea.supabase.co/rest/v1/sales_orders?limit=1',
-        {
-          headers: {
-            'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndqaGdlenZyeGxocGV4b2Nmc2VhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg1MDU4NzgsImV4cCI6MjA5NDA4MTg3OH0.jENcrgEDYDlSRUCqve-T6rxYRJfz-dnZQHnXpPLJ_RE',
-            'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndqaGdlenZyeGxocGV4b2Nmc2VhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg1MDU4NzgsImV4cCI6MjA5NDA4MTg3OH0.jENcrgEDYDlSRUCqve-T6rxYRJfz-dnZQHnXpPLJ_RE',
-          }
-        }
-      );
-      if (resp.ok) {
-        statusEl.textContent = 'Supabase 已连接';
-        statusEl.style.color = '#10b981';
-      } else {
-        statusEl.textContent = 'Supabase 连接异常';
-        statusEl.style.color = '#f59e0b';
+      const data = await fetchDataForRole(id);
+      const context = formatDataAsContext(data);
+      const messages = [{ role: 'user', content: text + context }];
+      const reply = await callClaude(d.systemPrompt, messages);
+
+      const card = document.getElementById(`resp-${id}`);
+      if (card) {
+        card.classList.remove('loading');
+        card.querySelector('.director-response-body').innerHTML = md(reply);
       }
     } catch (e) {
-      statusEl.textContent = '无法连接 Supabase';
-      statusEl.style.color = '#ef4444';
-    }
-  }
-
-  // ── Select Director ──
-  window.selectDirector = function(id) {
-    activeDirector = AI_TEAM[id];
-
-    // Update sidebar active state
-    document.querySelectorAll('.director-card').forEach(c => c.classList.remove('active'));
-    const card = document.getElementById(`card-${id}`);
-    card.classList.add('active');
-    card.style.setProperty('--active-color', activeDirector.color);
-
-    // Update header
-    document.getElementById('header-avatar').textContent = activeDirector.emoji;
-    document.getElementById('header-avatar').style.background = `${activeDirector.color}22`;
-    document.getElementById('header-name').textContent = `${activeDirector.name} · ${activeDirector.title}`;
-    document.getElementById('header-desc').textContent = activeDirector.description;
-
-    // Update input color
-    document.querySelector('.input-wrapper').style.setProperty('--active-color', activeDirector.color);
-    document.querySelector('.send-btn').style.background = activeDirector.color;
-
-    // Enable input
-    document.getElementById('chat-input').disabled = false;
-    document.getElementById('send-btn').disabled = false;
-    document.getElementById('chat-input').placeholder = `问 ${activeDirector.name}...`;
-    document.getElementById('chat-input').focus();
-
-    // Render messages
-    renderMessages();
-  };
-
-  function renderMessages() {
-    const container = document.getElementById('messages');
-    const history = conversationHistory[activeDirector.id];
-
-    if (history.length === 0) {
-      container.innerHTML = getWelcomeScreen();
-    } else {
-      container.innerHTML = '';
-      history.forEach(msg => appendMessage(msg.role, msg.content));
-    }
-  }
-
-  function getWelcomeScreen() {
-    const quickPrompts = getQuickPrompts(activeDirector.id);
-    const promptsHtml = quickPrompts.map(p =>
-      `<button class="quick-btn" onclick="useQuickPrompt('${escapeHtml(p)}')">${p}</button>`
-    ).join('');
-
-    return `
-      <div class="welcome">
-        <div class="welcome-emoji">${activeDirector.emoji}</div>
-        <h3>你好！我是${activeDirector.name}</h3>
-        <p style="color: ${activeDirector.color}; font-weight:600">${activeDirector.title}</p>
-        <p style="margin-top:6px">${activeDirector.description}</p>
-        <div class="quick-prompts" style="--active-color: ${activeDirector.color}">
-          ${promptsHtml}
-        </div>
-      </div>
-    `;
-  }
-
-  function getQuickPrompts(id) {
-    const prompts = {
-      xuanxuan: ['给我今天的简报', '有哪些未提交报告？', '本月目标达成率？', '今天必做的3件事'],
-      xiaoxiao: ['本月各人业绩进度', 'KPM vs 上月对比', 'MT客户本月状况', '新人Chris/Chin/Raymond表现'],
-      qianqian: ['7-Eleven这个月亏了多少？', '各客户margin排名', '有没有margin跌破10%的客户？', '本月财务总结'],
-      chongchong: ['帮我写Kampua Mee文案', '针对荤食者的推广方向', '本月促销活动ROI', '7-Eleven/MYNEWS推广建议'],
-      shunshun: ['哪些产品快到期？', '各销售员拜访次数排名', 'Wan巡店进度', '有哪些逾期任务？'],
-      diandian: ['电商本月总业绩', 'Shopee vs TikTok对比', '重点SKU电商表现', '下月电商策略建议'],
-      longlong: ['Jason本月中国市场进度', '各渠道贡献比例', '博主合作效果如何？', '下月中国策略建议'],
-    };
-    return prompts[id] || ['帮我分析一下', '本月总结', '有什么需要注意的？'];
-  }
-
-  window.useQuickPrompt = function(text) {
-    document.getElementById('chat-input').value = text;
-    sendMessage();
-  };
-
-  // ── Send Message ──
-  window.sendMessage = async function() {
-    if (!activeDirector || isLoading) return;
-    const input = document.getElementById('chat-input');
-    const text = input.value.trim();
-    if (!text) return;
-
-    input.value = '';
-    input.style.height = 'auto';
-    isLoading = true;
-    document.getElementById('send-btn').disabled = true;
-
-    // Hide welcome, add user message
-    document.getElementById('messages').innerHTML = '';
-    conversationHistory[activeDirector.id].push({ role: 'user', content: text });
-    renderMessages();
-
-    // Add typing indicator
-    const typingId = addTypingIndicator();
-
-    try {
-      // Step 1: Fetch Supabase data
-      updateTyping(typingId, '正在读取 Supabase 数据...');
-      const data = await getDataWithCache(activeDirector.id);
-      const dataContext = formatDataAsContext(data);
-
-      // Step 2: Build messages for Claude
-      const history = conversationHistory[activeDirector.id];
-      const messages = history.map(m => ({ role: m.role, content: m.content }));
-
-      // Inject data context into last user message
-      messages[messages.length - 1].content = text + dataContext;
-
-      updateTyping(typingId, `${activeDirector.name} 正在思考...`);
-
-      // Step 3: Call Claude via API route
-      const response = await fetch('/api/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          system: activeDirector.systemPrompt,
-          messages: messages,
-        }),
-      });
-
-      removeTyping(typingId);
-
-      if (!response.ok) {
-        const err = await response.json();
-        throw new Error(err.error || 'API error');
+      const card = document.getElementById(`resp-${id}`);
+      if (card) {
+        card.classList.remove('loading');
+        card.querySelector('.director-response-body').innerHTML =
+          `<span style="color:#ef4444">⚠️ 错误：${escHtml(e.message)}</span>`;
       }
-
-      const result = await response.json();
-      const reply = result.response;
-
-      // Save and render reply
-      conversationHistory[activeDirector.id].push({ role: 'assistant', content: reply });
-      renderMessages();
-      scrollToBottom();
-
-    } catch (error) {
-      removeTyping(typingId);
-      console.error('Error:', error);
-      showToast(`错误：${error.message}`, 'error');
-      // Remove failed user message
-      conversationHistory[activeDirector.id].pop();
-      renderMessages();
     }
+  });
 
-    isLoading = false;
-    document.getElementById('send-btn').disabled = false;
-    input.focus();
-  };
+  await Promise.allSettled(promises);
+  scrollToBottom();
+}
 
-  async function getDataWithCache(roleId) {
-    const cache = cachedData[roleId];
-    const now = Date.now();
-    if (cache && (now - cache.timestamp) < CACHE_TTL) {
-      return cache.data;
-    }
-    const data = await fetchDataForRole(roleId);
-    cachedData[roleId] = { data, timestamp: now };
-    return data;
+// ── Claude API call ──
+async function callClaude(system, messages) {
+  const response = await fetch('/api/chat', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ system, messages }),
+  });
+  if (!response.ok) {
+    const err = await response.json().catch(() => ({}));
+    throw new Error(err.error || `API error ${response.status}`);
   }
+  const result = await response.json();
+  return result.response;
+}
 
-  window.refreshData = async function() {
-    if (!activeDirector) return;
-    cachedData[activeDirector.id] = null;
-    showToast('数据已刷新 ✓', 'success');
-  };
-
-  window.clearChat = function() {
-    if (!activeDirector) return;
-    conversationHistory[activeDirector.id] = [];
-    renderMessages();
-  };
-
-  // ── Message Rendering ──
-  function appendMessage(role, content) {
-    const container = document.getElementById('messages');
-    const div = document.createElement('div');
-    div.className = `message ${role}`;
-
-    const avatarContent = role === 'user' ? 'HQ' : activeDirector.emoji;
-    const avatarStyle = role === 'assistant'
-      ? `background: ${activeDirector.color}22`
-      : '';
-
-    div.innerHTML = `
-      <div class="message-avatar" style="${avatarStyle}">${avatarContent}</div>
-      <div class="message-content">${markdownToHtml(content)}</div>
-    `;
-    container.appendChild(div);
-  }
-
-  function markdownToHtml(text) {
-    return text
-      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-      .replace(/```[\s\S]*?```/g, m => `<pre><code>${m.slice(3, -3).replace(/^[a-z]+\n/, '')}</code></pre>`)
-      .replace(/`([^`]+)`/g, '<code>$1</code>')
-      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-      .replace(/\*(.*?)\*/g, '<em>$1</em>')
-      .replace(/^### (.*$)/gm, '<h4>$1</h4>')
-      .replace(/^## (.*$)/gm, '<h3>$1</h3>')
-      .replace(/^# (.*$)/gm, '<h2>$1</h2>')
-      .replace(/^[-•] (.+)$/gm, '<li>$1</li>')
-      .replace(/(<li>.*<\/li>)/s, '<ul>$1</ul>')
-      .replace(/\n\n/g, '</p><p>')
-      .replace(/^(?!<[h|u|l|p])(.+)$/gm, '<p>$1</p>')
-      .replace(/<p><\/p>/g, '');
-  }
-
-  function addTypingIndicator() {
-    const id = 'typing-' + Date.now();
-    const container = document.getElementById('messages');
-    const div = document.createElement('div');
-    div.id = id;
-    div.className = 'message assistant';
-    div.innerHTML = `
-      <div class="message-avatar" style="background: ${activeDirector.color}22">${activeDirector.emoji}</div>
-      <div class="message-content">
-        <div class="data-loading-badge" id="loading-badge-${id}">
-          <span class="spin">⟳</span> 正在加载数据...
-        </div>
-        <div class="typing-indicator">
-          <div class="typing-dot"></div>
-          <div class="typing-dot"></div>
-          <div class="typing-dot"></div>
-        </div>
+// ── Helpers ──
+function addSingleTyping() {
+  const container = document.getElementById('messages');
+  const div = document.createElement('div');
+  div.className = 'message assistant';
+  div.innerHTML = `
+    <div class="message-avatar" style="background:${activeDirector.color}22">${activeDirector.emoji}</div>
+    <div class="message-content">
+      <span style="font-size:11px;color:var(--text-muted)"><span class="spin">⟳</span> 读取数据中...</span>
+      <div class="typing-indicator" style="margin-top:6px">
+        <div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>
       </div>
-    `;
-    container.appendChild(div);
-    scrollToBottom();
-    return id;
+    </div>`;
+  container.appendChild(div);
+  return div;
+}
+
+window.clearChat = function() {
+  if (mode === 'single' && activeDirector) {
+    singleHistory[activeDirector.id] = [];
+    renderSingleMessages();
+  } else if (mode === 'multi') {
+    document.getElementById('messages').innerHTML = `
+      <div class="welcome">
+        <div class="welcome-emoji">👥</div>
+        <h3>多问模式</h3>
+        <p>勾选左侧总监，同时向多人提问</p>
+      </div>`;
   }
+};
 
-  function updateTyping(id, text) {
-    const badge = document.getElementById(`loading-badge-${id}`);
-    if (badge) badge.innerHTML = `<span class="spin">⟳</span> ${text}`;
-  }
+window.refreshData = function() {
+  showToast('下次提问将重新读取最新数据 ✓', 'success');
+};
 
-  function removeTyping(id) {
-    const el = document.getElementById(id);
-    if (el) el.remove();
-  }
+window.useQuickPrompt = function(text) {
+  document.getElementById('chat-input').value = text;
+  sendMessage();
+};
 
-  function scrollToBottom() {
-    const container = document.getElementById('messages');
-    setTimeout(() => container.scrollTop = container.scrollHeight, 50);
-  }
+function enableInput(placeholder) {
+  const input = document.getElementById('chat-input');
+  input.disabled = false;
+  input.placeholder = placeholder || '问 AI 总监...';
+  document.getElementById('send-btn').disabled = false;
+}
 
-  function escapeHtml(str) {
-    return str.replace(/'/g, "\\'").replace(/"/g, '&quot;');
-  }
+function disableInput() {
+  document.getElementById('chat-input').disabled = true;
+  document.getElementById('chat-input').placeholder = '问 AI 总监...';
+  document.getElementById('send-btn').disabled = true;
+}
 
-  // ── Toast ──
-  function showToast(msg, type = '') {
-    const toast = document.getElementById('toast');
-    toast.textContent = msg;
-    toast.className = `toast ${type} show`;
-    setTimeout(() => toast.className = 'toast', 3000);
-  }
+function scrollToBottom() {
+  const c = document.getElementById('messages');
+  setTimeout(() => c.scrollTop = c.scrollHeight, 60);
+}
 
-  // ── Keyboard ──
-  document.getElementById('chat-input').addEventListener('keydown', (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      sendMessage();
-    }
-  });
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
 
-  document.getElementById('chat-input').addEventListener('input', function() {
-    this.style.height = 'auto';
-    this.style.height = Math.min(this.scrollHeight, 120) + 'px';
-  });
+function md(text) {
+  return text
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/```[\s\S]*?```/g, m => `<pre><code>${m.slice(3,-3).replace(/^[a-z]+\n/,'')}</code></pre>`)
+    .replace(/`([^`]+)`/g,'<code>$1</code>')
+    .replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>')
+    .replace(/\*(.*?)\*/g,'<em>$1</em>')
+    .replace(/^### (.+)$/gm,'<h4>$1</h4>')
+    .replace(/^## (.+)$/gm,'<h3>$1</h3>')
+    .replace(/^[-•] (.+)$/gm,'<li>$1</li>')
+    .replace(/(<li>[\s\S]+?<\/li>)/g,'<ul>$1</ul>')
+    .replace(/\n\n+/g,'</p><p>')
+    .replace(/^(?!<[hpuo])(.+)$/gm,'<p>$1</p>')
+    .replace(/<p><\/p>/g,'');
+}
+
+function showToast(msg, type='') {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.className = `toast ${type} show`;
+  setTimeout(() => t.className = 'toast', 3000);
+}
+
+function getQuickPrompts(id) {
+  const map = {
+    xuanxuan: ['给我今天的简报','未提交报告有谁？','今天必做的3件事'],
+    xiaoxiao: ['本月各人业绩进度','KPM vs 上月对比','MT客户本月状况'],
+    qianqian: ['7-Eleven亏了多少？','各客户margin排名','本月财务总结'],
+    chongchong: ['写Kampua Mee文案','针对荤食者推广方向','本月促销ROI'],
+    shunshun: ['哪些产品快到期？','各人拜访次数排名','有哪些逾期任务？'],
+    diandian: ['电商本月总业绩','重点SKU电商表现','下月电商策略'],
+    longlong: ['Jason本月进度','各渠道贡献比例','下月中国策略'],
+  };
+  return map[id] || ['帮我分析','本月总结','有什么要注意的？'];
+}
+
+// Keyboard
+document.getElementById('chat-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+});
+document.getElementById('chat-input').addEventListener('input', function() {
+  this.style.height = 'auto';
+  this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+});
 </script>
-
 </body>
 </html>
