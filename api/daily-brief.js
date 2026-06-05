@@ -8,7 +8,7 @@ const TELEGRAM_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID;
 const ANTHROPIC_KEY = process.env.ANTHROPIC_API_KEY;
 
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   // 安全验证：只接受 Vercel Cron 或带正确 secret 的请求
   const authHeader = req.headers.authorization;
   if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {

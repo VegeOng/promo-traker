@@ -2,7 +2,7 @@
 // Vercel Serverless Function — Claude API proxy
 // API key 安全存在 Vercel 环境变量，不会暴露给前端
 
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   // 只接受 POST
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
