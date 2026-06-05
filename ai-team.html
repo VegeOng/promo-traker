@@ -1148,6 +1148,66 @@ function formatDataAsContext(data) {
     }
   }
 
+  // ── 钱钱：财务分析（allOrders 历史数据）──
+  if (data.allOrders && data.allOrders.length > 0 && !data.thisMonthOrders) {
+    const { year, month } = getDateRanges();
+    const thisMonth = data.allOrders.filter(r => parseInt(r['YEAR']) === year && parseInt(r['MONTH']) === month);
+    const lastMonth = month === 1
+      ? data.allOrders.filter(r => parseInt(r['YEAR']) === year - 1 && parseInt(r['MONTH']) === 12)
+      : data.allOrders.filter(r => parseInt(r['YEAR']) === year && parseInt(r['MONTH']) === month - 1);
+
+    const thisTotal = thisMonth.reduce((s, r) => s + (parseFloat(r['TOTAL (RM)']) || 0), 0);
+    const lastTotal = lastMonth.reduce((s, r) => s + (parseFloat(r['TOTAL (RM)']) || 0), 0);
+
+    ctx += `\n💰 财务数据：\n`;
+    ctx += `  本月总销售：RM ${thisTotal.toFixed(2)}\n`;
+    ctx += `  上月总销售：RM ${lastTotal.toFixed(2)}\n`;
+
+    // 按客户分析 margin（已知扣款结构）
+    const marginConfig = {
+      'LOTUS': { name: "Lotus's", deduction: 13.9 },
+      'MYNEWS': { name: 'MYNEWS/MYCU', deduction: 9.0 },
+      'AEON': { name: 'AEON', deduction: 10.0 },
+      'JAYA GROCER': { name: 'Jaya Grocer', deduction: 6.5 },
+      '7 ELEVEN': { name: '7-Eleven', deduction: 61.0, warning: true },
+    };
+    ctx += `\nMT 客户扣款后净收入：\n`;
+    Object.entries(marginConfig).forEach(([key, cfg]) => {
+      const orders = thisMonth.filter(r => (r['COMPANY'] || '').toUpperCase().includes(key));
+      const gross = orders.reduce((s, r) => s + (parseFloat(r['TOTAL (RM)']) || 0), 0);
+      const net = gross * (1 - cfg.deduction / 100);
+      if (gross > 0) {
+        const warn = cfg.warning ? ' ⚠️ 结构性亏损！' : '';
+        ctx += `  - ${cfg.name}: 毛 RM ${gross.toFixed(2)} → 净 RM ${net.toFixed(2)}（扣 ${cfg.deduction}%）${warn}\n`;
+      }
+    });
+  }
+
+  // ── 顺顺：运营数据 ──
+  if (data.visitRecent && data.visitRecent.length > 0) {
+    const { today } = getDateRanges();
+    const byPerson = {};
+    data.visitRecent.forEach(v => {
+      const name = v.rep_name || 'Unknown';
+      byPerson[name] = (byPerson[name] || 0) + 1;
+    });
+    ctx += `\n👣 本周拜访汇总：\n`;
+    const salesTeam = ['VEGE', 'CAROL', 'CHRIS', 'CHIN', 'RAYMOND'];
+    salesTeam.forEach(name => {
+      const count = byPerson[name] || byPerson[name.toLowerCase()] || 0;
+      const warn = count === 0 ? ' ⚠️ 本周零拜访！' : '';
+      ctx += `  - ${name}: ${count} 次${warn}\n`;
+    });
+  }
+
+  if (data.stockChecks && data.stockChecks.length > 0) {
+    const low = data.stockChecks.filter(s => s.stock_level === 'low' || s.quantity <= 5);
+    if (low.length > 0) {
+      ctx += `\n📦 库存告急门店：${low.length} 家\n`;
+      low.slice(0, 5).forEach(s => ctx += `  - ${s.outlet_name || s.outlet_id}: ${s.product_code || ''}\n`);
+    }
+  }
+
   return ctx;
 }
 
