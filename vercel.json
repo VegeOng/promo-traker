@@ -1,4 +1,12 @@
 {
+  "functions": {
+    "api/chat.js": {
+      "runtime": "nodejs20.x"
+    },
+    "api/daily-brief.js": {
+      "runtime": "nodejs20.x"
+    }
+  },
   "rewrites": [
     { "source": "/", "destination": "/index.html" },
     { "source": "/fill", "destination": "/promo-fill.html" },
