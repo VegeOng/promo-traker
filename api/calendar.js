@@ -10,12 +10,13 @@ module.exports = async function handler(req, res) {
   const apiKey = process.env.GOOGLE_CALENDAR_API_KEY;
   const calendarId = 'ohy4896@gmail.com';
 
-  // 今天和 3 天后
-  const now = new Date();
   // 马来西亚时间 UTC+8
+  const now = new Date();
   const myt = new Date(now.getTime() + 8 * 60 * 60 * 1000);
-  const timeMin = new Date(myt.getFullYear(), myt.getMonth(), myt.getDate()).toISOString();
-  const timeMax = new Date(myt.getFullYear(), myt.getMonth(), myt.getDate() + 4).toISOString();
+  const todayStr = myt.toISOString().split('T')[0]; // YYYY-MM-DD in MYT
+  const in4DaysStr = new Date(myt.getTime() + 4 * 86400000).toISOString().split('T')[0];
+  const timeMin = `${todayStr}T00:00:00+08:00`;
+  const timeMax = `${in4DaysStr}T23:59:59+08:00`;
 
   try {
     const url = `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(calendarId)}/events?key=${apiKey}&timeMin=${timeMin}&timeMax=${timeMax}&singleEvents=true&orderBy=startTime&maxResults=20`;
