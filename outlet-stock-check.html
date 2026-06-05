@@ -716,11 +716,13 @@ function resetForm() {
 
 // ── Submit ──
 async function submitForm() {
-  const region=document.getElementById('f-region').value.trim();
+  const region=document.getElementById('f-region').value;
   const date=document.getElementById('f-date').value;
   const outletId=document.getElementById('f-outlet').value;
   const agent=document.getElementById('f-agent').value.trim();
+  const checkBy=document.getElementById('f-checkby').value;
   if(!outletId||!date){ showToast('Please fill in Outlet and Date.', true); return; }
+  if(!checkBy){ showToast('Please select Check By.', true); return; }
 
   const rows=document.querySelectorAll('#productsList .product-row');
   const prods=[];
