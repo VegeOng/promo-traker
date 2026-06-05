@@ -982,7 +982,7 @@ async function fetchFinanceData() {
   const thisMonthOrders = allOrders.filter(r =>
     parseInt(r['YEAR']) === year && parseInt(r['MONTH']) === month
   );
-  return { allOrders, thisMonthOrders, dateRanges: getDateRanges() };
+  return { allOrders, thisMonthOrders, isFinanceRole: true, dateRanges: getDateRanges() };
 }
 
 async function fetchOpsData() {
@@ -1148,10 +1148,10 @@ function formatDataAsContext(data) {
     }
   }
 
-  // ── 钱钱：财务分析（allOrders 历史数据）──
-  if (data.allOrders && data.allOrders.length > 0 && !data.thisMonthOrders) {
+  // ── 钱钱：财务分析（只有财务角色才显示）──
+  if (data.isFinanceRole && data.thisMonthOrders) {
     const { year, month } = getDateRanges();
-    const thisMonth = data.allOrders.filter(r => parseInt(r['YEAR']) === year && parseInt(r['MONTH']) === month);
+    const thisMonth = data.thisMonthOrders;
     const lastMonth = month === 1
       ? data.allOrders.filter(r => parseInt(r['YEAR']) === year - 1 && parseInt(r['MONTH']) === 12)
       : data.allOrders.filter(r => parseInt(r['YEAR']) === year && parseInt(r['MONTH']) === month - 1);
@@ -1163,7 +1163,6 @@ function formatDataAsContext(data) {
     ctx += `  本月总销售：RM ${thisTotal.toFixed(2)}\n`;
     ctx += `  上月总销售：RM ${lastTotal.toFixed(2)}\n`;
 
-    // 按客户分析 margin（已知扣款结构）
     const marginConfig = {
       'LOTUS': { name: "Lotus's", deduction: 13.9 },
       'MYNEWS': { name: 'MYNEWS/MYCU', deduction: 9.0 },
@@ -1172,12 +1171,13 @@ function formatDataAsContext(data) {
       '7 ELEVEN': { name: '7-Eleven', deduction: 61.0, warning: true },
     };
     ctx += `\nMT 客户扣款后净收入：\n`;
+    ctx += `  🚨 重要：7-Eleven 是结构性亏损，绝对不能建议提高销量！\n`;
     Object.entries(marginConfig).forEach(([key, cfg]) => {
       const orders = thisMonth.filter(r => (r['COMPANY'] || '').toUpperCase().includes(key));
       const gross = orders.reduce((s, r) => s + (parseFloat(r['TOTAL (RM)']) || 0), 0);
       const net = gross * (1 - cfg.deduction / 100);
       if (gross > 0) {
-        const warn = cfg.warning ? ' ⚠️ 结构性亏损！' : '';
+        const warn = cfg.warning ? ' 🚨 卖越多亏越多！建议：重谈扣款/换产品/重新评估合作' : '';
         ctx += `  - ${cfg.name}: 毛 RM ${gross.toFixed(2)} → 净 RM ${net.toFixed(2)}（扣 ${cfg.deduction}%）${warn}\n`;
       }
     });
