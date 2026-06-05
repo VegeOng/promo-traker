@@ -979,7 +979,6 @@ async function fetchGoogleSheets() {
 }
 
 // ── 主数据获取函数 ──
-// ── 读取 Google Calendar ──
 async function fetchCalendar() {
   try {
     const r = await fetch('/api/calendar');
@@ -992,6 +991,7 @@ async function fetchCalendar() {
   }
 }
 
+// ── 根据角色返回数据 ──
 async function fetchSalesData() {
   const { year, month, yesterday, weekAgo, today } = getDateRanges();
 
