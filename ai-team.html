@@ -1161,14 +1161,74 @@ function getDateRanges() {
 // ═══════════════════════════════════════
 
 // ── State ──
-let mode = 'single';                  // 'single' | 'multi'
-let activeDirector = null;            // single mode
-let selectedDirectors = new Set();    // multi mode
-let singleHistory = {};               // roleId -> [{role,content}]
-let multiHistory = [];                // [{question, responses:[{director,content}]}]
+let mode = 'single';
+let activeDirector = null;
+let selectedDirectors = new Set();
+let singleHistory = {};
+let multiHistory = [];
 let isLoading = false;
 
+const SUPABASE_URL = 'https://wjhgezvrxlhpexocfsea.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndqaGdlenZyeGxocGV4b2Nmc2VhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg1MDU4NzgsImV4cCI6MjA5NDA4MTg3OH0.jENcrgEDYDlSRUCqve-T6rxYRJfz-dnZQHnXpPLJ_RE';
+
 const directors = Object.values(AI_TEAM);
+
+// ── Supabase: 保存一条消息 ──
+async function saveMessage(directorId, directorName, role, content) {
+  try {
+    await fetch(`${SUPABASE_URL}/rest/v1/ai_conversations`, {
+      method: 'POST',
+      headers: {
+        'apikey': SUPABASE_KEY,
+        'Authorization': `Bearer ${SUPABASE_KEY}`,
+        'Content-Type': 'application/json',
+        'Prefer': 'return=minimal',
+      },
+      body: JSON.stringify({ director_id: directorId, director_name: directorName, role, content }),
+    });
+  } catch (e) {
+    console.warn('Save message failed:', e.message);
+  }
+}
+
+// ── Supabase: 读取某个总监的历史记录 ──
+async function loadHistory(directorId) {
+  try {
+    const r = await fetch(
+      `${SUPABASE_URL}/rest/v1/ai_conversations?director_id=eq.${directorId}&order=created_at.asc&limit=100`,
+      {
+        headers: {
+          'apikey': SUPABASE_KEY,
+          'Authorization': `Bearer ${SUPABASE_KEY}`,
+        },
+      }
+    );
+    if (!r.ok) return [];
+    const data = await r.json();
+    return data.map(row => ({ role: row.role, content: row.content }));
+  } catch (e) {
+    console.warn('Load history failed:', e.message);
+    return [];
+  }
+}
+
+// ── Supabase: 清除某个总监的历史记录 ──
+async function clearHistory(directorId) {
+  try {
+    await fetch(
+      `${SUPABASE_URL}/rest/v1/ai_conversations?director_id=eq.${directorId}`,
+      {
+        method: 'DELETE',
+        headers: {
+          'apikey': SUPABASE_KEY,
+          'Authorization': `Bearer ${SUPABASE_KEY}`,
+        },
+      }
+    );
+  } catch (e) {
+    console.warn('Clear history failed:', e.message);
+  }
+}
 
 // ── Init ──
 window.addEventListener('DOMContentLoaded', () => {
@@ -1262,7 +1322,7 @@ function handleCardClick(id) {
 }
 
 // ── Single mode ──
-function selectSingle(id) {
+async function selectSingle(id) {
   activeDirector = AI_TEAM[id];
   document.querySelectorAll('.director-card').forEach(c => c.classList.remove('single-active'));
   document.getElementById(`card-${id}`).classList.add('single-active');
@@ -1276,6 +1336,12 @@ function selectSingle(id) {
   document.querySelector('.send-btn').style.background = activeDirector.color || '#166534';
 
   enableInput(`问 ${activeDirector.name}...`);
+
+  // 从 Supabase 加载历史记录
+  const msgs = document.getElementById('messages');
+  msgs.innerHTML = `<div class="welcome"><div class="welcome-emoji">⟳</div><p style="color:var(--text-muted)">加载历史记录...</p></div>`;
+  const history = await loadHistory(id);
+  singleHistory[id] = history;
   renderSingleMessages();
 }
 
@@ -1427,6 +1493,9 @@ async function sendSingle(text) {
   document.getElementById('messages').innerHTML = '';
   singleHistory[activeDirector.id].forEach(m => appendSingleMessage(m.role, m.content));
 
+  // 保存用户消息到 Supabase
+  saveMessage(activeDirector.id, activeDirector.name, 'user', text);
+
   // Typing indicator
   const typingEl = addSingleTyping();
   scrollToBottom();
@@ -1444,6 +1513,10 @@ async function sendSingle(text) {
     typingEl.remove();
     singleHistory[activeDirector.id].push({ role: 'assistant', content: reply });
     appendSingleMessage('assistant', reply);
+
+    // 保存 AI 回复到 Supabase
+    saveMessage(activeDirector.id, activeDirector.name, 'assistant', reply);
+
     scrollToBottom();
   } catch (e) {
     typingEl.remove();
@@ -1549,10 +1622,12 @@ function addSingleTyping() {
   return div;
 }
 
-window.clearChat = function() {
+window.clearChat = async function() {
   if (mode === 'single' && activeDirector) {
     singleHistory[activeDirector.id] = [];
+    await clearHistory(activeDirector.id);
     renderSingleMessages();
+    showToast('对话记录已清除 ✓', 'success');
   } else if (mode === 'multi') {
     document.getElementById('messages').innerHTML = `
       <div class="welcome">
