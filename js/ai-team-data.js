@@ -1,266 +1,255 @@
 // ai-team-data.js
-// Supabase 实时数据读取模块（已按实际列名修正）
+// 数据来源：Google Sheets API（主力）+ Supabase（拜访/任务/促销）
+
+const GOOGLE_SHEETS_API = 'https://script.google.com/macros/s/AKfycbwxt23ZB0od7EeBSNvjurKTbkDcM7HLgrWhuoqHc3meKWmhbB0XQzfOdB-X2Pj5O_MY/exec';
 
 const SUPABASE_URL = 'https://wjhgezvrxlhpexocfsea.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndqaGdlenZyeGxocGV4b2Nmc2VhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg1MDU4NzgsImV4cCI6MjA5NDA4MTg3OH0.jENcrgEDYDlSRUCqve-T6rxYRJfz-dnZQHnXpPLJ_RE';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndqaGdlenZyeGxocGV4b2Nmc2VhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg1MDU4NzgsImV4cCI6MjA5NDA4MTg3OH0.jENcrgEDYDlSRUCqve-T6rxYRJfz-dnZQHnXpPLJ_RE';
 
-// 通用查询
+const CORE_SKUS = ['KPM', 'CLM', 'SMTS', 'SMCL'];
+
+// ── 日期工具 ──
+function getDateRanges() {
+  const now = new Date();
+  const today = now.toISOString().split('T')[0];
+  const year = now.getFullYear();
+  const month = now.getMonth() + 1;
+  const yesterday = new Date(now - 86400000).toISOString().split('T')[0];
+  const weekAgo = new Date(now - 7 * 86400000).toISOString().split('T')[0];
+  return { today, yesterday, year, month, weekAgo };
+}
+
+// ── Supabase 查询 ──
 async function supabaseQuery(table, params = '') {
   try {
-    const response = await fetch(
-      `${SUPABASE_URL}/rest/v1/${table}${params ? '?' + params : ''}`,
-      {
-        headers: {
-          'apikey': SUPABASE_ANON_KEY,
-          'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
-          'Content-Type': 'application/json',
-        },
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/${table}${params ? '?' + params : ''}`, {
+      headers: {
+        'apikey': SUPABASE_KEY,
+        'Authorization': `Bearer ${SUPABASE_KEY}`,
       }
-    );
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.warn(`Supabase ${table} error ${response.status}:`, errorText);
-      return [];  // 返回空数组而不是 throw，避免整体崩溃
-    }
-    return await response.json();
-  } catch (error) {
-    console.warn(`Error fetching ${table}:`, error.message);
+    });
+    if (!r.ok) return [];
+    return await r.json();
+  } catch { return []; }
+}
+
+// ── Google Sheets 数据（主力销售数据）──
+async function fetchGoogleSheets() {
+  try {
+    const r = await fetch(GOOGLE_SHEETS_API);
+    const json = await r.json();
+    return json.data || [];
+  } catch (e) {
+    console.warn('Google Sheets fetch failed:', e.message);
     return [];
   }
 }
 
-// 日期范围
-function getDateRanges() {
-  const now = new Date();
-  const today = now.toISOString().split('T')[0];
-  const monthStart = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`;
-  const yesterday = new Date(now - 86400000).toISOString().split('T')[0];
-  const weekAgo = new Date(now - 7 * 86400000).toISOString().split('T')[0];
-  const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1).toISOString().split('T')[0];
-  const lastMonthEnd = new Date(now.getFullYear(), now.getMonth(), 0).toISOString().split('T')[0];
-  return { today, yesterday, monthStart, weekAgo, lastMonthStart, lastMonthEnd };
-}
+// ── 主数据获取函数 ──
+async function fetchSalesData() {
+  const { year, month, yesterday, weekAgo, today } = getDateRanges();
 
-// ─────────────────────────────────────────────
-// 销售数据（萱萱 / 笑笑）
-// ─────────────────────────────────────────────
-export async function fetchSalesData() {
-  const { monthStart, yesterday, today } = getDateRanges();
-
-  const [orders, targets, visitYesterday, reports] = await Promise.all([
-    // 本月销售订单
-    supabaseQuery('sales_orders', `order=created_at.desc&created_at=gte.${monthStart}&limit=200`),
-    // 销售目标
-    supabaseQuery('sales_targets', `limit=50`),
-    // 昨日拜访（visit_records 实际列名：rep_name, visit_date）
+  const [allOrders, visitYesterday, reports, tasks] = await Promise.all([
+    fetchGoogleSheets(),
     supabaseQuery('visit_records', `visit_date=gte.${yesterday}&visit_date=lte.${today}&limit=100`),
-    // 每日报告（daily_reports 实际列名：name, date）
     supabaseQuery('daily_reports', `date=gte.${yesterday}&limit=20`),
+    supabaseQuery('tasks', `limit=50`),
   ]);
 
+  // 筛选本月数据
+  const thisMonthOrders = allOrders.filter(r =>
+    parseInt(r['YEAR']) === year && parseInt(r['MONTH']) === month
+  );
+
+  // 筛选上月数据
+  const lastMonth = month === 1 ? 12 : month - 1;
+  const lastMonthYear = month === 1 ? year - 1 : year;
+  const lastMonthOrders = allOrders.filter(r =>
+    parseInt(r['YEAR']) === lastMonthYear && parseInt(r['MONTH']) === lastMonth
+  );
+
   return {
-    orders: orders || [],
-    targets: targets || [],
+    allOrders,
+    thisMonthOrders,
+    lastMonthOrders,
     visitYesterday: visitYesterday || [],
     reports: reports || [],
+    tasks: tasks || [],
     dateRanges: getDateRanges(),
   };
 }
 
-// ─────────────────────────────────────────────
-// 财务数据（钱钱）
-// ─────────────────────────────────────────────
-export async function fetchFinanceData() {
-  const { monthStart } = getDateRanges();
-
-  const [orders, profitConfig] = await Promise.all([
-    supabaseQuery('sales_orders', `created_at=gte.${monthStart}&limit=500`),
-    supabaseQuery('profit_config', `limit=50`),
-  ]);
-
-  return {
-    orders: orders || [],
-    profitConfig: profitConfig || [],
-    dateRanges: getDateRanges(),
-  };
+async function fetchFinanceData() {
+  const { year, month } = getDateRanges();
+  const allOrders = await fetchGoogleSheets();
+  const thisMonthOrders = allOrders.filter(r =>
+    parseInt(r['YEAR']) === year && parseInt(r['MONTH']) === month
+  );
+  return { allOrders, thisMonthOrders, dateRanges: getDateRanges() };
 }
 
-// ─────────────────────────────────────────────
-// 运营数据（顺顺）
-// ─────────────────────────────────────────────
-export async function fetchOpsData() {
-  const { weekAgo } = getDateRanges();
-
-  const [visitRecent, stockChecks, tasks, products] = await Promise.all([
-    // 最近7天拜访（实际列名：rep_name, visit_date, customer_name）
+async function fetchOpsData() {
+  const { weekAgo, today } = getDateRanges();
+  const [visitRecent, tasks, stockChecks] = await Promise.all([
     supabaseQuery('visit_records', `visit_date=gte.${weekAgo}&order=visit_date.desc&limit=200`),
-    // 库存检查
-    supabaseQuery('outlet_stock_checks', `order=created_at.desc&limit=100`),
-    // 任务（实际列名：task_id, description, assigned_to）
     supabaseQuery('tasks', `limit=50`),
-    // 产品列表（实际列名：id, code, created_at — 无 expiry_date）
-    supabaseQuery('products', `limit=50`),
+    supabaseQuery('outlet_stock_checks', `order=created_at.desc&limit=100`),
   ]);
-
   return {
     visitRecent: visitRecent || [],
-    stockChecks: stockChecks || [],
     tasks: tasks || [],
-    products: products || [],
+    stockChecks: stockChecks || [],
     dateRanges: getDateRanges(),
   };
 }
 
-// ─────────────────────────────────────────────
-// 市场数据（冲冲）
-// ─────────────────────────────────────────────
-export async function fetchMarketingData() {
-  const { monthStart } = getDateRanges();
-
-  const [promotions, promoActivities] = await Promise.all([
+async function fetchMarketingData() {
+  const { year, month } = getDateRanges();
+  const [allOrders, promotions, promoActivities] = await Promise.all([
+    fetchGoogleSheets(),
     supabaseQuery('promotions', `limit=30&order=created_at.desc`),
-    supabaseQuery('promo_activities', `created_at=gte.${monthStart}&limit=100`),
+    supabaseQuery('promo_activities', `limit=100`),
   ]);
-
-  return {
-    promotions: promotions || [],
-    promoActivities: promoActivities || [],
-    dateRanges: getDateRanges(),
-  };
+  const thisMonthOrders = allOrders.filter(r =>
+    parseInt(r['YEAR']) === year && parseInt(r['MONTH']) === month
+  );
+  return { thisMonthOrders, promotions: promotions || [], promoActivities: promoActivities || [], dateRanges: getDateRanges() };
 }
 
-// ─────────────────────────────────────────────
-// 根据角色返回数据
-// ─────────────────────────────────────────────
-export async function fetchDataForRole(roleId) {
+// ── 根据角色返回数据 ──
+async function fetchDataForRole(roleId) {
   if (roleId === 'xuanxuan') {
-    const [salesData, opsData] = await Promise.all([
-      fetchSalesData(),
-      fetchOpsData(),
-    ]);
+    const [salesData, opsData] = await Promise.all([fetchSalesData(), fetchOpsData()]);
     return { ...salesData, ...opsData };
   }
-
   const loaders = {
-    xiaoxiao:  fetchSalesData,
-    qianqian:  fetchFinanceData,
+    xiaoxiao:   fetchSalesData,
+    qianqian:   fetchFinanceData,
     chongchong: fetchMarketingData,
-    shunshun:  fetchOpsData,
-    diandian:  fetchSalesData,
-    longlong:  fetchSalesData,
+    shunshun:   fetchOpsData,
+    diandian:   fetchSalesData,
+    longlong:   fetchSalesData,
   };
-
-  const loader = loaders[roleId] || fetchSalesData;
-  return await loader();
+  return await (loaders[roleId] || fetchSalesData)();
 }
 
-// ─────────────────────────────────────────────
-// 格式化数据给 AI 读
-// ─────────────────────────────────────────────
-export function formatDataAsContext(data) {
-  const { today, monthStart } = getDateRanges();
-  let context = `\n\n【实时数据 — ${today}】\n`;
+// ── 格式化数据给 AI 读 ──
+function formatDataAsContext(data) {
+  const { today, month, year } = getDateRanges();
+  let ctx = `\n\n【实时数据 — ${today}】\n`;
 
-  // 销售订单
-  if (data.orders && data.orders.length > 0) {
-    const totalSales = data.orders.reduce((sum, o) => {
-      return sum + (parseFloat(o.total_amount) || parseFloat(o.amount) || 0);
-    }, 0);
-    context += `\n本月销售订单：${data.orders.length} 笔，总金额 RM ${totalSales.toFixed(2)}\n`;
+  // 本月销售（来自 Google Sheets）
+  if (data.thisMonthOrders && data.thisMonthOrders.length > 0) {
+    const orders = data.thisMonthOrders;
+    const totalSales = orders.reduce((s, r) => s + (parseFloat(r['TOTAL (RM)']) || 0), 0);
+    ctx += `\n📊 本月销售（${year}年${month}月）：\n`;
+    ctx += `  总销售额：RM ${totalSales.toFixed(2)}\n`;
+    ctx += `  订单数：${orders.length} 笔\n`;
 
     // 按销售员汇总
-    const bySalesperson = {};
-    data.orders.forEach(o => {
-      const name = o.rep_name || o.salesperson_name || o.salesperson || o.name || 'Unknown';
-      bySalesperson[name] = (bySalesperson[name] || 0) +
-        (parseFloat(o.total_amount) || parseFloat(o.amount) || 0);
+    const bySP = {};
+    orders.forEach(r => {
+      const sp = r['SALES PERSON'] || 'Unknown';
+      bySP[sp] = (bySP[sp] || 0) + (parseFloat(r['TOTAL (RM)']) || 0);
     });
-    if (Object.keys(bySalesperson).length > 0) {
-      context += `\n各销售员本月业绩：\n`;
-      Object.entries(bySalesperson)
-        .sort((a, b) => b[1] - a[1])
-        .forEach(([name, amt]) => {
-          context += `  - ${name}: RM ${amt.toFixed(2)}\n`;
-        });
+    ctx += `\n各销售员本月业绩：\n`;
+    const targets = { VEGE: 200000, CAROL: 100000, CHRIS: 100000, CHIN: 50000, RAYMOND: 50000 };
+    Object.entries(bySP).sort((a, b) => b[1] - a[1]).forEach(([name, amt]) => {
+      const target = targets[name.toUpperCase()] || 0;
+      const pct = target > 0 ? ((amt / target) * 100).toFixed(1) : '-';
+      ctx += `  - ${name}: RM ${amt.toFixed(2)}${target ? ` / 目标 RM ${target.toLocaleString()} (${pct}%)` : ''}\n`;
+    });
+
+    // 重点 SKU 本月 vs 上月
+    ctx += `\n重点 SKU 本月销量：\n`;
+    CORE_SKUS.forEach(sku => {
+      const thisQty = orders.reduce((s, r) => s + (parseFloat(r[sku]) || 0), 0);
+      const lastQty = (data.lastMonthOrders || []).reduce((s, r) => s + (parseFloat(r[sku]) || 0), 0);
+      const trend = thisQty > lastQty ? '↑' : thisQty < lastQty ? '↓' : '→';
+      const diff = lastQty > 0 ? (((thisQty - lastQty) / lastQty) * 100).toFixed(1) : '-';
+      ctx += `  - ${sku}: ${thisQty} 件 ${trend}（上月 ${lastQty} 件${lastQty > 0 ? `，${diff}%` : ''}）\n`;
+    });
+
+    // 按客户汇总 top 5
+    const byCompany = {};
+    orders.forEach(r => {
+      const co = r['COMPANY'] || 'Unknown';
+      byCompany[co] = (byCompany[co] || 0) + (parseFloat(r['TOTAL (RM)']) || 0);
+    });
+    const top5 = Object.entries(byCompany).sort((a, b) => b[1] - a[1]).slice(0, 5);
+    ctx += `\nTop 5 客户本月：\n`;
+    top5.forEach(([name, amt]) => {
+      ctx += `  - ${name}: RM ${amt.toFixed(2)}\n`;
+    });
+
+    // MT 客户有没有下单
+    const mtClients = ['LOTUS', '7 ELEVEN', 'AEON', 'MYNEWS', 'JAYA GROCER', 'VILLAGE GROCER'];
+    const orderedMT = Object.keys(byCompany).map(k => k.toUpperCase());
+    const missingMT = mtClients.filter(mt => !orderedMT.some(o => o.includes(mt)));
+    if (missingMT.length > 0) {
+      ctx += `\n⚠️ 本月还未下单的 MT 客户：${missingMT.join(', ')}\n`;
     }
   } else {
-    context += `\n本月销售订单：暂无数据\n`;
+    ctx += `\n本月销售数据：暂无\n`;
   }
 
-  // 销售目标
-  if (data.targets && data.targets.length > 0) {
-    context += `\n销售目标：\n`;
-    data.targets.slice(0, 10).forEach(t => {
-      const name = t.rep_name || t.name || t.salesperson || '-';
-      const target = t.target_amount || t.monthly_target || t.target || '-';
-      context += `  - ${name}: RM ${target}\n`;
-    });
-  }
-
-  // 昨日拜访记录（实际列名：rep_name, visit_date, customer_name）
+  // 昨日拜访（来自 Supabase）
   if (data.visitYesterday && data.visitYesterday.length > 0) {
     const byPerson = {};
     data.visitYesterday.forEach(v => {
-      const name = v.rep_name || v.salesperson || 'Unknown';
+      const name = v.rep_name || 'Unknown';
       byPerson[name] = (byPerson[name] || 0) + 1;
     });
-    context += `\n昨日拜访记录：\n`;
-    Object.entries(byPerson).forEach(([name, count]) => {
-      context += `  - ${name}: ${count} 家\n`;
-    });
+    ctx += `\n👣 昨日拜访记录：\n`;
+    Object.entries(byPerson).forEach(([n, c]) => ctx += `  - ${n}: ${c} 家\n`);
   } else {
-    context += `\n昨日拜访记录：暂无\n`;
+    ctx += `\n👣 昨日拜访：暂无记录\n`;
   }
 
   // 本周拜访
   if (data.visitRecent && data.visitRecent.length > 0) {
     const byPerson = {};
     data.visitRecent.forEach(v => {
-      const name = v.rep_name || v.salesperson || 'Unknown';
+      const name = v.rep_name || 'Unknown';
       byPerson[name] = (byPerson[name] || 0) + 1;
     });
-    context += `\n本周拜访记录：\n`;
-    Object.entries(byPerson).forEach(([name, count]) => {
-      context += `  - ${name}: ${count} 次\n`;
-    });
+    ctx += `\n本周拜访汇总：\n`;
+    Object.entries(byPerson).forEach(([n, c]) => ctx += `  - ${n}: ${c} 次\n`);
   }
 
-  // 每日报告（实际列名：name, date）
-  if (data.reports && data.reports.length > 0) {
-    const submitters = data.reports.map(r => r.name || r.rep_name || '-');
-    context += `\n已提交日报：${submitters.join(', ')}\n`;
-  } else {
-    context += `\n已提交日报：昨日暂无记录\n`;
+  // 日报提交情况
+  if (data.reports) {
+    const submitted = data.reports.map(r => (r.name || '').toUpperCase());
+    const allSales = ['VEGE', 'CAROL', 'CHRIS', 'CHIN', 'RAYMOND'];
+    const missing = allSales.filter(n => !submitted.includes(n));
+    ctx += `\n📋 昨日日报：\n`;
+    ctx += `  已提交：${submitted.length > 0 ? submitted.join(', ') : '无'}\n`;
+    ctx += `  未提交：${missing.length > 0 ? missing.join(', ') : '全部已提交 ✅'}\n`;
   }
 
-  // 任务（实际列名：task_id, description, assigned_to）
+  // 任务
   if (data.tasks && data.tasks.length > 0) {
-    context += `\n待办任务（${data.tasks.length} 个）：\n`;
-    data.tasks.slice(0, 8).forEach(t => {
-      const desc = t.description || t.title || t.task_name || '-';
-      const assignee = t.assigned_to || t.assignee || '-';
-      const due = t.due_date ? `，截止 ${t.due_date}` : '';
-      const status = t.status || t.completed ? `[${t.status || '进行中'}]` : '[进行中]';
-      context += `  - ${status} ${desc}（${assignee}）${due}\n`;
-    });
-  }
-
-  // 产品列表（实际列名：id, code）
-  if (data.products && data.products.length > 0) {
-    const codes = data.products.map(p => p.code || p.sku_code || p.name).filter(Boolean);
-    context += `\n产品列表：${codes.join(', ')}\n`;
-    context += `注意：products 表目前没有 expiry_date 列，无法做过期预警。\n`;
+    const overdue = data.tasks.filter(t => t.due_date && new Date(t.due_date) < new Date(today));
+    const pending = data.tasks.filter(t => !t.status || t.status !== 'completed');
+    ctx += `\n📌 任务状态：${pending.length} 个进行中`;
+    if (overdue.length > 0) {
+      ctx += `，${overdue.length} 个已逾期⚠️\n`;
+      overdue.slice(0, 5).forEach(t => {
+        ctx += `  - [逾期] ${t.description || t.title}（${t.assigned_to || '-'}）截止 ${t.due_date}\n`;
+      });
+    } else {
+      ctx += `，无逾期 ✅\n`;
+    }
   }
 
   // 促销
   if (data.promotions && data.promotions.length > 0) {
-    context += `\n促销活动（${data.promotions.length} 个）：\n`;
-    data.promotions.slice(0, 5).forEach(p => {
-      const name = p.name || p.promo_name || p.title || '-';
-      const status = p.status || p.is_active ? '进行中' : '-';
-      context += `  - ${name}（${status}）\n`;
-    });
+    const active = data.promotions.filter(p => p.status === 'active' || p.is_active);
+    if (active.length > 0) {
+      ctx += `\n🎯 进行中促销：${active.length} 个\n`;
+      active.slice(0, 3).forEach(p => ctx += `  - ${p.name || p.promo_name}: ${p.start_date} ~ ${p.end_date}\n`);
+    }
   }
 
-  return context;
+  return ctx;
 }
