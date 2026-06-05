@@ -295,6 +295,12 @@ async function loadSalesOverview() {
       <a class="tool live" href="report-hq.html" style="--tc:var(--green)" id="tool-report-hq">
         <div class="tool-icon">🗂️</div><div class="tool-name">HQ Dashboard</div><span class="tbadge tb-live">LIVE</span>
       </a>
+      <!-- AI Team — HQ only -->
+      <a class="tool live" href="ai-team.html" style="--tc:#166534;border-color:#bbf7d0;" id="tool-ai-team">
+        <div class="tool-icon">🤖</div>
+        <div class="tool-name">AI 管理团队</div>
+        <span class="tbadge" style="background:#f0fdf4;color:#166534;border:1px solid #bbf7d0;">HQ ONLY</span>
+      </a>
     </div>
   </div>
 
@@ -427,6 +433,8 @@ function showApp() {
   if (role === "member") {
     const hqTool = document.getElementById("tool-report-hq");
     if (hqTool) hqTool.style.display = "none";
+    const aiTool = document.getElementById("tool-ai-team");
+    if (aiTool) aiTool.style.display = "none";
   }
   initHeader();
   loadStats();

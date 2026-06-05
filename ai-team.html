@@ -4,7 +4,25 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>MamaVege AI Team</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <script>
+    // HQ only — 没登录或不是 HQ 跳回主页
+    (function() {
+      function lsGet(key) {
+        try {
+          const raw = localStorage.getItem(key);
+          if (!raw) return null;
+          const item = JSON.parse(raw);
+          if (Date.now() > item.expiry) { localStorage.removeItem(key); return null; }
+          return item.value;
+        } catch { return null; }
+      }
+      const role = lsGet('userRole');
+      const name = lsGet('userName');
+      if (!name || role !== 'hq') {
+        window.location.href = '/';
+      }
+    })();
+  </script>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&family=Space+Grotesk:wght@400;600;700&display=swap" rel="stylesheet" />
   <style>
     :root {
