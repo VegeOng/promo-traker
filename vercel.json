@@ -14,5 +14,11 @@
         { "key": "Access-Control-Allow-Headers", "value": "Content-Type" }
       ]
     }
+  ],
+  "crons": [
+    {
+      "path": "/api/daily-brief",
+      "schedule": "30 0 * * 1-5"
+    }
   ]
 }
