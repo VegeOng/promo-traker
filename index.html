@@ -33,18 +33,28 @@ body{background:var(--bg);color:var(--t1);font-family:var(--font);min-height:100
 .login-err{background:var(--red-bg);color:var(--red);padding:10px 14px;border-radius:8px;font-size:13px;margin-top:12px;display:none;}
 .login-err.show{display:block;}
 
-.top{display:flex;justify-content:space-between;align-items:center;padding:18px 32px;background:var(--s1);border-bottom:1px solid var(--b1);}
-.brand{display:flex;align-items:center;gap:10px;}
-.brand-icon{width:34px;height:34px;background:var(--green);color:white;border-radius:9px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;}
-.brand-name{font-size:14px;font-weight:800;letter-spacing:.02em;}
-.brand-tag{font-size:10px;font-family:var(--mono);color:var(--t3);letter-spacing:.06em;text-transform:uppercase;margin-top:1px;}
-.top-r{display:flex;align-items:center;gap:14px;}
-.live-dot{width:7px;height:7px;background:var(--green2);border-radius:50%;animation:pulse 2s infinite;}
+.top{border-radius:0;overflow:hidden;}
+.top-main{display:flex;justify-content:space-between;align-items:center;padding:14px 28px;background:var(--green);}
+.top-sub{display:flex;justify-content:space-between;align-items:center;padding:6px 28px;background:#15532d;}
+.brand{display:flex;align-items:center;gap:14px;}
+.brand-logo{height:38px;background:white;border-radius:8px;padding:4px 10px;display:flex;align-items:center;}
+.brand-logo img{height:28px;}
+.brand-tag{font-size:10px;color:rgba(255,255,255,.5);letter-spacing:3px;text-transform:uppercase;}
+.top-r{display:flex;align-items:center;gap:12px;}
+.top-user-info{text-align:right;}
+.top-user-name{color:#fff;font-size:13px;font-weight:700;}
+.top-user-role{color:rgba(255,255,255,.5);font-size:11px;}
+.top-avatar{position:relative;cursor:pointer;}
+.top-avatar-circle{width:42px;height:42px;border-radius:50%;background:rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;color:#fff;font-size:18px;font-weight:700;border:2px solid rgba(255,255,255,.3);overflow:hidden;}
+.top-avatar-circle img{width:100%;height:100%;object-fit:cover;}
+.top-avatar-cam{position:absolute;bottom:-2px;right:-2px;width:16px;height:16px;border-radius:50%;background:var(--red);display:flex;align-items:center;justify-content:center;font-size:8px;color:#fff;}
+.top-sub-left{display:flex;align-items:center;gap:6px;color:rgba(255,255,255,.6);font-size:12px;font-family:var(--mono);}
+.live-dot{width:6px;height:6px;background:var(--green2);border-radius:50%;animation:pulse 2s infinite;}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
-.date-txt{font-size:12px;color:var(--t3);font-family:var(--mono);}
-.user-pill{display:flex;align-items:center;gap:8px;background:var(--s2);padding:6px 12px;border-radius:20px;font-size:12px;font-weight:600;color:var(--t2);}
-.logout-btn{background:none;border:1px solid var(--b1);color:var(--red);padding:5px 12px;border-radius:18px;font-size:12px;cursor:pointer;font-family:var(--font);font-weight:600;}
-.logout-btn:hover{background:var(--red-bg);border-color:var(--red);}
+.top-sub-right{display:flex;gap:8px;}
+.top-sub-pill{color:rgba(255,255,255,.7);font-size:12px;padding:3px 12px;border-radius:4px;background:rgba(255,255,255,.08);font-family:var(--mono);}
+.logout-btn{color:rgba(255,255,255,.7);font-size:12px;padding:3px 12px;border-radius:4px;background:rgba(255,255,255,.08);border:none;cursor:pointer;font-family:var(--mono);}
+.logout-btn:hover{background:rgba(255,255,255,.18);color:#fff;}
 
 .main{max-width:1000px;margin:0 auto;padding:40px 24px;}
 .hero{margin-bottom:36px;}
@@ -210,18 +220,32 @@ async function loadSalesOverview() {
 <div class="app-hidden" id="appView">
 
 <div class="top">
-  <div class="brand">
-    <div class="brand-icon">M</div>
-    <div>
-      <div class="brand-name">MAMAVEGE HUB</div>
-      <div class="brand-tag">Internal Tools</div>
+  <div class="top-main">
+    <div class="brand">
+      <div class="brand-logo"><img src="Mamavege_Logo.png" alt="MamaVege"></div>
+      <div class="brand-tag">Management Hub</div>
+    </div>
+    <div class="top-r">
+      <div class="top-user-info">
+        <div class="top-user-name" id="top-user-name"></div>
+        <div class="top-user-role" id="top-user-role"></div>
+      </div>
+      <div class="top-avatar" onclick="document.getElementById('avatarInput').click()">
+        <div class="top-avatar-circle" id="avatarCircle"></div>
+        <div class="top-avatar-cam">📷</div>
+      </div>
+      <input type="file" id="avatarInput" accept="image/*" style="display:none" onchange="uploadAvatar(this)">
     </div>
   </div>
-  <div class="top-r">
-    <div class="live-dot"></div>
-    <div class="date-txt" id="date-txt"></div>
-    <div class="user-pill" id="user-pill"></div>
-    <button class="logout-btn" onclick="logout()">Logout</button>
+  <div class="top-sub">
+    <div class="top-sub-left">
+      <div class="live-dot"></div>
+      <span id="date-txt"></span>
+    </div>
+    <div class="top-sub-right">
+      <span class="top-sub-pill" id="tool-count">12 tools</span>
+      <button class="logout-btn" onclick="logout()">Logout</button>
+    </div>
   </div>
 </div>
 
@@ -427,8 +451,12 @@ function logout() {
 function showApp() {
   document.getElementById('loginOverlay').style.display = 'none';
   document.getElementById('appView').classList.remove('app-hidden');
-  document.getElementById('user-pill').textContent = '👤 ' + lsGet('userName') + ' (HQ)';
-  document.getElementById('hero-greet').textContent = 'Welcome back, ' + lsGet('userName');
+  const userName = lsGet('userName') || 'User';
+  const userRole = lsGet('userRole') || '';
+  document.getElementById('top-user-name').textContent = userName;
+  document.getElementById('top-user-role').textContent = userRole === 'hq' ? 'HQ Admin' : userRole === 'member' ? 'Member' : userRole;
+  document.getElementById('hero-greet').textContent = 'Welcome back, ' + userName;
+  loadAvatar();
   const role = lsGet("userRole"); const memberRole = lsGet("memberRole");
   if (role === "member") {
     const hqTool = document.getElementById("tool-report-hq");
@@ -446,6 +474,23 @@ function initHeader() {
   const now = new Date();
   document.getElementById('date-txt').textContent = now.toLocaleDateString('en-MY', {weekday:'short', year:'numeric', month:'short', day:'numeric'});
   document.getElementById('footer-r').textContent = 'Loaded at ' + now.toLocaleTimeString('en-MY', {hour:'2-digit', minute:'2-digit'});
+}
+
+function loadAvatar(){
+  const av = localStorage.getItem('mamavege_avatar');
+  const circle = document.getElementById('avatarCircle');
+  const userName = lsGet('userName') || 'U';
+  if(av){circle.innerHTML='<img src="'+av+'" alt="avatar">';}
+  else{circle.textContent=userName.charAt(0).toUpperCase();}
+}
+function uploadAvatar(input){
+  const file=input.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=function(e){
+    localStorage.setItem('mamavege_avatar',e.target.result);
+    loadAvatar();
+  };
+  reader.readAsDataURL(file);
 }
 
 function fmtRM(n){
