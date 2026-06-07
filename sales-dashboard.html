@@ -321,6 +321,20 @@
 .mv-top-btn{background:rgba(255,255,255,.12);border:none;color:rgba(255,255,255,.8);padding:5px 14px;border-radius:6px;font-size:12px;cursor:pointer;font-family:inherit}
 .mv-top-btn:hover{background:rgba(255,255,255,.2);color:#fff}
 .mv-top-sub{display:flex;justify-content:space-between;align-items:center;padding:5px 24px;background:#15532d;color:rgba(255,255,255,.6);font-size:11px}
+
+.mv-top{overflow:hidden}
+.mv-top-main{display:flex;justify-content:space-between;align-items:center;padding:12px 24px;background:#166534}
+.mv-top-left{display:flex;align-items:center;gap:12px}
+.mv-top-logo{height:34px;background:#fff;border-radius:8px;padding:3px 8px;display:flex;align-items:center;text-decoration:none}
+.mv-top-logo img{height:26px}
+.mv-top-sep{width:1px;height:24px;background:rgba(255,255,255,.2)}
+.mv-top-tool{color:#fff;font-size:14px;font-weight:700;letter-spacing:.3px}
+.mv-top-right{display:flex;align-items:center;gap:12px}
+.mv-top-back{color:rgba(255,255,255,.8);text-decoration:none;font-size:13px;font-weight:600}
+.mv-top-back:hover{color:#fff}
+.mv-top-btn{background:rgba(255,255,255,.12);border:none;color:rgba(255,255,255,.8);padding:5px 14px;border-radius:6px;font-size:12px;cursor:pointer;font-family:inherit}
+.mv-top-btn:hover{background:rgba(255,255,255,.2);color:#fff}
+.mv-top-sub{display:flex;justify-content:space-between;align-items:center;padding:5px 24px;background:#15532d;color:rgba(255,255,255,.6);font-size:11px}
 </style>
 </head>
 <body>
@@ -343,6 +357,16 @@
   </div>
 </div>
 <script>document.querySelectorAll('.mv-top-date').forEach(e=>e.textContent=new Date().toLocaleDateString('en-MY',{weekday:'short',year:'numeric',month:'short',day:'numeric'}));</script>
+
+<div class="nav">
+  <button class="nav-btn active" onclick="switchTab('overview', this)">📊 总览</button>
+  <button class="nav-btn" onclick="switchTab('salesperson', this)">👤 业务员</button>
+  <button class="nav-btn" onclick="switchTab('outlet', this)">🏪 客户</button>
+  <button class="nav-btn" onclick="switchTab('product', this)">📦 产品</button>
+  <button class="nav-btn" onclick="switchTab('trend', this)">📈 趋势</button>
+  <a href="performance-hub.html" class="nav-btn" style="color:#dc2626;font-weight:700;text-decoration:none">🎯 业绩管理</a>
+</div>
+
     <div class="grid-2">
       <div class="chart-card">
         <div class="chart-title"><span class="dot" style="background:var(--red)"></span>Top 10 客户</div>
