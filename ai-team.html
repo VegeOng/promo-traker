@@ -486,26 +486,42 @@
     .toast.show { transform: translateY(0); opacity: 1; }
     .toast.error { border-color: #dc2626; }
     .toast.success { border-color: #166534; }
-  </style>
+  
+.mv-top{overflow:hidden}
+.mv-top-main{display:flex;justify-content:space-between;align-items:center;padding:12px 24px;background:#166534}
+.mv-top-left{display:flex;align-items:center;gap:12px}
+.mv-top-logo{height:34px;background:#fff;border-radius:8px;padding:3px 8px;display:flex;align-items:center;text-decoration:none}
+.mv-top-logo img{height:26px}
+.mv-top-sep{width:1px;height:24px;background:rgba(255,255,255,.2)}
+.mv-top-tool{color:#fff;font-size:14px;font-weight:700;letter-spacing:.3px}
+.mv-top-right{display:flex;align-items:center;gap:12px}
+.mv-top-back{color:rgba(255,255,255,.8);text-decoration:none;font-size:13px;font-weight:600}
+.mv-top-back:hover{color:#fff}
+.mv-top-btn{background:rgba(255,255,255,.12);border:none;color:rgba(255,255,255,.8);padding:5px 14px;border-radius:6px;font-size:12px;cursor:pointer;font-family:inherit}
+.mv-top-btn:hover{background:rgba(255,255,255,.2);color:#fff}
+.mv-top-sub{display:flex;justify-content:space-between;align-items:center;padding:5px 24px;background:#15532d;color:rgba(255,255,255,.6);font-size:11px}
+</style>
 </head>
 <body>
 
-<header>
-  <a href="/" style="display:flex;align-items:center;gap:6px;color:#166534;font-size:13px;font-weight:600;text-decoration:none;background:#f0fdf4;border:1px solid #bbf7d0;padding:6px 12px;border-radius:8px;flex-shrink:0;" onmouseover="this.style.background='#dcfce7'" onmouseout="this.style.background='#f0fdf4'">
-    ← 返回
-  </a>
-  <img src="./mamavege-logo.jpg" alt="MamaVege" style="height:36px;border-radius:6px;object-fit:contain;mix-blend-mode:multiply;" />
-  <div class="header-title">
-    <h1>MamaVege AI Team</h1>
-    <p>7 AI Directors · Live Supabase Data</p>
-  </div>
-  <div class="header-right">
-    <div class="status-pill">
-      <div class="status-dot"></div>
-      <span id="connection-status">连接中...</span>
+<div class="mv-top">
+  <div class="mv-top-main">
+    <div class="mv-top-left">
+      <a href="index.html" class="mv-top-logo"><img src="Mamavege_Logo.png" alt="MamaVege"></a>
+      <div class="mv-top-sep"></div>
+      <span class="mv-top-tool">AI Team</span>
+    </div>
+    <div class="mv-top-right">
+      <a href="index.html" class="mv-top-back">← Hub</a>
+      <button class="mv-top-btn" onclick="location.reload()">⟳</button>
     </div>
   </div>
-</header>
+  <div class="mv-top-sub">
+    <span class="mv-top-date"></span>
+    <span>MamaVege Management Hub</span>
+  </div>
+</div>
+<script>document.querySelectorAll('.mv-top-date').forEach(e=>e.textContent=new Date().toLocaleDateString('en-MY',{weekday:'short',year:'numeric',month:'short',day:'numeric'}));</script>
 
 <div class="main">
 
