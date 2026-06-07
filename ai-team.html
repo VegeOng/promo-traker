@@ -802,7 +802,9 @@ MT客户分析重点：
 - 下月针对荤食者的内容方向建议
 - Kampua Mee 推广建议（善用唯一认证优势）
 
-根据 Supabase promotions / promo_activities 数据分析。
+根据 Supabase promotions / promo_activities / activities / activity_reports 数据分析。
+activities / activity_reports 是地推活动追踪（Sampling、Roadshow、Exhibition、Food Fair 等），
+包含每场活动的营收、成本、ROAS，可用于评估哪场活动效益最好、该不该继续投入。
 
 【重要回答规则】
 收到的实时数据只是你的分析背景，绝对不要原封不动列给老板看。
@@ -1073,15 +1075,24 @@ async function fetchOpsData() {
 
 async function fetchMarketingData() {
   const { year, month } = getDateRanges();
-  const [allOrders, promotions, promoActivities] = await Promise.all([
+  const [allOrders, promotions, promoActivities, activities, activityReports] = await Promise.all([
     fetchGoogleSheets(),
     supabaseQuery('promotions', `limit=30&order=created_at.desc`),
     supabaseQuery('promo_activities', `limit=100`),
+    supabaseQuery('activities', `select=*&order=created_at.desc&limit=30`),
+    supabaseQuery('activity_reports', `select=*&order=report_date.asc&limit=200`),
   ]);
   const thisMonthOrders = allOrders.filter(r =>
     parseInt(r['YEAR']) === year && parseInt(r['MONTH']) === month
   );
-  return { thisMonthOrders, promotions: promotions || [], promoActivities: promoActivities || [], dateRanges: getDateRanges() };
+  return {
+    thisMonthOrders,
+    promotions: promotions || [],
+    promoActivities: promoActivities || [],
+    activities: activities || [],
+    activityReports: activityReports || [],
+    dateRanges: getDateRanges(),
+  };
 }
 
 // ── 根据角色返回数据 ──
@@ -1221,6 +1232,23 @@ function formatDataAsContext(data) {
       ctx += `\n🎯 进行中促销：${active.length} 个\n`;
       active.slice(0, 3).forEach(p => ctx += `  - ${p.name || p.promo_name}: ${p.start_date} ~ ${p.end_date}\n`);
     }
+  }
+
+  // 活动报告（Activity Report — Sampling/Roadshow/Exhibition 等）
+  if (data.activities && data.activities.length > 0) {
+    const acts = data.activities.map(a => {
+      const reps = (data.activityReports || []).filter(r => r.activity_id === a.activity_id);
+      const rev = reps.reduce((s, r) => s + (r.revenue || 0), 0);
+      const cost = reps.reduce((s, r) => s + (r.cost || 0), 0);
+      const roas = cost > 0 ? (rev / cost) : 0;
+      return { ...a, rev, cost, roas, reportCount: reps.length };
+    });
+    const activeActs = acts.filter(a => a.status === 'active');
+    ctx += `\n🎪 活动报告（Sampling/Roadshow/Exhibition等）：共 ${acts.length} 个，进行中 ${activeActs.length} 个\n`;
+    acts.slice(0, 5).forEach(a => {
+      const roasStr = a.roas > 0 ? a.roas.toFixed(2) + 'x' : '—';
+      ctx += `  - ${a.name}（${a.type}${a.location ? ' · ' + a.location : ''}）：营收 RM ${a.rev.toFixed(2)} / 成本 RM ${a.cost.toFixed(2)} / ROAS ${roasStr} / ${a.status === 'active' ? '进行中' : '已结束'}\n`;
+    });
   }
 
   // ── 钱钱：财务分析（只有财务角色才显示）──
