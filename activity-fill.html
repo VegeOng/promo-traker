@@ -153,6 +153,15 @@
   </div>
 </div>
 <script>document.querySelectorAll('.mv-top-date').forEach(e=>e.textContent=new Date().toLocaleDateString('en-MY',{weekday:'short',year:'numeric',month:'short',day:'numeric'}));</script>
+
+<div class="container">
+
+  <div class="mode-cards">
+    <div class="mode-card" id="card-new" onclick="selectMode('new')">
+      <div class="mc-icon">➕</div>
+      <div class="mc-name">New Activity</div>
+      <div class="mc-sub">Create a new event</div>
+    </div>
     <div class="mode-card" id="card-report" onclick="selectMode('report')">
       <div class="mc-icon">📊</div>
       <div class="mc-name">Daily Report</div>
@@ -307,9 +316,11 @@ const loggedUser = lsGet('userName');
 const userRole = lsGet('userRole');
 if (!loggedUser) { location.href = 'index.html'; }
 
-const backLink = document.getElementById('backLink');
-backLink.href = userRole === 'member' ? 'my-dashboard.html' : 'index.html';
-backLink.textContent = userRole === 'member' ? '← My Dashboard' : '← Hub';
+const backLink = document.querySelector('.mv-top-back');
+if (backLink) {
+  backLink.href = userRole === 'member' ? 'my-dashboard.html' : 'index.html';
+  backLink.textContent = userRole === 'member' ? '← My Dashboard' : '← Hub';
+}
 
 let selectedType = '';
 let selectedActivityId = null;
