@@ -307,56 +307,20 @@
   }
   .footer-nav a { color: var(--green); text-decoration: none; }
   .footer-nav a:hover { text-decoration: underline; }
-
-.mv-top{overflow:hidden}
-.mv-top-main{display:flex;justify-content:space-between;align-items:center;padding:12px 24px;background:#166534}
-.mv-top-left{display:flex;align-items:center;gap:12px}
-.mv-top-logo{height:34px;background:#fff;border-radius:8px;padding:3px 8px;display:flex;align-items:center;text-decoration:none}
-.mv-top-logo img{height:26px}
-.mv-top-sep{width:1px;height:24px;background:rgba(255,255,255,.2)}
-.mv-top-tool{color:#fff;font-size:14px;font-weight:700;letter-spacing:.3px}
-.mv-top-right{display:flex;align-items:center;gap:12px}
-.mv-top-back{color:rgba(255,255,255,.8);text-decoration:none;font-size:13px;font-weight:600}
-.mv-top-back:hover{color:#fff}
-.mv-top-btn{background:rgba(255,255,255,.12);border:none;color:rgba(255,255,255,.8);padding:5px 14px;border-radius:6px;font-size:12px;cursor:pointer;font-family:inherit}
-.mv-top-btn:hover{background:rgba(255,255,255,.2);color:#fff}
-.mv-top-sub{display:flex;justify-content:space-between;align-items:center;padding:5px 24px;background:#15532d;color:rgba(255,255,255,.6);font-size:11px}
-
-.mv-top{overflow:hidden}
-.mv-top-main{display:flex;justify-content:space-between;align-items:center;padding:12px 24px;background:#166534}
-.mv-top-left{display:flex;align-items:center;gap:12px}
-.mv-top-logo{height:34px;background:#fff;border-radius:8px;padding:3px 8px;display:flex;align-items:center;text-decoration:none}
-.mv-top-logo img{height:26px}
-.mv-top-sep{width:1px;height:24px;background:rgba(255,255,255,.2)}
-.mv-top-tool{color:#fff;font-size:14px;font-weight:700;letter-spacing:.3px}
-.mv-top-right{display:flex;align-items:center;gap:12px}
-.mv-top-back{color:rgba(255,255,255,.8);text-decoration:none;font-size:13px;font-weight:600}
-.mv-top-back:hover{color:#fff}
-.mv-top-btn{background:rgba(255,255,255,.12);border:none;color:rgba(255,255,255,.8);padding:5px 14px;border-radius:6px;font-size:12px;cursor:pointer;font-family:inherit}
-.mv-top-btn:hover{background:rgba(255,255,255,.2);color:#fff}
-.mv-top-sub{display:flex;justify-content:space-between;align-items:center;padding:5px 24px;background:#15532d;color:rgba(255,255,255,.6);font-size:11px}
 </style>
 </head>
 <body>
 
-<div class="mv-top">
-  <div class="mv-top-main">
-    <div class="mv-top-left">
-      <a href="index.html" class="mv-top-logo"><img src="Mamavege_Logo.png" alt="MamaVege"></a>
-      <div class="mv-top-sep"></div>
-      <span class="mv-top-tool">Sales Dashboard</span>
-    </div>
-    <div class="mv-top-right">
-      <a href="index.html" class="mv-top-back">← Hub</a>
-      <button class="mv-top-btn" onclick="location.reload()">⟳</button>
-    </div>
+<div class="header">
+  <div class="header-left">
+    <div class="logo" style="color:#dc2626">Mama<span style="color:#dc2626">Vege</span></div>
+    <div class="badge">Sales Dashboard</div>
   </div>
-  <div class="mv-top-sub">
-    <span class="mv-top-date"></span>
-    <span>MamaVege Management Hub</span>
+  <div class="header-right"><a href="index.html" style="color:var(--green);text-decoration:none;font-size:13px;font-weight:600;">← Hub</a>
+    <span class="last-updated" id="lastUpdated">—</span>
+    <button class="btn-refresh" onclick="loadData()">⟳ Refresh</button>
   </div>
 </div>
-<script>document.querySelectorAll('.mv-top-date').forEach(e=>e.textContent=new Date().toLocaleDateString('en-MY',{weekday:'short',year:'numeric',month:'short',day:'numeric'}));</script>
 
 <div class="nav">
   <button class="nav-btn active" onclick="switchTab('overview', this)">📊 总览</button>
@@ -364,23 +328,46 @@
   <button class="nav-btn" onclick="switchTab('outlet', this)">🏪 客户</button>
   <button class="nav-btn" onclick="switchTab('product', this)">📦 产品</button>
   <button class="nav-btn" onclick="switchTab('trend', this)">📈 趋势</button>
-  <a href="performance-hub.html" class="nav-btn" style="color:#dc2626;font-weight:700;text-decoration:none">🎯 业绩管理</a>
+  <a href="performance-hub.html" class="nav-btn" style="color:#dc2626;font-weight:700">🎯 业绩管理</a>
 </div>
 
 <div class="filters">
-  <span style="font-size:12px;font-weight:700;color:var(--muted)">筛选</span>
-  <select id="filterYear" onchange="applyFilters()"><option value="">全部年份</option></select>
-  <select id="filterMonth" onchange="applyFilters()">
+  <span class="filter-label">筛选</span>
+  <select class="filter-select" id="filterYear" onchange="applyFilters()">
+    <option value="">全部年份</option>
+  </select>
+  <select class="filter-select" id="filterMonth" onchange="applyFilters()">
     <option value="">全部月份</option>
     <option value="1">1月</option><option value="2">2月</option><option value="3">3月</option>
     <option value="4">4月</option><option value="5">5月</option><option value="6">6月</option>
     <option value="7">7月</option><option value="8">8月</option><option value="9">9月</option>
     <option value="10">10月</option><option value="11">11月</option><option value="12">12月</option>
   </select>
-  <select id="filterType" onchange="applyFilters()"><option value="">全部类型</option></select>
-  <select id="filterSP" onchange="applyFilters()"><option value="">全部业务员</option></select>
+  <select class="filter-select" id="filterType" onchange="applyFilters()">
+    <option value="">全部类型</option>
+  </select>
+  <select class="filter-select" id="filterSP" onchange="applyFilters()">
+    <option value="">全部业务员</option>
+  </select>
 </div>
 
+<div class="main">
+
+  <!-- OVERVIEW TAB -->
+  <div class="tab-content active" id="tab-overview">
+    <div class="kpi-grid" id="kpiGrid">
+      <div class="loading"><div class="spinner"></div><span>加载中...</span></div>
+    </div>
+    <div class="grid-2">
+      <div class="chart-card">
+        <div class="chart-title"><span class="dot"></span>月度销售额 (RM)</div>
+        <div class="chart-wrap"><canvas id="chartMonthly"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title"><span class="dot" style="background:var(--gold)"></span>业务员业绩占比</div>
+        <div class="chart-wrap"><canvas id="chartSPPie"></canvas></div>
+      </div>
+    </div>
     <div class="grid-2">
       <div class="chart-card">
         <div class="chart-title"><span class="dot" style="background:var(--red)"></span>Top 10 客户</div>
