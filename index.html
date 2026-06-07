@@ -18,16 +18,16 @@
 }
 body{background:var(--bg);color:var(--t1);font-family:var(--font);min-height:100vh;}
 
-.login-overlay{position:fixed;inset:0;background:var(--bg);z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px;}
-.login-card{background:white;border-radius:16px;box-shadow:0 4px 24px rgba(0,0,0,.08);padding:40px 32px;width:100%;max-width:380px;}
-.login-logo{text-align:center;margin-bottom:6px;}
-.login-logo h1{color:var(--green);font-size:24px;font-weight:800;}
-.login-sub{text-align:center;color:var(--t3);font-size:13px;margin-bottom:28px;font-family:var(--mono);}
+.login-overlay{position:fixed;inset:0;background:var(--green);z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px;}
+.login-card{background:white;border-radius:20px;box-shadow:0 8px 40px rgba(0,0,0,.15);padding:40px 32px;width:100%;max-width:380px;}
+.login-logo{text-align:center;margin-bottom:4px;}
+.login-logo img{height:44px;}
+.login-sub{text-align:center;color:var(--t3);font-size:12px;margin-bottom:28px;font-family:var(--mono);letter-spacing:2px;text-transform:uppercase;}
 .login-field{margin-bottom:14px;}
 .login-field label{display:block;font-size:11px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;}
 .login-field input{width:100%;padding:12px 14px;border:1.5px solid var(--b1);border-radius:10px;font-size:15px;font-family:var(--font);background:var(--s2);transition:all .2s;}
 .login-field input:focus{outline:none;border-color:var(--green);background:white;}
-.login-btn{width:100%;padding:13px;background:var(--green);color:white;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;margin-top:8px;font-family:var(--font);}
+.login-btn{width:100%;padding:13px;background:var(--green);color:white;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;margin-top:8px;font-family:var(--font);transition:background .2s;}
 .login-btn:hover{background:#14532d;}
 .login-btn:disabled{opacity:.5;cursor:not-allowed;}
 .login-err{background:var(--red-bg);color:var(--red);padding:10px 14px;border-radius:8px;font-size:13px;margin-top:12px;display:none;}
@@ -202,7 +202,7 @@ async function loadSalesOverview() {
 
 <div class="login-overlay" id="loginOverlay">
   <div class="login-card">
-    <div class="login-logo"><h1>🥬 MamaVege</h1></div>
+    <div class="login-logo"><img src="Mamavege_Logo.png" alt="MamaVege"></div>
     <p class="login-sub">Management Hub</p>
     <div class="login-field">
       <label>Name</label>
@@ -210,7 +210,7 @@ async function loadSalesOverview() {
     </div>
     <div class="login-field">
       <label>Password</label>
-      <input type="password" id="loginPw" placeholder="Your password">
+      <input type="password" id="loginPw" placeholder="Your password" onkeydown="if(event.key==='Enter')doLogin()">
     </div>
     <button class="login-btn" id="loginBtn" onclick="doLogin()">Login</button>
     <div class="login-err" id="loginErr"></div>
