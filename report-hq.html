@@ -591,7 +591,8 @@ const Hmin = { 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY, 'Conte
 
 let members = [], allTasks = [], currentTaskFilter = 'all', hqSalesMembers = [], allOutlets = [];
 let allActivities = [], currentActFilter = 'all';
-const todayStr = new Date().toISOString().split('T')[0];
+function fmtLocalDate(d){return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
+const todayStr = fmtLocalDate(new Date());
 
 async function db(path, opts={}) {
   const r = await fetch(SUPA_URL+'/rest/v1/'+path, {headers:H, ...opts});
@@ -599,9 +600,9 @@ async function db(path, opts={}) {
   return r.status===204?null:r.json();
 }
 
-function today(){return new Date().toISOString().split('T')[0];}
-function weekStart(){const d=new Date();const day=d.getDay();const diff=d.getDate()-day+(day===0?-6:1);return new Date(d.setDate(diff)).toISOString().split('T')[0];}
-function weekEnd(){const d=new Date();const day=d.getDay();const diff=d.getDate()-day+(day===0?0:7);return new Date(d.setDate(diff)).toISOString().split('T')[0];}
+function today(){return fmtLocalDate(new Date());}
+function weekStart(){const d=new Date();const day=d.getDay();const diff=d.getDate()-day+(day===0?-6:1);return fmtLocalDate(new Date(d.getFullYear(),d.getMonth(),diff));}
+function weekEnd(){const d=new Date();const day=d.getDay();const diff=d.getDate()-day+(day===0?0:7);return fmtLocalDate(new Date(d.getFullYear(),d.getMonth(),diff));}
 function escHtml(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 function fmtRM(n){return 'RM '+Number(n||0).toLocaleString('en-MY',{minimumFractionDigits:0,maximumFractionDigits:0});}
 function fmtRMDec(n){return 'RM '+Number(n||0).toLocaleString('en-MY',{minimumFractionDigits:2,maximumFractionDigits:2});}
