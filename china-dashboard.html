@@ -87,8 +87,10 @@
       <span class="mv-top-tool">🇨🇳 China Market Dashboard</span>
     </div>
     <div class="mv-top-right">
-      <a href="index.html" class="mv-top-back">← Hub</a>
+      <span id="top-user-name" style="color:rgba(255,255,255,.85);font-size:13px;font-weight:600"></span>
+      <a href="index.html" class="mv-top-back" id="hub-link">← Hub</a>
       <button class="mv-top-btn" onclick="loadAll()">⟳ Refresh</button>
+      <button class="mv-top-btn" id="logout-btn" onclick="logout()" style="display:none">Logout</button>
     </div>
   </div>
   <div class="mv-top-sub">
@@ -144,6 +146,50 @@
 </div>
 
 <script>
+// ── 登录权限校验 ──
+// 只允许：HQ 管理员（userRole === 'hq'），或角色为 'china' 的 member（如 Jason）
+function lsGet(key){
+  const raw = localStorage.getItem(key);
+  if(!raw) return null;
+  try{
+    const item = JSON.parse(raw);
+    if(Date.now() > item.expiry){ localStorage.removeItem(key); return null; }
+    return item.value;
+  }catch{ return null; }
+}
+function lsClear(){
+  ['userName','userRole','userId','hq_auth','memberRole'].forEach(k=>localStorage.removeItem(k));
+}
+function logout(){ lsClear(); location.href = 'index.html'; }
+
+(function authGuard(){
+  const userName = lsGet('userName');
+  const userRole = lsGet('userRole');
+  const memberRole = lsGet('memberRole');
+
+  if(!userName || !userRole){
+    location.href = 'index.html';
+    return;
+  }
+  if(userRole === 'hq'){
+    return; // HQ 管理员可正常访问
+  }
+  if(userRole === 'member' && memberRole === 'china'){
+    // Jason：只允许看中国界面，隐藏返回 Hub 的入口
+    document.addEventListener('DOMContentLoaded', ()=>{
+      const nameEl = document.getElementById('top-user-name');
+      const hubLink = document.getElementById('hub-link');
+      const logoutBtn = document.getElementById('logout-btn');
+      if(nameEl) nameEl.textContent = userName;
+      if(hubLink) hubLink.style.display = 'none';
+      if(logoutBtn) logoutBtn.style.display = 'inline-block';
+    });
+    return;
+  }
+  // 其他角色（一般 member）无权访问中国界面，导回各自首页
+  location.href = 'my-dashboard.html';
+})();
+
 document.querySelectorAll('.mv-top-date').forEach(e=>e.textContent=new Date().toLocaleDateString('zh-CN',{weekday:'short',year:'numeric',month:'short',day:'numeric'}));
 
 const CHINA_API = 'https://script.google.com/macros/s/AKfycbzxnGZQSq13c36n0NeVuGPUbxW_duPizD34lvLnxTx2rKDlxziuLtZe82dV4vifyyG5tw/exec';

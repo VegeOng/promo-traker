@@ -400,7 +400,11 @@ const userName = lsGet("userName");
 const userRole = lsGet("userRole");
 
 if (userName && userRole === 'member') {
-  location.href = 'my-dashboard.html';
+  if (lsGet('memberRole') === 'china') {
+    location.href = 'china-dashboard.html';
+  } else {
+    location.href = 'my-dashboard.html';
+  }
 } else if (userName && userRole === 'hq') {
   showApp();
 }
@@ -442,7 +446,11 @@ async function doLogin() {
     lsSet('userRole', 'member');
     lsSet('userId', member.id);
     lsSet('memberRole', member.role || 'sales');
-    location.href = 'my-dashboard.html';
+    if ((member.role || '') === 'china') {
+      location.href = 'china-dashboard.html';
+    } else {
+      location.href = 'my-dashboard.html';
+    }
     return;
   }
 

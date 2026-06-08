@@ -352,6 +352,7 @@
   const todayStr = new Date().toISOString().split('T')[0];
 
   if (!userName || userRole !== 'member') { location.href = 'index.html'; }
+  if (lsGet('memberRole') === 'china') { location.href = 'china-dashboard.html'; }
   document.getElementById('userLabel').textContent = `Welcome back, ${userName}`;
 
   function logout() { lsClear(); location.href = 'index.html'; }
