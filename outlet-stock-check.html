@@ -947,7 +947,7 @@ async function loadHQStats() {
     for(let i=0;i<12;i++){
       const d=new Date(now.getFullYear(),now.getMonth()-i,1);
       const o=document.createElement('option');
-      o.value=d.toISOString().slice(0,7);
+      o.value=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
       o.textContent=d.toLocaleString('en',{year:'numeric',month:'long'});
       sel.appendChild(o);
     }
