@@ -936,7 +936,9 @@ Wan 巡店：本月目标100家，落后时提醒。
 - 博主一件代发出货量及 ROI
 - 各渠道业绩占比分析
 
-注意：中国市场数据目前在 Google Sheet，需每周手动提交。
+数据来源：已连接妈子素 Google Sheet「日常业绩」（China Market Dashboard 同一数据源）。
+你能读到：本月/上月/YTD 业绩、环比变化、各渠道占比（电商平台=微信小店/抖店、抖音、博主/经销/线下）、
+本月 TOP 客户/达人业绩排行（评估博主代发 ROI）、各产品（香椿/青柠干盘面、冬阴功汤、香椿/青柠杯面）销量。
 
 月报（每月1日）内容：
 - 中国市场总业绩
@@ -959,6 +961,11 @@ Wan 巡店：本月目标100家，落后时提醒。
 // 数据来源：Google Sheets API（主力）+ Supabase（拜访/任务/促销）
 
 const GOOGLE_SHEETS_API = 'https://script.google.com/macros/s/AKfycbwxt23ZB0od7EeBSNvjurKTbkDcM7HLgrWhuoqHc3meKWmhbB0XQzfOdB-X2Pj5O_MY/exec';
+// 中国市场业绩数据（妈子素 Google Sheet「日常业绩」）— 给龙龙用
+const CHINA_SHEETS_API = 'https://script.google.com/macros/s/AKfycbzxnGZQSq13c36n0NeVuGPUbxW_duPizD34lvLnxTx2rKDlxziuLtZe82dV4vifyyG5tw/exec';
+const CHINA_ECOMMERCE_NAMES = ['微信小店', '抖店'];
+const CHINA_DOUYIN_NAMES = ['抖音'];
+const CHINA_PRODUCT_COLS = ['香椿干盘面','青柠干盘面','冬阴功汤','香椿杯面','青柠杯面'];
 
 const SUPABASE_URL = 'https://wjhgezvrxlhpexocfsea.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndqaGdlenZyeGxocGV4b2Nmc2VhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg1MDU4NzgsImV4cCI6MjA5NDA4MTg3OH0.jENcrgEDYDlSRUCqve-T6rxYRJfz-dnZQHnXpPLJ_RE';
@@ -998,6 +1005,42 @@ async function fetchGoogleSheets() {
     return json.data || [];
   } catch (e) {
     console.warn('Google Sheets fetch failed:', e.message);
+    return [];
+  }
+}
+
+// ── 中国市场数据（妈子素 Google Sheet）──
+function parseChinaSheetDate(raw) {
+  if (!raw) return null;
+  const d = new Date(raw);
+  if (isNaN(d.getTime())) return null;
+  // 表格按 GMT+8 存午夜时间，序列化成 UTC 会往回退一天，加 8 小时换算回本地日期
+  const shifted = new Date(d.getTime() + 8 * 3600 * 1000);
+  return { y: shifted.getUTCFullYear(), m: shifted.getUTCMonth() + 1, ym: `${shifted.getUTCFullYear()}-${String(shifted.getUTCMonth() + 1).padStart(2, '0')}` };
+}
+function classifyChinaChannel(name) {
+  const n = (name || '').trim();
+  if (CHINA_ECOMMERCE_NAMES.some(k => n.includes(k))) return '电商平台';
+  if (CHINA_DOUYIN_NAMES.some(k => n.includes(k))) return '抖音';
+  return '博主/经销/线下';
+}
+async function fetchChinaData() {
+  try {
+    const r = await fetch(CHINA_SHEETS_API);
+    const json = await r.json();
+    const rows = (json.data || []).map(row => {
+      const date = parseChinaSheetDate(row['日期']);
+      return {
+        name: (row['客户/达人'] || '').toString().trim(),
+        revenue: parseFloat(row['总金额']) || 0,
+        date,
+        channel: classifyChinaChannel(row['客户/达人']),
+        products: CHINA_PRODUCT_COLS.reduce((acc, p) => { acc[p] = parseFloat(row[p]) || 0; return acc; }, {}),
+      };
+    }).filter(r => r.date);
+    return rows;
+  } catch (e) {
+    console.warn('China sheet fetch failed:', e.message);
     return [];
   }
 }
@@ -1051,11 +1094,15 @@ async function fetchSalesData() {
 
 async function fetchFinanceData() {
   const { year, month } = getDateRanges();
-  const allOrders = await fetchGoogleSheets();
+  const ym = `${year}-${String(month).padStart(2, '0')}`;
+  const [allOrders, profitConfig] = await Promise.all([
+    fetchGoogleSheets(),
+    supabaseQuery('profit_config', `year_month=lte.${ym}&order=year_month.desc&limit=200`),
+  ]);
   const thisMonthOrders = allOrders.filter(r =>
     parseInt(r['YEAR']) === year && parseInt(r['MONTH']) === month
   );
-  return { allOrders, thisMonthOrders, isFinanceRole: true, dateRanges: getDateRanges() };
+  return { allOrders, thisMonthOrders, profitConfig: profitConfig || [], isFinanceRole: true, dateRanges: getDateRanges() };
 }
 
 async function fetchOpsData() {
@@ -1095,6 +1142,48 @@ async function fetchMarketingData() {
   };
 }
 
+async function fetchChinaMarketData() {
+  const rows = await fetchChinaData();
+  const now = new Date();
+  const curY = now.getFullYear(), curM = now.getMonth() + 1;
+  const curYM = `${curY}-${String(curM).padStart(2, '0')}`;
+  const lastD = new Date(curY, curM - 1, 1); lastD.setMonth(lastD.getMonth() - 1);
+  const lastYM = `${lastD.getFullYear()}-${String(lastD.getMonth() + 1).padStart(2, '0')}`;
+
+  const monthMap = {};
+  rows.forEach(r => { monthMap[r.date.ym] = (monthMap[r.date.ym] || 0) + r.revenue; });
+
+  const thisMonthRows = rows.filter(r => r.date.ym === curYM);
+  const lastMonthTotal = monthMap[lastYM] || 0;
+  const thisMonthTotal = monthMap[curYM] || 0;
+  const ytdTotal = rows.filter(r => r.date.y === curY).reduce((s, r) => s + r.revenue, 0);
+
+  // 渠道分布（本月）
+  const channelTotals = {};
+  thisMonthRows.forEach(r => { channelTotals[r.channel] = (channelTotals[r.channel] || 0) + r.revenue; });
+
+  // TOP 客户/达人（本月）
+  const customerMap = {};
+  thisMonthRows.forEach(r => {
+    if (!customerMap[r.name]) customerMap[r.name] = { revenue: 0, orders: 0, channel: r.channel };
+    customerMap[r.name].revenue += r.revenue;
+    customerMap[r.name].orders += 1;
+  });
+  const topCustomers = Object.entries(customerMap).sort((a, b) => b[1].revenue - a[1].revenue).slice(0, 10);
+
+  // 产品销量（本月）
+  const productTotals = {};
+  CHINA_PRODUCT_COLS.forEach(p => { productTotals[p] = thisMonthRows.reduce((s, r) => s + (r.products[p] || 0), 0); });
+
+  return {
+    curYM, lastYM,
+    thisMonthTotal, lastMonthTotal, ytdTotal,
+    channelTotals, topCustomers, productTotals,
+    monthMap,
+    dateRanges: getDateRanges(),
+  };
+}
+
 // ── 根据角色返回数据 ──
 async function fetchDataForRole(roleId) {
   if (roleId === 'xuanxuan') {
@@ -1111,7 +1200,7 @@ async function fetchDataForRole(roleId) {
     chongchong: fetchMarketingData,
     shunshun:   fetchOpsData,
     diandian:   fetchSalesData,
-    longlong:   fetchSalesData,
+    longlong:   fetchChinaMarketData,
   };
   return await (loaders[roleId] || fetchSalesData)();
 }
@@ -1266,22 +1355,34 @@ function formatDataAsContext(data) {
     ctx += `  本月总销售：RM ${thisTotal.toFixed(2)}\n`;
     ctx += `  上月总销售：RM ${lastTotal.toFixed(2)}\n`;
 
-    const marginConfig = {
+    const fallbackMargin = {
       'LOTUS': { name: "Lotus's", deduction: 13.9 },
       'MYNEWS': { name: 'MYNEWS/MYCU', deduction: 9.0 },
       'AEON': { name: 'AEON', deduction: 10.0 },
       'JAYA GROCER': { name: 'Jaya Grocer', deduction: 6.5 },
       '7 ELEVEN': { name: '7-Eleven', deduction: 61.0, warning: true },
     };
+    // 优先用 profit_config 表里该客户最新一期的扣款配置，没有的话才用兜底数字
+    const marginConfig = {};
+    Object.entries(fallbackMargin).forEach(([key, cfg]) => {
+      const dbRow = (data.profitConfig || []).find(r => (r.customer_name || '').toUpperCase().includes(key));
+      if (dbRow && dbRow.deductions && dbRow.deductions.total) {
+        const pct = parseFloat(dbRow.deductions.total);
+        marginConfig[key] = { name: cfg.name, deduction: isNaN(pct) ? cfg.deduction : pct, warning: cfg.warning, from: dbRow.year_month };
+      } else {
+        marginConfig[key] = cfg;
+      }
+    });
     ctx += `\nMT 客户扣款后净收入：\n`;
     ctx += `  🚨 重要：7-Eleven 是结构性亏损，绝对不能建议提高销量！\n`;
     Object.entries(marginConfig).forEach(([key, cfg]) => {
       const orders = thisMonth.filter(r => (r['COMPANY'] || '').toUpperCase().includes(key));
       const gross = orders.reduce((s, r) => s + (parseFloat(r['TOTAL (RM)']) || 0), 0);
       const net = gross * (1 - cfg.deduction / 100);
+      const src = cfg.from ? `（来自 profit_config ${cfg.from}）` : '（默认值）';
       if (gross > 0) {
         const warn = cfg.warning ? ' 🚨 卖越多亏越多！建议：重谈扣款/换产品/重新评估合作' : '';
-        ctx += `  - ${cfg.name}: 毛 RM ${gross.toFixed(2)} → 净 RM ${net.toFixed(2)}（扣 ${cfg.deduction}%）${warn}\n`;
+        ctx += `  - ${cfg.name}: 毛 RM ${gross.toFixed(2)} → 净 RM ${net.toFixed(2)}（扣 ${cfg.deduction}%${src}）${warn}\n`;
       }
     });
   }
@@ -1309,6 +1410,28 @@ function formatDataAsContext(data) {
       ctx += `\n📦 库存告急门店：${low.length} 家\n`;
       low.slice(0, 5).forEach(s => ctx += `  - ${s.outlet_name || s.outlet_id}: ${s.product_code || ''}\n`);
     }
+
+    // 产品过期预警（三级：🟡<180天 / 🟠<90天 / 🔴<30天，来自 outlet_stock_checks.expiry_date）
+    const todayDate = new Date(today);
+    todayDate.setHours(0, 0, 0, 0);
+    const daysLeft = (d) => { const dt = new Date(d); dt.setHours(0, 0, 0, 0); return Math.ceil((dt - todayDate) / 86400000); };
+    const withExpiry = data.stockChecks
+      .filter(s => s.expiry_date)
+      .map(s => ({ ...s, days: daysLeft(s.expiry_date) }))
+      .filter(s => s.days >= 0)
+      .sort((a, b) => a.days - b.days);
+    const red = withExpiry.filter(s => s.days <= 30);
+    const orange = withExpiry.filter(s => s.days > 30 && s.days <= 90);
+    const yellow = withExpiry.filter(s => s.days > 90 && s.days <= 180);
+    if (red.length || orange.length || yellow.length) {
+      ctx += `\n⏰ 产品过期预警：\n`;
+      if (red.length) {
+        ctx += `  🔴 <30天（非常紧急，立刻清货促销）：${red.length} 项\n`;
+        red.slice(0, 5).forEach(s => ctx += `    - ${s.product_name || s.product_code || ''}（${s.outlet_name || s.outlet_id}）：${s.expiry_date}，剩 ${s.days} 天\n`);
+      }
+      if (orange.length) ctx += `  🟠 <90天（计划促销）：${orange.length} 项\n`;
+      if (yellow.length) ctx += `  🟡 <180天（早安排）：${yellow.length} 项\n`;
+    }
   }
 
   // ── 日历行程（萱萱专用）──
@@ -1328,6 +1451,35 @@ function formatDataAsContext(data) {
       });
     } else {
       ctx += `\n📅 未来3天行程：暂无行程\n`;
+    }
+  }
+
+  // 中国市场数据（妈子素 Google Sheet，给龙龙用）
+  if (data.channelTotals) {
+    const momPct = data.lastMonthTotal > 0 ? (((data.thisMonthTotal - data.lastMonthTotal) / data.lastMonthTotal) * 100).toFixed(1) : null;
+    ctx += `\n🇨🇳 中国市场业绩（妈子素，${data.curYM}）：\n`;
+    ctx += `  本月业绩：RMB ${data.thisMonthTotal.toFixed(2)}\n`;
+    ctx += `  上月业绩（${data.lastYM}）：RMB ${data.lastMonthTotal.toFixed(2)}${momPct !== null ? `（环比 ${momPct >= 0 ? '+' : ''}${momPct}%）` : ''}\n`;
+    ctx += `  YTD 累计：RMB ${data.ytdTotal.toFixed(2)}\n`;
+
+    const channelTotal = Object.values(data.channelTotals).reduce((s, v) => s + v, 0) || 1;
+    ctx += `\n各渠道业绩占比（本月）：\n`;
+    Object.entries(data.channelTotals).sort((a, b) => b[1] - a[1]).forEach(([ch, amt]) => {
+      ctx += `  - ${ch}: RMB ${amt.toFixed(2)}（${(amt / channelTotal * 100).toFixed(1)}%）\n`;
+    });
+
+    if (data.topCustomers && data.topCustomers.length) {
+      ctx += `\n本月业绩 TOP 客户/达人（用于评估博主代发 ROI）：\n`;
+      data.topCustomers.slice(0, 8).forEach(([name, d]) => {
+        ctx += `  - ${name}（${d.channel}）：RMB ${d.revenue.toFixed(2)}，${d.orders} 笔订单\n`;
+      });
+    }
+
+    if (data.productTotals) {
+      ctx += `\n本月各产品销量：\n`;
+      Object.entries(data.productTotals).forEach(([p, qty]) => {
+        ctx += `  - ${p}: ${qty} 件\n`;
+      });
     }
   }
 
