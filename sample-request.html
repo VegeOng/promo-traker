@@ -389,6 +389,18 @@ const loggedInName = lsGet('userName') || '';
 const userRole = lsGet('userRole') || '';
 const isHQ = userRole === 'hq';
 
+(function adjustBackLink(){
+  const backLink = document.querySelector('.mv-top-back');
+  if (!backLink) return;
+  if (userRole === 'hq') {
+    backLink.href = 'index.html'; backLink.textContent = '← Hub';
+  } else if (lsGet('memberRole') === 'china') {
+    backLink.href = 'china-hub.html'; backLink.textContent = '← China Hub';
+  } else if (userRole === 'member') {
+    backLink.href = 'my-dashboard.html'; backLink.textContent = '← My Dashboard';
+  }
+})();
+
 let skuList = [];
 let allRecordsData = [];
 let pendingRejectRef = '';

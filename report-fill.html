@@ -360,8 +360,16 @@ if (!loggedUser) { location.href = 'index.html'; }
 
 const backLink = document.querySelector('.mv-top-back');
 if (backLink) {
-  backLink.href = userRole === 'hq' ? 'index.html' : 'my-dashboard.html';
-  backLink.textContent = userRole === 'hq' ? '← Hub' : '← My Dashboard';
+  if (userRole === 'hq') {
+    backLink.href = 'index.html';
+    backLink.textContent = '← Hub';
+  } else if (lsGet('memberRole') === 'china') {
+    backLink.href = 'china-hub.html';
+    backLink.textContent = '← China Hub';
+  } else {
+    backLink.href = 'my-dashboard.html';
+    backLink.textContent = '← My Dashboard';
+  }
 }
 
 let currentMode = null;

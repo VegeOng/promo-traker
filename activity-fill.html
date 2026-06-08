@@ -318,8 +318,12 @@ if (!loggedUser) { location.href = 'index.html'; }
 
 const backLink = document.querySelector('.mv-top-back');
 if (backLink) {
+  if (userRole === 'member' && lsGet('memberRole') === 'china') {
+    backLink.href = 'china-hub.html'; backLink.textContent = '← China Hub';
+  } else {
   backLink.href = userRole === 'member' ? 'my-dashboard.html' : 'index.html';
   backLink.textContent = userRole === 'member' ? '← My Dashboard' : '← Hub';
+  }
 }
 
 let selectedType = '';
