@@ -930,14 +930,17 @@ Wan 巡店：本月目标100家，落后时提醒。
 - 马来西亚 → 主攻荤食者
 - 中国 → 主攻素食和清真群体（可以用素食语言！）
 
+🎯 中国市场目标：月度目标 RMB 5万，年度目标 RMB 60万。请始终以这两个目标为基准，评估当月/YTD 达成进度，并在分析中主动指出距离目标的差距与改进方向。
+
 中国市场业绩追踪：
 - 电商总业绩（各平台销售额，环比对比）
 - 线下销售业绩进度
 - 博主一件代发出货量及 ROI
 - 各渠道业绩占比分析
+- 月度/年度目标达成进度
 
 数据来源：已连接妈子素 Google Sheet「日常业绩」（China Market Dashboard 同一数据源）。
-你能读到：本月/上月/YTD 业绩、环比变化、各渠道占比（电商平台=微信小店/抖店、抖音、博主/经销/线下）、
+你能读到：本月/上月/YTD 业绩、环比变化、月度与年度目标达成率、各渠道占比（电商平台=微信小店/抖店、抖音、博主/经销/线下）、
 本月 TOP 客户/达人业绩排行（评估博主代发 ROI）、各产品（香椿/青柠干盘面、冬阴功汤、香椿/青柠杯面）销量。
 
 月报（每月1日）内容：
@@ -1175,11 +1178,18 @@ async function fetchChinaMarketData() {
   const productTotals = {};
   CHINA_PRODUCT_COLS.forEach(p => { productTotals[p] = thisMonthRows.reduce((s, r) => s + (r.products[p] || 0), 0); });
 
+  const CHINA_MONTHLY_GOAL = 50000;   // 中国市场月度目标 RMB 5万
+  const CHINA_YEARLY_GOAL = 600000;   // 中国市场年度目标 RMB 60万
+
   return {
     curYM, lastYM,
     thisMonthTotal, lastMonthTotal, ytdTotal,
     channelTotals, topCustomers, productTotals,
     monthMap,
+    monthlyGoal: CHINA_MONTHLY_GOAL,
+    yearlyGoal: CHINA_YEARLY_GOAL,
+    monthGoalPct: (thisMonthTotal / CHINA_MONTHLY_GOAL * 100),
+    yearGoalPct: (ytdTotal / CHINA_YEARLY_GOAL * 100),
     dateRanges: getDateRanges(),
   };
 }
@@ -1461,6 +1471,9 @@ function formatDataAsContext(data) {
     ctx += `  本月业绩：RMB ${data.thisMonthTotal.toFixed(2)}\n`;
     ctx += `  上月业绩（${data.lastYM}）：RMB ${data.lastMonthTotal.toFixed(2)}${momPct !== null ? `（环比 ${momPct >= 0 ? '+' : ''}${momPct}%）` : ''}\n`;
     ctx += `  YTD 累计：RMB ${data.ytdTotal.toFixed(2)}\n`;
+    ctx += `\n🎯 中国市场目标：月度目标 RMB ${data.monthlyGoal.toLocaleString('zh-CN')}，年度目标 RMB ${data.yearlyGoal.toLocaleString('zh-CN')}\n`;
+    ctx += `  本月目标达成率：${data.monthGoalPct.toFixed(1)}%（${data.monthGoalPct >= 100 ? '已达标 ✅' : `还差 RMB ${(data.monthlyGoal - data.thisMonthTotal).toFixed(2)}`}）\n`;
+    ctx += `  年度目标达成率（YTD）：${data.yearGoalPct.toFixed(1)}%（${data.yearGoalPct >= 100 ? '已达标 ✅' : `还差 RMB ${(data.yearlyGoal - data.ytdTotal).toFixed(2)}`}）\n`;
 
     const channelTotal = Object.values(data.channelTotals).reduce((s, v) => s + v, 0) || 1;
     ctx += `\n各渠道业绩占比（本月）：\n`;

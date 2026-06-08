@@ -152,6 +152,15 @@ const CHINA_API = 'https://script.google.com/macros/s/AKfycbzxnGZQSq13c36n0NeVuG
 const ECOMMERCE_NAMES = ['微信小店', '抖店'];
 const DOUYIN_NAMES = ['抖音'];
 const PRODUCT_COLS = ['香椿干盘面','青柠干盘面','冬阴功汤','香椿杯面','青柠杯面'];
+const MONTHLY_GOAL = 50000;   // 中国市场月度目标 RMB 5万
+const YEARLY_GOAL = 600000;   // 中国市场年度目标 RMB 60万
+
+function progressBarHtml(pct, color){
+  const w = Math.min(100, Math.max(0, pct));
+  return `<div style="margin-top:6px;height:6px;border-radius:3px;background:#e5e7eb;overflow:hidden">
+    <div style="height:100%;width:${w}%;background:${color};border-radius:3px"></div>
+  </div>`;
+}
 
 let charts = {};
 
@@ -273,11 +282,20 @@ function render(rows, selectedYM){
   const secondCard = isCurrentMonth
     ? `<div class="kpi-card blue"><div class="kpi-label">本周业绩</div><div class="kpi-val blue">${fmtRMB(weekTotal)}</div><div class="kpi-sub">本周一至今</div></div>`
     : `<div class="kpi-card blue"><div class="kpi-label">本周业绩（实时）</div><div class="kpi-val blue">${fmtRMB(weekTotal)}</div><div class="kpi-sub">本周一至今，与所选月份无关</div></div>`;
+
+  // 月度 / 年度目标达成进度
+  const monthGoalPct = (thisMonthTotal / MONTHLY_GOAL * 100);
+  const yearGoalPct = (ytdTotal / YEARLY_GOAL * 100);
+  const monthGoalColor = monthGoalPct >= 100 ? 'var(--green)' : (monthGoalPct >= 60 ? '#d97706' : 'var(--red)');
+  const yearGoalColor = yearGoalPct >= 100 ? 'var(--green)' : (yearGoalPct >= 60 ? '#d97706' : 'var(--red)');
+  const monthGoalSub = `${momHtml}<br><span style="color:${monthGoalColor};font-weight:700">目标达成 ${monthGoalPct.toFixed(1)}%</span>（目标 RMB ${MONTHLY_GOAL.toLocaleString('zh-CN')}）${progressBarHtml(monthGoalPct, monthGoalColor)}`;
+  const yearGoalSub = `${selY} 年累计　<span style="color:${yearGoalColor};font-weight:700">目标达成 ${yearGoalPct.toFixed(1)}%</span>（目标 RMB ${YEARLY_GOAL.toLocaleString('zh-CN')}）${progressBarHtml(yearGoalPct, yearGoalColor)}`;
+
   document.getElementById('kpi-grid').innerHTML = `
-    <div class="kpi-card"><div class="kpi-label">${selY}年${selM}月业绩</div><div class="kpi-val">${fmtRMB(thisMonthTotal)}</div><div class="kpi-sub">${momHtml}</div></div>
+    <div class="kpi-card"><div class="kpi-label">${selY}年${selM}月业绩</div><div class="kpi-val">${fmtRMB(thisMonthTotal)}</div><div class="kpi-sub">${monthGoalSub}</div></div>
     ${secondCard}
     <div class="kpi-card amber"><div class="kpi-label">上月业绩</div><div class="kpi-val amber">${fmtRMB(lastMonthTotal)}</div><div class="kpi-sub">${lastYM}</div></div>
-    <div class="kpi-card"><div class="kpi-label">YTD 累计</div><div class="kpi-val">${fmtRMB(ytdTotal)}</div><div class="kpi-sub">${selY} 年累计</div></div>
+    <div class="kpi-card"><div class="kpi-label">YTD 累计</div><div class="kpi-val">${fmtRMB(ytdTotal)}</div><div class="kpi-sub">${yearGoalSub}</div></div>
   `;
 
   // ── 趋势图：近12个月 ──
