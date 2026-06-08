@@ -1149,10 +1149,19 @@ async function deleteMember(id,name){if(!confirm(`Remove "${name}"?`))return;try
 
 function populateMonthSelector(){const sel=document.getElementById('stats-month');const now=new Date();for(let i=0;i<6;i++){const d=new Date(now.getFullYear(),now.getMonth()-i,1);const o=document.createElement('option');o.value=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;o.textContent=d.toLocaleString('en',{year:'numeric',month:'long'});sel.appendChild(o);}}
 function setDefaultFilters(){const t=today(),ws=weekStart();document.getElementById('filter-daily-from').value=ws;document.getElementById('filter-daily-to').value=t;document.getElementById('filter-weekly-from').value=weekStart();document.getElementById('filter-weekly-to').value=weekEnd();}
-function logoutHQ(){sessionStorage.clear();}
+function lsGet(key){
+  const raw = localStorage.getItem(key);
+  if(!raw) return null;
+  try{
+    const item = JSON.parse(raw);
+    if(Date.now() > item.expiry){ localStorage.removeItem(key); return null; }
+    return item.value;
+  }catch{ return null; }
+}
+function logoutHQ(){sessionStorage.clear();["userName","userRole","userId","hq_auth","memberRole"].forEach(k=>localStorage.removeItem(k));}
 
 (async()=>{
-  if(sessionStorage.getItem('userRole')==='hq'||sessionStorage.getItem('hq_auth')==='1'){
+  if(sessionStorage.getItem('userRole')==='hq'||sessionStorage.getItem('hq_auth')==='1'||lsGet('userRole')==='hq'||lsGet('hq_auth')==='1'){
     sessionStorage.setItem('hq_auth','1');
     document.getElementById('pwOverlay').style.display='none';
     populateMonthSelector();setDefaultFilters();
