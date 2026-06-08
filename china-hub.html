@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MamaVege | China Operations Hub</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --green:#166534; --green-light:#dcfce7; --red:#dc2626; --red-light:#fee2e2;
+    --amber:#d97706; --amber-light:#fef3c7; --blue:#2563eb; --blue-light:#dbeafe;
+    --text:#1a1a1a; --muted:#6b7280; --border:#e5e7eb; --card:#ffffff; --bg:#f4f6f3;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+
+  /* Unified header */
+  .mv-top{overflow:hidden}
+  .mv-top-main{display:flex;justify-content:space-between;align-items:center;padding:12px 24px;background:#166534}
+  .mv-top-left{display:flex;align-items:center;gap:12px}
+  .mv-top-logo{height:34px;background:#fff;border-radius:8px;padding:3px 8px;display:flex;align-items:center;text-decoration:none}
+  .mv-top-logo img{height:26px}
+  .mv-top-sep{width:1px;height:24px;background:rgba(255,255,255,.2)}
+  .mv-top-tool{color:#fff;font-size:14px;font-weight:700;letter-spacing:.3px}
+  .mv-top-right{display:flex;align-items:center;gap:12px}
+  .mv-top-btn{background:rgba(255,255,255,.12);border:none;color:rgba(255,255,255,.8);padding:5px 14px;border-radius:6px;font-size:12px;cursor:pointer;font-family:inherit}
+  .mv-top-btn:hover{background:rgba(255,255,255,.2);color:#fff}
+  .mv-top-sub{display:flex;justify-content:space-between;align-items:center;padding:5px 24px;background:#15532d;color:rgba(255,255,255,.6);font-size:11px}
+
+  .wrap{max-width:1100px;margin:0 auto;padding:1.5rem 1.5rem 3rem;}
+  .page-title{font-family:'DM Serif Display',serif;font-size:1.6rem;color:var(--green);margin-bottom:4px;}
+  .page-sub{font-size:13px;color:var(--muted);margin-bottom:24px;}
+
+  .sec-title{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#9ca3af;margin:28px 0 12px;display:flex;align-items:center;gap:10px;}
+  .sec-title::after{content:'';flex:1;height:1px;background:var(--border);}
+  .sec-title:first-child{margin-top:0;}
+
+  .tools-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:14px;}
+  .tool{
+    background:var(--card);border:1px solid var(--border);border-radius:14px;
+    padding:22px 16px 16px;text-decoration:none;color:inherit;
+    display:flex;flex-direction:column;align-items:center;gap:10px;
+    text-align:center;transition:all .18s;
+    box-shadow:0 1px 3px rgba(0,0,0,.04);position:relative;
+  }
+  .tool::after{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:14px 14px 0 0;background:var(--green);}
+  .tool:hover{transform:translateY(-2px);box-shadow:0 4px 14px rgba(0,0,0,.08);}
+  .tool-icon{font-size:30px;line-height:1;}
+  .tool-name{font-size:13px;font-weight:700;color:#111827;line-height:1.35;}
+  .tbadge{font-size:9px;font-weight:700;padding:2px 7px;border-radius:20px;background:#f0fdf4;color:var(--green);border:1px solid #bbf7d0;}
+</style>
+</head>
+<body>
+
+<div class="mv-top">
+  <div class="mv-top-main">
+    <div class="mv-top-left">
+      <a href="china-hub.html" class="mv-top-logo"><img src="Mamavege_Logo.png" alt="MamaVege"></a>
+      <div class="mv-top-sep"></div>
+      <span class="mv-top-tool">🇨🇳 China Operations Hub</span>
+    </div>
+    <div class="mv-top-right">
+      <span id="top-user-name" style="color:rgba(255,255,255,.85);font-size:13px;font-weight:600"></span>
+      <button class="mv-top-btn" onclick="logout()">Logout</button>
+    </div>
+  </div>
+  <div class="mv-top-sub">
+    <span class="mv-top-date"></span>
+    <span>MamaVege Management Hub · 妈子素 China Operations</span>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="page-title">中国市场工作台</div>
+  <div class="page-sub">欢迎，<span id="welcome-name"></span>！这里是你的专属工作台，包含中国市场仪表板与日常工作所需的所有工具。</div>
+
+  <div class="sec-title">中国市场数据</div>
+  <div class="tools-grid">
+    <a class="tool" href="china-dashboard.html">
+      <div class="tool-icon">📊</div>
+      <div class="tool-name">China Market Dashboard</div>
+      <span class="tbadge">LIVE</span>
+    </a>
+  </div>
+
+  <div class="sec-title">日常工作工具</div>
+  <div class="tools-grid">
+    <a class="tool" href="report-fill.html">
+      <div class="tool-icon">📋</div>
+      <div class="tool-name">Daily Report</div>
+      <span class="tbadge">LIVE</span>
+    </a>
+    <a class="tool" href="report-fill.html?type=weekly">
+      <div class="tool-icon">📅</div>
+      <div class="tool-name">Weekly Report</div>
+      <span class="tbadge">LIVE</span>
+    </a>
+    <a class="tool" href="sample-request.html">
+      <div class="tool-icon">🧪</div>
+      <div class="tool-name">Sample Request</div>
+      <span class="tbadge">LIVE</span>
+    </a>
+    <a class="tool" href="roi-calculator.html">
+      <div class="tool-icon">💰</div>
+      <div class="tool-name">Break-even Calculator</div>
+      <span class="tbadge">LIVE</span>
+    </a>
+  </div>
+</div>
+
+<script>
+document.querySelectorAll('.mv-top-date').forEach(e=>e.textContent=new Date().toLocaleDateString('zh-CN',{weekday:'short',year:'numeric',month:'short',day:'numeric'}));
+
+function lsGet(key){
+  const raw = localStorage.getItem(key);
+  if(!raw) return null;
+  try{
+    const item = JSON.parse(raw);
+    if(Date.now() > item.expiry){ localStorage.removeItem(key); return null; }
+    return item.value;
+  }catch{ return null; }
+}
+function lsClear(){
+  ['userName','userRole','userId','hq_auth','memberRole'].forEach(k=>localStorage.removeItem(k));
+}
+function logout(){ lsClear(); location.href = 'index.html'; }
+
+(function authGuard(){
+  const userName = lsGet('userName');
+  const userRole = lsGet('userRole');
+  const memberRole = lsGet('memberRole');
+
+  if(!userName || !userRole){ location.href = 'index.html'; return; }
+  if(userRole === 'hq') return; // HQ 管理员也可进入查看
+  if(userRole === 'member' && memberRole === 'china'){
+    document.getElementById('top-user-name').textContent = userName;
+    document.getElementById('welcome-name').textContent = userName;
+    return;
+  }
+  // 其他角色无权访问，导回各自首页
+  location.href = 'my-dashboard.html';
+})();
+</script>
+</body>
+</html>
