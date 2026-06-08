@@ -165,6 +165,13 @@
 </div>
 <script>document.querySelectorAll('.mv-top-date').forEach(e=>e.textContent=new Date().toLocaleDateString('en-MY',{weekday:'short',year:'numeric',month:'short',day:'numeric'}));</script>
 
+<div class="container">
+
+  <div id="mode-selector">
+    <div class="mode-label">Select Report Type</div>
+    <div class="mode-cards" id="modeCards"></div>
+  </div>
+
   <div class="success-banner" id="successBanner">
     <div class="icon">✅</div>
     <h3 id="successTitle">Submitted Successfully!</h3>
@@ -351,8 +358,11 @@ const userRole = lsGet('userRole');
 
 if (!loggedUser) { location.href = 'index.html'; }
 
-document.getElementById('backLink').href = userRole === 'hq' ? 'index.html' : 'my-dashboard.html';
-document.getElementById('backLink').textContent = userRole === 'hq' ? '← Hub' : '← My Dashboard';
+const backLink = document.querySelector('.mv-top-back');
+if (backLink) {
+  backLink.href = userRole === 'hq' ? 'index.html' : 'my-dashboard.html';
+  backLink.textContent = userRole === 'hq' ? '← Hub' : '← My Dashboard';
+}
 
 let currentMode = null;
 let visitPhotoFiles = [null, null, null];
