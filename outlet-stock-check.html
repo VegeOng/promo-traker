@@ -183,6 +183,13 @@
       <span class="mv-top-tool">Outlet Stock Check</span>
     </div>
     <div class="mv-top-right">
+      <div id="hq-login-area">
+        <button id="hq-login-btn" onclick="openHQLogin()" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.4);color:#fff;padding:6px 14px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;">🔒 HQ Login</button>
+        <span id="hq-logged-in" style="display:none;font-size:12px;color:rgba(255,255,255,.9);align-items:center;gap:8px;">
+          <span>✅ HQ Mode</span>
+          <button onclick="logoutHQLocal()" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.4);color:#fff;padding:4px 10px;border-radius:6px;font-size:11px;cursor:pointer;">Logout</button>
+        </span>
+      </div>
       <a href="index.html" class="mv-top-back">← Hub</a>
       <button class="mv-top-btn" onclick="location.reload()">⟳</button>
     </div>
