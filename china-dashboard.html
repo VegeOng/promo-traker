@@ -101,6 +101,11 @@
   <div class="page-title">中国市场仪表板</div>
   <div class="page-sub">数据来源：Google Sheet「日常业绩」· 妈子素 China Operations · 自动汇总电商 / 抖音 / 博主代发 / 线下渠道业绩</div>
 
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:18px;flex-wrap:wrap">
+    <label style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px">查看月份</label>
+    <select id="month-select" onchange="onMonthChange()" style="padding:8px 14px;border:1.5px solid var(--border);border-radius:8px;font-family:inherit;font-size:13px;background:#fff;cursor:pointer;min-width:160px"></select>
+  </div>
+
   <div id="loading" class="loading"><div class="spinner"></div>Loading China market data…</div>
   <div id="content" style="display:none">
 
@@ -112,7 +117,7 @@
         <div class="chart-box"><canvas id="chartTrend"></canvas></div>
       </div>
       <div class="card">
-        <div class="card-title">🏪 渠道业绩分布（本月）</div>
+        <div class="card-title">🏪 渠道业绩分布 <span id="lbl-channel" style="color:var(--muted);font-weight:500"></span></div>
         <div class="chart-box sm"><canvas id="chartChannel"></canvas></div>
         <div id="channel-legend" style="margin-top:6px"></div>
       </div>
@@ -120,7 +125,7 @@
 
     <div class="grid-2b">
       <div class="card">
-        <div class="card-title">🏆 客户 / 达人业绩排行榜（本月 TOP 15）</div>
+        <div class="card-title">🏆 客户 / 达人业绩排行榜 TOP 15 <span id="lbl-customers" style="color:var(--muted);font-weight:500"></span></div>
         <div style="overflow-x:auto">
           <table>
             <thead><tr><th></th><th>客户 / 达人</th><th>类型</th><th class="num">订单数</th><th class="num">业绩 (RMB)</th><th class="num">占比</th></tr></thead>
@@ -129,7 +134,7 @@
         </div>
       </div>
       <div class="card">
-        <div class="card-title">🍜 产品销量分布（本月，按数量）</div>
+        <div class="card-title">🍜 产品销量分布 <span id="lbl-products" style="color:var(--muted);font-weight:500"></span>（按数量）</div>
         <div class="chart-box sm"><canvas id="chartProducts"></canvas></div>
       </div>
     </div>
@@ -190,14 +195,36 @@ async function fetchChinaData(){
 
 function monthKey(y,m){ return `${y}-${String(m).padStart(2,'0')}`; }
 
+let allRows = [];
+const mNamesZh = ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
+
+function populateMonthSelect(){
+  const sel = document.getElementById('month-select');
+  // 取数据里实际出现过的月份 + 当前月份，去重并按时间倒序排列
+  const ymSet = new Set(allRows.map(r=>r.date.ym));
+  const now = new Date();
+  ymSet.add(monthKey(now.getFullYear(), now.getMonth()+1));
+  const yms = Array.from(ymSet).sort().reverse();
+  sel.innerHTML = yms.map(ym=>{
+    const [y,m] = ym.split('-');
+    return `<option value="${ym}">${y}年 ${mNamesZh[parseInt(m)-1]}</option>`;
+  }).join('');
+  sel.value = monthKey(now.getFullYear(), now.getMonth()+1);
+}
+
+function onMonthChange(){
+  render(allRows, document.getElementById('month-select').value);
+}
+
 async function loadAll(){
   document.getElementById('loading').style.display='block';
   document.getElementById('content').style.display='none';
   document.getElementById('errBox').innerHTML='';
   try{
-    const rows = await fetchChinaData();
-    if(!rows.length){ throw new Error('No data returned from sheet'); }
-    render(rows);
+    allRows = await fetchChinaData();
+    if(!allRows.length){ throw new Error('No data returned from sheet'); }
+    populateMonthSelect();
+    render(allRows, document.getElementById('month-select').value);
     document.getElementById('loading').style.display='none';
     document.getElementById('content').style.display='block';
   }catch(e){
@@ -207,12 +234,18 @@ async function loadAll(){
   }
 }
 
-function render(rows){
+function render(rows, selectedYM){
   const now = new Date();
-  const curY = now.getFullYear(), curM = now.getMonth()+1;
-  const curYM = monthKey(curY, curM);
-  const lastDate = new Date(curY, curM-1, 1); lastDate.setMonth(lastDate.getMonth()-1);
+  const [selY, selM] = selectedYM.split('-').map(Number);
+  const curYM = selectedYM;
+  const monthLabel = `（${selY}年${selM}月）`;
+  const lastDate = new Date(selY, selM-1, 1); lastDate.setMonth(lastDate.getMonth()-1);
   const lastYM = monthKey(lastDate.getFullYear(), lastDate.getMonth()+1);
+  const isCurrentMonth = (selY===now.getFullYear() && selM===now.getMonth()+1);
+
+  document.getElementById('lbl-channel').textContent = monthLabel;
+  document.getElementById('lbl-customers').textContent = monthLabel;
+  document.getElementById('lbl-products').textContent = monthLabel;
 
   // ── 月度汇总 ──
   const monthMap = {}; // ym -> revenue
@@ -221,9 +254,9 @@ function render(rows){
   const thisMonthTotal = monthMap[curYM] || 0;
   const lastMonthTotal = monthMap[lastYM] || 0;
   const momPct = lastMonthTotal > 0 ? ((thisMonthTotal - lastMonthTotal) / lastMonthTotal * 100) : null;
-  const ytdTotal = rows.filter(r=>r.date.y===curY).reduce((s,r)=>s+r.revenue,0);
+  const ytdTotal = rows.filter(r=>r.date.y===selY).reduce((s,r)=>s+r.revenue,0);
 
-  // 本周（周一为起点，本地时间）
+  // 本周（周一为起点，仅在选择「当前月」时显示有意义的数据）
   const day = now.getDay();
   const mondayOffset = (day===0 ? -6 : 1-day);
   const monday = new Date(now.getFullYear(), now.getMonth(), now.getDate()+mondayOffset);
@@ -237,17 +270,20 @@ function render(rows){
   const momHtml = momPct===null
     ? `<span style="color:#9ca3af">环比：无上月数据</span>`
     : `<span style="color:${momPct>=0?'var(--green)':'var(--red)'};font-weight:700">${momPct>=0?'▲':'▼'} ${Math.abs(momPct).toFixed(1)}%</span> vs 上月`;
+  const secondCard = isCurrentMonth
+    ? `<div class="kpi-card blue"><div class="kpi-label">本周业绩</div><div class="kpi-val blue">${fmtRMB(weekTotal)}</div><div class="kpi-sub">本周一至今</div></div>`
+    : `<div class="kpi-card blue"><div class="kpi-label">本周业绩（实时）</div><div class="kpi-val blue">${fmtRMB(weekTotal)}</div><div class="kpi-sub">本周一至今，与所选月份无关</div></div>`;
   document.getElementById('kpi-grid').innerHTML = `
-    <div class="kpi-card"><div class="kpi-label">本月业绩</div><div class="kpi-val">${fmtRMB(thisMonthTotal)}</div><div class="kpi-sub">${momHtml}</div></div>
-    <div class="kpi-card blue"><div class="kpi-label">本周业绩</div><div class="kpi-val blue">${fmtRMB(weekTotal)}</div><div class="kpi-sub">本周一至今</div></div>
+    <div class="kpi-card"><div class="kpi-label">${selY}年${selM}月业绩</div><div class="kpi-val">${fmtRMB(thisMonthTotal)}</div><div class="kpi-sub">${momHtml}</div></div>
+    ${secondCard}
     <div class="kpi-card amber"><div class="kpi-label">上月业绩</div><div class="kpi-val amber">${fmtRMB(lastMonthTotal)}</div><div class="kpi-sub">${lastYM}</div></div>
-    <div class="kpi-card"><div class="kpi-label">YTD 累计</div><div class="kpi-val">${fmtRMB(ytdTotal)}</div><div class="kpi-sub">${curY} 年累计</div></div>
+    <div class="kpi-card"><div class="kpi-label">YTD 累计</div><div class="kpi-val">${fmtRMB(ytdTotal)}</div><div class="kpi-sub">${selY} 年累计</div></div>
   `;
 
   // ── 趋势图：近12个月 ──
   const trendLabels = [], trendValues = [];
   for(let i=11;i>=0;i--){
-    const d = new Date(curY, curM-1-i, 1);
+    const d = new Date(selY, selM-1-i, 1);
     const ym = monthKey(d.getFullYear(), d.getMonth()+1);
     trendLabels.push(`${d.getFullYear()}/${d.getMonth()+1}`);
     trendValues.push(monthMap[ym] || 0);
@@ -294,7 +330,7 @@ function render(rows){
   const grandTotal = monthRows.reduce((s,r)=>s+r.revenue,0) || 1;
   const tbody = document.getElementById('top-customers');
   if(!sortedCustomers.length){
-    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:#9ca3af;padding:24px">本月暂无数据</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:#9ca3af;padding:24px">${selY}年${selM}月暂无数据</td></tr>`;
   } else {
     tbody.innerHTML = sortedCustomers.map(([name,d],i)=>{
       const pillClass = d.channel==='ec'?'ec':d.channel==='dy'?'dy':'ot';
