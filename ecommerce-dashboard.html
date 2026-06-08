@@ -85,7 +85,6 @@
     </div>
     <div class="mv-top-right">
       <a href="index.html" class="mv-top-back">← Hub</a>
-      <select id="month-select" onchange="onMonthChange()" style="background:rgba(255,255,255,.12);border:none;color:#fff;padding:5px 10px;border-radius:6px;font-size:12px;font-family:inherit;cursor:pointer"></select>
       <button class="mv-top-btn" onclick="loadAll()">⟳ Refresh</button>
     </div>
   </div>
@@ -98,6 +97,11 @@
 <div class="wrap">
   <div class="page-title">电商业绩仪表板</div>
   <div class="page-sub">数据来源：Google Sheet「2025/26 Online Team Sales Record」· 自动汇总 Shopee / Lazada / TikTok / Website / Other 各渠道每日业绩</div>
+
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:18px;flex-wrap:wrap">
+    <label style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px">查看月份</label>
+    <select id="month-select" onchange="onMonthChange()" style="padding:8px 14px;border:1.5px solid var(--border);border-radius:8px;font-family:inherit;font-size:13px;background:#fff;cursor:pointer;min-width:160px"></select>
+  </div>
 
   <div id="loading" class="loading"><div class="spinner"></div>正在加载数据…</div>
   <div id="errBox"></div>
