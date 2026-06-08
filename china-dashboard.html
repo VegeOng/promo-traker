@@ -64,7 +64,6 @@
   .num{text-align:right;font-variant-numeric:tabular-nums;}
   .pill{display:inline-block;padding:2px 9px;border-radius:20px;font-size:10px;font-weight:700;letter-spacing:.3px;}
   .pill.ec{background:var(--blue-light);color:var(--blue);}
-  .pill.dy{background:#fce7f3;color:#be185d;}
   .pill.ot{background:var(--green-light);color:var(--green);}
 
   .loading{text-align:center;padding:60px 20px;color:var(--muted);font-size:14px;}
@@ -101,7 +100,7 @@
 
 <div class="wrap">
   <div class="page-title">中国市场仪表板</div>
-  <div class="page-sub">数据来源：Google Sheet「日常业绩」· 妈子素 China Operations · 自动汇总电商 / 抖音 / 博主代发 / 线下渠道业绩</div>
+  <div class="page-sub">数据来源：Google Sheet「日常业绩」· 妈子素 China Operations · 自动汇总电商 / 博主代发 / 线下渠道业绩</div>
 
   <div style="display:flex;align-items:center;gap:10px;margin-bottom:18px;flex-wrap:wrap">
     <label style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px">查看月份</label>
@@ -194,9 +193,8 @@ document.querySelectorAll('.mv-top-date').forEach(e=>e.textContent=new Date().to
 
 const CHINA_API = 'https://script.google.com/macros/s/AKfycbzxnGZQSq13c36n0NeVuGPUbxW_duPizD34lvLnxTx2rKDlxziuLtZe82dV4vifyyG5tw/exec';
 
-// 渠道分类规则（vege 确认）：电商 = 微信小店 / 抖店；抖音单独一类；其余归入「博主 / 经销 / 线下」
+// 渠道分类规则（vege 确认）：电商 = 微信小店 / 抖店；其余归入「博主 / 经销 / 线下」（无独立抖音渠道）
 const ECOMMERCE_NAMES = ['微信小店', '抖店'];
-const DOUYIN_NAMES = ['抖音'];
 const PRODUCT_COLS = ['香椿干盘面','青柠干盘面','冬阴功汤','香椿杯面','青柠杯面'];
 const MONTHLY_GOAL = 50000;   // 中国市场月度目标 RMB 5万
 const YEARLY_GOAL = 600000;   // 中国市场年度目标 RMB 60万
@@ -226,11 +224,10 @@ function parseSheetDate(raw){
 function classifyChannel(name){
   const n = (name||'').trim();
   if(ECOMMERCE_NAMES.some(k=>n.includes(k))) return 'ec';
-  if(DOUYIN_NAMES.some(k=>n.includes(k))) return 'dy';
   return 'ot';
 }
-const channelLabel = { ec:'电商平台', dy:'抖音', ot:'博主 / 经销 / 线下' };
-const channelColor = { ec:'#2563eb', dy:'#be185d', ot:'#166534' };
+const channelLabel = { ec:'电商平台', ot:'博主 / 经销 / 线下' };
+const channelColor = { ec:'#2563eb', ot:'#166534' };
 
 async function fetchChinaData(){
   const res = await fetch(CHINA_API);
@@ -364,7 +361,7 @@ function render(rows, selectedYM){
 
   // ── 本月渠道分布 + 客户榜（基于本月数据）──
   const monthRows = rows.filter(r=>r.date.ym===curYM);
-  const channelTotals = { ec:0, dy:0, ot:0 };
+  const channelTotals = { ec:0, ot:0 };
   const customerMap = {}; // name -> {revenue, orders, channel}
   monthRows.forEach(r=>{
     const ch = classifyChannel(r.name);
@@ -377,13 +374,13 @@ function render(rows, selectedYM){
   if(charts.channel) charts.channel.destroy();
   charts.channel = new Chart(document.getElementById('chartChannel'), {
     type:'doughnut',
-    data:{ labels:[channelLabel.ec, channelLabel.dy, channelLabel.ot],
-      datasets:[{ data:[channelTotals.ec, channelTotals.dy, channelTotals.ot], backgroundColor:[channelColor.ec, channelColor.dy, channelColor.ot], borderWidth:0 }] },
+    data:{ labels:[channelLabel.ec, channelLabel.ot],
+      datasets:[{ data:[channelTotals.ec, channelTotals.ot], backgroundColor:[channelColor.ec, channelColor.ot], borderWidth:0 }] },
     options:{ responsive:true, maintainAspectRatio:false,
       plugins:{ legend:{ display:false }, tooltip:{ callbacks:{ label:ctx=>`${ctx.label}: RMB ${ctx.parsed.toLocaleString('zh-CN')}` } } } }
   });
-  const channelTotalSum = channelTotals.ec + channelTotals.dy + channelTotals.ot || 1;
-  document.getElementById('channel-legend').innerHTML = ['ec','dy','ot'].map(k=>`
+  const channelTotalSum = channelTotals.ec + channelTotals.ot || 1;
+  document.getElementById('channel-legend').innerHTML = ['ec','ot'].map(k=>`
     <div class="legend-row">
       <span><span class="legend-dot" style="background:${channelColor[k]}"></span>${channelLabel[k]}</span>
       <span style="font-weight:700">${fmtRMB(channelTotals[k])} <span style="color:#9ca3af;font-weight:400">(${(channelTotals[k]/channelTotalSum*100).toFixed(1)}%)</span></span>
@@ -397,7 +394,7 @@ function render(rows, selectedYM){
     tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:#9ca3af;padding:24px">${selY}年${selM}月暂无数据</td></tr>`;
   } else {
     tbody.innerHTML = sortedCustomers.map(([name,d],i)=>{
-      const pillClass = d.channel==='ec'?'ec':d.channel==='dy'?'dy':'ot';
+      const pillClass = d.channel==='ec'?'ec':'ot';
       return `<tr>
         <td class="rank">${i===0?'🥇':i===1?'🥈':i===2?'🥉':i+1}</td>
         <td><strong>${escHtml(name)}</strong></td>

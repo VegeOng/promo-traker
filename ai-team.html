@@ -940,7 +940,7 @@ Wan 巡店：本月目标100家，落后时提醒。
 - 月度/年度目标达成进度
 
 数据来源：已连接妈子素 Google Sheet「日常业绩」（China Market Dashboard 同一数据源）。
-你能读到：本月/上月/YTD 业绩、环比变化、月度与年度目标达成率、各渠道占比（电商平台=微信小店/抖店、抖音、博主/经销/线下）、
+你能读到：本月/上月/YTD 业绩、环比变化、月度与年度目标达成率、各渠道占比（电商平台=微信小店/抖店、博主/经销/线下）、
 本月 TOP 客户/达人业绩排行（评估博主代发 ROI）、各产品（香椿/青柠干盘面、冬阴功汤、香椿/青柠杯面）销量。
 
 月报（每月1日）内容：
@@ -967,7 +967,6 @@ const GOOGLE_SHEETS_API = 'https://script.google.com/macros/s/AKfycbwxt23ZB0od7E
 // 中国市场业绩数据（妈子素 Google Sheet「日常业绩」）— 给龙龙用
 const CHINA_SHEETS_API = 'https://script.google.com/macros/s/AKfycbzxnGZQSq13c36n0NeVuGPUbxW_duPizD34lvLnxTx2rKDlxziuLtZe82dV4vifyyG5tw/exec';
 const CHINA_ECOMMERCE_NAMES = ['微信小店', '抖店'];
-const CHINA_DOUYIN_NAMES = ['抖音'];
 const CHINA_PRODUCT_COLS = ['香椿干盘面','青柠干盘面','冬阴功汤','香椿杯面','青柠杯面'];
 
 const SUPABASE_URL = 'https://wjhgezvrxlhpexocfsea.supabase.co';
@@ -1024,7 +1023,6 @@ function parseChinaSheetDate(raw) {
 function classifyChinaChannel(name) {
   const n = (name || '').trim();
   if (CHINA_ECOMMERCE_NAMES.some(k => n.includes(k))) return '电商平台';
-  if (CHINA_DOUYIN_NAMES.some(k => n.includes(k))) return '抖音';
   return '博主/经销/线下';
 }
 async function fetchChinaData() {
