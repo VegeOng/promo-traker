@@ -565,6 +565,7 @@
         <select id="new-member-role">
           <option value="sales">Sales</option>
           <option value="marketing">Marketing</option>
+          <option value="china">China</option>
         </select>
         <button class="btn-add" onclick="addMember()">+ Add</button>
       </div>
@@ -1117,6 +1118,7 @@ function renderMembers(){
         <select id="roleval-${m.id}">
           <option value="sales" ${(m.role||'sales')==='sales'?'selected':''}>Sales</option>
           <option value="marketing" ${m.role==='marketing'?'selected':''}>Marketing</option>
+          <option value="china" ${m.role==='china'?'selected':''}>China</option>
         </select>
         <button class="btn-save" onclick="saveRole(${m.id})">Save</button>
         <button class="btn-cancel" onclick="toggleRoleEdit(${m.id})">Cancel</button>
