@@ -14,6 +14,7 @@
   --t1:#111827;--t2:#4b5563;--t3:#9ca3af;
   --green:#166534;--green2:#22c55e;--green-bg:#f0fdf4;--green-border:#bbf7d0;
   --red:#dc2626;--red-bg:#fef2f2;
+  --blue:#2563eb;--amber:#d97706;
   --font:'Plus Jakarta Sans',sans-serif;--mono:'DM Mono',monospace;
 }
 body{background:var(--bg);color:var(--t1);font-family:var(--font);min-height:100vh;}
@@ -338,6 +339,15 @@ async function loadSalesOverview() {
   </div>
 
   <div class="sec">
+    <div class="sec-header"><span class="sec-title">E-commerce Operations</span><div class="sec-line"></div><span class="sec-tag" style="background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe;">NEW</span></div>
+    <div class="grid">
+      <a class="tool live" href="ecommerce-dashboard.html" style="--tc:var(--blue)">
+        <div class="tool-icon">🛒</div><div class="tool-name">E-commerce Dashboard</div><span class="tbadge tb-new">NEW</span>
+      </a>
+    </div>
+  </div>
+
+  <div class="sec">
     <div class="sec-header"><span class="sec-title">Outlet Operations</span><div class="sec-line"></div><span class="sec-tag" style="background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe;">NEW</span></div>
     <div class="grid">
       <a class="tool live" href="outlet-stock-check.html" style="--tc:var(--green)">
@@ -401,7 +411,7 @@ const userRole = lsGet("userRole");
 
 if (userName && userRole === 'member') {
   if (lsGet('memberRole') === 'china') {
-    location.href = 'china-dashboard.html';
+    location.href = 'china-hub.html';
   } else {
     location.href = 'my-dashboard.html';
   }
@@ -447,7 +457,7 @@ async function doLogin() {
     lsSet('userId', member.id);
     lsSet('memberRole', member.role || 'sales');
     if ((member.role || '') === 'china') {
-      location.href = 'china-dashboard.html';
+      location.href = 'china-hub.html';
     } else {
       location.href = 'my-dashboard.html';
     }

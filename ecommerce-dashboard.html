@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MamaVege | E-commerce Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<style>
+  :root{
+    --green:#166534; --green-light:#dcfce7; --red:#dc2626; --red-light:#fee2e2;
+    --amber:#d97706; --amber-light:#fef3c7; --blue:#2563eb; --blue-light:#dbeafe;
+    --purple:#7c3aed; --purple-light:#ede9fe; --pink:#be185d; --pink-light:#fce7f3;
+    --text:#1a1a1a; --muted:#6b7280; --border:#e5e7eb; --card:#ffffff; --bg:#f4f6f3;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+
+  .mv-top{overflow:hidden}
+  .mv-top-main{display:flex;justify-content:space-between;align-items:center;padding:12px 24px;background:#1d4ed8}
+  .mv-top-left{display:flex;align-items:center;gap:12px}
+  .mv-top-logo{height:34px;background:#fff;border-radius:8px;padding:3px 8px;display:flex;align-items:center;text-decoration:none}
+  .mv-top-logo img{height:26px}
+  .mv-top-sep{width:1px;height:24px;background:rgba(255,255,255,.2)}
+  .mv-top-tool{color:#fff;font-size:14px;font-weight:700;letter-spacing:.3px}
+  .mv-top-right{display:flex;align-items:center;gap:12px}
+  .mv-top-back{color:rgba(255,255,255,.8);text-decoration:none;font-size:13px;font-weight:600}
+  .mv-top-back:hover{color:#fff}
+  .mv-top-btn{background:rgba(255,255,255,.12);border:none;color:rgba(255,255,255,.8);padding:5px 14px;border-radius:6px;font-size:12px;cursor:pointer;font-family:inherit}
+  .mv-top-btn:hover{background:rgba(255,255,255,.2);color:#fff}
+  .mv-top-sub{display:flex;justify-content:space-between;align-items:center;padding:5px 24px;background:#1e40af;color:rgba(255,255,255,.6);font-size:11px}
+
+  .wrap{max-width:1320px;margin:0 auto;padding:1.5rem 1.5rem 3rem;}
+  .page-title{font-family:'DM Serif Display',serif;font-size:1.6rem;color:var(--blue);margin-bottom:4px;}
+  .page-sub{font-size:13px;color:var(--muted);margin-bottom:20px;}
+
+  .kpi-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px;margin-bottom:20px;}
+  .kpi-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;position:relative;overflow:hidden;}
+  .kpi-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--blue);}
+  .kpi-card.green::before{background:var(--green);}
+  .kpi-card.red::before{background:var(--red);}
+  .kpi-card.amber::before{background:var(--amber);}
+  .kpi-label{font-size:10px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;}
+  .kpi-val{font-size:24px;font-weight:800;line-height:1.1;color:var(--blue);}
+  .kpi-val.green{color:var(--green);}
+  .kpi-val.red{color:var(--red);}
+  .kpi-val.amber{color:var(--amber);}
+  .kpi-sub{font-size:11px;color:#9ca3af;margin-top:4px;}
+
+  .grid-2{display:grid;grid-template-columns:1.4fr 1fr;gap:16px;margin-bottom:16px;}
+  .grid-2b{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;}
+  @media(max-width:900px){.grid-2,.grid-2b{grid-template-columns:1fr;}}
+
+  .card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px;}
+  .card-title{font-size:14px;font-weight:700;color:var(--text);margin-bottom:14px;display:flex;align-items:center;gap:8px;}
+  .chart-box{position:relative;height:280px;}
+  .chart-box.sm{height:240px;}
+
+  table{width:100%;border-collapse:collapse;font-size:13px;}
+  th{text-align:left;padding:8px 10px;font-size:11px;text-transform:uppercase;letter-spacing:.4px;color:#9ca3af;font-weight:700;border-bottom:1px solid var(--border);}
+  td{padding:9px 10px;border-bottom:1px solid #f3f4f6;}
+  tr:last-child td{border-bottom:none;}
+  .num{text-align:right;font-variant-numeric:tabular-nums;}
+  .pos{color:var(--green);font-weight:700;}
+  .neg{color:var(--red);font-weight:700;}
+
+  .loading{text-align:center;padding:60px 20px;color:var(--muted);font-size:14px;}
+  .spinner{width:30px;height:30px;border:3px solid #e5e7eb;border-top-color:var(--blue);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 12px;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+  .err{background:var(--red-light);color:var(--red);border-radius:10px;padding:14px;font-size:13px;}
+
+  .legend-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f3f4f6;font-size:13px;}
+  .legend-row:last-child{border-bottom:none;}
+  .legend-dot{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:8px;vertical-align:middle;}
+</style>
+</head>
+<body>
+
+<div class="mv-top">
+  <div class="mv-top-main">
+    <div class="mv-top-left">
+      <a href="index.html" class="mv-top-logo"><img src="Mamavege_Logo.png" alt="MamaVege"></a>
+      <div class="mv-top-sep"></div>
+      <span class="mv-top-tool">🛒 E-commerce Dashboard</span>
+    </div>
+    <div class="mv-top-right">
+      <a href="index.html" class="mv-top-back">← Hub</a>
+      <button class="mv-top-btn" onclick="loadAll()">⟳ Refresh</button>
+    </div>
+  </div>
+  <div class="mv-top-sub">
+    <span class="mv-top-date"></span>
+    <span>MamaVege Management Hub · E-commerce Operations</span>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="page-title">电商业绩仪表板</div>
+  <div class="page-sub">数据来源：Google Sheet「2025/26 Online Team Sales Record」· 自动汇总 Shopee / Lazada / TikTok / Website / Other 各渠道每日业绩</div>
+
+  <div id="loading" class="loading"><div class="spinner"></div>正在加载数据…</div>
+  <div id="errBox"></div>
+
+  <div id="content" style="display:none">
+    <div id="kpi-grid" class="kpi-grid"></div>
+
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-title">📈 每日业绩趋势（本月）</div>
+        <div class="chart-box"><canvas id="chartTrend"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-title">🏪 渠道业绩占比（本月）</div>
+        <div class="chart-box"><canvas id="chartChannel"></canvas></div>
+        <div id="channel-legend" style="margin-top:10px"></div>
+      </div>
+    </div>
+
+    <div class="grid-2b">
+      <div class="card">
+        <div class="card-title">💰 广告花费 vs ROI（本月，按渠道）</div>
+        <div class="chart-box sm"><canvas id="chartAds"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-title">🏷️ Lazada / TikTok 子帐号业绩对比</div>
+        <table>
+          <thead><tr><th>子帐号</th><th class="num">业绩 (RM)</th><th class="num">广告花费 (RM)</th><th class="num">ROI</th></tr></thead>
+          <tbody id="sub-account-table"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">📋 每日业绩明细</div>
+      <table>
+        <thead><tr>
+          <th>日期</th><th class="num">Shopee</th><th class="num">Lazada</th><th class="num">TikTok</th>
+          <th class="num">Website</th><th class="num">Other</th><th class="num">总计</th>
+        </tr></thead>
+        <tbody id="daily-table"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script>
+document.querySelectorAll('.mv-top-date').forEach(e=>e.textContent=new Date().toLocaleDateString('zh-CN',{weekday:'short',year:'numeric',month:'short',day:'numeric'}));
+
+const ECOM_API = 'https://script.google.com/macros/s/AKfycby4XEqW_TGKhRG4TmVVaAxHWg2T0Eia6mD1Cv70mQx4XbfTnOC8L2njprEpzyLjt3Ur/exec';
+
+const channelColor = { shopee:'#ee4d2d', lazada:'#0f146d', tiktok:'#000000', website:'#2563eb', other:'#6b7280' };
+const channelLabel = { shopee:'Shopee', lazada:'Lazada', tiktok:'TikTok', website:'Website', other:'Other' };
+
+let charts = {};
+let allRows = [];
+
+function fmtRM(n){ return 'RM ' + (n||0).toLocaleString('zh-CN', {minimumFractionDigits:2, maximumFractionDigits:2}); }
+function escHtml(s){ return String(s==null?'':s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+// Google Sheet 日期序列化偏移修正（GMT+8 表格存成 UTC ISO，需 +8 小时还原本地日期）
+function parseSheetDate(raw){
+  const d = new Date(raw);
+  const adj = new Date(d.getTime() + 8*60*60*1000);
+  return { y: adj.getUTCFullYear(), m: adj.getUTCMonth()+1, day: adj.getUTCDate(),
+    ym: `${adj.getUTCFullYear()}-${String(adj.getUTCMonth()+1).padStart(2,'0')}`,
+    label: `${adj.getUTCMonth()+1}/${adj.getUTCDate()}` };
+}
+
+async function fetchEcomData(){
+  const res = await fetch(ECOM_API);
+  if(!res.ok) throw new Error('HTTP ' + res.status);
+  const json = await res.json();
+  if(json.error) throw new Error(json.error);
+  return (json.data || []).map(r => {
+    const d = parseSheetDate(r.date);
+    const channelTotal = (r.shopee.sales||0) + (r.lazada.total.sales||0) + (r.tiktok.total.sales||0) + (r.website.sales||0) + (r.other.sales||0);
+    return Object.assign({}, r, { date: d, channelTotal: channelTotal });
+  }).filter(r => r.channelTotal > 0 || r.shopee.adsSpent > 0); // 过滤掉尚未发生的未来空白日
+}
+
+async function loadAll(){
+  document.getElementById('loading').style.display='block';
+  document.getElementById('content').style.display='none';
+  document.getElementById('errBox').innerHTML='';
+  try{
+    allRows = await fetchEcomData();
+    if(!allRows.length){ throw new Error('No data returned from sheet'); }
+    render(allRows);
+    document.getElementById('loading').style.display='none';
+    document.getElementById('content').style.display='block';
+  }catch(e){
+    console.error(e);
+    document.getElementById('loading').style.display='none';
+    document.getElementById('errBox').innerHTML = `<div class="err">❌ 数据加载失败：${escHtml(e.message)}<br>请确认 Google Sheet API 已正确部署且可公开访问。</div>`;
+  }
+}
+
+function render(rows){
+  // ── KPI ──
+  const totalSales = rows.reduce((s,r)=>s+r.channelTotal, 0);
+  const totalAdsSpent = rows.reduce((s,r)=> s + r.shopee.adsSpent + r.lazada.total.adsSpent + r.tiktok.total.adsSpent, 0);
+  const overallROI = totalAdsSpent > 0 ? (totalSales / totalAdsSpent) : null;
+  const avgDaily = totalSales / (rows.length || 1);
+
+  // 找出业绩最高的渠道
+  const channelTotals = { shopee:0, lazada:0, tiktok:0, website:0, other:0 };
+  rows.forEach(r=>{
+    channelTotals.shopee += r.shopee.sales;
+    channelTotals.lazada += r.lazada.total.sales;
+    channelTotals.tiktok += r.tiktok.total.sales;
+    channelTotals.website += r.website.sales;
+    channelTotals.other += r.other.sales;
+  });
+  const topChannel = Object.entries(channelTotals).sort((a,b)=>b[1]-a[1])[0];
+
+  document.getElementById('kpi-grid').innerHTML = `
+    <div class="kpi-card"><div class="kpi-label">本月电商总业绩</div><div class="kpi-val">${fmtRM(totalSales)}</div><div class="kpi-sub">已记录 ${rows.length} 天</div></div>
+    <div class="kpi-card amber"><div class="kpi-label">广告总花费</div><div class="kpi-val amber">${fmtRM(totalAdsSpent)}</div><div class="kpi-sub">${overallROI!==null ? `整体 ROI ${overallROI.toFixed(2)}x` : '暂无数据'}</div></div>
+    <div class="kpi-card green"><div class="kpi-label">日均业绩</div><div class="kpi-val green">${fmtRM(avgDaily)}</div><div class="kpi-sub">本月平均</div></div>
+    <div class="kpi-card"><div class="kpi-label">最佳渠道</div><div class="kpi-val">${channelLabel[topChannel[0]]}</div><div class="kpi-sub">${fmtRM(topChannel[1])}</div></div>
+  `;
+
+  // ── 趋势图 ──
+  if(charts.trend) charts.trend.destroy();
+  charts.trend = new Chart(document.getElementById('chartTrend'), {
+    type:'line',
+    data:{ labels: rows.map(r=>r.date.label),
+      datasets:[{ label:'每日总业绩 (RM)', data: rows.map(r=>r.channelTotal), borderColor:'#2563eb', backgroundColor:'#2563eb22', fill:true, tension:.3, borderWidth:2, pointRadius:2 }] },
+    options:{ responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label:ctx=>'RM ' + ctx.parsed.y.toLocaleString('zh-CN',{minimumFractionDigits:2}) } } },
+      scales:{ y:{ beginAtZero:true } } }
+  });
+
+  // ── 渠道占比 ──
+  const chKeys = ['shopee','lazada','tiktok','website','other'];
+  if(charts.channel) charts.channel.destroy();
+  charts.channel = new Chart(document.getElementById('chartChannel'), {
+    type:'doughnut',
+    data:{ labels: chKeys.map(k=>channelLabel[k]),
+      datasets:[{ data: chKeys.map(k=>channelTotals[k]), backgroundColor: chKeys.map(k=>channelColor[k]), borderWidth:0 }] },
+    options:{ responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label:ctx=>`${ctx.label}: RM ${ctx.parsed.toLocaleString('zh-CN')}` } } } }
+  });
+  const chSum = chKeys.reduce((s,k)=>s+channelTotals[k],0) || 1;
+  document.getElementById('channel-legend').innerHTML = chKeys.map(k=>`
+    <div class="legend-row">
+      <span><span class="legend-dot" style="background:${channelColor[k]}"></span>${channelLabel[k]}</span>
+      <span style="font-weight:700">${fmtRM(channelTotals[k])} <span style="color:#9ca3af;font-weight:400">(${(channelTotals[k]/chSum*100).toFixed(1)}%)</span></span>
+    </div>`).join('');
+
+  // ── 广告花费 vs ROI ──
+  const adsKeys = ['shopee','lazada','tiktok'];
+  const adsSpentArr = adsKeys.map(k=> rows.reduce((s,r)=> s + (k==='shopee' ? r.shopee.adsSpent : r[k].total.adsSpent), 0));
+  const roiArr = adsKeys.map((k,i)=> adsSpentArr[i] > 0 ? (channelTotals[k] / adsSpentArr[i]) : 0);
+  if(charts.ads) charts.ads.destroy();
+  charts.ads = new Chart(document.getElementById('chartAds'), {
+    type:'bar',
+    data:{ labels: adsKeys.map(k=>channelLabel[k]),
+      datasets:[
+        { label:'广告花费 (RM)', data: adsSpentArr, backgroundColor:'#d97706cc', borderRadius:6, yAxisID:'y' },
+        { label:'ROI (倍数)', data: roiArr, backgroundColor:'#16a34acc', borderRadius:6, yAxisID:'y1', type:'line', borderColor:'#16a34a', tension:.3 }
+      ] },
+    options:{ responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{ position:'bottom', labels:{boxWidth:12,font:{size:11}} } },
+      scales:{
+        y:{ beginAtZero:true, position:'left', title:{display:true,text:'RM',font:{size:10}} },
+        y1:{ beginAtZero:true, position:'right', grid:{drawOnChartArea:false}, title:{display:true,text:'ROI',font:{size:10}} }
+      } }
+  });
+
+  // ── 子帐号对比表 ──
+  const subAccounts = [
+    { name: 'Lazada · Total', sales: channelTotalSubSum(rows,'lazada','total','sales'), ads: channelTotalSubSum(rows,'lazada','total','adsSpent') },
+    { name: 'Lazada · MamaVege.OS', sales: channelTotalSubSum(rows,'lazada','mamavegeOS','sales'), ads: channelTotalSubSum(rows,'lazada','mamavegeOS','adsSpent') },
+    { name: 'Lazada · MamaVege Malaysia', sales: channelTotalSubSum(rows,'lazada','mamavegeMalaysia','sales'), ads: channelTotalSubSum(rows,'lazada','mamavegeMalaysia','adsSpent') },
+    { name: 'TikTok · Total', sales: channelTotalSubSum(rows,'tiktok','total','sales'), ads: channelTotalSubSum(rows,'tiktok','total','adsSpent') },
+    { name: 'TikTok · Product', sales: channelTotalSubSum(rows,'tiktok','product','sales'), ads: channelTotalSubSum(rows,'tiktok','product','adsSpent') },
+    { name: 'TikTok · Live', sales: channelTotalSubSum(rows,'tiktok','live','sales'), ads: channelTotalSubSum(rows,'tiktok','live','adsSpent') },
+  ];
+  document.getElementById('sub-account-table').innerHTML = subAccounts.map(a=>{
+    const roi = a.ads > 0 ? (a.sales/a.ads) : null;
+    return `<tr>
+      <td><strong>${escHtml(a.name)}</strong></td>
+      <td class="num">${fmtRM(a.sales)}</td>
+      <td class="num">${fmtRM(a.ads)}</td>
+      <td class="num">${roi!==null ? roi.toFixed(2)+'x' : '—'}</td>
+    </tr>`;
+  }).join('');
+
+  // ── 每日明细表 ──
+  document.getElementById('daily-table').innerHTML = rows.slice().reverse().map(r=>`
+    <tr>
+      <td>${r.date.label}</td>
+      <td class="num">${fmtRM(r.shopee.sales)}</td>
+      <td class="num">${fmtRM(r.lazada.total.sales)}</td>
+      <td class="num">${fmtRM(r.tiktok.total.sales)}</td>
+      <td class="num">${fmtRM(r.website.sales)}</td>
+      <td class="num">${fmtRM(r.other.sales)}</td>
+      <td class="num"><strong>${fmtRM(r.channelTotal)}</strong></td>
+    </tr>`).join('');
+}
+
+function channelTotalSubSum(rows, channel, sub, field){
+  return rows.reduce((s,r)=> s + (r[channel][sub][field] || 0), 0);
+}
+
+loadAll();
+</script>
+</body>
+</html>
