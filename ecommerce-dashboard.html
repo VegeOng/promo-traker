@@ -85,6 +85,7 @@
     </div>
     <div class="mv-top-right">
       <a href="index.html" class="mv-top-back">← Hub</a>
+      <select id="month-select" onchange="onMonthChange()" style="background:rgba(255,255,255,.12);border:none;color:#fff;padding:5px 10px;border-radius:6px;font-size:12px;font-family:inherit;cursor:pointer"></select>
       <button class="mv-top-btn" onclick="loadAll()">⟳ Refresh</button>
     </div>
   </div>
@@ -106,11 +107,11 @@
 
     <div class="grid-2">
       <div class="card">
-        <div class="card-title">📈 每日业绩趋势（本月）</div>
+        <div class="card-title">📈 每日业绩趋势（<span id="lbl-month-1">本月</span>）</div>
         <div class="chart-box"><canvas id="chartTrend"></canvas></div>
       </div>
       <div class="card">
-        <div class="card-title">🏪 渠道业绩占比（本月）</div>
+        <div class="card-title">🏪 渠道业绩占比（<span id="lbl-month-2">本月</span>）</div>
         <div class="chart-box"><canvas id="chartChannel"></canvas></div>
         <div id="channel-legend" style="margin-top:10px"></div>
       </div>
@@ -118,7 +119,7 @@
 
     <div class="grid-2b">
       <div class="card">
-        <div class="card-title">💰 广告花费 vs ROI（本月，按渠道）</div>
+        <div class="card-title">💰 广告花费 vs ROI（<span id="lbl-month-3">本月</span>，按渠道）</div>
         <div class="chart-box sm"><canvas id="chartAds"></canvas></div>
       </div>
       <div class="card">
@@ -146,13 +147,40 @@
 <script>
 document.querySelectorAll('.mv-top-date').forEach(e=>e.textContent=new Date().toLocaleDateString('zh-CN',{weekday:'short',year:'numeric',month:'short',day:'numeric'}));
 
-const ECOM_API = 'https://script.google.com/macros/s/AKfycby4XEqW_TGKhRG4TmVVaAxHWg2T0Eia6mD1Cv70mQx4XbfTnOC8L2njprEpzyLjt3Ur/exec';
+const ECOM_API = 'https://script.google.com/macros/s/AKfycbyqZ8w-aNLDSjFvySTXL_zVYQty0U7-HS-6Nw2EWz5ulqexPNoc1-q_V3WL0h1EEDXz/exec';
 
 const channelColor = { shopee:'#ee4d2d', lazada:'#0f146d', tiktok:'#000000', website:'#2563eb', other:'#6b7280' };
 const channelLabel = { shopee:'Shopee', lazada:'Lazada', tiktok:'TikTok', website:'Website', other:'Other' };
 
 let charts = {};
 let allRows = [];
+let monthDataCache = {}; // sheetName -> rows
+let currentSheetName = null;
+const SHEET_MONTH_NAMES = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+function currentSheetNameOf(date){
+  const y = date.getFullYear() % 100;
+  return SHEET_MONTH_NAMES[date.getMonth()] + ' ' + (y < 10 ? '0' + y : y);
+}
+
+function populateMonthSelect(){
+  const sel = document.getElementById('month-select');
+  const now = new Date();
+  const opts = [];
+  for(let i=0;i<12;i++){
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const sheetName = currentSheetNameOf(d);
+    const label = d.toLocaleDateString('zh-CN', { year:'numeric', month:'long' });
+    opts.push(`<option value="${sheetName}">${label}</option>`);
+  }
+  sel.innerHTML = opts.join('');
+  sel.value = currentSheetNameOf(now);
+}
+
+function onMonthChange(){
+  const sheetName = document.getElementById('month-select').value;
+  loadAll(sheetName);
+}
 
 function fmtRM(n){ return 'RM ' + (n||0).toLocaleString('zh-CN', {minimumFractionDigits:2, maximumFractionDigits:2}); }
 function escHtml(s){ return String(s==null?'':s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
@@ -166,8 +194,9 @@ function parseSheetDate(raw){
     label: `${adj.getUTCMonth()+1}/${adj.getUTCDate()}` };
 }
 
-async function fetchEcomData(){
-  const res = await fetch(ECOM_API);
+async function fetchEcomData(sheetName){
+  const url = sheetName ? `${ECOM_API}?sheet=${encodeURIComponent(sheetName)}` : ECOM_API;
+  const res = await fetch(url);
   if(!res.ok) throw new Error('HTTP ' + res.status);
   const json = await res.json();
   if(json.error) throw new Error(json.error);
@@ -178,20 +207,41 @@ async function fetchEcomData(){
   }).filter(r => r.channelTotal > 0 || r.shopee.adsSpent > 0); // 过滤掉尚未发生的未来空白日
 }
 
-async function loadAll(){
+async function loadAll(sheetName){
   document.getElementById('loading').style.display='block';
   document.getElementById('content').style.display='none';
   document.getElementById('errBox').innerHTML='';
   try{
-    allRows = await fetchEcomData();
-    if(!allRows.length){ throw new Error('No data returned from sheet'); }
+    const sel = document.getElementById('month-select');
+    if(!sheetName){ sheetName = sel.value || currentSheetNameOf(new Date()); }
+    currentSheetName = sheetName;
+    sel.value = sheetName;
+
+    let rows;
+    if(monthDataCache[sheetName]){
+      rows = monthDataCache[sheetName];
+    } else {
+      rows = await fetchEcomData(sheetName);
+      monthDataCache[sheetName] = rows;
+    }
+    allRows = rows;
+    if(!allRows.length){ throw new Error(`「${sheetName}」暂无数据`); }
+
+    // 更新各图表标题中的月份标签
+    const opt = sel.querySelector(`option[value="${sheetName}"]`);
+    const monthLabel = opt ? opt.textContent : sheetName;
+    ['lbl-month-1','lbl-month-2','lbl-month-3','lbl-month-4','lbl-month-5'].forEach(id=>{
+      const el = document.getElementById(id);
+      if(el) el.textContent = monthLabel;
+    });
+
     render(allRows);
     document.getElementById('loading').style.display='none';
     document.getElementById('content').style.display='block';
   }catch(e){
     console.error(e);
     document.getElementById('loading').style.display='none';
-    document.getElementById('errBox').innerHTML = `<div class="err">❌ 数据加载失败：${escHtml(e.message)}<br>请确认 Google Sheet API 已正确部署且可公开访问。</div>`;
+    document.getElementById('errBox').innerHTML = `<div class="err">❌ 数据加载失败：${escHtml(e.message)}<br>请确认 Google Sheet API 已正确部署且可公开访问，或该月份尚无数据。</div>`;
   }
 }
 
@@ -214,9 +264,9 @@ function render(rows){
   const topChannel = Object.entries(channelTotals).sort((a,b)=>b[1]-a[1])[0];
 
   document.getElementById('kpi-grid').innerHTML = `
-    <div class="kpi-card"><div class="kpi-label">本月电商总业绩</div><div class="kpi-val">${fmtRM(totalSales)}</div><div class="kpi-sub">已记录 ${rows.length} 天</div></div>
+    <div class="kpi-card"><div class="kpi-label"><span id="lbl-month-4">本月</span>电商总业绩</div><div class="kpi-val">${fmtRM(totalSales)}</div><div class="kpi-sub">已记录 ${rows.length} 天</div></div>
     <div class="kpi-card amber"><div class="kpi-label">广告总花费</div><div class="kpi-val amber">${fmtRM(totalAdsSpent)}</div><div class="kpi-sub">${overallROI!==null ? `整体 ROI ${overallROI.toFixed(2)}x` : '暂无数据'}</div></div>
-    <div class="kpi-card green"><div class="kpi-label">日均业绩</div><div class="kpi-val green">${fmtRM(avgDaily)}</div><div class="kpi-sub">本月平均</div></div>
+    <div class="kpi-card green"><div class="kpi-label">日均业绩</div><div class="kpi-val green">${fmtRM(avgDaily)}</div><div class="kpi-sub"><span id="lbl-month-5">本月</span>平均</div></div>
     <div class="kpi-card"><div class="kpi-label">最佳渠道</div><div class="kpi-val">${channelLabel[topChannel[0]]}</div><div class="kpi-sub">${fmtRM(topChannel[1])}</div></div>
   `;
 
@@ -304,6 +354,7 @@ function channelTotalSubSum(rows, channel, sub, field){
   return rows.reduce((s,r)=> s + (r[channel][sub][field] || 0), 0);
 }
 
+populateMonthSelect();
 loadAll();
 </script>
 </body>
