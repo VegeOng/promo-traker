@@ -125,9 +125,7 @@ const ANNUAL_TARGET = 6000000;
 let salesMembers = [];
 
 function fmtRMShort(n) {
-  if (n >= 1000000) return 'RM ' + (n/1000000).toFixed(2) + 'M';
-  if (n >= 1000) return 'RM ' + (n/1000).toFixed(1) + 'K';
-  return 'RM ' + Number(n||0).toLocaleString('en-MY', {minimumFractionDigits:0});
+  return 'RM ' + Number(n||0).toLocaleString('en-MY', {minimumFractionDigits:2, maximumFractionDigits:2});
 }
 function getTotalField(r) {
   for (const k of Object.keys(r)) {
