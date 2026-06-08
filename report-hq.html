@@ -932,7 +932,7 @@ async function loadHQStats() {
     for(let i=0;i<12;i++){
       const d=new Date(now.getFullYear(),now.getMonth()-i,1);
       const o=document.createElement('option');
-      o.value=d.toISOString().slice(0,7);
+      o.value=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
       o.textContent=d.toLocaleString('en',{year:'numeric',month:'long'});
       sel.appendChild(o);
     }
@@ -1144,7 +1144,7 @@ async function saveKpi(id){const inp=document.getElementById('kpival-'+id);const
 async function addMember(){const inp=document.getElementById('new-member-name');const pwInp=document.getElementById('new-member-pw');const roleInp=document.getElementById('new-member-role');const name=inp.value.trim();const pw=pwInp.value.trim();const role=roleInp.value;if(!name){inp.style.borderColor='var(--red)';return;}inp.style.borderColor='';try{await db('members',{method:'POST',body:JSON.stringify({name,password:pw||null,monthly_kpi:0,role})});inp.value='';pwInp.value='';roleInp.value='sales';await loadMembers();renderMembers();}catch(e){alert('Failed.');}}
 async function deleteMember(id,name){if(!confirm(`Remove "${name}"?`))return;try{await fetch(SUPA_URL+'/rest/v1/members?id=eq.'+id,{method:'DELETE',headers:H});await loadMembers();renderMembers();}catch(e){alert('Failed.');}}
 
-function populateMonthSelector(){const sel=document.getElementById('stats-month');const now=new Date();for(let i=0;i<6;i++){const d=new Date(now.getFullYear(),now.getMonth()-i,1);const o=document.createElement('option');o.value=d.toISOString().slice(0,7);o.textContent=d.toLocaleString('en',{year:'numeric',month:'long'});sel.appendChild(o);}}
+function populateMonthSelector(){const sel=document.getElementById('stats-month');const now=new Date();for(let i=0;i<6;i++){const d=new Date(now.getFullYear(),now.getMonth()-i,1);const o=document.createElement('option');o.value=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;o.textContent=d.toLocaleString('en',{year:'numeric',month:'long'});sel.appendChild(o);}}
 function setDefaultFilters(){const t=today(),ws=weekStart();document.getElementById('filter-daily-from').value=ws;document.getElementById('filter-daily-to').value=t;document.getElementById('filter-weekly-from').value=weekStart();document.getElementById('filter-weekly-to').value=weekEnd();}
 function logoutHQ(){sessionStorage.clear();}
 
