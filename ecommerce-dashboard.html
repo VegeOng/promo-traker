@@ -320,12 +320,9 @@ function render(rows){
 
   // ── 子帐号对比表 ──
   const subAccounts = [
-    { name: 'Lazada · Total', sales: channelTotalSubSum(rows,'lazada','total','sales'), ads: channelTotalSubSum(rows,'lazada','total','adsSpent') },
     { name: 'Lazada · MamaVege.OS', sales: channelTotalSubSum(rows,'lazada','mamavegeOS','sales'), ads: channelTotalSubSum(rows,'lazada','mamavegeOS','adsSpent') },
     { name: 'Lazada · MamaVege Malaysia', sales: channelTotalSubSum(rows,'lazada','mamavegeMalaysia','sales'), ads: channelTotalSubSum(rows,'lazada','mamavegeMalaysia','adsSpent') },
     { name: 'TikTok · Total', sales: channelTotalSubSum(rows,'tiktok','total','sales'), ads: channelTotalSubSum(rows,'tiktok','total','adsSpent') },
-    { name: 'TikTok · Product', sales: channelTotalSubSum(rows,'tiktok','product','sales'), ads: channelTotalSubSum(rows,'tiktok','product','adsSpent') },
-    { name: 'TikTok · Live', sales: channelTotalSubSum(rows,'tiktok','live','sales'), ads: channelTotalSubSum(rows,'tiktok','live','adsSpent') },
   ];
   document.getElementById('sub-account-table').innerHTML = subAccounts.map(a=>{
     const roi = a.ads > 0 ? (a.sales/a.ads) : null;
