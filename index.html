@@ -138,9 +138,26 @@ function getTotalField(r) {
 }
 async function loadSalesOverviewMembers() {
   try {
-    const { data } = await supa.from('members').select('name, monthly_kpi, role').order('name');
+    const { data } = await supa.from('members').select('name, monthly_kpi, outlet_visit_kpi, role').order('name');
     salesMembers = (data || []).filter(m => (m.role || 'sales') === 'sales');
   } catch(e) { console.error(e); }
+}
+async function loadOutletVisitCounts(year, month) {
+  try {
+    const firstDay = `${year}-${String(month).padStart(2,'0')}-01`;
+    const lastDayNum = new Date(year, month, 0).getDate();
+    const lastDay = `${year}-${String(month).padStart(2,'0')}-${lastDayNum}`;
+    const { data } = await supa.from('outlet_stock_checks').select('agent_name, outlet_id').gte('check_date', firstDay).lte('check_date', lastDay);
+    const visitedMap = {};
+    (data || []).forEach(c => {
+      if (!c.agent_name || !c.outlet_id) return;
+      if (!visitedMap[c.agent_name]) visitedMap[c.agent_name] = new Set();
+      visitedMap[c.agent_name].add(String(c.outlet_id));
+    });
+    const counts = {};
+    Object.keys(visitedMap).forEach(name => counts[name] = visitedMap[name].size);
+    return counts;
+  } catch(e) { console.error(e); return {}; }
 }
 async function loadSalesOverview() {
   try {
@@ -173,12 +190,28 @@ async function loadSalesOverview() {
     const annGapEl = document.getElementById('so-annual-gap');
     annGapEl.textContent = annualGap <= 0 ? '🎉 Achieved!' : fmtRMShort(annualGap);
     annGapEl.className = 'so-val ' + (annualGap <= 0 ? 'green' : annualPct >= 70 ? 'amber' : 'red');
+    const visitCounts = await loadOutletVisitCounts(curYear, curMonth);
     const memberList = document.getElementById('so-members-list');
     if (!salesMembers.length) { memberList.innerHTML = '<div style="color:var(--t3);font-size:13px;padding:10px">No sales members.</div>'; return; }
     memberList.innerHTML = salesMembers.map(m => {
+      const kpi = m.monthly_kpi || 0;
+      const visitKpi = m.outlet_visit_kpi || 0;
+      // 没有 RM 销售目标，但有访店 KPI 的成员（例如 Wan）— 显示访店进度而非销售额
+      if (kpi <= 0 && visitKpi > 0) {
+        const visited = visitCounts[m.name] || 0;
+        const pct = Math.round(visited/visitKpi*100);
+        const gap = visitKpi - visited;
+        const barColor = pct >= 100 ? 'var(--green)' : pct >= 70 ? 'var(--amber)' : 'var(--red)';
+        return '<div class="so-member-row">'
+          + '<div class="so-member-name">'+m.name+'</div>'
+          + '<div class="so-member-bar-wrap"><div class="so-member-bar-bg"><div class="so-member-bar-fill" style="width:'+Math.min(pct,100)+'%;background:'+barColor+'"></div></div>'
+          + '<div style="font-size:10px;color:var(--t3);margin-top:2px">'+pct+'% of '+visitKpi+' 🏪 outlet visits</div></div>'
+          + '<div class="so-member-amount" style="color:var(--blue)">'+visited+' / '+visitKpi+'</div>'
+          + '<div class="so-member-gap" style="color:'+(gap<=0?'var(--green)':'var(--amber)')+'">'+(gap<=0?'✅ Met':'▼ '+gap+' left')+'</div>'
+          + '</div>';
+      }
       const mData = monthData.filter(r => (r['SALES PERSON']||'').trim() === m.name.trim());
       const mTotal = mData.reduce((s,r) => s+getTotalField(r), 0);
-      const kpi = m.monthly_kpi || 0;
       const pct = kpi > 0 ? Math.round(mTotal/kpi*100) : 0;
       const gap = kpi - mTotal;
       const barColor = pct >= 100 ? 'var(--green)' : pct >= 70 ? 'var(--amber)' : 'var(--red)';
