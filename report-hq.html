@@ -820,7 +820,7 @@ async function loadBriefing() {
   const list=document.getElementById('briefing-list');
   list.innerHTML='<div class="loading-text">Loading…</div>';
   try {
-    const salesMembers=members.filter(m=>(m.role||'sales')==='sales');
+    const salesMembers=members.filter(m=>(m.role||'sales')==='sales' && m.active!==false);
     const reports=await db(`daily_reports?date=eq.${date}&select=*`)||[];
     const reportMap={};reports.forEach(r=>{reportMap[r.name]=r;});
     const visits=await db(`visit_records?visit_date=eq.${date}&select=*&order=created_at.asc`)||[];
@@ -959,7 +959,7 @@ async function loadHQStats() {
     db('outlet_stock_checks?select=outlet_id,outlet_name,check_date&order=check_date.desc')
   ]);
 
-  hqSalesMembers = Array.isArray(membersData) ? membersData.filter(m=>(m.role||'sales')==='sales') : [];
+  hqSalesMembers = Array.isArray(membersData) ? membersData.filter(m=>(m.role||'sales')==='sales' && m.active!==false) : [];
   allOutlets = Array.isArray(outletsData) ? outletsData : [];
   const checksData = Array.isArray(checks) ? checks : [];
 
