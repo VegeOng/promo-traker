@@ -531,7 +531,7 @@ window.addEventListener('DOMContentLoaded', async ()=>{
 
 // ── Outlets ──
 async function loadSalesMembers() {
-  const data = await sbGet('members?select=id,name,role&order=name.asc');
+  const data = await sbGet('members?select=id,name,role&order=name.asc&active=neq.false');
   const sel = document.getElementById('f-checkby');
   if(!Array.isArray(data)) return;
   const sales = data.filter(m=>(m.role||'sales')==='sales');
@@ -958,7 +958,7 @@ async function loadHQStats() {
   const lastDay = `${year}-${mon}-${new Date(year,mon,0).getDate()}`;
 
   // load members (sales only)
-  const membersData = await sbGet('members?select=*&order=name');
+  const membersData = await sbGet('members?select=*&order=name&active=neq.false');
   hqMembers = Array.isArray(membersData) ? membersData.filter(m=>(m.role||'sales')==='sales') : [];
 
   // load checks for this month

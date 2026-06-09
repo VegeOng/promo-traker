@@ -878,8 +878,9 @@ async function loadOverview(){
     const [dT,wW]=await Promise.all([db(`daily_reports?select=name&date=eq.${t}`),db(`weekly_reports?select=name&date=gte.${ws}&date=lte.${we}`)]);
     const sD=new Set(dT.map(r=>r.name)),sW=new Set(wW.map(r=>r.name));
     // sales 角色只提交 Visit Records，不纳入 daily report 缺交统计
-    const nonSalesMembers=members.filter(m=>(m.role||'sales')!=='sales');
-    const mD=nonSalesMembers.filter(m=>!sD.has(m.name)),mW=members.filter(m=>!sW.has(m.name));
+    const activeMembers=members.filter(m=>m.active!==false);
+    const nonSalesMembers=activeMembers.filter(m=>(m.role||'sales')!=='sales');
+    const mD=nonSalesMembers.filter(m=>!sD.has(m.name)),mW=activeMembers.filter(m=>!sW.has(m.name));
     document.getElementById('ov-daily-miss').textContent=mD.length;
     document.getElementById('ov-daily-ok').textContent=sD.size;
     document.getElementById('ov-weekly-miss').textContent=mW.length;
@@ -919,12 +920,13 @@ async function loadMissStats(){
   const workDays=countWorkDays(new Date(year,month-1,1),new Date(year,month-1,new Date(year,month,0).getDate()));const weekCount=Math.ceil(new Date(year,month,0).getDate()/7);
   try{
     const [dD,wD]=await Promise.all([db(`daily_reports?select=name,date&date=gte.${firstDay}&date=lte.${lastDay}`),db(`weekly_reports?select=name,date&date=gte.${firstDay}&date=lte.${lastDay}`)]);
-    const nonSales=members.filter(m=>(m.role||'sales')!=='sales');
-    const dBN={},wBN={};members.forEach(m=>{dBN[m.name]=0;wBN[m.name]=0;});
+    const activeMembers=members.filter(m=>m.active!==false);
+    const nonSales=activeMembers.filter(m=>(m.role||'sales')!=='sales');
+    const dBN={},wBN={};activeMembers.forEach(m=>{dBN[m.name]=0;wBN[m.name]=0;});
     dD.forEach(r=>{if(dBN[r.name]!==undefined)dBN[r.name]++;});wD.forEach(r=>{if(wBN[r.name]!==undefined)wBN[r.name]++;});
     // sales 角色不计入 daily miss（他们提交的是 visit records），但计入 weekly miss
     tbody.innerHTML=nonSales.map(m=>{const dM=Math.max(0,workDays-dBN[m.name]);const wM=Math.max(0,weekCount-wBN[m.name]);const tot=dM+wM;return `<tr><td><strong>${m.name}</strong></td><td><span class="miss-count ${dM>0?'bad':'ok'}">${dM}</span></td><td><span class="miss-count ${wM>0?'bad':'ok'}">${wM}</span></td><td><span class="miss-count ${tot>0?'bad':'ok'}">${tot}</span></td></tr>`;}).join('')
-    + members.filter(m=>(m.role||'sales')==='sales').map(m=>{const wM=Math.max(0,weekCount-wBN[m.name]);return `<tr><td><strong>${m.name}</strong> <span style="font-size:10px;color:#9ca3af">(Visit)</span></td><td><span class="miss-count ok">—</span></td><td><span class="miss-count ${wM>0?'bad':'ok'}">${wM}</span></td><td><span class="miss-count ${wM>0?'bad':'ok'}">${wM}</span></td></tr>`;}).join('');
+    + activeMembers.filter(m=>(m.role||'sales')==='sales').map(m=>{const wM=Math.max(0,weekCount-wBN[m.name]);return `<tr><td><strong>${m.name}</strong> <span style="font-size:10px;color:#9ca3af">(Visit)</span></td><td><span class="miss-count ok">—</span></td><td><span class="miss-count ${wM>0?'bad':'ok'}">${wM}</span></td><td><span class="miss-count ${wM>0?'bad':'ok'}">${wM}</span></td></tr>`;}).join('');
   }catch(e){tbody.innerHTML='<tr><td colspan="4" class="empty-text">Failed.</td></tr>';}
 }
 
@@ -951,7 +953,7 @@ async function loadHQStats() {
 
   // Load fresh data every time
   const [membersData, outletsData, checks, allChecks] = await Promise.all([
-    db('members?select=*&order=name'),
+    db('members?select=*&order=name&active=neq.false'),
     db('outlets?select=*&order=name.asc'),
     db(`outlet_stock_checks?check_date=gte.${firstDay}&check_date=lte.${lastDay}&select=agent_name,outlet_id,quantity,expiry_date`),
     db('outlet_stock_checks?select=outlet_id,outlet_name,check_date&order=check_date.desc')
@@ -1087,14 +1089,15 @@ async function saveOutletKPI(memberId) {
 // ===== MEMBERS =====
 async function loadMembers(){
   try{
-    members=await db('members?select=*&order=name');
+    members=await db('members?select=*&order=name'); // load ALL incl. inactive for management UI
     ['filter-daily-name','filter-weekly-name','task-filter-member','ntf-assignee'].forEach(id=>{
       const sel=document.getElementById(id);if(!sel)return;
       const cur=sel.value;const isAssignee=id==='ntf-assignee';
       sel.innerHTML=isAssignee?'<option value="">Assign to…</option>':'<option value="">All Members</option>';
       // filter-daily-name 只显示非 sales 角色（sales 角色提交的是 Visit Records，不是 Daily Report）
       const isDailyFilter=id==='filter-daily-name';
-      const filtered=isAssignee?members.filter(m=>(m.role||'sales')==='sales'):isDailyFilter?members.filter(m=>(m.role||'sales')!=='sales'):members;
+      const activeMembers=members.filter(m=>m.active!==false);
+      const filtered=isAssignee?activeMembers.filter(m=>(m.role||'sales')==='sales'):isDailyFilter?activeMembers.filter(m=>(m.role||'sales')!=='sales'):activeMembers;
       filtered.forEach(m=>{const o=document.createElement('option');o.value=m.name;o.textContent=m.name;sel.appendChild(o);});
       if(!isAssignee)sel.value=cur;
     });
@@ -1105,16 +1108,19 @@ function renderMembers(){
   const list=document.getElementById('member-list');
   if(!members.length){list.innerHTML='<div class="empty-text">No members yet.</div>';return;}
   list.innerHTML=members.map(m=>`
-    <div class="member-row" id="mrow-${m.id}">
-      <span class="m-name">${m.name}</span>
-      <span class="role-badge ${m.role||'sales'}">${m.role==='marketing'?'Marketing':'Sales'}</span>
+    <div class="member-row" id="mrow-${m.id}" style="${m.active===false?'opacity:.5;background:#f9fafb':''}">
+      <span class="m-name">${m.name}${m.active===false?' <span style="font-size:10px;background:#fee2e2;color:#dc2626;padding:2px 7px;border-radius:10px;font-weight:700">INACTIVE</span>':''}</span>
+      <span class="role-badge ${m.role||'sales'}">${m.role==='marketing'?'Marketing':m.role==='china'?'China':'Sales'}</span>
       <span class="pw-badge ${m.password?'set':'unset'}">${m.password?'✓ Password':'⚠ No password'}</span>
       <span class="kpi-badge">KPI: RM ${Number(m.monthly_kpi||0).toLocaleString()}</span>
-      <button class="btn-editname" onclick="toggleNameEdit(${m.id})">Name</button>
+      ${m.active===false
+        ? `<button class="btn-save" onclick="toggleActive(${m.id},true)" style="background:#dcfce7;color:#166534;border-color:#bbf7d0">✅ Reactivate</button>`
+        : `<button class="btn-editname" onclick="toggleNameEdit(${m.id})">Name</button>
       <button class="btn-role" onclick="toggleRoleEdit(${m.id})">Role</button>
       <button class="btn-setpw" onclick="togglePwEdit(${m.id})">Password</button>
       <button class="btn-kpi" onclick="toggleKpiEdit(${m.id})">KPI</button>
-      <button class="btn-del" onclick="deleteMember(${m.id},'${m.name.replace(/'/g,"\\'")}')">Remove</button>
+      <button class="btn-del" onclick="toggleActive(${m.id},false)" style="background:#fef3c7;color:#d97706;border-color:#fde68a">⏸ Deactivate</button>`}
+      <button class="btn-del" onclick="deleteMember(${m.id},'${m.name.replace(/'/g,"\\'")}')">🗑 Remove</button>
       <div class="pw-edit-row" id="nameedit-${m.id}">
         <input type="text" id="nameval-${m.id}" value="${m.name.replace(/"/g,'&quot;')}" placeholder="New name">
         <button class="btn-save" onclick="saveName(${m.id})">Save</button>
@@ -1151,6 +1157,14 @@ async function saveRole(id){const val=document.getElementById('roleval-'+id).val
 async function savePassword(id){const inp=document.getElementById('pwval-'+id);const pw=inp.value.trim();if(!pw){inp.style.borderColor='var(--red)';return;}try{await fetch(SUPA_URL+'/rest/v1/members?id=eq.'+id,{method:'PATCH',headers:H,body:JSON.stringify({password:pw})});await loadMembers();renderMembers();}catch(e){alert('Failed.');}}
 async function saveKpi(id){const inp=document.getElementById('kpival-'+id);const kpi=parseFloat(inp.value)||0;try{await fetch(SUPA_URL+'/rest/v1/members?id=eq.'+id,{method:'PATCH',headers:H,body:JSON.stringify({monthly_kpi:kpi})});await loadMembers();renderMembers();}catch(e){alert('Failed.');}}
 async function addMember(){const inp=document.getElementById('new-member-name');const pwInp=document.getElementById('new-member-pw');const roleInp=document.getElementById('new-member-role');const name=inp.value.trim();const pw=pwInp.value.trim();const role=roleInp.value;if(!name){inp.style.borderColor='var(--red)';return;}inp.style.borderColor='';try{await db('members',{method:'POST',body:JSON.stringify({name,password:pw||null,monthly_kpi:0,role})});inp.value='';pwInp.value='';roleInp.value='sales';await loadMembers();renderMembers();}catch(e){alert('Failed.');}}
+async function toggleActive(id, activate){
+  const label = activate ? 'reactivate' : 'deactivate';
+  if(!confirm(`Are you sure you want to ${label} this member?`)) return;
+  try{
+    await fetch(SUPA_URL+'/rest/v1/members?id=eq.'+id,{method:'PATCH',headers:H,body:JSON.stringify({active:activate})});
+    await loadMembers(); renderMembers();
+  }catch(e){alert('Failed.');}
+}
 async function deleteMember(id,name){if(!confirm(`Remove "${name}"?`))return;try{await fetch(SUPA_URL+'/rest/v1/members?id=eq.'+id,{method:'DELETE',headers:H});await loadMembers();renderMembers();}catch(e){alert('Failed.');}}
 
 function populateMonthSelector(){const sel=document.getElementById('stats-month');const now=new Date();for(let i=0;i<6;i++){const d=new Date(now.getFullYear(),now.getMonth()-i,1);const o=document.createElement('option');o.value=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;o.textContent=d.toLocaleString('en',{year:'numeric',month:'long'});sel.appendChild(o);}}

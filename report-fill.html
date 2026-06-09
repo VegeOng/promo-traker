@@ -447,7 +447,7 @@ function lockNameField(prefix) {
 
 async function loadMembersDropdown() {
   try {
-    const members = await db('members?select=name&order=name');
+    const members = await db('members?select=name&order=name&active=neq.false');
     ['daily-name','weekly-name'].forEach(id => {
       const sel = document.getElementById(id); if (!sel) return;
       sel.innerHTML = '<option value="">Select your name</option>';

@@ -923,7 +923,7 @@ function countWorkDays(start,end) {
 // ===== MEMBERS =====
 async function loadMembers() {
   try {
-    members = await db('members?select=*&order=name');
+    members = await db('members?select=*&order=name&active=neq.false');
     ['filter-daily-name','filter-weekly-name','task-filter-member','ntf-assignee'].forEach(id => {
       const sel=document.getElementById(id); if(!sel) return;
       const cur=sel.value;

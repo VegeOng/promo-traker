@@ -136,7 +136,7 @@ function getTotalField(r) {
 }
 async function loadSalesOverviewMembers() {
   try {
-    const { data } = await supa.from('members').select('name, monthly_kpi, outlet_visit_kpi, role').order('name');
+    const { data } = await supa.from('members').select('name, monthly_kpi, outlet_visit_kpi, role').eq('active', true).order('name');
     salesMembers = (data || []).filter(m => (m.role || 'sales') === 'sales');
   } catch(e) { console.error(e); }
 }
@@ -474,7 +474,14 @@ async function doLogin() {
   }
 
   // 2. Try member
-  const { data: member } = await supa.from('members').select('id, name, password, role').eq('name', name).maybeSingle();
+  const { data: member } = await supa.from('members').select('id, name, password, role, active').eq('name', name).maybeSingle();
+  if (member && member.active === false) {
+    err.textContent = 'This account has been deactivated. Please contact your manager.';
+    err.classList.add('show');
+    btn.disabled = false;
+    btn.textContent = 'Login';
+    return;
+  }
   if (member && member.password === pw) {
     lsSet('userName', member.name);
     lsSet('userRole', 'member');
