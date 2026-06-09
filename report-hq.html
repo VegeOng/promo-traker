@@ -591,6 +591,9 @@ const Hmin = { 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY, 'Conte
 
 let members = [], allTasks = [], currentTaskFilter = 'all', hqSalesMembers = [], allOutlets = [];
 let allActivities = [], currentActFilter = 'all';
+// 这些成员（老板/管理层账号）无需提交 Visit Report / Weekly Report，也不纳入打卡拜访 KPI 统计
+const REPORT_EXEMPT = ['VEGE'];
+const isReportExempt = m => REPORT_EXEMPT.includes((m.name||'').toUpperCase());
 function fmtLocalDate(d){return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
 const todayStr = fmtLocalDate(new Date());
 
@@ -820,7 +823,7 @@ async function loadBriefing() {
   const list=document.getElementById('briefing-list');
   list.innerHTML='<div class="loading-text">Loading…</div>';
   try {
-    const salesMembers=members.filter(m=>(m.role||'sales')==='sales' && m.active!==false);
+    const salesMembers=members.filter(m=>(m.role||'sales')==='sales' && m.active!==false && !isReportExempt(m));
     const reports=await db(`daily_reports?date=eq.${date}&select=*`)||[];
     const reportMap={};reports.forEach(r=>{reportMap[r.name]=r;});
     const visits=await db(`visit_records?visit_date=eq.${date}&select=*&order=created_at.asc`)||[];
@@ -878,7 +881,7 @@ async function loadOverview(){
     const [dT,wW]=await Promise.all([db(`daily_reports?select=name&date=eq.${t}`),db(`weekly_reports?select=name&date=gte.${ws}&date=lte.${we}`)]);
     const sD=new Set(dT.map(r=>r.name)),sW=new Set(wW.map(r=>r.name));
     // sales 角色只提交 Visit Records，不纳入 daily report 缺交统计
-    const activeMembers=members.filter(m=>m.active!==false);
+    const activeMembers=members.filter(m=>m.active!==false && !isReportExempt(m));
     const nonSalesMembers=activeMembers.filter(m=>(m.role||'sales')!=='sales');
     const mD=nonSalesMembers.filter(m=>!sD.has(m.name)),mW=activeMembers.filter(m=>!sW.has(m.name));
     document.getElementById('ov-daily-miss').textContent=mD.length;
@@ -920,7 +923,7 @@ async function loadMissStats(){
   const workDays=countWorkDays(new Date(year,month-1,1),new Date(year,month-1,new Date(year,month,0).getDate()));const weekCount=Math.ceil(new Date(year,month,0).getDate()/7);
   try{
     const [dD,wD]=await Promise.all([db(`daily_reports?select=name,date&date=gte.${firstDay}&date=lte.${lastDay}`),db(`weekly_reports?select=name,date&date=gte.${firstDay}&date=lte.${lastDay}`)]);
-    const activeMembers=members.filter(m=>m.active!==false);
+    const activeMembers=members.filter(m=>m.active!==false && !isReportExempt(m));
     const nonSales=activeMembers.filter(m=>(m.role||'sales')!=='sales');
     const dBN={},wBN={};activeMembers.forEach(m=>{dBN[m.name]=0;wBN[m.name]=0;});
     dD.forEach(r=>{if(dBN[r.name]!==undefined)dBN[r.name]++;});wD.forEach(r=>{if(wBN[r.name]!==undefined)wBN[r.name]++;});
@@ -959,7 +962,7 @@ async function loadHQStats() {
     db('outlet_stock_checks?select=outlet_id,outlet_name,check_date&order=check_date.desc')
   ]);
 
-  hqSalesMembers = Array.isArray(membersData) ? membersData.filter(m=>(m.role||'sales')==='sales' && m.active!==false) : [];
+  hqSalesMembers = Array.isArray(membersData) ? membersData.filter(m=>(m.role||'sales')==='sales' && m.active!==false && !isReportExempt(m)) : [];
   allOutlets = Array.isArray(outletsData) ? outletsData : [];
   const checksData = Array.isArray(checks) ? checks : [];
 
