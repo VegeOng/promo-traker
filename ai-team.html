@@ -884,8 +884,8 @@ Wan 巡店：本月目标100家，落后时提醒。
 - 追踪平台业绩 / 增长趋势
 - 重点SKU：KPM / CLM / SMTS / SMCL
 
-注意：目前两人数据在 Google Sheet，需他们手动提交。
-近期纳入 Supabase 后自动读取。
+数据来源：已连接 Ecommerce Dashboard 数据源（Shopee / Lazada / TikTok / 自建平台 每日 GMV、广告花费、ROI/ROAS），自动读取本月 vs 上月对比。
+注意：该数据源目前刚开始记录（从近期才有每日数据），更早月份可能没有数据，分析时如遇"本月暂无数据"要如实告知，不要编造。
 
 共同追踪：
 - 各平台业绩排名
@@ -968,6 +968,9 @@ const GOOGLE_SHEETS_API = 'https://script.google.com/macros/s/AKfycbwxt23ZB0od7E
 const CHINA_SHEETS_API = 'https://script.google.com/macros/s/AKfycbzxnGZQSq13c36n0NeVuGPUbxW_duPizD34lvLnxTx2rKDlxziuLtZe82dV4vifyyG5tw/exec';
 const CHINA_ECOMMERCE_NAMES = ['微信小店', '抖店'];
 const CHINA_PRODUCT_COLS = ['香椿干盘面','青柠干盘面','冬阴功汤','香椿杯面','青柠杯面'];
+
+// 电商业绩数据（Shopee / Lazada / TikTok，Ecommerce Dashboard 同一数据源）— 给电电用
+const ECOM_API = 'https://script.google.com/macros/s/AKfycbyqZ8w-aNLDSjFvySTXL_zVYQty0U7-HS-6Nw2EWz5ulqexPNoc1-q_V3WL0h1EEDXz/exec';
 
 const SUPABASE_URL = 'https://wjhgezvrxlhpexocfsea.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndqaGdlenZyeGxocGV4b2Nmc2VhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg1MDU4NzgsImV4cCI6MjA5NDA4MTg3OH0.jENcrgEDYDlSRUCqve-T6rxYRJfz-dnZQHnXpPLJ_RE';
@@ -1192,6 +1195,68 @@ async function fetchChinaMarketData() {
   };
 }
 
+// ── 电商数据（Shopee / Lazada / TikTok，给电电用）──
+function parseEcomDate(raw) {
+  if (!raw) return null;
+  const d = new Date(raw);
+  if (isNaN(d.getTime())) return null;
+  // 同中国表格：表格按 GMT+8 存午夜时间，序列化成 UTC 会往回退一天，加 8 小时换算回本地日期
+  const shifted = new Date(d.getTime() + 8 * 3600 * 1000);
+  return { y: shifted.getUTCFullYear(), m: shifted.getUTCMonth() + 1, ym: `${shifted.getUTCFullYear()}-${String(shifted.getUTCMonth() + 1).padStart(2, '0')}` };
+}
+async function fetchEcomRaw() {
+  try {
+    const r = await fetch(ECOM_API);
+    const json = await r.json();
+    return (json.data || []).map(row => ({ ...row, _ym: parseEcomDate(row.date) })).filter(r => r._ym);
+  } catch (e) {
+    console.warn('Ecommerce fetch failed:', e.message);
+    return [];
+  }
+}
+async function fetchEcommerceData() {
+  const rows = await fetchEcomRaw();
+  const now = new Date();
+  const curY = now.getFullYear(), curM = now.getMonth() + 1;
+  const curYM = `${curY}-${String(curM).padStart(2, '0')}`;
+  const lastD = new Date(curY, curM - 1, 1); lastD.setMonth(lastD.getMonth() - 1);
+  const lastYM = `${lastD.getFullYear()}-${String(lastD.getMonth() + 1).padStart(2, '0')}`;
+
+  const thisMonthRows = rows.filter(r => r._ym.ym === curYM);
+  const lastMonthRows = rows.filter(r => r._ym.ym === lastYM);
+
+  const sumPath = (list, path) => list.reduce((s, r) => {
+    const v = path.split('.').reduce((o, k) => (o ? o[k] : undefined), r);
+    return s + (parseFloat(v) || 0);
+  }, 0);
+
+  const PLATFORMS = [
+    { key: 'shopee', label: 'Shopee', salesPath: 'shopee.sales', adPath: 'shopee.adsSpent' },
+    { key: 'lazada', label: 'Lazada', salesPath: 'lazada.total.sales', adPath: 'lazada.total.adsSpent' },
+    { key: 'tiktok', label: 'TikTok', salesPath: 'tiktok.total.sales', adPath: 'tiktok.total.adsSpent' },
+    { key: 'website', label: '自建平台', salesPath: 'website.sales', adPath: null },
+  ];
+
+  const buildStats = (list) => PLATFORMS.map(p => {
+    const sales = sumPath(list, p.salesPath);
+    const ads = p.adPath ? sumPath(list, p.adPath) : 0;
+    const roi = ads > 0 ? sales / ads : null;
+    return { label: p.label, sales, ads, roi };
+  });
+
+  const thisMonthTotal = thisMonthRows.reduce((s, r) => s + (parseFloat(r.sum) || 0), 0);
+  const lastMonthTotal = lastMonthRows.reduce((s, r) => s + (parseFloat(r.sum) || 0), 0);
+
+  return {
+    isEcommerceRole: true,
+    curYM, lastYM,
+    thisMonthTotal, lastMonthTotal,
+    thisMonthDays: thisMonthRows.length,
+    platformStats: buildStats(thisMonthRows),
+    dateRanges: getDateRanges(),
+  };
+}
+
 // ── 根据角色返回数据 ──
 async function fetchDataForRole(roleId) {
   if (roleId === 'xuanxuan') {
@@ -1207,7 +1272,7 @@ async function fetchDataForRole(roleId) {
     qianqian:   fetchFinanceData,
     chongchong: fetchMarketingData,
     shunshun:   fetchOpsData,
-    diandian:   fetchSalesData,
+    diandian:   fetchEcommerceData,
     longlong:   fetchChinaMarketData,
   };
   return await (loaders[roleId] || fetchSalesData)();
@@ -1491,6 +1556,24 @@ function formatDataAsContext(data) {
       Object.entries(data.productTotals).forEach(([p, qty]) => {
         ctx += `  - ${p}: ${qty} 件\n`;
       });
+    }
+  }
+
+  // 电商数据（Shopee / Lazada / TikTok，给电电用）
+  if (data.isEcommerceRole) {
+    const momPct = data.lastMonthTotal > 0 ? (((data.thisMonthTotal - data.lastMonthTotal) / data.lastMonthTotal) * 100).toFixed(1) : null;
+    ctx += `\n🛒 电商业绩（${data.curYM}）：\n`;
+    if (data.thisMonthDays > 0) {
+      ctx += `  本月累计 GMV：RM ${data.thisMonthTotal.toFixed(2)}（已有 ${data.thisMonthDays} 天数据）\n`;
+      ctx += `  上月同期总额（${data.lastYM}）：RM ${data.lastMonthTotal.toFixed(2)}${momPct !== null ? `（环比 ${momPct >= 0 ? '+' : ''}${momPct}%）` : ''}\n`;
+      ctx += `\n各平台本月表现：\n`;
+      data.platformStats.filter(p => p.sales > 0 || p.ads > 0).forEach(p => {
+        const roiStr = p.roi !== null ? `，ROI/ROAS ${p.roi.toFixed(2)}x` : '';
+        ctx += `  - ${p.label}: 销售额 RM ${p.sales.toFixed(2)}${p.ads ? `，广告花费 RM ${p.ads.toFixed(2)}${roiStr}` : ''}\n`;
+      });
+    } else {
+      ctx += `  ⚠️ 本月（${data.curYM}）暂无电商数据记录，可能数据尚未填报。\n`;
+      ctx += `  上月（${data.lastYM}）总额：RM ${data.lastMonthTotal.toFixed(2)}\n`;
     }
   }
 
