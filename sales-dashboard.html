@@ -307,6 +307,26 @@
   }
   .footer-nav a { color: var(--green); text-decoration: none; }
   .footer-nav a:hover { text-decoration: underline; }
+  /* ── Drilldown Modal ── */
+  .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:1000;display:flex;align-items:center;justify-content:center;padding:16px;}
+  .modal-box{background:#fff;border-radius:16px;width:100%;max-width:720px;max-height:88vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.2);}
+  .modal-head{padding:18px 22px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:12px;}
+  .modal-avatar{width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:1.2rem;flex-shrink:0;}
+  .modal-title{font-size:1.1rem;font-weight:800;}
+  .modal-sub{font-size:12px;color:var(--text-muted);margin-top:2px;}
+  .modal-close{background:none;border:none;font-size:22px;cursor:pointer;color:var(--text-muted);line-height:1;padding:4px;}
+  .modal-close:hover{color:var(--text);}
+  .modal-body{overflow-y:auto;padding:18px 22px;}
+  .modal-section{margin-bottom:20px;}
+  .modal-section-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--text-muted);margin-bottom:10px;display:flex;align-items:center;gap:8px;}
+  .modal-section-title::after{content:'';flex:1;height:1px;background:var(--border);}
+  .modal-table{width:100%;border-collapse:collapse;font-size:13px;}
+  .modal-table th{text-align:left;padding:7px 10px;font-size:10px;text-transform:uppercase;letter-spacing:.4px;color:#9ca3af;font-weight:700;border-bottom:1px solid var(--border);}
+  .modal-table td{padding:8px 10px;border-bottom:1px solid #f3f4f6;}
+  .modal-table tr:last-child td{border-bottom:none;}
+  .modal-table .num{text-align:right;font-variant-numeric:tabular-nums;font-weight:600;}
+  .sp-card{cursor:pointer;transition:box-shadow .15s,transform .15s;}
+  .sp-card:hover{box-shadow:0 6px 20px rgba(0,0,0,.1);transform:translateY(-2px);}
 </style>
 </head>
 <body>
@@ -458,6 +478,23 @@
     </div>
   </div>
 
+</div>
+
+<!-- Drilldown Modal -->
+<div class="modal-overlay" id="drillModal" style="display:none" onclick="if(event.target===this)closeDrill()">
+  <div class="modal-box">
+    <div class="modal-head">
+      <div style="display:flex;align-items:center;gap:12px">
+        <div class="modal-avatar" id="drillAvatar"></div>
+        <div>
+          <div class="modal-title" id="drillName"></div>
+          <div class="modal-sub" id="drillSub"></div>
+        </div>
+      </div>
+      <button class="modal-close" onclick="closeDrill()">✕</button>
+    </div>
+    <div class="modal-body" id="drillBody"></div>
+  </div>
 </div>
 
 <div class="footer-nav">
@@ -724,8 +761,10 @@ function renderSPTab() {
 
   // SP Cards
   const colors = ['#166534','#dc2626','#d97706','#3b82f6','#8b5cf6','#0891b2'];
+  spColorMap = {};
+  sorted.forEach(([name],i) => spColorMap[name] = colors[i%colors.length]);
   document.getElementById('spGrid').innerHTML = sorted.map(([name, d], i) => `
-    <div class="sp-card">
+    <div class="sp-card" onclick="drillDown('${name.replace(/'/g,"\\'")}'" title="点击查看 ${name} 的客户与 SKU 详情">
       <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:0.75rem">
         <div style="width:40px;height:40px;border-radius:50%;background:${colors[i%colors.length]}20;color:${colors[i%colors.length]};display:flex;align-items:center;justify-content:center;font-weight:700;font-size:1rem">${name.charAt(0)}</div>
         <div>
@@ -850,6 +889,90 @@ function sortTable(tableId, colIdx) {
     return asc ? av - bv : bv - av;
   });
   rows.forEach(r => tbody.appendChild(r));
+}
+
+// ── Drilldown ──
+const drillColors = ['#166534','#dc2626','#d97706','#3b82f6','#8b5cf6','#0891b2'];
+let spColorMap = {};
+
+// Columns that are NOT product SKUs
+const NON_SKU_COLS = new Set(['COMPANY','OUTLET','SALES PERSON','TYPE','YEAR','MONTH','WEEK',
+  'PO DATE','PO NUMBER','INVOICE DATE','INVOICE NUMBER','TOTAL (RM)','IB (RM)','IB (USD)','Unfullfill (RM)']);
+
+function drillDown(name) {
+  const color = spColorMap[name] || '#166534';
+  const spData = filteredData.filter(r => r['SALES PERSON'] === name);
+  const total = spData.reduce((s,r) => s+getTotalField(r), 0);
+  const orders = spData.length;
+
+  // Customers
+  const custMap = {};
+  spData.forEach(r => {
+    const c = r['COMPANY'] || 'Unknown';
+    if (!custMap[c]) custMap[c] = { total: 0, orders: 0, type: r['TYPE'] || '' };
+    custMap[c].total += getTotalField(r);
+    custMap[c].orders++;
+  });
+  const custSorted = Object.entries(custMap).sort((a,b) => b[1].total - a[1].total);
+
+  // SKUs — each product column stores a quantity
+  const skuMap = {};
+  const skuCols = allData.length ? Object.keys(allData[0]).filter(k => !NON_SKU_COLS.has(k)) : [];
+  spData.forEach(r => {
+    skuCols.forEach(sku => {
+      const qty = parseFloat(r[sku]) || 0;
+      if (qty <= 0) return;
+      if (!skuMap[sku]) skuMap[sku] = 0;
+      skuMap[sku] += qty;
+    });
+  });
+  const skuSorted = Object.entries(skuMap).filter(([,q])=>q>0).sort((a,b) => b[1]-a[1]);
+
+  document.getElementById('drillAvatar').textContent = name.charAt(0);
+  document.getElementById('drillAvatar').style.cssText = `width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:1.2rem;flex-shrink:0;background:${color}20;color:${color}`;
+  document.getElementById('drillName').textContent = name;
+  document.getElementById('drillSub').textContent = `${orders} 笔订单 · RM ${Number(total).toLocaleString('en-MY',{minimumFractionDigits:2,maximumFractionDigits:2})} · ${custSorted.length} 位客户`;
+
+  let html = '';
+
+  // Customers table
+  html += `<div class="modal-section">
+    <div class="modal-section-title">🏪 客户明细（${custSorted.length} 位）</div>
+    <table class="modal-table">
+      <thead><tr><th>#</th><th>客户/公司</th><th>类型</th><th>订单数</th><th class="num">业绩 (RM)</th></tr></thead>
+      <tbody>${custSorted.map(([cust, d], i) => `<tr>
+        <td>${i+1}</td>
+        <td><strong>${cust}</strong></td>
+        <td><span class="tag tag-gold" style="font-size:11px">${d.type}</span></td>
+        <td>${d.orders}</td>
+        <td class="num">RM ${Number(d.total).toLocaleString('en-MY',{minimumFractionDigits:2,maximumFractionDigits:2})}</td>
+      </tr>`).join('')}</tbody>
+    </table>
+  </div>`;
+
+  // SKU table
+  if (skuSorted.length) {
+    html += `<div class="modal-section">
+      <div class="modal-section-title">📦 SKU 销量（${skuSorted.length} 种）</div>
+      <table class="modal-table">
+        <thead><tr><th>#</th><th>SKU</th><th class="num">总数量</th></tr></thead>
+        <tbody>${skuSorted.map(([sku, qty], i) => `<tr>
+          <td>${i+1}</td>
+          <td><strong>${sku}</strong></td>
+          <td class="num">${qty % 1 === 0 ? qty : qty.toFixed(2)}</td>
+        </tr>`).join('')}</tbody>
+      </table>
+    </div>`;
+  }
+
+  document.getElementById('drillBody').innerHTML = html;
+  document.getElementById('drillModal').style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+}
+
+function closeDrill() {
+  document.getElementById('drillModal').style.display = 'none';
+  document.body.style.overflow = '';
 }
 
 // Init
