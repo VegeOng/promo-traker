@@ -877,7 +877,9 @@ async function loadOverview(){
   try{
     const [dT,wW]=await Promise.all([db(`daily_reports?select=name&date=eq.${t}`),db(`weekly_reports?select=name&date=gte.${ws}&date=lte.${we}`)]);
     const sD=new Set(dT.map(r=>r.name)),sW=new Set(wW.map(r=>r.name));
-    const mD=members.filter(m=>!sD.has(m.name)),mW=members.filter(m=>!sW.has(m.name));
+    // sales 角色只提交 Visit Records，不纳入 daily report 缺交统计
+    const nonSalesMembers=members.filter(m=>(m.role||'sales')!=='sales');
+    const mD=nonSalesMembers.filter(m=>!sD.has(m.name)),mW=members.filter(m=>!sW.has(m.name));
     document.getElementById('ov-daily-miss').textContent=mD.length;
     document.getElementById('ov-daily-ok').textContent=sD.size;
     document.getElementById('ov-weekly-miss').textContent=mW.length;
@@ -917,9 +919,12 @@ async function loadMissStats(){
   const workDays=countWorkDays(new Date(year,month-1,1),new Date(year,month-1,new Date(year,month,0).getDate()));const weekCount=Math.ceil(new Date(year,month,0).getDate()/7);
   try{
     const [dD,wD]=await Promise.all([db(`daily_reports?select=name,date&date=gte.${firstDay}&date=lte.${lastDay}`),db(`weekly_reports?select=name,date&date=gte.${firstDay}&date=lte.${lastDay}`)]);
+    const nonSales=members.filter(m=>(m.role||'sales')!=='sales');
     const dBN={},wBN={};members.forEach(m=>{dBN[m.name]=0;wBN[m.name]=0;});
     dD.forEach(r=>{if(dBN[r.name]!==undefined)dBN[r.name]++;});wD.forEach(r=>{if(wBN[r.name]!==undefined)wBN[r.name]++;});
-    tbody.innerHTML=members.map(m=>{const dM=Math.max(0,workDays-dBN[m.name]);const wM=Math.max(0,weekCount-wBN[m.name]);const tot=dM+wM;return `<tr><td><strong>${m.name}</strong></td><td><span class="miss-count ${dM>0?'bad':'ok'}">${dM}</span></td><td><span class="miss-count ${wM>0?'bad':'ok'}">${wM}</span></td><td><span class="miss-count ${tot>0?'bad':'ok'}">${tot}</span></td></tr>`;}).join('');
+    // sales 角色不计入 daily miss（他们提交的是 visit records），但计入 weekly miss
+    tbody.innerHTML=nonSales.map(m=>{const dM=Math.max(0,workDays-dBN[m.name]);const wM=Math.max(0,weekCount-wBN[m.name]);const tot=dM+wM;return `<tr><td><strong>${m.name}</strong></td><td><span class="miss-count ${dM>0?'bad':'ok'}">${dM}</span></td><td><span class="miss-count ${wM>0?'bad':'ok'}">${wM}</span></td><td><span class="miss-count ${tot>0?'bad':'ok'}">${tot}</span></td></tr>`;}).join('')
+    + members.filter(m=>(m.role||'sales')==='sales').map(m=>{const wM=Math.max(0,weekCount-wBN[m.name]);return `<tr><td><strong>${m.name}</strong> <span style="font-size:10px;color:#9ca3af">(Visit)</span></td><td><span class="miss-count ok">—</span></td><td><span class="miss-count ${wM>0?'bad':'ok'}">${wM}</span></td><td><span class="miss-count ${wM>0?'bad':'ok'}">${wM}</span></td></tr>`;}).join('');
   }catch(e){tbody.innerHTML='<tr><td colspan="4" class="empty-text">Failed.</td></tr>';}
 }
 
@@ -1087,7 +1092,9 @@ async function loadMembers(){
       const sel=document.getElementById(id);if(!sel)return;
       const cur=sel.value;const isAssignee=id==='ntf-assignee';
       sel.innerHTML=isAssignee?'<option value="">Assign to…</option>':'<option value="">All Members</option>';
-      const filtered=isAssignee?members.filter(m=>(m.role||'sales')==='sales'):members;
+      // filter-daily-name 只显示非 sales 角色（sales 角色提交的是 Visit Records，不是 Daily Report）
+      const isDailyFilter=id==='filter-daily-name';
+      const filtered=isAssignee?members.filter(m=>(m.role||'sales')==='sales'):isDailyFilter?members.filter(m=>(m.role||'sales')!=='sales'):members;
       filtered.forEach(m=>{const o=document.createElement('option');o.value=m.name;o.textContent=m.name;sel.appendChild(o);});
       if(!isAssignee)sel.value=cur;
     });
