@@ -303,8 +303,17 @@ const sb=supabase.createClient(
 );
 
 // ── Auth ─────────────────────────────────────────────────
-const loggedUser = sessionStorage.getItem('userName');
-const userRole = sessionStorage.getItem('userRole');
+function lsGet(key) {
+  const raw = localStorage.getItem(key);
+  if (!raw) return null;
+  try {
+    const item = JSON.parse(raw);
+    if (Date.now() > item.expiry) { localStorage.removeItem(key); return null; }
+    return item.value;
+  } catch { return null; }
+}
+const loggedUser = lsGet('userName');
+const userRole = lsGet('userRole');
 if (!loggedUser) { location.href = 'index.html'; }
 
 // Back link
