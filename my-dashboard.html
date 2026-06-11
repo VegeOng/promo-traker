@@ -113,7 +113,6 @@
   .task-item { background: white; border: 1px solid #e5e7eb; border-radius: 12px; margin-bottom: 10px; overflow: hidden; border-left: 3px solid #e5e7eb; }
   .task-item.overdue { border-left-color: #dc2626; }
   .task-item.pending { border-left-color: #d97706; }
-  .task-item.awaiting_confirm { border-left-color: #3b82f6; }
   .task-item.escalated { border-left-color: #8b5cf6; }
   .task-item.completed_ontime { border-left-color: #166534; }
   .task-item.completed_late { border-left-color: #9ca3af; }
@@ -402,7 +401,7 @@
       const counts = { all: allMyTasks.length, overdue:0, today:0, pending:0, completed:0 };
       allMyTasks.forEach(t => {
         if (t.status === 'overdue') counts.overdue++;
-        else if (['completed_ontime','completed_late','awaiting_confirm'].includes(t.status)) counts.completed++;
+        else if (['completed_ontime','completed_late'].includes(t.status)) counts.completed++;
         else if (t.due_date === todayStr && ['pending','escalated'].includes(t.status)) counts.today++;
         else if (['pending','escalated'].includes(t.status)) counts.pending++;
       });
@@ -429,12 +428,12 @@
     const list = document.getElementById('my-task-list');
     let filtered = allMyTasks;
     if (currentTaskFilter === 'overdue') filtered = allMyTasks.filter(t => t.status === 'overdue');
-    else if (currentTaskFilter === 'today') filtered = allMyTasks.filter(t => t.due_date === todayStr && !['completed_ontime','completed_late','awaiting_confirm'].includes(t.status));
+    else if (currentTaskFilter === 'today') filtered = allMyTasks.filter(t => t.due_date === todayStr && !['completed_ontime','completed_late'].includes(t.status));
     else if (currentTaskFilter === 'pending') filtered = allMyTasks.filter(t => ['pending','escalated'].includes(t.status) && t.due_date !== todayStr);
-    else if (currentTaskFilter === 'completed') filtered = allMyTasks.filter(t => ['completed_ontime','completed_late','awaiting_confirm'].includes(t.status));
+    else if (currentTaskFilter === 'completed') filtered = allMyTasks.filter(t => ['completed_ontime','completed_late'].includes(t.status));
 
     filtered.sort((a,b) => {
-      const order = { overdue:0, escalated:1, pending:2, awaiting_confirm:3, completed_ontime:4, completed_late:5 };
+      const order = { overdue:0, escalated:1, pending:2, completed_ontime:3, completed_late:4 };
       const ao=order[a.status]??2, bo=order[b.status]??2;
       if (ao!==bo) return ao-bo;
       if (a.due_date&&b.due_date) return a.due_date.localeCompare(b.due_date);
@@ -444,9 +443,9 @@
     if (!filtered.length) { list.innerHTML = '<div class="empty">No tasks here. 🎉</div>'; return; }
 
     list.innerHTML = filtered.map(t => {
-      const icon = { overdue:'🔴', awaiting_confirm:'⏳', pending:'🟡', escalated:'⚠️', completed_ontime:'✅', completed_late:'🕐' }[t.status] || '📌';
-      const badgeClass = { overdue:'tb-overdue', awaiting_confirm:'tb-awaiting', pending:'tb-pending', escalated:'tb-escalated', completed_ontime:'tb-ontime', completed_late:'tb-late' }[t.status] || 'tb-pending';
-      const badgeText = { overdue:'Overdue', awaiting_confirm:'Awaiting Confirm', pending:'Pending', escalated:'Escalated', completed_ontime:'Done ✓', completed_late:'Done (Late)' }[t.status] || t.status;
+      const icon = { overdue:'🔴', pending:'🟡', escalated:'⚠️', completed_ontime:'✅', completed_late:'🕐' }[t.status] || '📌';
+      const badgeClass = { overdue:'tb-overdue', pending:'tb-pending', escalated:'tb-escalated', completed_ontime:'tb-ontime', completed_late:'tb-late' }[t.status] || 'tb-pending';
+      const badgeText = { overdue:'Overdue', pending:'Pending', escalated:'Escalated', completed_ontime:'Done ✓', completed_late:'Done (Late)' }[t.status] || t.status;
       const sourceText = { manager_created:'From Manager', from_report:'From Report', rep_committed:'Self Committed' }[t.source] || t.source;
       const daysOverdue = t.status==='overdue'&&t.due_date ? Math.floor((new Date()-new Date(t.due_date))/86400000) : 0;
       const dueLabel = t.due_date ? (t.status==='overdue'?`${daysOverdue}d overdue`:`Due: ${t.due_date}`) : 'No due date';
@@ -477,9 +476,7 @@
                   <button class="btn-reply" onclick="saveReply('${t.task_id}')">💬 Save Reply</button>
                   <button class="btn-escalate" onclick="escalateTask('${t.task_id}')">⚠️ Need Help</button>
                 </div>`
-              : t.status === 'awaiting_confirm'
-                ? `<div style="font-size:13px;color:#9ca3af;padding:4px 0">⏳ Awaiting manager confirmation…</div>`
-                : `<div style="font-size:13px;color:#166534;padding:4px 0">✅ Completed — confirmed by manager</div>`}
+              : `<div style="font-size:13px;color:#166534;padding:4px 0">✅ Completed</div>`}
             </div>
           </div>
         </div>`;
@@ -489,9 +486,12 @@
   function toggleMyTask(id) { document.getElementById(id).classList.toggle('open'); }
 
   async function markTaskDone(taskId) {
-    if (!confirm('Mark this task as done? Your manager will confirm it.')) return;
+    if (!confirm('Mark this task as done?')) return;
     try {
-      await fetch(SUPABASE_URL+'/rest/v1/tasks?task_id=eq.'+taskId, { method:'PATCH', headers:H, body:JSON.stringify({status:'awaiting_confirm',rep_marked_done_at:new Date().toISOString()}) });
+      const t = allMyTasks.find(x => x.task_id === taskId);
+      const status = (t && t.due_date && todayStr > t.due_date) ? 'completed_late' : 'completed_ontime';
+      const now = new Date().toISOString();
+      await fetch(SUPABASE_URL+'/rest/v1/tasks?task_id=eq.'+taskId, { method:'PATCH', headers:H, body:JSON.stringify({status,rep_marked_done_at:now,completed_at:now}) });
       await loadMyTasks();
     } catch(e) { alert('Failed. Please try again.'); }
   }
