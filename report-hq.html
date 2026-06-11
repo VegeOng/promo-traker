@@ -371,7 +371,6 @@
 
 <div class="tabs" id="tabBar">
   <div class="tab active" onclick="switchTab('briefing')">📋 Daily Briefing</div>
-  <div class="tab" onclick="switchTab('tasks')">✅ Task Tracker</div>
   <div class="tab" onclick="switchTab('activities')">🎪 Activities</div>
   <div class="tab" onclick="switchTab('overview')">📊 Overview</div>
   <div class="tab" onclick="switchTab('daily')">📝 Daily Reports</div>
@@ -396,35 +395,6 @@
       <div class="bs-card amber"><div class="bs-val" id="bs-orders">—</div><div class="bs-label">Total Orders (RM)</div></div>
     </div>
     <div id="briefing-list"><div class="loading-text">Loading…</div></div>
-  </div>
-
-  <!-- TASK TRACKER -->
-  <div class="section" id="sec-tasks">
-    <div class="task-summary-bar">
-      <span class="tsb-item all active" onclick="filterTasks('all',this)">All <span id="cnt-all">0</span></span>
-      <span class="tsb-item completed" onclick="filterTasks('completed',this)">✅ Completed <span id="cnt-completed">0</span></span>
-      <span class="tsb-item pending" onclick="filterTasks('pending',this)">🟡 Pending <span id="cnt-pending">0</span></span>
-      <span class="tsb-item overdue" onclick="filterTasks('overdue',this)">🔴 Overdue <span id="cnt-overdue">0</span></span>
-    </div>
-    <div class="task-filter-bar">
-      <select id="task-filter-member" onchange="loadTasks()"><option value="">All Members</option></select>
-      <button class="btn-new-task" onclick="toggleNewTaskForm()">+ New Task</button>
-    </div>
-    <div class="new-task-form" id="new-task-form">
-      <h3>Create New Task</h3>
-      <div class="ntf-grid">
-        <select id="ntf-assignee"><option value="">Assign to…</option></select>
-        <input type="date" id="ntf-due">
-        <input type="text" id="ntf-customer" placeholder="Related customer (optional)">
-        <select id="ntf-source"><option value="manager_created">Manager Created</option></select>
-      </div>
-      <textarea class="ntf-textarea" id="ntf-desc" placeholder="Task description…"></textarea>
-      <div class="ntf-actions">
-        <button class="btn-ntf-save" onclick="saveNewTask()">Save Task</button>
-        <button class="btn-ntf-cancel" onclick="toggleNewTaskForm()">Cancel</button>
-      </div>
-    </div>
-    <div id="task-list"><div class="loading-text">Loading…</div></div>
   </div>
 
   <!-- ACTIVITIES -->
@@ -587,7 +557,7 @@ const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsI
 const H = { 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY, 'Content-Type': 'application/json', 'Prefer': 'return=representation' };
 const Hmin = { 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' };
 
-let members = [], allTasks = [], currentTaskFilter = 'all', hqSalesMembers = [], allOutlets = [];
+let members = [], hqSalesMembers = [], allOutlets = [];
 let allActivities = [], currentActFilter = 'all';
 // 这些成员（老板/管理层账号）无需提交 Visit Report / Weekly Report，也不纳入打卡拜访 KPI 统计
 const REPORT_EXEMPT = ['VEGE'];
@@ -713,13 +683,12 @@ function toggleAc(id){document.getElementById(id).classList.toggle('open');}
 async function setActivityStatus(id,status){try{await fetch(SUPA_URL+'/rest/v1/activities?activity_id=eq.'+id,{method:'PATCH',headers:Hmin,body:JSON.stringify({status})});loadActivities();}catch(e){alert('Failed.');}}
 async function deleteActivity(id){if(!confirm('Delete this activity and all reports?'))return;try{await fetch(SUPA_URL+'/rest/v1/activity_reports?activity_id=eq.'+id,{method:'DELETE',headers:H});await fetch(SUPA_URL+'/rest/v1/activities?activity_id=eq.'+id,{method:'DELETE',headers:H});loadActivities();}catch(e){alert('Failed.');}}
 
-const tabNames = ['briefing','tasks','activities','overview','daily','weekly','stats','hqstats','members'];
+const tabNames = ['briefing','activities','overview','daily','weekly','stats','hqstats','members'];
 function switchTab(tab) {
   document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',tabNames[i]===tab));
   document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
   document.getElementById('sec-'+tab).classList.add('active');
   if(tab==='briefing') loadBriefing();
-  else if(tab==='tasks') loadTasks();
   else if(tab==='activities') loadActivities();
   else if(tab==='overview') loadOverview();
   else if(tab==='daily') loadDailyReports();
@@ -728,85 +697,6 @@ function switchTab(tab) {
   else if(tab==='hqstats') loadHQStats();
   else if(tab==='members') renderMembers();
 }
-
-// ===== TASK TRACKER =====
-async function loadTasks() {
-  const list=document.getElementById('task-list');
-  list.innerHTML='<div class="loading-text">Loading…</div>';
-  const memberFilter=document.getElementById('task-filter-member').value;
-  try {
-    await fetch(SUPA_URL+'/rest/v1/tasks?status=eq.pending&due_date=lt.'+todayStr,{method:'PATCH',headers:Hmin,body:JSON.stringify({status:'overdue'})});
-    let q='tasks?select=*&order=created_at.desc';
-    if(memberFilter) q+=`&assigned_to=eq.${encodeURIComponent(memberFilter)}`;
-    allTasks=await db(q)||[];
-    const counts={all:allTasks.length,overdue:0,pending:0,completed:0};
-    allTasks.forEach(t=>{
-      if(t.status==='overdue') counts.overdue++;
-      else if(['pending','escalated'].includes(t.status)) counts.pending++;
-      else if(['completed_ontime','completed_late'].includes(t.status)) counts.completed++;
-    });
-    document.getElementById('cnt-all').textContent=counts.all;
-    document.getElementById('cnt-overdue').textContent=counts.overdue;
-    document.getElementById('cnt-pending').textContent=counts.pending;
-    document.getElementById('cnt-completed').textContent=counts.completed;
-    renderTaskList();
-  } catch(e){console.error(e);list.innerHTML='<div class="empty-text">Failed to load tasks.</div>';}
-}
-
-function filterTasks(filter,el){currentTaskFilter=filter;document.querySelectorAll('.tsb-item').forEach(b=>b.classList.remove('active'));el.classList.add('active');renderTaskList();}
-
-function renderTaskList() {
-  const list=document.getElementById('task-list');
-  let filtered=allTasks;
-  if(currentTaskFilter==='overdue') filtered=allTasks.filter(t=>t.status==='overdue');
-  else if(currentTaskFilter==='pending') filtered=allTasks.filter(t=>['pending','escalated'].includes(t.status));
-  else if(currentTaskFilter==='completed') filtered=allTasks.filter(t=>['completed_ontime','completed_late'].includes(t.status));
-  filtered.sort((a,b)=>{const order={overdue:0,escalated:1,pending:2,completed_ontime:3,completed_late:4};const ao=order[a.status]??2,bo=order[b.status]??2;if(ao!==bo)return ao-bo;if(a.due_date&&b.due_date)return a.due_date.localeCompare(b.due_date);return 0;});
-  if(!filtered.length){list.innerHTML='<div class="empty-text">No tasks found.</div>';return;}
-  list.innerHTML=filtered.map(t=>{
-    const icon={overdue:'🔴',pending:'🟡',escalated:'⚠️',completed_ontime:'✅',completed_late:'🕐'}[t.status]||'📌';
-    const badgeClass={overdue:'tsb-overdue',pending:'tsb-pending',escalated:'tsb-escalated',completed_ontime:'tsb-ontime',completed_late:'tsb-late'}[t.status]||'tsb-pending';
-    const badgeText={overdue:'Overdue',pending:'Pending',escalated:'Escalated',completed_ontime:'Completed ✓',completed_late:'Completed (Late)'}[t.status]||t.status;
-    const sourceText={manager_created:'Manager',from_report:'From Report',rep_committed:'Rep Committed'}[t.source]||t.source;
-    const daysOverdue=t.status==='overdue'&&t.due_date?Math.floor((new Date()-new Date(t.due_date))/86400000):0;
-    const dueLabel=t.due_date?(t.status==='overdue'?`⚠️ ${daysOverdue}d overdue`:`Due: ${t.due_date}`):'No due date';
-    return `<div class="task-item ${t.status}" id="ti-${t.task_id}">
-      <div class="ti-header" onclick="toggleTask('${t.task_id}')">
-        <div class="ti-icon">${icon}</div>
-        <div class="ti-main">
-          <div class="ti-desc">${escHtml(t.description)}</div>
-          <div class="ti-meta"><span>👤 ${escHtml(t.assigned_to)}</span><span>📅 ${dueLabel}</span>${t.linked_customer?`<span>🏪 ${escHtml(t.linked_customer)}</span>`:''}</div>
-        </div>
-        <div class="ti-right"><span class="task-status-badge ${badgeClass}">${badgeText}</span><span class="source-tag">${sourceText}</span><span style="color:var(--muted);font-size:12px">▼</span></div>
-      </div>
-      <div class="ti-body" id="tibody-${t.task_id}">
-        <div class="ti-body-inner">
-          ${t.rep_reply?`<div class="ti-note-row"><label>Rep Reply</label><p>${escHtml(t.rep_reply)}</p></div>`:''}
-          ${t.rep_marked_done_at?`<div class="ti-note-row"><label>Rep Marked Done</label><p>${new Date(t.rep_marked_done_at).toLocaleString('en-MY')}</p></div>`:''}
-          ${t.manager_note?`<div class="ti-note-row"><label>Manager Note</label><p>${escHtml(t.manager_note)}</p></div>`:''}
-          <textarea class="ti-note-input" id="note-${t.task_id}" placeholder="Add manager note…">${t.manager_note||''}</textarea>
-          <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap">
-            <input type="date" id="due-${t.task_id}" value="${t.due_date||''}" style="padding:6px 10px;border:1.5px solid var(--border);border-radius:6px;font-size:12px;font-family:inherit">
-            <button style="padding:6px 12px;background:var(--amber-light);color:var(--amber);border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer" onclick="updateDueDate('${t.task_id}')">Update Due Date</button>
-          </div>
-          <div class="ti-actions">
-            <button class="btn-add-note" onclick="saveManagerNote('${t.task_id}')">💾 Save Note</button>
-            ${['overdue','escalated'].includes(t.status)?`<button class="btn-confirm" onclick="forceComplete('${t.task_id}')">✅ Mark Complete</button>`:''}
-            <button class="btn-delete-task" onclick="deleteTask('${t.task_id}')">🗑 Delete</button>
-          </div>
-        </div>
-      </div>
-    </div>`;
-  }).join('');
-}
-
-function toggleTask(id){document.getElementById('tibody-'+id).classList.toggle('open');}
-async function saveManagerNote(taskId){const note=document.getElementById('note-'+taskId).value.trim();try{await fetch(SUPA_URL+'/rest/v1/tasks?task_id=eq.'+taskId,{method:'PATCH',headers:Hmin,body:JSON.stringify({manager_note:note})});await loadTasks();}catch(e){alert('Failed.');}}
-async function updateDueDate(taskId){const due=document.getElementById('due-'+taskId).value;if(!due)return;try{await fetch(SUPA_URL+'/rest/v1/tasks?task_id=eq.'+taskId,{method:'PATCH',headers:Hmin,body:JSON.stringify({due_date:due,status:'pending'})});await loadTasks();}catch(e){alert('Failed.');}}
-async function forceComplete(taskId){if(!confirm('Mark this task as completed?'))return;try{await fetch(SUPA_URL+'/rest/v1/tasks?task_id=eq.'+taskId,{method:'PATCH',headers:Hmin,body:JSON.stringify({status:'completed_late',completed_at:new Date().toISOString()})});await loadTasks();}catch(e){alert('Failed.');}}
-async function deleteTask(taskId){if(!confirm('Delete this task permanently?'))return;try{await fetch(SUPA_URL+'/rest/v1/tasks?task_id=eq.'+taskId,{method:'DELETE',headers:H});await loadTasks();}catch(e){alert('Failed.');}}
-function toggleNewTaskForm(){document.getElementById('new-task-form').classList.toggle('open');}
-async function saveNewTask(){const desc=document.getElementById('ntf-desc').value.trim();const assignee=document.getElementById('ntf-assignee').value;const due=document.getElementById('ntf-due').value||null;const customer=document.getElementById('ntf-customer').value.trim()||null;if(!desc){alert('Please enter a task description.');return;}if(!assignee){alert('Please select a team member.');return;}try{await db('tasks',{method:'POST',body:JSON.stringify({description:desc,assigned_to:assignee,created_by:'HQ',source:'manager_created',linked_customer:customer,due_date:due,status:'pending'})});document.getElementById('ntf-desc').value='';document.getElementById('ntf-assignee').value='';document.getElementById('ntf-due').value='';document.getElementById('ntf-customer').value='';document.getElementById('new-task-form').classList.remove('open');await loadTasks();}catch(e){console.error(e);alert('Failed.');}}
 
 // ===== DAILY BRIEFING =====
 async function loadBriefing() {
@@ -1085,16 +975,16 @@ async function saveOutletKPI(memberId) {
 async function loadMembers(){
   try{
     members=await db('members?select=*&order=name'); // load ALL incl. inactive for management UI
-    ['filter-daily-name','filter-weekly-name','task-filter-member','ntf-assignee'].forEach(id=>{
+    ['filter-daily-name','filter-weekly-name'].forEach(id=>{
       const sel=document.getElementById(id);if(!sel)return;
-      const cur=sel.value;const isAssignee=id==='ntf-assignee';
-      sel.innerHTML=isAssignee?'<option value="">Assign to…</option>':'<option value="">All Members</option>';
+      const cur=sel.value;
+      sel.innerHTML='<option value="">All Members</option>';
       // filter-daily-name 只显示非 sales 角色（sales 角色提交的是 Visit Records，不是 Daily Report）
       const isDailyFilter=id==='filter-daily-name';
       const activeMembers=members.filter(m=>m.active!==false);
-      const filtered=isAssignee?activeMembers.filter(m=>(m.role||'sales')==='sales'):isDailyFilter?activeMembers.filter(m=>(m.role||'sales')!=='sales'):activeMembers;
+      const filtered=isDailyFilter?activeMembers.filter(m=>(m.role||'sales')!=='sales'):activeMembers;
       filtered.forEach(m=>{const o=document.createElement('option');o.value=m.name;o.textContent=m.name;sel.appendChild(o);});
-      if(!isAssignee)sel.value=cur;
+      sel.value=cur;
     });
   }catch(e){console.error(e);}
 }

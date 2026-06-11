@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Task Tracker — MamaVege</title>
+<style>
+  :root {
+    --bg: #fafafa; --green: #166534; --green-light: #dcfce7; --green-mid: #15803d;
+    --red: #dc2626; --red-light: #fee2e2; --amber: #d97706; --amber-light: #fef3c7;
+    --blue: #3b82f6; --blue-light: #eff6ff;
+    --text: #1a1a1a; --muted: #6b7280; --border: #e5e7eb; --card: #ffffff; --radius: 12px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; min-height: 100vh; }
+
+  .pw-overlay { position: fixed; inset: 0; background: var(--green); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 24px; }
+  .pw-box { background: white; border-radius: 16px; padding: 32px 28px; width: 100%; max-width: 360px; text-align: center; }
+  .pw-logo { width: 52px; height: 52px; background: var(--green); border-radius: 14px; display: flex; align-items: center; justify-content: center; font-weight: 900; color: white; font-size: 22px; margin: 0 auto 16px; }
+  .pw-title { font-size: 20px; font-weight: 900; color: var(--text); margin-bottom: 4px; }
+  .pw-sub { font-size: 13px; color: var(--muted); margin-bottom: 24px; }
+  .pw-input { width: 100%; padding: 13px 16px; border: 1.5px solid var(--border); border-radius: 10px; font-size: 15px; font-family: inherit; text-align: center; letter-spacing: 0.1em; margin-bottom: 12px; }
+  .pw-input:focus { outline: none; border-color: var(--green); }
+  .pw-input.error { border-color: var(--red); animation: shake 0.3s; }
+  @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-6px)} 75%{transform:translateX(6px)} }
+  .pw-btn { width: 100%; padding: 13px; background: var(--green); color: white; border: none; border-radius: 10px; font-size: 15px; font-weight: 700; cursor: pointer; }
+  .pw-btn:hover { background: var(--green-mid); }
+  .pw-error { font-size: 13px; color: var(--red); margin-top: 8px; display: none; }
+  .pw-error.visible { display: block; }
+
+  .container { max-width: 900px; margin: 0 auto; padding: 24px 16px 60px; }
+
+  .task-summary-bar { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+  .tsb-item { padding: 8px 14px; border-radius: 20px; font-size: 12px; font-weight: 700; cursor: pointer; border: 2px solid transparent; transition: all 0.15s; }
+  .tsb-item.all { background: #f3f4f6; color: var(--muted); }
+  .tsb-item.overdue { background: var(--red-light); color: var(--red); }
+  .tsb-item.pending { background: var(--amber-light); color: var(--amber); }
+  .tsb-item.completed { background: var(--green-light); color: var(--green); }
+  .tsb-item.active { border-color: currentColor; }
+
+  .task-filter-bar { display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; align-items: center; }
+  .task-filter-bar select { padding: 8px 12px; border: 1.5px solid var(--border); border-radius: 8px; font-size: 13px; font-family: inherit; appearance: none; }
+  .btn-new-task { padding: 9px 16px; background: var(--green); color: white; border: none; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; margin-left: auto; }
+  .btn-new-task:hover { background: var(--green-mid); }
+
+  .new-task-form { background: white; border: 2px solid var(--green); border-radius: var(--radius); padding: 20px; margin-bottom: 16px; display: none; }
+  .new-task-form.open { display: block; }
+  .new-task-form h3 { font-size: 14px; font-weight: 800; color: var(--green); margin-bottom: 14px; }
+  .ntf-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+  @media(max-width:500px){ .ntf-grid { grid-template-columns: 1fr; } }
+  .ntf-grid input, .ntf-grid select { padding: 10px 12px; border: 1.5px solid var(--border); border-radius: 8px; font-size: 13px; font-family: inherit; width: 100%; }
+  .ntf-textarea { width: 100%; padding: 10px 12px; border: 1.5px solid var(--border); border-radius: 8px; font-size: 13px; font-family: inherit; min-height: 80px; resize: vertical; margin-bottom: 12px; }
+  .ntf-actions { display: flex; gap: 10px; }
+  .btn-ntf-save { padding: 10px 20px; background: var(--green); color: white; border: none; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; }
+  .btn-ntf-cancel { padding: 10px 20px; background: #e5e7eb; color: var(--text); border: none; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; }
+
+  .task-item { background: white; border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 10px; overflow: hidden; border-left: 3px solid var(--border); }
+  .task-item.overdue { border-left-color: var(--red); }
+  .task-item.pending { border-left-color: var(--amber); }
+  .task-item.completed_ontime { border-left-color: var(--green); }
+  .task-item.completed_late { border-left-color: var(--muted); }
+  .task-item.escalated { border-left-color: #8b5cf6; }
+
+  .ti-header { padding: 12px 16px; display: flex; align-items: flex-start; gap: 12px; cursor: pointer; }
+  .ti-header:hover { background: #f9fafb; }
+  .ti-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+  .ti-main { flex: 1; min-width: 0; }
+  .ti-desc { font-size: 14px; font-weight: 600; margin-bottom: 4px; line-height: 1.4; }
+  .ti-meta { font-size: 12px; color: var(--muted); display: flex; gap: 10px; flex-wrap: wrap; }
+  .ti-right { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+  .task-status-badge { font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 20px; text-transform: uppercase; }
+  .tsb-overdue { background: var(--red-light); color: var(--red); }
+  .tsb-pending { background: var(--amber-light); color: var(--amber); }
+  .tsb-ontime { background: var(--green-light); color: var(--green); }
+  .tsb-late { background: #f3f4f6; color: var(--muted); }
+  .tsb-escalated { background: #ede9fe; color: #7c3aed; }
+  .source-tag { font-size: 10px; font-weight: 600; padding: 2px 7px; border-radius: 20px; background: #f3f4f6; color: var(--muted); }
+
+  .ti-body { display: none; padding: 0 16px 14px; border-top: 1px solid var(--border); }
+  .ti-body.open { display: block; }
+  .ti-body-inner { padding-top: 12px; }
+  .ti-note-row { margin-bottom: 10px; }
+  .ti-note-row label { font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; display: block; margin-bottom: 4px; }
+  .ti-note-row p { font-size: 13px; color: var(--text); line-height: 1.5; }
+  .ti-note-input { width: 100%; padding: 8px 12px; border: 1.5px solid var(--border); border-radius: 6px; font-size: 13px; font-family: inherit; min-height: 60px; resize: vertical; margin-bottom: 8px; }
+  .ti-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+  .btn-confirm { padding: 7px 14px; background: var(--green); color: white; border: none; border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer; }
+  .btn-add-note { padding: 7px 14px; background: var(--blue-light); color: var(--blue); border: none; border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer; }
+  .btn-delete-task { padding: 7px 14px; background: none; border: 1px solid var(--red); color: var(--red); border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer; }
+
+  .loading-text { text-align: center; padding: 24px; color: var(--muted); font-size: 13px; }
+  .empty-text { text-align: center; padding: 24px; color: var(--muted); font-size: 13px; }
+
+.mv-top{overflow:hidden}
+.mv-top-main{display:flex;justify-content:space-between;align-items:center;padding:12px 24px;background:#166534}
+.mv-top-left{display:flex;align-items:center;gap:12px}
+.mv-top-logo{height:34px;background:#fff;border-radius:8px;padding:3px 8px;display:flex;align-items:center;text-decoration:none}
+.mv-top-logo img{height:26px}
+.mv-top-sep{width:1px;height:24px;background:rgba(255,255,255,.2)}
+.mv-top-tool{color:#fff;font-size:14px;font-weight:700;letter-spacing:.3px}
+.mv-top-right{display:flex;align-items:center;gap:12px}
+.mv-top-back{color:rgba(255,255,255,.8);text-decoration:none;font-size:13px;font-weight:600}
+.mv-top-back:hover{color:#fff}
+.mv-top-btn{background:rgba(255,255,255,.12);border:none;color:rgba(255,255,255,.8);padding:5px 14px;border-radius:6px;font-size:12px;cursor:pointer;font-family:inherit}
+.mv-top-btn:hover{background:rgba(255,255,255,.2);color:#fff}
+.mv-top-sub{display:flex;justify-content:space-between;align-items:center;padding:5px 24px;background:#15532d;color:rgba(255,255,255,.6);font-size:11px}
+</style>
+</head>
+<body>
+
+<div class="pw-overlay" id="pwOverlay">
+  <div class="pw-box">
+    <div class="pw-logo">M</div>
+    <div class="pw-title">Task Tracker</div>
+    <div class="pw-sub">Enter HQ password to access</div>
+    <input type="password" class="pw-input" id="pwInput" placeholder="Password" onkeydown="if(event.key==='Enter')checkPw()">
+    <button class="pw-btn" onclick="checkPw()">Enter</button>
+    <div class="pw-error" id="pwError">Incorrect password. Please try again.</div>
+  </div>
+</div>
+
+<div class="mv-top">
+  <div class="mv-top-main">
+    <div class="mv-top-left">
+      <a href="index.html" class="mv-top-logo"><img src="Mamavege_Logo.png" alt="MamaVege"></a>
+      <div class="mv-top-sep"></div>
+      <span class="mv-top-tool">✅ Task Tracker</span>
+    </div>
+    <div class="mv-top-right">
+      <a href="index.html" class="mv-top-back">← Hub</a>
+      <button class="mv-top-btn" onclick="location.reload()">⟳</button>
+    </div>
+  </div>
+  <div class="mv-top-sub">
+    <span class="mv-top-date"></span>
+    <span>MamaVege Management Hub</span>
+  </div>
+</div>
+<script>document.querySelectorAll('.mv-top-date').forEach(e=>e.textContent=new Date().toLocaleDateString('en-MY',{weekday:'short',year:'numeric',month:'short',day:'numeric'}));</script>
+
+<div class="container">
+  <div class="task-summary-bar">
+    <span class="tsb-item all active" onclick="filterTasks('all',this)">All <span id="cnt-all">0</span></span>
+    <span class="tsb-item completed" onclick="filterTasks('completed',this)">✅ Completed <span id="cnt-completed">0</span></span>
+    <span class="tsb-item pending" onclick="filterTasks('pending',this)">🟡 Pending <span id="cnt-pending">0</span></span>
+    <span class="tsb-item overdue" onclick="filterTasks('overdue',this)">🔴 Overdue <span id="cnt-overdue">0</span></span>
+  </div>
+  <div class="task-filter-bar">
+    <select id="task-filter-member" onchange="loadTasks()"><option value="">All Members</option></select>
+    <button class="btn-new-task" onclick="toggleNewTaskForm()">+ New Task</button>
+  </div>
+  <div class="new-task-form" id="new-task-form">
+    <h3>Create New Task</h3>
+    <div class="ntf-grid">
+      <select id="ntf-assignee"><option value="">Assign to…</option></select>
+      <input type="date" id="ntf-due">
+      <input type="text" id="ntf-customer" placeholder="Related customer (optional)">
+      <select id="ntf-source"><option value="manager_created">Manager Created</option></select>
+    </div>
+    <textarea class="ntf-textarea" id="ntf-desc" placeholder="Task description…"></textarea>
+    <div class="ntf-actions">
+      <button class="btn-ntf-save" onclick="saveNewTask()">Save Task</button>
+      <button class="btn-ntf-cancel" onclick="toggleNewTaskForm()">Cancel</button>
+    </div>
+  </div>
+  <div id="task-list"><div class="loading-text">Loading…</div></div>
+</div>
+
+<script>
+const SUPA_URL = 'https://wjhgezvrxlhpexocfsea.supabase.co';
+const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndqaGdlenZyeGxocGV4b2Nmc2VhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg1MDU4NzgsImV4cCI6MjA5NDA4MTg3OH0.jENcrgEDYDlSRUCqve-T6rxYRJfz-dnZQHnXpPLJ_RE';
+const H = { 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY, 'Content-Type': 'application/json', 'Prefer': 'return=representation' };
+const Hmin = { 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' };
+
+let allTasks = [], currentTaskFilter = 'all';
+function fmtLocalDate(d){return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
+const todayStr = fmtLocalDate(new Date());
+
+async function db(path, opts={}) {
+  const r = await fetch(SUPA_URL+'/rest/v1/'+path, {headers:H, ...opts});
+  if(!r.ok){const e=await r.json().catch(()=>{});throw e||r.status;}
+  return r.status===204?null:r.json();
+}
+function escHtml(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+function lsGet(key){
+  const raw = localStorage.getItem(key);
+  if(!raw) return null;
+  try{
+    const item = JSON.parse(raw);
+    if(Date.now() > item.expiry){ localStorage.removeItem(key); return null; }
+    return item.value;
+  }catch{ return null; }
+}
+
+// ===== TASK TRACKER =====
+async function loadTasks() {
+  const list=document.getElementById('task-list');
+  list.innerHTML='<div class="loading-text">Loading…</div>';
+  const memberFilter=document.getElementById('task-filter-member').value;
+  try {
+    await fetch(SUPA_URL+'/rest/v1/tasks?status=eq.pending&due_date=lt.'+todayStr,{method:'PATCH',headers:Hmin,body:JSON.stringify({status:'overdue'})});
+    let q='tasks?select=*&order=created_at.desc';
+    if(memberFilter) q+=`&assigned_to=eq.${encodeURIComponent(memberFilter)}`;
+    allTasks=await db(q)||[];
+    const counts={all:allTasks.length,overdue:0,pending:0,completed:0};
+    allTasks.forEach(t=>{
+      if(t.status==='overdue') counts.overdue++;
+      else if(['pending','escalated'].includes(t.status)) counts.pending++;
+      else if(['completed_ontime','completed_late'].includes(t.status)) counts.completed++;
+    });
+    document.getElementById('cnt-all').textContent=counts.all;
+    document.getElementById('cnt-overdue').textContent=counts.overdue;
+    document.getElementById('cnt-pending').textContent=counts.pending;
+    document.getElementById('cnt-completed').textContent=counts.completed;
+    renderTaskList();
+  } catch(e){console.error(e);list.innerHTML='<div class="empty-text">Failed to load tasks.</div>';}
+}
+
+function filterTasks(filter,el){currentTaskFilter=filter;document.querySelectorAll('.tsb-item').forEach(b=>b.classList.remove('active'));el.classList.add('active');renderTaskList();}
+
+function renderTaskList() {
+  const list=document.getElementById('task-list');
+  let filtered=allTasks;
+  if(currentTaskFilter==='overdue') filtered=allTasks.filter(t=>t.status==='overdue');
+  else if(currentTaskFilter==='pending') filtered=allTasks.filter(t=>['pending','escalated'].includes(t.status));
+  else if(currentTaskFilter==='completed') filtered=allTasks.filter(t=>['completed_ontime','completed_late'].includes(t.status));
+  filtered.sort((a,b)=>{const order={overdue:0,escalated:1,pending:2,completed_ontime:3,completed_late:4};const ao=order[a.status]??2,bo=order[b.status]??2;if(ao!==bo)return ao-bo;if(a.due_date&&b.due_date)return a.due_date.localeCompare(b.due_date);return 0;});
+  if(!filtered.length){list.innerHTML='<div class="empty-text">No tasks found.</div>';return;}
+  list.innerHTML=filtered.map(t=>{
+    const icon={overdue:'🔴',pending:'🟡',escalated:'⚠️',completed_ontime:'✅',completed_late:'🕐'}[t.status]||'📌';
+    const badgeClass={overdue:'tsb-overdue',pending:'tsb-pending',escalated:'tsb-escalated',completed_ontime:'tsb-ontime',completed_late:'tsb-late'}[t.status]||'tsb-pending';
+    const badgeText={overdue:'Overdue',pending:'Pending',escalated:'Escalated',completed_ontime:'Completed ✓',completed_late:'Completed (Late)'}[t.status]||t.status;
+    const sourceText={manager_created:'Manager',from_report:'From Report',rep_committed:'Rep Committed'}[t.source]||t.source;
+    const daysOverdue=t.status==='overdue'&&t.due_date?Math.floor((new Date()-new Date(t.due_date))/86400000):0;
+    const dueLabel=t.due_date?(t.status==='overdue'?`⚠️ ${daysOverdue}d overdue`:`Due: ${t.due_date}`):'No due date';
+    return `<div class="task-item ${t.status}" id="ti-${t.task_id}">
+      <div class="ti-header" onclick="toggleTask('${t.task_id}')">
+        <div class="ti-icon">${icon}</div>
+        <div class="ti-main">
+          <div class="ti-desc">${escHtml(t.description)}</div>
+          <div class="ti-meta"><span>👤 ${escHtml(t.assigned_to)}</span><span>📅 ${dueLabel}</span>${t.linked_customer?`<span>🏪 ${escHtml(t.linked_customer)}</span>`:''}</div>
+        </div>
+        <div class="ti-right"><span class="task-status-badge ${badgeClass}">${badgeText}</span><span class="source-tag">${sourceText}</span><span style="color:var(--muted);font-size:12px">▼</span></div>
+      </div>
+      <div class="ti-body" id="tibody-${t.task_id}">
+        <div class="ti-body-inner">
+          ${t.rep_reply?`<div class="ti-note-row"><label>Rep Reply</label><p>${escHtml(t.rep_reply)}</p></div>`:''}
+          ${t.rep_marked_done_at?`<div class="ti-note-row"><label>Rep Marked Done</label><p>${new Date(t.rep_marked_done_at).toLocaleString('en-MY')}</p></div>`:''}
+          ${t.manager_note?`<div class="ti-note-row"><label>Manager Note</label><p>${escHtml(t.manager_note)}</p></div>`:''}
+          <textarea class="ti-note-input" id="note-${t.task_id}" placeholder="Add manager note…">${t.manager_note||''}</textarea>
+          <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap">
+            <input type="date" id="due-${t.task_id}" value="${t.due_date||''}" style="padding:6px 10px;border:1.5px solid var(--border);border-radius:6px;font-size:12px;font-family:inherit">
+            <button style="padding:6px 12px;background:var(--amber-light);color:var(--amber);border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer" onclick="updateDueDate('${t.task_id}')">Update Due Date</button>
+          </div>
+          <div class="ti-actions">
+            <button class="btn-add-note" onclick="saveManagerNote('${t.task_id}')">💾 Save Note</button>
+            ${['overdue','escalated'].includes(t.status)?`<button class="btn-confirm" onclick="forceComplete('${t.task_id}')">✅ Mark Complete</button>`:''}
+            <button class="btn-delete-task" onclick="deleteTask('${t.task_id}')">🗑 Delete</button>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function toggleTask(id){document.getElementById('tibody-'+id).classList.toggle('open');}
+async function saveManagerNote(taskId){const note=document.getElementById('note-'+taskId).value.trim();try{await fetch(SUPA_URL+'/rest/v1/tasks?task_id=eq.'+taskId,{method:'PATCH',headers:Hmin,body:JSON.stringify({manager_note:note})});await loadTasks();}catch(e){alert('Failed.');}}
+async function updateDueDate(taskId){const due=document.getElementById('due-'+taskId).value;if(!due)return;try{await fetch(SUPA_URL+'/rest/v1/tasks?task_id=eq.'+taskId,{method:'PATCH',headers:Hmin,body:JSON.stringify({due_date:due,status:'pending'})});await loadTasks();}catch(e){alert('Failed.');}}
+async function forceComplete(taskId){if(!confirm('Mark this task as completed?'))return;try{await fetch(SUPA_URL+'/rest/v1/tasks?task_id=eq.'+taskId,{method:'PATCH',headers:Hmin,body:JSON.stringify({status:'completed_late',completed_at:new Date().toISOString()})});await loadTasks();}catch(e){alert('Failed.');}}
+async function deleteTask(taskId){if(!confirm('Delete this task permanently?'))return;try{await fetch(SUPA_URL+'/rest/v1/tasks?task_id=eq.'+taskId,{method:'DELETE',headers:H});await loadTasks();}catch(e){alert('Failed.');}}
+function toggleNewTaskForm(){document.getElementById('new-task-form').classList.toggle('open');}
+async function saveNewTask(){const desc=document.getElementById('ntf-desc').value.trim();const assignee=document.getElementById('ntf-assignee').value;const due=document.getElementById('ntf-due').value||null;const customer=document.getElementById('ntf-customer').value.trim()||null;if(!desc){alert('Please enter a task description.');return;}if(!assignee){alert('Please select a team member.');return;}try{await db('tasks',{method:'POST',body:JSON.stringify({description:desc,assigned_to:assignee,created_by:'HQ',source:'manager_created',linked_customer:customer,due_date:due,status:'pending'})});document.getElementById('ntf-desc').value='';document.getElementById('ntf-assignee').value='';document.getElementById('ntf-due').value='';document.getElementById('ntf-customer').value='';document.getElementById('new-task-form').classList.remove('open');await loadTasks();}catch(e){console.error(e);alert('Failed.');}}
+
+async function loadMembers(){
+  try{
+    const members=await db('members?select=*&order=name');
+    ['task-filter-member','ntf-assignee'].forEach(id=>{
+      const sel=document.getElementById(id);if(!sel)return;
+      const cur=sel.value;const isAssignee=id==='ntf-assignee';
+      sel.innerHTML=isAssignee?'<option value="">Assign to…</option>':'<option value="">All Members</option>';
+      const activeMembers=members.filter(m=>m.active!==false);
+      const filtered=isAssignee?activeMembers.filter(m=>(m.role||'sales')==='sales'):activeMembers;
+      filtered.forEach(m=>{const o=document.createElement('option');o.value=m.name;o.textContent=m.name;sel.appendChild(o);});
+      if(!isAssignee)sel.value=cur;
+    });
+  }catch(e){console.error(e);}
+}
+
+(async()=>{
+  if(sessionStorage.getItem('userRole')==='hq'||sessionStorage.getItem('hq_auth')==='1'||lsGet('userRole')==='hq'||lsGet('hq_auth')==='1'){
+    sessionStorage.setItem('hq_auth','1');
+    document.getElementById('pwOverlay').style.display='none';
+    await loadMembers();await loadTasks();
+  }
+})();
+
+async function checkPw(){
+  const inp=document.getElementById('pwInput');const pw=inp.value.trim();if(!pw)return;
+  const btn=document.querySelector('.pw-btn');btn.disabled=true;btn.textContent='...';
+  try{
+    const data=await db("settings?key=eq.hq_password&select=value");
+    if(data.length&&data[0].value===pw){
+      sessionStorage.setItem('hq_auth','1');
+      document.getElementById('pwOverlay').style.display='none';
+      await loadMembers();await loadTasks();
+    }else{
+      inp.classList.add('error');document.getElementById('pwError').classList.add('visible');
+      inp.value='';setTimeout(()=>inp.classList.remove('error'),400);
+    }
+  }catch(e){document.getElementById('pwError').textContent='Connection error.';document.getElementById('pwError').classList.add('visible');}
+  btn.disabled=false;btn.textContent='Enter';
+}
+</script>
+</body>
+</html>
