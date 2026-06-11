@@ -172,6 +172,22 @@ textarea{resize:vertical;min-height:72px;line-height:1.5;}
         <input type="text" id="f-name" placeholder="e.g. Raya Bundle Deal, Merdeka Promo">
         <span class="err" id="e-name">Please enter activity name</span>
       </div>
+      <div class="field full" id="w-type">
+        <label>Promo Category <span class="req">*</span></label>
+        <select id="f-type" onchange="document.getElementById('w-type-other').style.display=this.value==='OTHER'?'':'none'">
+          <option value="PROMOTER">Promoter (驻场促销员)</option>
+          <option value="GE">GE (端架/陈列堆头)</option>
+          <option value="ISLAND">Island (中岛展示)</option>
+          <option value="BLOCK">Block (集团陈列)</option>
+          <option value="SAMPLING">Sampling (试吃试用)</option>
+          <option value="OTHER">Other (其他)</option>
+        </select>
+        <span class="err" id="e-type">Please select a promo category</span>
+      </div>
+      <div class="field full" id="w-type-other" style="display:none;">
+        <label>Other Category Name</label>
+        <input type="text" id="f-type-other" placeholder="e.g. Roadshow, Bazaar">
+      </div>
       <div class="field full" id="w-dur">
         <label>Duration <span class="req">*</span></label>
         <input type="text" id="f-duration" placeholder="e.g. 5 days, 2 weeks, 1 month">
@@ -469,8 +485,10 @@ async function uploadPhotos(entryId){
 // ── Validate ──────────────────────────────────────────────
 function validate(){
   let ok=true;
+  const g=id=>document.getElementById(id).value;
   [['f-region','e-region','w-region'],['f-store','e-store','w-store'],
    ['f-manager','e-manager','w-manager'],['f-name','e-name','w-name'],
+   ['f-type','e-type','w-type'],
    ['f-duration','e-dur','w-dur']
   ].forEach(([fid,eid,wid])=>{
     const v=document.getElementById(fid).value.toString().trim();
@@ -478,6 +496,11 @@ function validate(){
     document.getElementById(wid).classList.toggle('has-err',!v);
     if(!v)ok=false;
   });
+  if(g('f-type')==='OTHER' && !g('f-type-other').trim()){
+    document.getElementById('w-type-other').classList.add('has-err');ok=false;
+  } else {
+    document.getElementById('w-type-other').classList.remove('has-err');
+  }
   if(!prodRows.length){document.getElementById('e-prod').classList.add('show');ok=false;}
   return ok;
 }
@@ -507,7 +530,8 @@ async function submitForm(){
     other_cost:parseFloat(g('f-other-cost'))||0,
     photo_urls:photoUrlsArr,
     note:g('f-note').trim(),
-    promo_type:'PROMOTER',
+    promo_type:g('f-type'),
+    promo_type_other:g('f-type')==='OTHER'?g('f-type-other').trim():'',
     target:totTarget,
     actual_sales:totSold,
     total_cost:parseFloat(g('f-other-cost'))||0,
@@ -530,7 +554,9 @@ function resetForm(){
   document.getElementById('success-card').classList.remove('show');
   const btn=document.getElementById('submit-btn');
   btn.style.display='';btn.disabled=false;btn.innerHTML='Submit';
-  ['f-store','f-name','f-duration','f-sampling','f-other-cost','f-note'].forEach(id=>document.getElementById(id).value='');
+  ['f-store','f-name','f-duration','f-sampling','f-other-cost','f-note','f-type-other'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('f-type').value='PROMOTER';
+  document.getElementById('w-type-other').style.display='none';
   // 销售员名字保持锁定，HQ 清空
   if (userRole !== 'member') document.getElementById('f-manager').value='';
   document.getElementById('f-region').value='';

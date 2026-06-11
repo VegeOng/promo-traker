@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Promo Calendar — MamaVege</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#fafafa;--s1:#fff;--s2:#f3f4f6;
+  --b1:#e5e7eb;--b2:#d1d5db;
+  --t1:#111827;--t2:#4b5563;--t3:#9ca3af;
+  --green:#166534;--green2:#22c55e;--green-bg:#f0fdf4;--green-border:#bbf7d0;
+  --red:#dc2626;--red-bg:#fef2f2;
+  --font:'Plus Jakarta Sans',sans-serif;--mono:'DM Mono',monospace;
+  --r:10px;--r2:16px;
+}
+body{background:var(--bg);color:var(--t1);font-family:var(--font);min-height:100vh;padding-bottom:60px;}
+
+.mv-top{overflow:hidden}
+.mv-top-main{display:flex;justify-content:space-between;align-items:center;padding:12px 24px;background:#166534}
+.mv-top-left{display:flex;align-items:center;gap:12px}
+.mv-top-logo{height:34px;background:#fff;border-radius:8px;padding:3px 8px;display:flex;align-items:center;text-decoration:none}
+.mv-top-logo img{height:26px}
+.mv-top-sep{width:1px;height:24px;background:rgba(255,255,255,.2)}
+.mv-top-tool{color:#fff;font-size:14px;font-weight:700;letter-spacing:.3px}
+.mv-top-right{display:flex;align-items:center;gap:12px}
+.mv-top-back{color:rgba(255,255,255,.8);text-decoration:none;font-size:13px;font-weight:600}
+.mv-top-back:hover{color:#fff}
+.mv-top-sub{display:flex;justify-content:space-between;align-items:center;padding:5px 24px;background:#15532d;color:rgba(255,255,255,.6);font-size:11px}
+
+.container{max-width:1100px;margin:0 auto;padding:20px 16px 0;}
+
+/* Filter bar */
+.filter-card{background:var(--s1);border:1px solid var(--b1);border-radius:var(--r2);padding:14px 16px;margin-bottom:14px;box-shadow:0 1px 3px rgba(0,0,0,.04);}
+.filter-row{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;}
+.filter-field{display:flex;flex-direction:column;gap:5px;flex:1;min-width:130px;}
+.filter-field label{font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--t3);}
+.filter-field select,.filter-field input{background:var(--s2);border:1.5px solid var(--b1);border-radius:var(--r);padding:9px 10px;font-size:13px;font-family:var(--font);color:var(--t1);outline:none;}
+.filter-field select:focus,.filter-field input:focus{border-color:var(--green);background:var(--s1);}
+.reset-btn{padding:9px 14px;background:var(--s2);border:1.5px solid var(--b1);border-radius:var(--r);font-size:13px;font-weight:600;color:var(--t2);cursor:pointer;font-family:var(--font);white-space:nowrap;}
+.reset-btn:hover{background:var(--b1);}
+
+/* Tabs */
+.tabs{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap;}
+.tab-btn{padding:9px 16px;border-radius:20px;border:1.5px solid var(--b1);background:var(--s1);font-size:13px;font-weight:700;color:var(--t2);cursor:pointer;font-family:var(--font);transition:all .15s;}
+.tab-btn.active{background:var(--green);border-color:var(--green);color:#fff;}
+.tab-btn:hover:not(.active){border-color:var(--green-border);color:var(--green);}
+
+.view{display:none;}
+.view.active{display:block;}
+
+.card{background:var(--s1);border:1px solid var(--b1);border-radius:var(--r2);padding:18px;margin-bottom:14px;box-shadow:0 1px 3px rgba(0,0,0,.04);}
+
+/* Legend */
+.legend{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:14px;}
+.legend-item{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--t2);}
+.legend-dot{width:10px;height:10px;border-radius:3px;flex-shrink:0;}
+
+/* Timeline */
+.tl-month-label{font-size:14px;font-weight:800;margin-bottom:14px;display:flex;align-items:center;gap:8px;}
+.tl-scroll{overflow-x:auto;}
+.tl-grid{display:grid;min-width:900px;}
+.tl-header{display:grid;position:sticky;top:0;background:var(--s1);z-index:2;}
+.tl-header-cell{font-size:10px;color:var(--t3);text-align:center;padding:6px 0;border-bottom:1px solid var(--b1);font-family:var(--mono);}
+.tl-header-cell.weekend{background:var(--s2);}
+.tl-row{display:grid;align-items:center;border-bottom:1px solid var(--b1);min-height:40px;}
+.tl-row:last-child{border-bottom:none;}
+.tl-label{padding:6px 10px 6px 0;font-size:12px;border-right:1px solid var(--b1);position:sticky;left:0;background:var(--s1);z-index:1;}
+.tl-store{font-weight:700;color:var(--t1);}
+.tl-activity{font-size:11px;color:var(--t3);margin-top:1px;}
+.tl-track{position:relative;height:40px;}
+.tl-bar{position:absolute;top:7px;height:26px;border-radius:6px;display:flex;align-items:center;padding:0 8px;font-size:11px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:default;box-shadow:0 1px 3px rgba(0,0,0,.15);}
+.tl-empty{text-align:center;padding:30px;color:var(--t3);font-size:13px;}
+
+/* Calendar */
+.cal-month-label{font-size:14px;font-weight:800;margin-bottom:14px;}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;}
+.cal-dow{font-size:10px;font-weight:700;color:var(--t3);text-align:center;text-transform:uppercase;letter-spacing:.05em;padding-bottom:4px;}
+.cal-cell{background:var(--s2);border-radius:8px;padding:6px;min-height:84px;display:flex;flex-direction:column;gap:3px;}
+.cal-cell.empty{background:transparent;}
+.cal-date{font-size:11px;font-weight:700;color:var(--t2);font-family:var(--mono);}
+.cal-cell.today .cal-date{color:var(--green);}
+.cal-chip{font-size:10px;color:#fff;border-radius:4px;padding:2px 5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600;}
+.cal-more{font-size:10px;color:var(--t3);font-weight:700;}
+
+/* Table */
+.pt-table{width:100%;border-collapse:collapse;font-size:12.5px;}
+.pt-table th{text-align:left;padding:8px 10px;font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--t3);border-bottom:2px solid var(--b1);font-weight:700;background:var(--s2);white-space:nowrap;}
+.pt-table td{padding:8px 10px;border-bottom:1px solid var(--b1);vertical-align:middle;}
+.pt-table tr:hover td{background:var(--green-bg);}
+.cat-pill{display:inline-block;font-size:10px;font-weight:700;color:#fff;border-radius:20px;padding:2px 9px;}
+.pt-empty{text-align:center;padding:30px;color:var(--t3);font-size:13px;}
+
+@media(max-width:640px){
+  .cal-cell{min-height:60px;}
+  .cal-chip{font-size:9px;}
+}
+</style>
+</head>
+<body>
+<div class="mv-top">
+  <div class="mv-top-main">
+    <div class="mv-top-left">
+      <a href="index.html" class="mv-top-logo"><img src="Mamavege_Logo.png" alt="MamaVege"></a>
+      <div class="mv-top-sep"></div>
+      <span class="mv-top-tool">Promo Calendar</span>
+    </div>
+    <div class="mv-top-right">
+      <a href="index.html" class="mv-top-back">← Hub</a>
+    </div>
+  </div>
+  <div class="mv-top-sub">
+    <span>All customers' promo schedule by date & category</span>
+    <span class="mv-top-date"></span>
+  </div>
+</div>
+
+<div class="container">
+
+  <div class="filter-card">
+    <div class="filter-row">
+      <div class="filter-field">
+        <label>Month</label>
+        <input type="month" id="f-month">
+      </div>
+      <div class="filter-field">
+        <label>Region</label>
+        <select id="f-region"><option value="">All Regions</option></select>
+      </div>
+      <div class="filter-field">
+        <label>Store / Customer</label>
+        <select id="f-store"><option value="">All Stores</option></select>
+      </div>
+      <div class="filter-field">
+        <label>Category</label>
+        <select id="f-category"><option value="">All Categories</option></select>
+      </div>
+      <button class="reset-btn" onclick="resetFilters()">Reset</button>
+    </div>
+  </div>
+
+  <div class="legend" id="legend"></div>
+
+  <div class="tabs">
+    <button class="tab-btn active" data-view="timeline" onclick="switchView('timeline')">📊 Timeline</button>
+    <button class="tab-btn" data-view="calendar" onclick="switchView('calendar')">📅 Calendar</button>
+    <button class="tab-btn" data-view="table" onclick="switchView('table')">📋 Table</button>
+  </div>
+
+  <!-- Timeline View -->
+  <div class="view active" id="view-timeline">
+    <div class="card">
+      <div class="tl-month-label" id="tl-month-label"></div>
+      <div class="tl-scroll">
+        <div id="tl-content"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Calendar View -->
+  <div class="view" id="view-calendar">
+    <div class="card">
+      <div class="cal-month-label" id="cal-month-label"></div>
+      <div class="cal-grid" id="cal-grid"></div>
+    </div>
+  </div>
+
+  <!-- Table View -->
+  <div class="view" id="view-table">
+    <div class="card" style="overflow-x:auto;">
+      <table class="pt-table">
+        <thead>
+          <tr>
+            <th>Start Date</th><th>End Date</th><th>Duration</th><th>Region</th>
+            <th>Store / Customer</th><th>Category</th><th>Activity</th><th>Promoter</th>
+          </tr>
+        </thead>
+        <tbody id="table-body"></tbody>
+      </table>
+      <div class="pt-empty" id="table-empty" style="display:none;">No promotions found for the selected filters.</div>
+    </div>
+  </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+document.querySelectorAll('.mv-top-date').forEach(e=>e.textContent=new Date().toLocaleDateString('en-MY',{weekday:'short',year:'numeric',month:'short',day:'numeric'}));
+
+const sb=supabase.createClient(
+  'https://wjhgezvrxlhpexocfsea.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndqaGdlenZyeGxocGV4b2Nmc2VhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg1MDU4NzgsImV4cCI6MjA5NDA4MTg3OH0.jENcrgEDYDlSRUCqve-T6rxYRJfz-dnZQHnXpPLJ_RE'
+);
+
+// ── Auth ─────────────────────────────────────────────────
+function lsGet(key) {
+  const raw = localStorage.getItem(key);
+  if (!raw) return null;
+  try {
+    const item = JSON.parse(raw);
+    if (Date.now() > item.expiry) { localStorage.removeItem(key); return null; }
+    return item.value;
+  } catch { return null; }
+}
+const loggedUser = lsGet('userName');
+if (!loggedUser) { location.href = 'index.html'; }
+
+// ── Category styling ──────────────────────────────────────
+const CAT_COLORS = {
+  PROMOTER:'#dc2626', GE:'#2563eb', ISLAND:'#16a34a', BLOCK:'#9333ea',
+  SAMPLING:'#d97706', OTHER:'#6b7280'
+};
+const CAT_LABELS = {
+  PROMOTER:'Promoter', GE:'GE (端架)', ISLAND:'Island (中岛)', BLOCK:'Block (集团陈列)',
+  SAMPLING:'Sampling (试吃)', OTHER:'Other'
+};
+function catColor(t){ return CAT_COLORS[t] || CAT_COLORS.OTHER; }
+function catLabel(r){
+  const t=(r.promo_type||'OTHER').toUpperCase();
+  if(t==='OTHER' && r.promo_type_other) return r.promo_type_other;
+  return CAT_LABELS[t] || t;
+}
+
+// ── Duration parsing ───────────────────────────────────────
+function parseDurationDays(str){
+  if(!str) return 1;
+  const s=str.toString().toLowerCase();
+  let m=s.match(/(\d+(\.\d+)?)\s*month/);
+  if(m) return Math.max(1, Math.round(parseFloat(m[1])*30));
+  m=s.match(/(\d+(\.\d+)?)\s*week/);
+  if(m) return Math.max(1, Math.round(parseFloat(m[1])*7));
+  m=s.match(/(\d+(\.\d+)?)\s*day/);
+  if(m) return Math.max(1, Math.round(parseFloat(m[1])));
+  m=s.match(/(\d+(\.\d+)?)/);
+  if(m) return Math.max(1, Math.round(parseFloat(m[1])));
+  return 1;
+}
+function addDays(dateStr, days){
+  const d=new Date(dateStr+'T00:00:00');
+  d.setDate(d.getDate()+days);
+  return d;
+}
+function fmtDate(d){
+  return d.toLocaleDateString('en-MY',{day:'2-digit',month:'short',year:'numeric'});
+}
+function ymd(d){
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+}
+
+// ── State ────────────────────────────────────────────────
+let allPromos=[];
+let currentView='timeline';
+
+document.getElementById('f-month').value=new Date().toISOString().slice(0,7);
+
+async function loadData(){
+  try{
+    const {data,error}=await sb.from('promotions')
+      .select('id,date,store,region,activity_name,promo_type,promo_type_other,duration,manager')
+      .order('date',{ascending:true});
+    if(error) throw error;
+    allPromos=(data||[]).map(r=>{
+      const days=parseDurationDays(r.duration);
+      const start=new Date(r.date+'T00:00:00');
+      const end=addDays(r.date, days-1);
+      return {...r, _start:start, _end:end, _days:days};
+    });
+    populateFilterOptions();
+    renderLegend();
+    renderAll();
+  }catch(e){
+    console.error(e);
+    document.getElementById('tl-content').innerHTML='<div class="tl-empty">Failed to load data: '+e.message+'</div>';
+  }
+}
+
+function populateFilterOptions(){
+  const regions=[...new Set(allPromos.map(r=>r.region).filter(Boolean))].sort();
+  const stores=[...new Set(allPromos.map(r=>r.store).filter(Boolean))].sort();
+  const cats=[...new Set(allPromos.map(r=>(r.promo_type||'OTHER').toUpperCase()))].sort();
+  const regionSel=document.getElementById('f-region');
+  regions.forEach(r=>regionSel.insertAdjacentHTML('beforeend', `<option value="${r}">${r}</option>`));
+  const storeSel=document.getElementById('f-store');
+  stores.forEach(s=>storeSel.insertAdjacentHTML('beforeend', `<option value="${escAttr(s)}">${escHtml(s)}</option>`));
+  const catSel=document.getElementById('f-category');
+  cats.forEach(c=>catSel.insertAdjacentHTML('beforeend', `<option value="${c}">${CAT_LABELS[c]||c}</option>`));
+}
+
+function renderLegend(){
+  const cats=[...new Set(allPromos.map(r=>(r.promo_type||'OTHER').toUpperCase()))].sort();
+  document.getElementById('legend').innerHTML = cats.map(c=>
+    `<div class="legend-item"><span class="legend-dot" style="background:${catColor(c)}"></span>${CAT_LABELS[c]||c}</div>`
+  ).join('');
+}
+
+function escHtml(s){ return (s||'').toString().replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+function escAttr(s){ return escHtml(s); }
+
+// ── Filters ──────────────────────────────────────────────
+['f-month','f-region','f-store','f-category'].forEach(id=>{
+  document.getElementById(id).addEventListener('change', renderAll);
+});
+function resetFilters(){
+  document.getElementById('f-month').value=new Date().toISOString().slice(0,7);
+  document.getElementById('f-region').value='';
+  document.getElementById('f-store').value='';
+  document.getElementById('f-category').value='';
+  renderAll();
+}
+
+function getFilteredByCategory(){
+  const region=document.getElementById('f-region').value;
+  const store=document.getElementById('f-store').value;
+  const cat=document.getElementById('f-category').value;
+  return allPromos.filter(r=>{
+    if(region && r.region!==region) return false;
+    if(store && r.store!==store) return false;
+    if(cat && (r.promo_type||'OTHER').toUpperCase()!==cat) return false;
+    return true;
+  });
+}
+
+function getMonthRange(){
+  const val=document.getElementById('f-month').value || new Date().toISOString().slice(0,7);
+  const [y,m]=val.split('-').map(Number);
+  const monthStart=new Date(y, m-1, 1);
+  const monthEnd=new Date(y, m, 0);
+  return {y, m, monthStart, monthEnd};
+}
+
+function switchView(view){
+  currentView=view;
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.toggle('active', b.dataset.view===view));
+  document.querySelectorAll('.view').forEach(v=>v.classList.toggle('active', v.id==='view-'+view));
+  renderAll();
+}
+
+function renderAll(){
+  const data=getFilteredByCategory();
+  if(currentView==='timeline') renderTimeline(data);
+  else if(currentView==='calendar') renderCalendar(data);
+  else renderTable(data);
+}
+
+// ── Timeline View ──────────────────────────────────────────
+function renderTimeline(data){
+  const {y,m,monthStart,monthEnd}=getMonthRange();
+  const monthName=monthStart.toLocaleDateString('en-MY',{month:'long',year:'numeric'});
+  document.getElementById('tl-month-label').textContent='🗓 '+monthName;
+
+  const daysInMonth=monthEnd.getDate();
+  const inMonth=data.filter(r=> r._start<=monthEnd && r._end>=monthStart);
+
+  const tlContent=document.getElementById('tl-content');
+  if(!inMonth.length){
+    tlContent.innerHTML='<div class="tl-empty">No promotions scheduled in '+monthName+' for the selected filters.</div>';
+    return;
+  }
+  // sort by store then date
+  inMonth.sort((a,b)=> a.store.localeCompare(b.store) || a._start-b._start);
+
+  const labelW='180px';
+  const cols=`${labelW} repeat(${daysInMonth}, minmax(24px,1fr))`;
+  let html='<div class="tl-grid" style="grid-template-columns:'+cols+'">';
+
+  // header row
+  html+='<div class="tl-header" style="grid-template-columns:'+cols+';grid-column:1 / -1;display:grid;">';
+  html+='<div class="tl-header-cell" style="border-right:1px solid var(--b1)"></div>';
+  for(let d=1; d<=daysInMonth; d++){
+    const dt=new Date(y, m-1, d);
+    const wk=dt.getDay();
+    html+=`<div class="tl-header-cell ${(wk===0||wk===6)?'weekend':''}">${d}</div>`;
+  }
+  html+='</div>';
+
+  // rows
+  inMonth.forEach(r=>{
+    html+='<div class="tl-row" style="grid-template-columns:'+cols+';grid-column:1 / -1;display:grid;">';
+    html+=`<div class="tl-label"><div class="tl-store">${escHtml(r.store)}</div><div class="tl-activity">${escHtml(r.activity_name||'')}</div></div>`;
+    html+='<div class="tl-track" style="grid-column: 2 / -1; position:relative;">';
+    const startDay=Math.max(1, Math.floor((r._start-monthStart)/86400000)+1);
+    const endDay=Math.min(daysInMonth, Math.floor((r._end-monthStart)/86400000)+1);
+    const span=Math.max(1, endDay-startDay+1);
+    const leftPct=((startDay-1)/daysInMonth*100);
+    const widthPct=(span/daysInMonth*100);
+    const title=`${escHtml(r.store)} — ${catLabel(r)} — ${escHtml(r.activity_name||'')} (${fmtDate(r._start)} → ${fmtDate(r._end)})`;
+    html+=`<div class="tl-bar" title="${title}" style="left:${leftPct}%;width:${widthPct}%;background:${catColor((r.promo_type||'OTHER').toUpperCase())}">${escHtml(catLabel(r))}</div>`;
+    html+='</div>';
+    html+='</div>';
+  });
+
+  html+='</div>';
+  tlContent.innerHTML=html;
+}
+
+// ── Calendar View ────────────────────────────────────────
+function renderCalendar(data){
+  const {y,m,monthStart,monthEnd}=getMonthRange();
+  const monthName=monthStart.toLocaleDateString('en-MY',{month:'long',year:'numeric'});
+  document.getElementById('cal-month-label').textContent='🗓 '+monthName;
+
+  const daysInMonth=monthEnd.getDate();
+  const firstDow=monthStart.getDay(); // 0=Sun
+  const todayStr=ymd(new Date());
+
+  let html='';
+  ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].forEach(d=>html+=`<div class="cal-dow">${d}</div>`);
+
+  for(let i=0;i<firstDow;i++) html+='<div class="cal-cell empty"></div>';
+
+  for(let d=1; d<=daysInMonth; d++){
+    const cellDate=new Date(y, m-1, d);
+    const dayPromos=data.filter(r=> cellDate>=stripTime(r._start) && cellDate<=stripTime(r._end));
+    const isToday=ymd(cellDate)===todayStr;
+    let chips='';
+    const max=3;
+    dayPromos.slice(0,max).forEach(r=>{
+      const title=`${escHtml(r.store)} — ${catLabel(r)} — ${escHtml(r.activity_name||'')}`;
+      chips+=`<div class="cal-chip" title="${title}" style="background:${catColor((r.promo_type||'OTHER').toUpperCase())}">${escHtml(r.store)}</div>`;
+    });
+    if(dayPromos.length>max) chips+=`<div class="cal-more">+${dayPromos.length-max} more</div>`;
+    html+=`<div class="cal-cell ${isToday?'today':''}"><div class="cal-date">${d}</div>${chips}</div>`;
+  }
+
+  document.getElementById('cal-grid').innerHTML=html;
+}
+function stripTime(d){ return new Date(d.getFullYear(), d.getMonth(), d.getDate()); }
+
+// ── Table View ─────────────────────────────────────────────
+function renderTable(data){
+  const {monthStart,monthEnd}=getMonthRange();
+  const inMonth=data.filter(r=> r._start<=monthEnd && r._end>=monthStart)
+    .sort((a,b)=> b._start-a._start);
+
+  const tbody=document.getElementById('table-body');
+  const empty=document.getElementById('table-empty');
+  if(!inMonth.length){
+    tbody.innerHTML='';
+    empty.style.display='block';
+    return;
+  }
+  empty.style.display='none';
+  tbody.innerHTML=inMonth.map(r=>{
+    const cat=(r.promo_type||'OTHER').toUpperCase();
+    return `<tr>
+      <td>${fmtDate(r._start)}</td>
+      <td>${fmtDate(r._end)}</td>
+      <td>${escHtml(r.duration||'—')}</td>
+      <td>${escHtml(r.region||'—')}</td>
+      <td><strong>${escHtml(r.store)}</strong></td>
+      <td><span class="cat-pill" style="background:${catColor(cat)}">${escHtml(catLabel(r))}</span></td>
+      <td>${escHtml(r.activity_name||'—')}</td>
+      <td>${escHtml(r.manager||'—')}</td>
+    </tr>`;
+  }).join('');
+}
+
+loadData();
+</script>
+</body>
+</html>
