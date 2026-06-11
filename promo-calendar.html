@@ -108,7 +108,7 @@ body{background:var(--bg);color:var(--t1);font-family:var(--font);min-height:100
       <span class="mv-top-tool">Promo Calendar</span>
     </div>
     <div class="mv-top-right">
-      <a href="index.html" class="mv-top-back">← Hub</a>
+      <a href="index.html" class="mv-top-back" id="back-link">← Hub</a>
     </div>
   </div>
   <div class="mv-top-sub">
@@ -205,7 +205,13 @@ function lsGet(key) {
   } catch { return null; }
 }
 const loggedUser = lsGet('userName');
+const userRole = lsGet('userRole');
 if (!loggedUser) { location.href = 'index.html'; }
+
+// Back link
+const back = document.getElementById('back-link');
+back.href = userRole === 'hq' ? 'index.html' : 'my-dashboard.html';
+back.textContent = userRole === 'hq' ? '← Hub' : '← My Dashboard';
 
 // ── Category styling ──────────────────────────────────────
 const CAT_COLORS = {
