@@ -779,7 +779,7 @@ async function loadOverview(){
 async function loadDailyReports(){
   const list=document.getElementById('daily-report-list');list.innerHTML='<div class="loading-text">Loading…</div>';
   const name=document.getElementById('filter-daily-name').value,from=document.getElementById('filter-daily-from').value,to=document.getElementById('filter-daily-to').value;
-  let q='daily_reports?select=*&order=date.desc,created_at.desc&limit=100';
+  let q='daily_reports?select=*&status=eq.submitted&order=date.desc,created_at.desc&limit=100';
   if(name) q+=`&name=eq.${encodeURIComponent(name)}`;if(from) q+=`&date=gte.${from}`;if(to) q+=`&date=lte.${to}`;
   try{const data=await db(q);if(!data.length){list.innerHTML='<div class="empty-text">No reports.</div>';return;}
   list.innerHTML=data.map((r,i)=>`<div class="report-item"><div class="report-header" onclick="toggleReport('dr-${i}')"><div class="rh-left"><div class="rh-name">${r.name}</div><div class="rh-date">${r.date}</div></div><div class="rh-right"><span class="badge daily">Daily</span><button class="btn-del" onclick="event.stopPropagation();deleteReport('daily_reports',${r.id},'daily')">🗑</button><span class="chevron" id="chev-dr-${i}">▼</span></div></div><div class="report-body" id="dr-${i}"><div class="rb-field"><div class="rf-label">Today's Task</div><div class="rf-val">${escHtml(r.today_task)}</div></div><div class="rb-field"><div class="rf-label">Tomorrow's Task</div><div class="rf-val">${escHtml(r.tomorrow_task)}</div></div><div class="rb-field"><div class="rf-label">Assistance</div><div class="rf-val">${escHtml(r.assistance||'None.')}</div></div></div></div>`).join('');}catch(e){list.innerHTML='<div class="empty-text">Failed.</div>';}
