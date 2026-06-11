@@ -822,7 +822,12 @@ async function loadOverview() {
     const minDays=v.expiries.length?Math.min(...v.expiries.map(daysUntil)):null;
     const lv=minDays!==null?level(minDays):0;
     return {id,...v,lastDate,daysSince,minDays,lv};
-  }).sort((a,b)=>b.lv-a.lv||(a.daysSince??9999)-(b.daysSince??9999));
+  }).sort((a,b)=>{
+    if(!a.lastDate&&!b.lastDate) return 0;
+    if(!a.lastDate) return 1;
+    if(!b.lastDate) return -1;
+    return b.lastDate.localeCompare(a.lastDate);
+  });
   if(entries.length===0){ grid.innerHTML='<div class="empty">No outlets found.</div>'; return; }
   grid.innerHTML=entries.map(e=>{
     const b=e.lv>0?badge(e.lv):null;
