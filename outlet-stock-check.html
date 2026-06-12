@@ -473,6 +473,7 @@ const H = { 'Content-Type':'application/json', 'apikey':SB_KEY, 'Authorization':
 
 async function sbGet(path) { const r=await fetch(SB_URL+'/rest/v1/'+path,{headers:H}); return r.json(); }
 async function sbPost(table,body) { const r=await fetch(SB_URL+'/rest/v1/'+table,{method:'POST',headers:H,body:JSON.stringify(body)}); return r.json(); }
+async function sbPatch(table,id,body) { const r=await fetch(SB_URL+'/rest/v1/'+table+'?id=eq.'+id,{method:'PATCH',headers:H,body:JSON.stringify(body)}); return r.json(); }
 async function sbDelete(table,id) { await fetch(SB_URL+'/rest/v1/'+table+'?id=eq.'+id,{method:'DELETE',headers:H}); }
 
 let outlets=[], products=[], productRowId=0;
@@ -581,9 +582,23 @@ function renderProdList() {
   el.innerHTML=products.map(p=>`
     <div class="prod-item">
       <span>${escH(p.code)}</span>
-      <button class="prod-item-del" onclick="deleteProduct(${p.id},'${escH(p.code)}')">✕</button>
+      <span style="display:flex;gap:4px;">
+        <button class="prod-item-del" onclick="renameProduct(${p.id},'${escH(p.code)}')" title="Rename">✏️</button>
+        <button class="prod-item-del" onclick="deleteProduct(${p.id},'${escH(p.code)}')" title="Delete">✕</button>
+      </span>
     </div>
   `).join('');
+}
+async function renameProduct(id, oldCode) {
+  const newCode=(prompt(`Rename product "${oldCode}" to:`, oldCode)||'').trim().toUpperCase();
+  if(!newCode || newCode===oldCode) return;
+  if(products.find(p=>p.code===newCode)){ showToast('A product with that code already exists.', true); return; }
+  await sbPatch('products', id, {code:newCode});
+  const p=products.find(x=>x.id===id);
+  if(p) p.code=newCode;
+  products.sort((a,b)=>a.code.localeCompare(b.code));
+  refreshProductSelects(); renderProdList();
+  showToast(`✅ Renamed "${oldCode}" → "${newCode}"`);
 }
 async function addProduct() {
   const code=document.getElementById('newProductCode').value.trim().toUpperCase();
