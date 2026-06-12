@@ -135,6 +135,10 @@ textarea{resize:vertical;min-height:72px;line-height:1.5;}
         <label>Off Invoice / Scan Sale — Products</label>
         <select id="f-support-products" multiple size="5"></select>
         <span style="font-size:11px;color:var(--t3);">Hold Ctrl / Cmd to select multiple products. For record only — not used for stats.</span>
+        <div style="display:flex;gap:8px;margin-top:6px;">
+          <input type="text" id="f-new-product" placeholder="New product code, e.g. Kampua Mee" style="flex:1;">
+          <button type="button" id="btn-add-product" onclick="addNewProduct()" style="white-space:nowrap;padding:10px 14px;background:var(--green-bg);border:1px dashed var(--green-border);border-radius:var(--r);font-size:13px;font-weight:600;color:var(--green);cursor:pointer;">+ Add Product</button>
+        </div>
       </div>
       <div class="field full" id="w-discount">
         <label>Promo / Discount Details <span class="req">*</span></label>
@@ -198,17 +202,41 @@ document.getElementById('f-start').value = todayStr;
 document.getElementById('f-end').value = todayStr;
 
 // ── Products list (for Off Invoice / Scan Sale) ───────────
-async function loadProducts(){
+async function loadProducts(selectCodes){
   try{
     const {data,error}=await sb.from('products').select('*').order('code',{ascending:true});
     if(error) throw error;
     const sel=document.getElementById('f-support-products');
     sel.innerHTML=(data||[]).map(p=>`<option value="${p.code}">${p.code}</option>`).join('');
+    if(selectCodes&&selectCodes.length){
+      Array.from(sel.options).forEach(o=>{ if(selectCodes.includes(o.value)) o.selected=true; });
+    }
   }catch(e){
     console.error('Failed to load products', e);
   }
 }
 loadProducts();
+
+async function addNewProduct(){
+  const input=document.getElementById('f-new-product');
+  const code=input.value.trim();
+  if(!code) return;
+  const btn=document.getElementById('btn-add-product');
+  btn.disabled=true;
+  try{
+    const {data,error}=await sb.from('products').insert({code}).select();
+    if(error) throw error;
+    // keep currently selected products, then add the new one
+    const sel=document.getElementById('f-support-products');
+    const current=Array.from(sel.selectedOptions).map(o=>o.value);
+    current.push(code);
+    await loadProducts(current);
+    input.value='';
+  }catch(e){
+    alert('Failed to add product: '+e.message);
+  }
+  btn.disabled=false;
+}
 
 // ── Helpers ──────────────────────────────────────────────
 function diffDays(startStr, endStr){
