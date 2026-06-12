@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Customer Management — MamaVege</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#fafafa;--s1:#fff;--s2:#f3f4f6;--b1:#e5e7eb;--b2:#d1d5db;
+  --t1:#111827;--t2:#4b5563;--t3:#9ca3af;
+  --green:#166534;--green-bg:#f0fdf4;--green-border:#bbf7d0;
+  --red:#dc2626;--red-bg:#fef2f2;--red-border:#fca5a5;
+  --font:'Plus Jakarta Sans',sans-serif;--mono:'DM Mono',monospace;
+}
+body{background:var(--bg);color:var(--t1);font-family:var(--font);min-height:100vh;}
+.main{max-width:640px;margin:0 auto;padding:28px 20px 60px;}
+.page-title{margin-bottom:24px;}
+.page-title h2{font-size:20px;font-weight:800;margin-bottom:4px;}
+.page-title p{font-size:13px;color:var(--t3);}
+.card{background:var(--s1);border:1px solid var(--b1);border-radius:14px;padding:20px;margin-bottom:16px;box-shadow:0 1px 3px rgba(0,0,0,.04);}
+.card-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--t3);margin-bottom:14px;display:flex;align-items:center;gap:8px;}
+.card-title::after{content:'';flex:1;height:1px;background:var(--b1);}
+label{display:block;font-size:11px;font-weight:700;color:var(--t2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;}
+input{width:100%;padding:10px 12px;border:1.5px solid var(--b1);border-radius:10px;font-size:14px;font-family:var(--font);background:var(--s2);color:var(--t1);outline:none;transition:all .2s;}
+input:focus{border-color:var(--green);background:white;box-shadow:0 0 0 3px rgba(22,101,52,.06);}
+.add-row{display:flex;gap:8px;margin-bottom:6px;}
+.add-row input{flex:1;}
+.btn-add{padding:10px 16px;background:var(--green);color:white;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:var(--font);white-space:nowrap;}
+.btn-add:hover{background:#14532d;}
+.alert{border-radius:10px;padding:12px 14px;font-size:13px;margin-bottom:14px;display:none;}
+.alert.show{display:block;}
+.alert-success{background:var(--green-bg);border:1px solid var(--green-border);color:var(--green);}
+.alert-error{background:var(--red-bg);border:1px solid var(--red-border);color:var(--red);}
+.cust-list{display:flex;flex-direction:column;gap:8px;}
+.cust-item{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:var(--s2);border-radius:10px;border:1px solid var(--b1);gap:10px;}
+.cust-name{font-size:14px;font-weight:600;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.cust-actions{display:flex;gap:6px;flex-shrink:0;}
+.cust-btn{background:var(--s1);border:1px solid var(--b2);border-radius:7px;padding:5px 10px;font-size:12px;font-weight:700;cursor:pointer;font-family:var(--font);}
+.cust-del{background:var(--red-bg);color:var(--red);border:1px solid var(--red-border);}
+.cust-del:hover{background:#fca5a5;}
+.search-box{margin-bottom:14px;}
+.loading{text-align:center;padding:20px;color:var(--t3);font-size:13px;}
+.empty{text-align:center;padding:24px;color:var(--t3);font-size:13px;}
+.count-badge{font-size:11px;color:var(--t3);font-weight:600;font-family:var(--mono);}
+
+.mv-top{overflow:hidden}
+.mv-top-main{display:flex;justify-content:space-between;align-items:center;padding:12px 24px;background:#166534}
+.mv-top-left{display:flex;align-items:center;gap:12px}
+.mv-top-logo{height:34px;background:#fff;border-radius:8px;padding:3px 8px;display:flex;align-items:center;text-decoration:none}
+.mv-top-logo img{height:26px}
+.mv-top-sep{width:1px;height:24px;background:rgba(255,255,255,.2)}
+.mv-top-tool{color:#fff;font-size:14px;font-weight:700;letter-spacing:.3px}
+.mv-top-right{display:flex;align-items:center;gap:12px}
+.mv-top-back{color:rgba(255,255,255,.8);text-decoration:none;font-size:13px;font-weight:600}
+.mv-top-back:hover{color:#fff}
+.mv-top-sub{display:flex;justify-content:space-between;align-items:center;padding:5px 24px;background:#15532d;color:rgba(255,255,255,.6);font-size:11px}
+</style>
+</head>
+<body>
+<div class="mv-top">
+  <div class="mv-top-main">
+    <div class="mv-top-left">
+      <a href="index.html" class="mv-top-logo"><img src="Mamavege_Logo.png" alt="MamaVege"></a>
+      <div class="mv-top-sep"></div>
+      <span class="mv-top-tool">Customer Management</span>
+    </div>
+    <div class="mv-top-right">
+      <a href="index.html" class="mv-top-back">← Hub</a>
+    </div>
+  </div>
+  <div class="mv-top-sub">
+    <span class="mv-top-date"></span>
+    <span>MamaVege Management Hub</span>
+  </div>
+</div>
+<script>document.querySelectorAll('.mv-top-date').forEach(e=>e.textContent=new Date().toLocaleDateString('en-MY',{weekday:'short',year:'numeric',month:'short',day:'numeric'}));</script>
+
+<div class="main">
+  <div class="page-title">
+    <h2>🏪 Customer Management</h2>
+    <p>Manage the customer / store list used across Promo Fill and Promo Calendar.</p>
+  </div>
+
+  <div class="alert alert-success" id="msgSuccess"></div>
+  <div class="alert alert-error" id="msgError"></div>
+
+  <!-- Add Customer -->
+  <div class="card">
+    <div class="card-title">Add New Customer</div>
+    <div class="add-row">
+      <input type="text" id="newCustomer" placeholder="e.g. AEON Bukit Mertajam" onkeydown="if(event.key==='Enter')addCustomer()">
+      <button class="btn-add" onclick="addCustomer()">＋ Add</button>
+    </div>
+  </div>
+
+  <!-- Customer List -->
+  <div class="card">
+    <div class="card-title">
+      <span>Current Customers</span>
+      <span class="count-badge" id="custCount"></span>
+    </div>
+    <div class="search-box">
+      <input type="text" id="searchBox" placeholder="🔍 Search customers…" oninput="renderList()">
+    </div>
+    <div id="custList"><div class="loading">Loading…</div></div>
+  </div>
+</div>
+
+<script>
+const SUPABASE_URL = 'https://wjhgezvrxlhpexocfsea.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndqaGdlenZyeGxocGV4b2Nmc2VhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg1MDU4NzgsImV4cCI6MjA5NDA4MTg3OH0.jENcrgEDYDlSRUCqve-T6rxYRJfz-dnZQHnXpPLJ_RE';
+const H = { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY, 'Content-Type': 'application/json' };
+
+let customers = [];
+
+async function loadCustomers() {
+  const list = document.getElementById('custList');
+  list.innerHTML = '<div class="loading">Loading…</div>';
+  try {
+    const res = await fetch(SUPABASE_URL + '/rest/v1/customers?order=name.asc', { headers: H });
+    customers = await res.json();
+    if (!Array.isArray(customers)) customers = [];
+    renderList();
+  } catch(e) {
+    list.innerHTML = '<div class="empty">Failed to load customers.</div>';
+  }
+}
+
+function renderList() {
+  const list = document.getElementById('custList');
+  const q = (document.getElementById('searchBox').value||'').trim().toLowerCase();
+  const filtered = q ? customers.filter(c=>c.name.toLowerCase().includes(q)) : customers;
+  document.getElementById('custCount').textContent = customers.length + ' total';
+  if (!filtered.length) { list.innerHTML = '<div class="empty">No customers found.</div>'; return; }
+  list.innerHTML = `<div class="cust-list">${filtered.map(c => `
+    <div class="cust-item">
+      <span class="cust-name">${escH(c.name)}</span>
+      <span class="cust-actions">
+        <button class="cust-btn" onclick="renameCustomer(${c.id}, '${escH(c.name)}')" title="Rename">✏️</button>
+        <button class="cust-btn cust-del" onclick="deleteCustomer(${c.id}, '${escH(c.name)}')" title="Delete">✕</button>
+      </span>
+    </div>`).join('')}</div>`;
+}
+
+async function addCustomer() {
+  const input = document.getElementById('newCustomer');
+  const val = input.value.trim();
+  if (!val) { showMsg('error', 'Please enter a customer name.'); return; }
+  if (customers.find(c=>c.name.toLowerCase()===val.toLowerCase())) { showMsg('error', 'Customer already exists.'); return; }
+  try {
+    const res = await fetch(SUPABASE_URL + '/rest/v1/customers', {
+      method: 'POST', headers: { ...H, 'Prefer': 'return=representation' },
+      body: JSON.stringify({ name: val })
+    });
+    if (!res.ok) throw new Error(await res.text());
+    input.value = '';
+    showMsg('success', `✅ Customer "${val}" added.`);
+    await loadCustomers();
+  } catch(e) {
+    showMsg('error', 'Failed to add customer: ' + e.message);
+  }
+}
+
+async function renameCustomer(id, oldName) {
+  const newName = (prompt(`Rename customer "${oldName}" to:`, oldName)||'').trim();
+  if (!newName || newName===oldName) return;
+  if (customers.find(c=>c.name.toLowerCase()===newName.toLowerCase())) { showMsg('error', 'A customer with that name already exists.'); return; }
+  try {
+    const res = await fetch(SUPABASE_URL + '/rest/v1/customers?id=eq.' + id, {
+      method: 'PATCH', headers: H,
+      body: JSON.stringify({ name: newName })
+    });
+    if (!res.ok) throw new Error(await res.text());
+    showMsg('success', `Renamed "${oldName}" → "${newName}"`);
+    await loadCustomers();
+  } catch(e) {
+    showMsg('error', 'Failed to rename customer: ' + e.message);
+  }
+}
+
+async function deleteCustomer(id, name) {
+  if (!confirm(`Remove customer "${name}"? This cannot be undone.`)) return;
+  try {
+    await fetch(SUPABASE_URL + '/rest/v1/customers?id=eq.' + id, { method: 'DELETE', headers: H });
+    showMsg('success', `Customer "${name}" removed.`);
+    await loadCustomers();
+  } catch(e) {
+    showMsg('error', 'Failed to remove customer.');
+  }
+}
+
+function showMsg(type, msg) {
+  const id = type === 'success' ? 'msgSuccess' : 'msgError';
+  const el = document.getElementById(id);
+  el.textContent = msg; el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 5000);
+}
+function escH(s) {
+  return String(s||'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+loadCustomers();
+</script>
+</body>
+</html>

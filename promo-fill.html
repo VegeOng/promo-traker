@@ -110,8 +110,12 @@ textarea{resize:vertical;min-height:72px;line-height:1.5;}
     <div class="grid2">
       <div class="field full" id="w-store">
         <label>Customer / Store <span class="req">*</span></label>
-        <input type="text" id="f-store" placeholder="e.g. Aeon Bukit Mertajam, Mydin Seberang Jaya, Lotus's Kepong">
-        <span class="err" id="e-store">Please enter customer / store name</span>
+        <select id="f-store"><option value="">Select customer…</option></select>
+        <span class="err" id="e-store">Please select customer / store</span>
+        <div style="display:flex;gap:8px;margin-top:8px;">
+          <input type="text" id="f-new-customer" placeholder="New customer name">
+          <button type="button" id="btn-add-customer" onclick="addNewCustomer()" style="white-space:nowrap;padding:10px 14px;background:var(--green-bg);border:1px dashed var(--green-border);border-radius:var(--r);font-size:13px;font-weight:600;color:var(--green);cursor:pointer;">+ Add Customer</button>
+        </div>
       </div>
       <div class="field full" id="w-name">
         <label>Activity Name <span class="req">*</span></label>
@@ -207,6 +211,46 @@ document.getElementById('rec-title').textContent = userRole === 'member' ? 'My R
 const todayStr = new Date().toISOString().slice(0,10);
 document.getElementById('f-start').value = todayStr;
 document.getElementById('f-end').value = todayStr;
+
+// ── Customers list ─────────────────────────────────────────
+let availableCustomers=[];
+async function loadCustomers(keepValue){
+  try{
+    const {data,error}=await sb.from('customers').select('*').order('name',{ascending:true});
+    if(error) throw error;
+    availableCustomers=(data||[]).map(c=>c.name);
+    renderCustomerOptions(keepValue);
+  }catch(e){
+    console.error('Failed to load customers', e);
+  }
+}
+function renderCustomerOptions(keepValue){
+  const sel=document.getElementById('f-store');
+  const cur=keepValue!==undefined?keepValue:sel.value;
+  let opts=availableCustomers.slice();
+  // If current value isn't in the list (e.g. legacy free-text entry), keep it so it doesn't get lost
+  if(cur && !opts.includes(cur)) opts=[cur,...opts];
+  sel.innerHTML='<option value="">Select customer…</option>'+opts.map(c=>`<option value="${c.replace(/"/g,'&quot;')}"${c===cur?' selected':''}>${c}</option>`).join('');
+}
+async function addNewCustomer(){
+  const input=document.getElementById('f-new-customer');
+  const name=input.value.trim();
+  if(!name) return;
+  const existing=availableCustomers.find(c=>c.toLowerCase()===name.toLowerCase());
+  if(existing){ renderCustomerOptions(existing); input.value=''; return; }
+  const btn=document.getElementById('btn-add-customer');
+  btn.disabled=true;btn.textContent='Adding…';
+  try{
+    const {error}=await sb.from('customers').insert({name});
+    if(error) throw error;
+    await loadCustomers(name);
+    input.value='';
+  }catch(e){
+    alert('Failed to add customer: '+e.message);
+  }
+  btn.disabled=false;btn.textContent='+ Add Customer';
+}
+loadCustomers();
 
 // ── Products list (for Off Invoice / Scan Sale, per-product detail) ──
 let availableProducts=[];
@@ -410,7 +454,7 @@ function editRecord(id){
   if(!r)return;
   editingId=id;
 
-  document.getElementById('f-store').value=r.store||'';
+  renderCustomerOptions(r.store||'');
   document.getElementById('f-name').value=r.activity_name||'';
   document.getElementById('f-cost').value=r.total_cost||r.other_cost||0;
   document.getElementById('f-discount').value=r.note||'';
