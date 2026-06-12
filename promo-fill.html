@@ -43,9 +43,11 @@ textarea{resize:vertical;min-height:72px;line-height:1.5;}
 .success-sub{font-size:13px;color:#166534;line-height:1.6;}
 .again-btn{margin-top:14px;padding:9px 20px;background:var(--green);color:#fff;border:none;border-radius:var(--r);font-size:13px;font-weight:600;font-family:var(--font);cursor:pointer;}
 
-.prod-chip{display:flex;align-items:center;gap:6px;padding:6px 6px 6px 12px;border:1.5px solid var(--green-border);border-radius:999px;background:var(--green-bg);font-size:12.5px;font-weight:600;color:var(--green);}
-.prod-chip .chip-remove{display:flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;background:rgba(22,101,52,.12);cursor:pointer;font-size:12px;line-height:1;}
-.prod-chip .chip-remove:hover{background:rgba(22,101,52,.25);}
+.support-row{display:flex;gap:8px;align-items:center;}
+.support-row select{flex:0 0 110px;}
+.support-row input{flex:1;}
+.support-row .row-remove{flex:0 0 auto;display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:var(--r);background:var(--red-bg);color:var(--red);cursor:pointer;font-size:14px;border:1px solid var(--red-border);}
+.support-row .row-remove:hover{background:#fee2e2;}
 
 .err{color:var(--red);font-size:11px;margin-top:3px;display:none;}
 .err.show{display:block;}
@@ -131,20 +133,11 @@ textarea{resize:vertical;min-height:72px;line-height:1.5;}
         <input type="number" id="f-cost" placeholder="0.00" min="0" step="0.01">
         <span class="err" id="e-cost">Please enter cost</span>
       </div>
-      <div class="field" id="w-support">
-        <label>Off Invoice / Scan Sale (RM)</label>
-        <input type="number" id="f-support" placeholder="0.00" min="0" step="0.01">
-      </div>
       <div class="field full" id="w-support-products">
-        <label>Off Invoice / Scan Sale — Products</label>
-        <span style="font-size:11px;color:var(--t3);margin-top:-2px;">For record only — not used for stats.</span>
-        <div style="display:flex;gap:8px;margin-top:4px;">
-          <select id="f-product-select" style="flex:1;">
-            <option value="">Select product…</option>
-          </select>
-          <button type="button" onclick="addSelectedProduct()" style="white-space:nowrap;padding:10px 14px;background:var(--green-bg);border:1px dashed var(--green-border);border-radius:var(--r);font-size:13px;font-weight:600;color:var(--green);cursor:pointer;">+ Add</button>
-        </div>
-        <div id="support-products-list" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;"></div>
+        <label>Off Invoice / Scan Sale — Per Product</label>
+        <span style="font-size:11px;color:var(--t3);margin-top:-2px;">For record only — not used for stats. e.g. KPM · Scan sale rebate 0.7</span>
+        <div id="support-rows" style="display:flex;flex-direction:column;gap:8px;margin-top:6px;"></div>
+        <button type="button" onclick="addSupportRow()" style="margin-top:8px;width:100%;padding:8px;background:var(--green-bg);border:1px dashed var(--green-border);border-radius:var(--r);font-size:13px;font-weight:600;color:var(--green);cursor:pointer;">+ Add Product Row</button>
         <div style="display:flex;gap:8px;margin-top:8px;">
           <input type="text" id="f-new-product" placeholder="New product code, e.g. Kampua Mee" style="flex:1;">
           <button type="button" id="btn-add-product" onclick="addNewProduct()" style="white-space:nowrap;padding:10px 14px;background:var(--green-bg);border:1px dashed var(--green-border);border-radius:var(--r);font-size:13px;font-weight:600;color:var(--green);cursor:pointer;">+ Add Product</button>
@@ -211,42 +204,47 @@ const todayStr = new Date().toISOString().slice(0,10);
 document.getElementById('f-start').value = todayStr;
 document.getElementById('f-end').value = todayStr;
 
-// ── Products list (for Off Invoice / Scan Sale) ───────────
+// ── Products list (for Off Invoice / Scan Sale, per-product detail) ──
 let availableProducts=[];
-let selectedSupportProducts=[];
+let supportRows=[]; // {id, product, detail}
+let supportRowId=0;
 
 async function loadProducts(){
   try{
     const {data,error}=await sb.from('products').select('*').order('code',{ascending:true});
     if(error) throw error;
     availableProducts=(data||[]).map(p=>p.code);
-    const sel=document.getElementById('f-product-select');
-    sel.innerHTML='<option value="">Select product…</option>'+availableProducts.map(code=>`<option value="${code}">${code}</option>`).join('');
+    renderSupportRows();
   }catch(e){
     console.error('Failed to load products', e);
   }
 }
 loadProducts();
 
-function renderSupportProductsList(){
-  const wrap=document.getElementById('support-products-list');
-  wrap.innerHTML=selectedSupportProducts.map(code=>
-    `<div class="prod-chip">${code}<span class="chip-remove" onclick="removeSupportProduct('${code.replace(/'/g,"\\'")}')">✕</span></div>`
-  ).join('');
+function addSupportRow(){
+  supportRows.push({id:supportRowId++, product:'', detail:''});
+  renderSupportRows();
 }
 
-function addSelectedProduct(){
-  const sel=document.getElementById('f-product-select');
-  const code=sel.value;
-  if(!code) return;
-  if(!selectedSupportProducts.includes(code)) selectedSupportProducts.push(code);
-  sel.value='';
-  renderSupportProductsList();
+function removeSupportRow(id){
+  supportRows=supportRows.filter(r=>r.id!==id);
+  renderSupportRows();
 }
 
-function removeSupportProduct(code){
-  selectedSupportProducts=selectedSupportProducts.filter(c=>c!==code);
-  renderSupportProductsList();
+function updateSupportRow(id, field, value){
+  const row=supportRows.find(r=>r.id===id);
+  if(row) row[field]=value;
+}
+
+function renderSupportRows(){
+  const wrap=document.getElementById('support-rows');
+  const productOptions=code=>'<option value="">Product…</option>'+availableProducts.map(c=>`<option value="${c}"${c===code?' selected':''}>${c}</option>`).join('');
+  wrap.innerHTML=supportRows.map(r=>`
+    <div class="support-row">
+      <select onchange="updateSupportRow(${r.id},'product',this.value)">${productOptions(r.product)}</select>
+      <input type="text" placeholder="e.g. Scan sale rebate 0.7" value="${(r.detail||'').replace(/"/g,'&quot;')}" oninput="updateSupportRow(${r.id},'detail',this.value)">
+      <div class="row-remove" onclick="removeSupportRow(${r.id})">✕</div>
+    </div>`).join('');
 }
 
 async function addNewProduct(){
@@ -258,14 +256,18 @@ async function addNewProduct(){
   try{
     const {error}=await sb.from('products').insert({code});
     if(error) throw error;
-    if(!selectedSupportProducts.includes(code)) selectedSupportProducts.push(code);
     await loadProducts();
-    renderSupportProductsList();
     input.value='';
   }catch(e){
     alert('Failed to add product: '+e.message);
   }
   btn.disabled=false;btn.textContent='+ Add Product';
+}
+
+function getSupportProductsData(){
+  return supportRows
+    .filter(r=>r.product || (r.detail&&r.detail.trim()))
+    .map(r=>({product:r.product, detail:(r.detail||'').trim()}));
 }
 
 // ── Helpers ──────────────────────────────────────────────
@@ -318,8 +320,8 @@ async function submitForm(){
   const start=g('f-start'), end=g('f-end');
   const days=diffDays(start,end);
   const cost=parseFloat(g('f-cost'))||0;
-  const supportFee=parseFloat(g('f-support'))||0;
-  const supportProducts=selectedSupportProducts.slice();
+  const supportData=getSupportProductsData();
+  const supportSummary=supportData.map(r=>`${r.product?r.product+' ':''}${r.detail}`.trim()).filter(Boolean).join('; ');
 
   const{data,error}=await sb.from('promotions').insert({
     date:start,
@@ -331,14 +333,14 @@ async function submitForm(){
     activity_name:g('f-name').trim(),
     duration:`${days} day${days>1?'s':''}`,
     note:g('f-discount').trim(),
-    products:supportProducts.join(', '),
-    total_cost:cost+supportFee,
+    products:supportSummary,
+    total_cost:cost,
     other_cost:cost,
-    rent_cost:supportFee,
+    rent_cost:0,
     staff_cost:0,
     target:0,
     actual_sales:0,
-    products_data:[],
+    products_data:supportData,
     sampling_qty:0,
     total_target_qty:0,
     total_sold_qty:0,
@@ -349,8 +351,8 @@ async function submitForm(){
 
   document.getElementById('success-msg').innerHTML=
     `<strong>${g('f-store').trim()}</strong> · ${g('f-name').trim()}<br>
-     ${start}${end&&end!==start?' → '+end:''} &nbsp;·&nbsp; Cost: RM ${cost.toFixed(2)}${supportFee>0?' + Off Invoice/Scan Sale RM '+supportFee.toFixed(2):''}<br>
-     ${supportProducts.length?'Off Invoice / Scan Sale Products: '+supportProducts.join(', ')+'<br>':''}
+     ${start}${end&&end!==start?' → '+end:''} &nbsp;·&nbsp; Cost: RM ${cost.toFixed(2)}<br>
+     ${supportSummary?'Off Invoice / Scan Sale: '+supportSummary+'<br>':''}
      ${g('f-discount').trim()}`;
   document.getElementById('success-card').classList.add('show');
   btn.style.display='none';
@@ -362,9 +364,9 @@ function resetForm(){
   document.getElementById('success-card').classList.remove('show');
   const btn=document.getElementById('submit-btn');
   btn.style.display='';btn.disabled=false;btn.innerHTML='Submit';
-  ['f-store','f-name','f-cost','f-support','f-discount'].forEach(id=>document.getElementById(id).value='');
-  selectedSupportProducts=[];
-  renderSupportProductsList();
+  ['f-store','f-name','f-cost','f-discount'].forEach(id=>document.getElementById(id).value='');
+  supportRows=[];supportRowId=0;
+  renderSupportRows();
   // 提交者名字保持锁定，HQ 清空
   if (userRole !== 'member') document.getElementById('f-manager').value='';
   document.getElementById('f-start').value=todayStr;
@@ -380,13 +382,12 @@ async function loadRecords(){
   if(!data||!data.length){wrap.innerHTML='<div style="text-align:center;padding:20px;color:var(--t3);font-size:13px;">No submissions yet</div>';return;}
   wrap.innerHTML=data.map(r=>{
     const cost=r.total_cost||r.other_cost||0;
-    const supportFee=r.rent_cost||0;
     const discount=r.note||'';
-    const supportProducts=r.products||'';
+    const supportSummary=r.products||'';
     return`<div class="rec-item"><div class="rec-dot"></div>
     <div class="rec-info"><div class="rec-name">${r.store} · ${r.activity_name}</div>
-    <div class="rec-meta">${r.date} · ${r.duration}${supportFee>0?' · Off Invoice/Scan Sale RM '+Number(supportFee).toFixed(0):''}</div>
-    ${supportProducts?`<div class="rec-meta2">Products: ${supportProducts}</div>`:''}
+    <div class="rec-meta">${r.date} · ${r.duration}</div>
+    ${supportSummary?`<div class="rec-meta2">Off Invoice/Scan Sale: ${supportSummary}</div>`:''}
     ${discount?`<div class="rec-meta2">${discount}</div>`:''}</div>
     <div class="rec-cost">RM ${Number(cost).toFixed(0)}</div></div>`;
   }).join('');
