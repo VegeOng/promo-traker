@@ -125,6 +125,13 @@ body{background:var(--bg);color:var(--t1);font-family:var(--font);min-height:100
         <label>Month</label>
         <input type="month" id="f-month">
       </div>
+      <div class="filter-field" style="min-width:150px;">
+        <label>Period</label>
+        <div style="display:flex;gap:6px;">
+          <button type="button" class="period-btn active" data-period="month" onclick="setPeriod('month')" style="flex:1;padding:9px 10px;border-radius:var(--r);border:1.5px solid var(--green);background:var(--green);color:#fff;font-size:12.5px;font-weight:700;cursor:pointer;font-family:var(--font);">Month</button>
+          <button type="button" class="period-btn" data-period="year" onclick="setPeriod('year')" style="flex:1;padding:9px 10px;border-radius:var(--r);border:1.5px solid var(--b1);background:var(--s1);color:var(--t2);font-size:12.5px;font-weight:700;cursor:pointer;font-family:var(--font);">Whole Year</button>
+        </div>
+      </div>
       <div class="filter-field">
         <label>Region</label>
         <select id="f-region"><option value="">All Regions</option></select>
@@ -258,6 +265,7 @@ function ymd(d){
 // ── State ────────────────────────────────────────────────
 let allPromos=[];
 let currentView='timeline';
+let periodMode='month';
 
 document.getElementById('f-month').value=new Date().toISOString().slice(0,7);
 
@@ -331,12 +339,42 @@ function getFilteredByCategory(){
 function getMonthRange(){
   const val=document.getElementById('f-month').value || new Date().toISOString().slice(0,7);
   const [y,m]=val.split('-').map(Number);
+  if(periodMode==='year'){
+    const monthStart=new Date(y, 0, 1);
+    const monthEnd=new Date(y, 11, 31);
+    return {y, m, monthStart, monthEnd};
+  }
   const monthStart=new Date(y, m-1, 1);
   const monthEnd=new Date(y, m, 0);
   return {y, m, monthStart, monthEnd};
 }
 
+function setPeriod(period){
+  periodMode=period;
+  document.querySelectorAll('.period-btn').forEach(b=>{
+    const active=b.dataset.period===period;
+    b.classList.toggle('active',active);
+    b.style.background=active?'var(--green)':'var(--s1)';
+    b.style.color=active?'#fff':'var(--t2)';
+    b.style.borderColor=active?'var(--green)':'var(--b1)';
+  });
+  // Calendar view doesn't make sense for a whole year — fall back to Timeline
+  const calBtn=document.querySelector('.tab-btn[data-view="calendar"]');
+  if(period==='year'){
+    calBtn.disabled=true;
+    calBtn.style.opacity='.45';
+    calBtn.style.cursor='not-allowed';
+    if(currentView==='calendar') switchView('timeline');
+  } else {
+    calBtn.disabled=false;
+    calBtn.style.opacity='';
+    calBtn.style.cursor='';
+  }
+  renderAll();
+}
+
 function switchView(view){
+  if(periodMode==='year' && view==='calendar') return;
   currentView=view;
   document.querySelectorAll('.tab-btn').forEach(b=>b.classList.toggle('active', b.dataset.view===view));
   document.querySelectorAll('.view').forEach(v=>v.classList.toggle('active', v.id==='view-'+view));
@@ -352,6 +390,8 @@ function renderAll(){
 
 // ── Timeline View ──────────────────────────────────────────
 function renderTimeline(data){
+  if(periodMode==='year') return renderTimelineYear(data);
+
   const {y,m,monthStart,monthEnd}=getMonthRange();
   const monthName=monthStart.toLocaleDateString('en-MY',{month:'long',year:'numeric'});
   document.getElementById('tl-month-label').textContent='🗓 '+monthName;
@@ -391,6 +431,59 @@ function renderTimeline(data){
     const span=Math.max(1, endDay-startDay+1);
     const leftPct=((startDay-1)/daysInMonth*100);
     const widthPct=(span/daysInMonth*100);
+    const title=`${escHtml(r.store)} — ${catLabel(r)} — ${escHtml(r.activity_name||'')} (${fmtDate(r._start)} → ${fmtDate(r._end)})`;
+    html+=`<div class="tl-bar" title="${title}" style="left:${leftPct}%;width:${widthPct}%;background:${catColor((r.promo_type||'OTHER').toUpperCase())}">${escHtml(catLabel(r))}</div>`;
+    html+='</div>';
+    html+='</div>';
+  });
+
+  html+='</div>';
+  tlContent.innerHTML=html;
+}
+
+// ── Timeline View — Whole Year ─────────────────────────────
+function renderTimelineYear(data){
+  const {y,monthStart,monthEnd}=getMonthRange(); // Jan 1 .. Dec 31 of year y
+  document.getElementById('tl-month-label').textContent='🗓 Year '+y;
+
+  const totalDays=Math.round((monthEnd-monthStart)/86400000)+1;
+  const inYear=data.filter(r=> r._start<=monthEnd && r._end>=monthStart);
+
+  const tlContent=document.getElementById('tl-content');
+  if(!inYear.length){
+    tlContent.innerHTML='<div class="tl-empty">No promotions scheduled in '+y+' for the selected filters.</div>';
+    return;
+  }
+  // sort by store then date
+  inYear.sort((a,b)=> a.store.localeCompare(b.store) || a._start-b._start);
+
+  const labelW='180px';
+  const monthNames=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const monthDays=[];
+  for(let mo=0; mo<12; mo++) monthDays.push(new Date(y, mo+1, 0).getDate());
+
+  let html='<div class="tl-grid" style="min-width:900px;grid-template-columns:'+labelW+' 1fr;">';
+
+  // header row
+  html+=`<div class="tl-header" style="grid-template-columns:${labelW} 1fr;grid-column:1 / -1;display:grid;">`;
+  html+='<div class="tl-header-cell" style="border-right:1px solid var(--b1)"></div>';
+  html+='<div style="display:flex;">';
+  monthNames.forEach((mn,i)=>{
+    html+=`<div class="tl-header-cell" style="flex:${monthDays[i]};border-right:1px solid var(--b1);">${mn}</div>`;
+  });
+  html+='</div>';
+  html+='</div>';
+
+  // rows
+  inYear.forEach(r=>{
+    html+=`<div class="tl-row" style="grid-template-columns:${labelW} 1fr;grid-column:1 / -1;display:grid;">`;
+    html+=`<div class="tl-label"><div class="tl-store">${escHtml(r.store)}</div><div class="tl-activity">${escHtml(r.activity_name||'')}</div></div>`;
+    html+='<div class="tl-track" style="position:relative;">';
+    const startOffset=Math.max(0, Math.floor((r._start-monthStart)/86400000));
+    const endOffset=Math.min(totalDays-1, Math.floor((r._end-monthStart)/86400000));
+    const span=Math.max(1, endOffset-startOffset+1);
+    const leftPct=(startOffset/totalDays*100);
+    const widthPct=(span/totalDays*100);
     const title=`${escHtml(r.store)} — ${catLabel(r)} — ${escHtml(r.activity_name||'')} (${fmtDate(r._start)} → ${fmtDate(r._end)})`;
     html+=`<div class="tl-bar" title="${title}" style="left:${leftPct}%;width:${widthPct}%;background:${catColor((r.promo_type||'OTHER').toUpperCase())}">${escHtml(catLabel(r))}</div>`;
     html+='</div>';
