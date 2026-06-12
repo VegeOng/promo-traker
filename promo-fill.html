@@ -43,6 +43,10 @@ textarea{resize:vertical;min-height:72px;line-height:1.5;}
 .success-sub{font-size:13px;color:#166534;line-height:1.6;}
 .again-btn{margin-top:14px;padding:9px 20px;background:var(--green);color:#fff;border:none;border-radius:var(--r);font-size:13px;font-weight:600;font-family:var(--font);cursor:pointer;}
 
+.prod-chip{padding:7px 12px;border:1.5px solid var(--b2);border-radius:999px;background:var(--s1);font-size:12.5px;font-weight:600;color:var(--t2);cursor:pointer;transition:all .15s;user-select:none;}
+.prod-chip:hover{border-color:var(--green-border);}
+.prod-chip.sel{background:var(--green);border-color:var(--green);color:#fff;}
+
 .err{color:var(--red);font-size:11px;margin-top:3px;display:none;}
 .err.show{display:block;}
 .has-err input,.has-err select{border-color:var(--red)!important;}
@@ -133,8 +137,8 @@ textarea{resize:vertical;min-height:72px;line-height:1.5;}
       </div>
       <div class="field full" id="w-support-products">
         <label>Off Invoice / Scan Sale — Products</label>
-        <select id="f-support-products" multiple size="5"></select>
-        <span style="font-size:11px;color:var(--t3);">Hold Ctrl / Cmd to select multiple products. For record only — not used for stats.</span>
+        <div id="f-support-products" style="display:flex;flex-wrap:wrap;gap:8px;background:var(--s2);border:1.5px solid var(--b1);border-radius:var(--r);padding:10px 12px;min-height:44px;"></div>
+        <span style="font-size:11px;color:var(--t3);">Tap to select multiple products. For record only — not used for stats.</span>
         <div style="display:flex;gap:8px;margin-top:6px;">
           <input type="text" id="f-new-product" placeholder="New product code, e.g. Kampua Mee" style="flex:1;">
           <button type="button" id="btn-add-product" onclick="addNewProduct()" style="white-space:nowrap;padding:10px 14px;background:var(--green-bg);border:1px dashed var(--green-border);border-radius:var(--r);font-size:13px;font-weight:600;color:var(--green);cursor:pointer;">+ Add Product</button>
@@ -202,40 +206,47 @@ document.getElementById('f-start').value = todayStr;
 document.getElementById('f-end').value = todayStr;
 
 // ── Products list (for Off Invoice / Scan Sale) ───────────
-async function loadProducts(selectCodes){
+let selectedSupportProducts=[];
+
+async function loadProducts(){
   try{
     const {data,error}=await sb.from('products').select('*').order('code',{ascending:true});
     if(error) throw error;
-    const sel=document.getElementById('f-support-products');
-    sel.innerHTML=(data||[]).map(p=>`<option value="${p.code}">${p.code}</option>`).join('');
-    if(selectCodes&&selectCodes.length){
-      Array.from(sel.options).forEach(o=>{ if(selectCodes.includes(o.value)) o.selected=true; });
-    }
+    const wrap=document.getElementById('f-support-products');
+    wrap.innerHTML=(data||[]).map(p=>
+      `<div class="prod-chip${selectedSupportProducts.includes(p.code)?' sel':''}" data-code="${p.code}" onclick="toggleSupportProduct('${p.code.replace(/'/g,"\\'")}')">${p.code}</div>`
+    ).join('') || '<span style="font-size:12px;color:var(--t3);">No products yet — add one below.</span>';
   }catch(e){
     console.error('Failed to load products', e);
+    document.getElementById('f-support-products').innerHTML='<span style="font-size:12px;color:var(--red);">Failed to load products</span>';
   }
 }
 loadProducts();
+
+function toggleSupportProduct(code){
+  const i=selectedSupportProducts.indexOf(code);
+  if(i===-1) selectedSupportProducts.push(code);
+  else selectedSupportProducts.splice(i,1);
+  const chip=document.querySelector(`#f-support-products .prod-chip[data-code="${CSS.escape(code)}"]`);
+  if(chip) chip.classList.toggle('sel');
+}
 
 async function addNewProduct(){
   const input=document.getElementById('f-new-product');
   const code=input.value.trim();
   if(!code) return;
   const btn=document.getElementById('btn-add-product');
-  btn.disabled=true;
+  btn.disabled=true;btn.textContent='Adding…';
   try{
-    const {data,error}=await sb.from('products').insert({code}).select();
+    const {error}=await sb.from('products').insert({code});
     if(error) throw error;
-    // keep currently selected products, then add the new one
-    const sel=document.getElementById('f-support-products');
-    const current=Array.from(sel.selectedOptions).map(o=>o.value);
-    current.push(code);
-    await loadProducts(current);
+    if(!selectedSupportProducts.includes(code)) selectedSupportProducts.push(code);
+    await loadProducts();
     input.value='';
   }catch(e){
     alert('Failed to add product: '+e.message);
   }
-  btn.disabled=false;
+  btn.disabled=false;btn.textContent='+ Add Product';
 }
 
 // ── Helpers ──────────────────────────────────────────────
@@ -289,7 +300,7 @@ async function submitForm(){
   const days=diffDays(start,end);
   const cost=parseFloat(g('f-cost'))||0;
   const supportFee=parseFloat(g('f-support'))||0;
-  const supportProducts=Array.from(document.getElementById('f-support-products').selectedOptions).map(o=>o.value);
+  const supportProducts=selectedSupportProducts.slice();
 
   const{data,error}=await sb.from('promotions').insert({
     date:start,
@@ -333,7 +344,8 @@ function resetForm(){
   const btn=document.getElementById('submit-btn');
   btn.style.display='';btn.disabled=false;btn.innerHTML='Submit';
   ['f-store','f-name','f-cost','f-support','f-discount'].forEach(id=>document.getElementById(id).value='');
-  Array.from(document.getElementById('f-support-products').options).forEach(o=>o.selected=false);
+  selectedSupportProducts=[];
+  loadProducts();
   // 提交者名字保持锁定，HQ 清空
   if (userRole !== 'member') document.getElementById('f-manager').value='';
   document.getElementById('f-start').value=todayStr;
