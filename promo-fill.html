@@ -215,9 +215,9 @@ let supportRowId=0;
 
 async function loadProducts(){
   try{
-    const {data,error}=await sb.from('products').select('*').order('code',{ascending:true});
+    const {data,error}=await sb.from('sample_skus').select('*').order('sku_name',{ascending:true});
     if(error) throw error;
-    availableProducts=(data||[]).map(p=>p.code);
+    availableProducts=(data||[]).map(p=>p.sku_name);
     renderSupportRows();
   }catch(e){
     console.error('Failed to load products', e);
@@ -258,7 +258,7 @@ async function addNewProduct(){
   const btn=document.getElementById('btn-add-product');
   btn.disabled=true;btn.textContent='Adding…';
   try{
-    const {error}=await sb.from('products').insert({code});
+    const {error}=await sb.from('sample_skus').insert({sku_name:code});
     if(error) throw error;
     await loadProducts();
     input.value='';

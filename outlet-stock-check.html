@@ -557,8 +557,8 @@ function populateOutletSelect() {
 
 // ── Products ──
 async function loadProducts() {
-  products = await sbGet('products?select=*&order=code.asc');
-  if(!Array.isArray(products)) products=[];
+  const skus = await sbGet('sample_skus?select=*&order=sku_name.asc');
+  products = Array.isArray(skus) ? skus.map(s=>({id:s.id, code:s.sku_name})) : [];
   refreshProductSelects();
 }
 function refreshProductSelects() {
@@ -593,7 +593,7 @@ async function renameProduct(id, oldCode) {
   const newCode=(prompt(`Rename product "${oldCode}" to:`, oldCode)||'').trim().toUpperCase();
   if(!newCode || newCode===oldCode) return;
   if(products.find(p=>p.code===newCode)){ showToast('A product with that code already exists.', true); return; }
-  await sbPatch('products', id, {code:newCode});
+  await sbPatch('sample_skus', id, {sku_name:newCode});
   const p=products.find(x=>x.id===id);
   if(p) p.code=newCode;
   products.sort((a,b)=>a.code.localeCompare(b.code));
@@ -604,9 +604,9 @@ async function addProduct() {
   const code=document.getElementById('newProductCode').value.trim().toUpperCase();
   if(!code){ showToast('Please enter a product code.', true); return; }
   if(products.find(p=>p.code===code)){ showToast('Product already exists.', true); return; }
-  const res=await sbPost('products',{code});
+  const res=await sbPost('sample_skus',{sku_name:code});
   if(Array.isArray(res)&&res.length>0){
-    products.push(res[0]); products.sort((a,b)=>a.code.localeCompare(b.code));
+    products.push({id:res[0].id, code:res[0].sku_name}); products.sort((a,b)=>a.code.localeCompare(b.code));
     refreshProductSelects(); renderProdList();
     document.getElementById('newProductCode').value='';
     showToast('✅ Product added: '+code);
@@ -614,7 +614,7 @@ async function addProduct() {
 }
 async function deleteProduct(id, code) {
   if(!confirm(`Delete product "${code}"?`)) return;
-  await sbDelete('products', id);
+  await sbDelete('sample_skus', id);
   products=products.filter(p=>p.id!==id);
   refreshProductSelects(); renderProdList();
   showToast('Product removed: '+code);
