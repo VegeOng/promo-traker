@@ -122,10 +122,14 @@ textarea{resize:vertical;min-height:72px;line-height:1.5;}
         <input type="date" id="f-end">
         <span class="err" id="e-end">End date must be on/after start date</span>
       </div>
-      <div class="field full" id="w-cost">
+      <div class="field" id="w-cost">
         <label>Cost (RM) <span class="req">*</span></label>
         <input type="number" id="f-cost" placeholder="0.00" min="0" step="0.01">
         <span class="err" id="e-cost">Please enter cost</span>
+      </div>
+      <div class="field" id="w-support">
+        <label>Support Fee (RM)</label>
+        <input type="number" id="f-support" placeholder="0.00" min="0" step="0.01">
       </div>
       <div class="field full" id="w-discount">
         <label>Promo / Discount Details <span class="req">*</span></label>
@@ -238,6 +242,7 @@ async function submitForm(){
   const start=g('f-start'), end=g('f-end');
   const days=diffDays(start,end);
   const cost=parseFloat(g('f-cost'))||0;
+  const supportFee=parseFloat(g('f-support'))||0;
 
   const{data,error}=await sb.from('promotions').insert({
     date:start,
@@ -246,8 +251,9 @@ async function submitForm(){
     activity_name:g('f-name').trim(),
     duration:`${days} day${days>1?'s':''}`,
     note:g('f-discount').trim(),
-    total_cost:cost,
+    total_cost:cost+supportFee,
     other_cost:cost,
+    rent_cost:supportFee,
     products_data:[],
     sampling_qty:0,
     total_target_qty:0,
@@ -259,7 +265,7 @@ async function submitForm(){
 
   document.getElementById('success-msg').innerHTML=
     `<strong>${g('f-store').trim()}</strong> · ${g('f-name').trim()}<br>
-     ${start}${end&&end!==start?' → '+end:''} &nbsp;·&nbsp; Cost: RM ${cost.toFixed(2)}<br>
+     ${start}${end&&end!==start?' → '+end:''} &nbsp;·&nbsp; Cost: RM ${cost.toFixed(2)}${supportFee>0?' + Support RM '+supportFee.toFixed(2):''}<br>
      ${g('f-discount').trim()}`;
   document.getElementById('success-card').classList.add('show');
   btn.style.display='none';
@@ -271,7 +277,7 @@ function resetForm(){
   document.getElementById('success-card').classList.remove('show');
   const btn=document.getElementById('submit-btn');
   btn.style.display='';btn.disabled=false;btn.innerHTML='Submit';
-  ['f-store','f-name','f-cost','f-discount'].forEach(id=>document.getElementById(id).value='');
+  ['f-store','f-name','f-cost','f-support','f-discount'].forEach(id=>document.getElementById(id).value='');
   // 提交者名字保持锁定，HQ 清空
   if (userRole !== 'member') document.getElementById('f-manager').value='';
   document.getElementById('f-start').value=todayStr;
@@ -287,10 +293,11 @@ async function loadRecords(){
   if(!data||!data.length){wrap.innerHTML='<div style="text-align:center;padding:20px;color:var(--t3);font-size:13px;">No submissions yet</div>';return;}
   wrap.innerHTML=data.map(r=>{
     const cost=r.total_cost||r.other_cost||0;
+    const supportFee=r.rent_cost||0;
     const discount=r.note||'';
     return`<div class="rec-item"><div class="rec-dot"></div>
     <div class="rec-info"><div class="rec-name">${r.store} · ${r.activity_name}</div>
-    <div class="rec-meta">${r.date} · ${r.duration}</div>
+    <div class="rec-meta">${r.date} · ${r.duration}${supportFee>0?' · Support RM '+Number(supportFee).toFixed(0):''}</div>
     ${discount?`<div class="rec-meta2">${discount}</div>`:''}</div>
     <div class="rec-cost">RM ${Number(cost).toFixed(0)}</div></div>`;
   }).join('');
