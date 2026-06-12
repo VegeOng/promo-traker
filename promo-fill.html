@@ -247,6 +247,8 @@ async function submitForm(){
   const{data,error}=await sb.from('promotions').insert({
     date:start,
     region:'',
+    promo_type:'OTHER',
+    promo_type_other:'',
     store:g('f-store').trim(),
     manager:g('f-manager').trim(),
     activity_name:g('f-name').trim(),
