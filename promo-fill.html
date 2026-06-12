@@ -99,7 +99,7 @@ textarea{resize:vertical;min-height:72px;line-height:1.5;}
 <div class="container">
   <div class="success-card" id="success-card">
     <div style="font-size:38px;margin-bottom:10px;">✅</div>
-    <div class="success-title">Submitted successfully!</div>
+    <div class="success-title" id="success-title">Submitted successfully!</div>
     <div class="success-sub" id="success-msg"></div>
     <button class="again-btn" onclick="resetForm()">Submit another entry</button>
   </div>
@@ -156,6 +156,10 @@ textarea{resize:vertical;min-height:72px;line-height:1.5;}
     </div>
   </div>
 
+  <div id="edit-banner" style="display:none;background:var(--amber-bg);border:1px solid var(--amber-border);border-radius:var(--r);padding:10px 14px;margin-bottom:10px;font-size:13px;color:var(--amber);justify-content:space-between;align-items:center;">
+    <span>✏️ Editing existing entry</span>
+    <a href="#" onclick="cancelEdit();return false;" style="color:var(--amber);font-weight:600;text-decoration:underline;">Cancel</a>
+  </div>
   <button class="submit-btn" id="submit-btn" onclick="submitForm()">Submit</button>
 
   <p class="sec-label" style="margin-top:28px;" id="rec-title">My Recent Submissions</p>
@@ -277,6 +281,23 @@ function diffDays(startStr, endStr){
   return Math.round((b - a) / 86400000) + 1; // inclusive
 }
 
+function parseDurationDays(durationStr){
+  const s=(durationStr||'').toString();
+  const m=s.match(/(\d+(\.\d+)?)/);
+  if(m) return Math.max(1, Math.round(parseFloat(m[1])));
+  return 1;
+}
+
+function addDaysStr(dateStr, days){
+  const d=new Date(dateStr+'T00:00:00');
+  d.setDate(d.getDate()+days);
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+}
+
+// ── Edit state ───────────────────────────────────────────
+let editingId=null;
+let recentRecords=[];
+
 // ── Validate ──────────────────────────────────────────────
 function validate(){
   let ok=true;
@@ -323,7 +344,7 @@ async function submitForm(){
   const supportData=getSupportProductsData();
   const supportSummary=supportData.map(r=>`${r.product?r.product+' ':''}${r.detail}`.trim()).filter(Boolean).join('; ');
 
-  const{data,error}=await sb.from('promotions').insert({
+  const payload={
     date:start,
     region:'',
     promo_type:'OTHER',
@@ -345,17 +366,24 @@ async function submitForm(){
     total_target_qty:0,
     total_sold_qty:0,
     photo_urls:[],
-  }).select();
+  };
 
-  if(error){alert('Submit failed: '+error.message);btn.disabled=false;btn.innerHTML='Submit';return;}
+  const{error}= editingId
+    ? await sb.from('promotions').update(payload).eq('id',editingId)
+    : await sb.from('promotions').insert(payload).select();
+
+  if(error){alert('Submit failed: '+error.message);btn.disabled=false;btn.innerHTML=editingId?'Update':'Submit';return;}
 
   document.getElementById('success-msg').innerHTML=
     `<strong>${g('f-store').trim()}</strong> · ${g('f-name').trim()}<br>
      ${start}${end&&end!==start?' → '+end:''} &nbsp;·&nbsp; Cost: RM ${cost.toFixed(2)}<br>
      ${supportSummary?'Off Invoice / Scan Sale: '+supportSummary+'<br>':''}
      ${g('f-discount').trim()}`;
+  document.getElementById('success-title').textContent = editingId ? 'Updated successfully!' : 'Submitted successfully!';
   document.getElementById('success-card').classList.add('show');
+  document.getElementById('edit-banner').style.display='none';
   btn.style.display='none';
+  editingId=null;
   window.scrollTo({top:0,behavior:'smooth'});
   loadRecords();
 }
@@ -364,6 +392,9 @@ function resetForm(){
   document.getElementById('success-card').classList.remove('show');
   const btn=document.getElementById('submit-btn');
   btn.style.display='';btn.disabled=false;btn.innerHTML='Submit';
+  document.getElementById('success-title').textContent='Submitted successfully!';
+  document.getElementById('edit-banner').style.display='none';
+  editingId=null;
   ['f-store','f-name','f-cost','f-discount'].forEach(id=>document.getElementById(id).value='');
   supportRows=[];supportRowId=0;
   renderSupportRows();
@@ -373,11 +404,52 @@ function resetForm(){
   document.getElementById('f-end').value=todayStr;
 }
 
+// ── Edit / Delete existing entry ──────────────────────────
+function editRecord(id){
+  const r=recentRecords.find(x=>x.id===id);
+  if(!r)return;
+  editingId=id;
+
+  document.getElementById('f-store').value=r.store||'';
+  document.getElementById('f-name').value=r.activity_name||'';
+  document.getElementById('f-cost').value=r.total_cost||r.other_cost||0;
+  document.getElementById('f-discount').value=r.note||'';
+  if (userRole !== 'member') document.getElementById('f-manager').value=r.manager||'';
+
+  const start=r.date;
+  const days=parseDurationDays(r.duration);
+  document.getElementById('f-start').value=start;
+  document.getElementById('f-end').value=addDaysStr(start, days-1);
+
+  supportRows=(r.products_data&&r.products_data.length?r.products_data:[]).map(p=>({id:supportRowId++, product:p.product||'', detail:p.detail||''}));
+  renderSupportRows();
+
+  document.getElementById('edit-banner').style.display='flex';
+  document.getElementById('success-card').classList.remove('show');
+  const btn=document.getElementById('submit-btn');
+  btn.style.display='';btn.disabled=false;btn.innerHTML='Update';
+
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function cancelEdit(){
+  resetForm();
+}
+
+async function deleteRecord(id){
+  if(!confirm('Delete this entry? This cannot be undone.'))return;
+  const{error}=await sb.from('promotions').delete().eq('id',id);
+  if(error){alert('Delete failed: '+error.message);return;}
+  if(editingId===id) resetForm();
+  loadRecords();
+}
+
 // ── Recent Records ────────────────────────────────────────
 async function loadRecords(){
   let q = sb.from('promotions').select('*').order('created_at',{ascending:false}).limit(5);
   if (userRole === 'member') q = q.eq('manager', loggedUser);
   const{data}=await q;
+  recentRecords=data||[];
   const wrap=document.getElementById('my-records');
   if(!data||!data.length){wrap.innerHTML='<div style="text-align:center;padding:20px;color:var(--t3);font-size:13px;">No submissions yet</div>';return;}
   wrap.innerHTML=data.map(r=>{
@@ -389,7 +461,11 @@ async function loadRecords(){
     <div class="rec-meta">${r.date} · ${r.duration}</div>
     ${supportSummary?`<div class="rec-meta2">Off Invoice/Scan Sale: ${supportSummary}</div>`:''}
     ${discount?`<div class="rec-meta2">${discount}</div>`:''}</div>
-    <div class="rec-cost">RM ${Number(cost).toFixed(0)}</div></div>`;
+    <div class="rec-cost">RM ${Number(cost).toFixed(0)}</div>
+    <div style="display:flex;gap:6px;flex-shrink:0;">
+      <button onclick="editRecord(${r.id})" style="border:1px solid var(--b2);background:var(--s1);border-radius:8px;padding:6px 9px;cursor:pointer;font-size:13px;">✏️</button>
+      <button onclick="deleteRecord(${r.id})" style="border:1px solid var(--red-border);background:var(--red-bg);color:var(--red);border-radius:8px;padding:6px 9px;cursor:pointer;font-size:13px;">🗑️</button>
+    </div></div>`;
   }).join('');
 }
 loadRecords();
