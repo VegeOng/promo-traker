@@ -128,7 +128,7 @@ textarea{resize:vertical;min-height:72px;line-height:1.5;}
         <span class="err" id="e-cost">Please enter cost</span>
       </div>
       <div class="field" id="w-support">
-        <label>Support Fee (RM)</label>
+        <label>Off Invoice / Scan Sale (RM)</label>
         <input type="number" id="f-support" placeholder="0.00" min="0" step="0.01">
       </div>
       <div class="field full" id="w-discount">
@@ -265,7 +265,7 @@ async function submitForm(){
 
   document.getElementById('success-msg').innerHTML=
     `<strong>${g('f-store').trim()}</strong> · ${g('f-name').trim()}<br>
-     ${start}${end&&end!==start?' → '+end:''} &nbsp;·&nbsp; Cost: RM ${cost.toFixed(2)}${supportFee>0?' + Support RM '+supportFee.toFixed(2):''}<br>
+     ${start}${end&&end!==start?' → '+end:''} &nbsp;·&nbsp; Cost: RM ${cost.toFixed(2)}${supportFee>0?' + Off Invoice/Scan Sale RM '+supportFee.toFixed(2):''}<br>
      ${g('f-discount').trim()}`;
   document.getElementById('success-card').classList.add('show');
   btn.style.display='none';
@@ -297,7 +297,7 @@ async function loadRecords(){
     const discount=r.note||'';
     return`<div class="rec-item"><div class="rec-dot"></div>
     <div class="rec-info"><div class="rec-name">${r.store} · ${r.activity_name}</div>
-    <div class="rec-meta">${r.date} · ${r.duration}${supportFee>0?' · Support RM '+Number(supportFee).toFixed(0):''}</div>
+    <div class="rec-meta">${r.date} · ${r.duration}${supportFee>0?' · Off Invoice/Scan Sale RM '+Number(supportFee).toFixed(0):''}</div>
     ${discount?`<div class="rec-meta2">${discount}</div>`:''}</div>
     <div class="rec-cost">RM ${Number(cost).toFixed(0)}</div></div>`;
   }).join('');
