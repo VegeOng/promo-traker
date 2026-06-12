@@ -131,6 +131,11 @@ textarea{resize:vertical;min-height:72px;line-height:1.5;}
         <label>Off Invoice / Scan Sale (RM)</label>
         <input type="number" id="f-support" placeholder="0.00" min="0" step="0.01">
       </div>
+      <div class="field full" id="w-support-products">
+        <label>Off Invoice / Scan Sale — Products</label>
+        <select id="f-support-products" multiple size="5"></select>
+        <span style="font-size:11px;color:var(--t3);">Hold Ctrl / Cmd to select multiple products. For record only — not used for stats.</span>
+      </div>
       <div class="field full" id="w-discount">
         <label>Promo / Discount Details <span class="req">*</span></label>
         <textarea id="f-discount" placeholder="e.g. Buy 2 Free 1, 20% off, RM5 off with min spend RM30..."></textarea>
@@ -192,6 +197,19 @@ const todayStr = new Date().toISOString().slice(0,10);
 document.getElementById('f-start').value = todayStr;
 document.getElementById('f-end').value = todayStr;
 
+// ── Products list (for Off Invoice / Scan Sale) ───────────
+async function loadProducts(){
+  try{
+    const {data,error}=await sb.from('products').select('*').order('code',{ascending:true});
+    if(error) throw error;
+    const sel=document.getElementById('f-support-products');
+    sel.innerHTML=(data||[]).map(p=>`<option value="${p.code}">${p.code}</option>`).join('');
+  }catch(e){
+    console.error('Failed to load products', e);
+  }
+}
+loadProducts();
+
 // ── Helpers ──────────────────────────────────────────────
 function diffDays(startStr, endStr){
   const a = new Date(startStr+'T00:00:00');
@@ -243,6 +261,7 @@ async function submitForm(){
   const days=diffDays(start,end);
   const cost=parseFloat(g('f-cost'))||0;
   const supportFee=parseFloat(g('f-support'))||0;
+  const supportProducts=Array.from(document.getElementById('f-support-products').selectedOptions).map(o=>o.value);
 
   const{data,error}=await sb.from('promotions').insert({
     date:start,
@@ -254,6 +273,7 @@ async function submitForm(){
     activity_name:g('f-name').trim(),
     duration:`${days} day${days>1?'s':''}`,
     note:g('f-discount').trim(),
+    products:supportProducts.join(', '),
     total_cost:cost+supportFee,
     other_cost:cost,
     rent_cost:supportFee,
@@ -272,6 +292,7 @@ async function submitForm(){
   document.getElementById('success-msg').innerHTML=
     `<strong>${g('f-store').trim()}</strong> · ${g('f-name').trim()}<br>
      ${start}${end&&end!==start?' → '+end:''} &nbsp;·&nbsp; Cost: RM ${cost.toFixed(2)}${supportFee>0?' + Off Invoice/Scan Sale RM '+supportFee.toFixed(2):''}<br>
+     ${supportProducts.length?'Off Invoice / Scan Sale Products: '+supportProducts.join(', ')+'<br>':''}
      ${g('f-discount').trim()}`;
   document.getElementById('success-card').classList.add('show');
   btn.style.display='none';
@@ -284,6 +305,7 @@ function resetForm(){
   const btn=document.getElementById('submit-btn');
   btn.style.display='';btn.disabled=false;btn.innerHTML='Submit';
   ['f-store','f-name','f-cost','f-support','f-discount'].forEach(id=>document.getElementById(id).value='');
+  Array.from(document.getElementById('f-support-products').options).forEach(o=>o.selected=false);
   // 提交者名字保持锁定，HQ 清空
   if (userRole !== 'member') document.getElementById('f-manager').value='';
   document.getElementById('f-start').value=todayStr;
@@ -301,9 +323,11 @@ async function loadRecords(){
     const cost=r.total_cost||r.other_cost||0;
     const supportFee=r.rent_cost||0;
     const discount=r.note||'';
+    const supportProducts=r.products||'';
     return`<div class="rec-item"><div class="rec-dot"></div>
     <div class="rec-info"><div class="rec-name">${r.store} · ${r.activity_name}</div>
     <div class="rec-meta">${r.date} · ${r.duration}${supportFee>0?' · Off Invoice/Scan Sale RM '+Number(supportFee).toFixed(0):''}</div>
+    ${supportProducts?`<div class="rec-meta2">Products: ${supportProducts}</div>`:''}
     ${discount?`<div class="rec-meta2">${discount}</div>`:''}</div>
     <div class="rec-cost">RM ${Number(cost).toFixed(0)}</div></div>`;
   }).join('');
