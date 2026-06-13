@@ -74,16 +74,22 @@ body{background:var(--bg);color:var(--t1);font-family:var(--font);min-height:100
 .tl-bar{position:absolute;top:7px;height:26px;border-radius:6px;display:flex;align-items:center;padding:0 8px;font-size:11px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:default;box-shadow:0 1px 3px rgba(0,0,0,.15);}
 .tl-empty{text-align:center;padding:30px;color:var(--t3);font-size:13px;}
 
-/* Calendar */
+/* Calendar (agenda / list style) */
 .cal-month-label{font-size:14px;font-weight:800;margin-bottom:14px;}
-.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;}
-.cal-dow{font-size:10px;font-weight:700;color:var(--t3);text-align:center;text-transform:uppercase;letter-spacing:.05em;padding-bottom:4px;}
-.cal-cell{background:var(--s2);border-radius:8px;padding:6px;min-height:84px;display:flex;flex-direction:column;gap:3px;}
-.cal-cell.empty{background:transparent;}
-.cal-date{font-size:11px;font-weight:700;color:var(--t2);font-family:var(--mono);}
-.cal-cell.today .cal-date{color:var(--green);}
-.cal-chip{font-size:10px;color:#fff;border-radius:4px;padding:2px 5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600;}
-.cal-more{font-size:10px;color:var(--t3);font-weight:700;}
+.agenda-row{display:flex;gap:14px;border-bottom:1px solid var(--b1);padding:10px 0;}
+.agenda-row:last-child{border-bottom:none;}
+.agenda-row.weekend .agenda-date-dow{color:var(--t3);}
+.agenda-date{flex:0 0 64px;text-align:center;}
+.agenda-date-dow{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--t3);}
+.agenda-date-num{font-size:18px;font-weight:800;width:34px;height:34px;line-height:34px;border-radius:50%;margin:2px auto 0;color:var(--t2);font-family:var(--mono);}
+.agenda-row.today .agenda-date-num{background:var(--green);color:#fff;}
+.agenda-tasks{flex:1;min-width:0;display:flex;flex-direction:column;gap:6px;}
+.agenda-empty{font-size:12px;color:var(--t3);padding:7px 0;}
+.agenda-task{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;background:var(--s2);font-size:12.5px;}
+.agenda-task-cat{flex-shrink:0;color:#fff;border-radius:4px;padding:2px 7px;font-size:10px;font-weight:700;white-space:nowrap;}
+.agenda-task-desc{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600;}
+.agenda-task-meta{font-size:11px;color:var(--t3);flex-shrink:0;white-space:nowrap;}
+@media(max-width:500px){ .agenda-date{flex:0 0 46px;} .agenda-date-num{width:28px;height:28px;line-height:28px;font-size:14px;} .agenda-task-meta{display:none;} }
 
 /* Table */
 .pt-table{width:100%;border-collapse:collapse;font-size:12.5px;}
@@ -119,8 +125,6 @@ body{background:var(--bg);color:var(--t1);font-family:var(--font);min-height:100
 .tl-toggle{font-size:12px;font-weight:700;color:var(--green);cursor:pointer;text-decoration:underline;margin-top:10px;display:inline-block;}
 
 @media(max-width:640px){
-  .cal-cell{min-height:60px;}
-  .cal-chip{font-size:9px;}
   .stat-cards{gap:8px;}
   .stat-card{min-width:100px;padding:10px 12px;}
   .stat-num{font-size:19px;}
@@ -196,11 +200,11 @@ body{background:var(--bg);color:var(--t1);font-family:var(--font);min-height:100
     </div>
   </div>
 
-  <!-- Calendar View -->
+  <!-- Calendar View (agenda / list style) -->
   <div class="view" id="view-calendar">
     <div class="card">
       <div class="cal-month-label" id="cal-month-label"></div>
-      <div class="cal-grid" id="cal-grid"></div>
+      <div id="cal-agenda"></div>
     </div>
   </div>
 
@@ -595,36 +599,46 @@ function renderTimelineYear(data){
   renderTlToggle(noPromoCustomers, cols, inYear);
 }
 
-// ── Calendar View ────────────────────────────────────────
+// ── Calendar View (agenda / list style) ─────────────────────
 function renderCalendar(data){
   const {y,m,monthStart,monthEnd}=getMonthRange();
   const monthName=monthStart.toLocaleDateString('en-MY',{month:'long',year:'numeric'});
   document.getElementById('cal-month-label').textContent='🗓 '+monthName;
 
   const daysInMonth=monthEnd.getDate();
-  const firstDow=monthStart.getDay(); // 0=Sun
   const todayStr=ymd(new Date());
+  const dowNames=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 
   let html='';
-  ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].forEach(d=>html+=`<div class="cal-dow">${d}</div>`);
-
-  for(let i=0;i<firstDow;i++) html+='<div class="cal-cell empty"></div>';
-
   for(let d=1; d<=daysInMonth; d++){
     const cellDate=new Date(y, m-1, d);
     const dayPromos=data.filter(r=> cellDate>=stripTime(r._start) && cellDate<=stripTime(r._end));
     const isToday=ymd(cellDate)===todayStr;
-    let chips='';
-    const max=3;
-    dayPromos.slice(0,max).forEach(r=>{
-      const title=`${escHtml(r.store)} — ${catLabel(r)} — ${escHtml(r.activity_name||'')}`;
-      chips+=`<div class="cal-chip" title="${title}" style="background:${catColor((r.promo_type||'OTHER').toUpperCase())}">${escHtml(r.store)}</div>`;
-    });
-    if(dayPromos.length>max) chips+=`<div class="cal-more">+${dayPromos.length-max} more</div>`;
-    html+=`<div class="cal-cell ${isToday?'today':''}"><div class="cal-date">${d}</div>${chips}</div>`;
+    const dow=cellDate.getDay();
+    const isWeekend=dow===0||dow===6;
+
+    let inner='';
+    if(!dayPromos.length){
+      inner='<div class="agenda-empty">No promotion</div>';
+    } else {
+      inner=dayPromos.map(r=>{
+        const cat=(r.promo_type||'OTHER').toUpperCase();
+        const title=`${escHtml(r.store)} — ${catLabel(r)} — ${escHtml(r.activity_name||'')}`;
+        return `<div class="agenda-task" title="${title}">
+          <span class="agenda-task-cat" style="background:${catColor(cat)}">${escHtml(catLabel(r))}</span>
+          <span class="agenda-task-desc">${escHtml(r.store)}${r.activity_name?' — '+escHtml(r.activity_name):''}</span>
+          <span class="agenda-task-meta">${escHtml(r.region||'')}</span>
+        </div>`;
+      }).join('');
+    }
+
+    html+=`<div class="agenda-row ${isToday?'today':''} ${isWeekend?'weekend':''}">
+      <div class="agenda-date"><div class="agenda-date-dow">${dowNames[dow]}</div><div class="agenda-date-num">${d}</div></div>
+      <div class="agenda-tasks">${inner}</div>
+    </div>`;
   }
 
-  document.getElementById('cal-grid').innerHTML=html;
+  document.getElementById('cal-agenda').innerHTML=html;
 }
 function stripTime(d){ return new Date(d.getFullYear(), d.getMonth(), d.getDate()); }
 
