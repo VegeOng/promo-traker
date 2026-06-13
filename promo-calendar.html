@@ -93,9 +93,37 @@ body{background:var(--bg);color:var(--t1);font-family:var(--font);min-height:100
 .cat-pill{display:inline-block;font-size:10px;font-weight:700;color:#fff;border-radius:20px;padding:2px 9px;}
 .pt-empty{text-align:center;padding:30px;color:var(--t3);font-size:13px;}
 
+/* Customer Status */
+.stat-cards{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:14px;}
+.stat-card{flex:1;min-width:140px;background:var(--s1);border:1px solid var(--b1);border-radius:var(--r2);padding:14px 16px;box-shadow:0 1px 3px rgba(0,0,0,.04);cursor:pointer;transition:border-color .15s;}
+.stat-card:hover{border-color:var(--green-border);}
+.stat-card.active{border-color:var(--green);box-shadow:0 0 0 2px var(--green-bg);}
+.stat-num{font-size:24px;font-weight:800;font-family:var(--mono);}
+.stat-label{font-size:11px;color:var(--t3);font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-top:2px;}
+.stat-card.c-red .stat-num{color:var(--red);}
+.stat-card.c-amber .stat-num{color:#d97706;}
+.stat-card.c-green .stat-num{color:var(--green);}
+.cs-search{margin-bottom:12px;}
+.cs-search input{width:100%;background:var(--s2);border:1.5px solid var(--b1);border-radius:var(--r);padding:9px 12px;font-size:13px;font-family:var(--font);color:var(--t1);outline:none;}
+.cs-search input:focus{border-color:var(--green);background:var(--s1);}
+.status-pill{display:inline-block;font-size:11px;font-weight:700;border-radius:20px;padding:2px 10px;white-space:nowrap;}
+.status-never{background:#fef2f2;color:var(--red);}
+.status-stale{background:#fffbeb;color:#d97706;}
+.status-ok{background:var(--green-bg);color:var(--green);}
+.cs-days{font-family:var(--mono);font-weight:700;}
+
+/* Timeline no-promo rows */
+.tl-row.no-promo{background:#fef2f2;}
+.tl-row.no-promo .tl-track{display:flex;align-items:center;padding-left:10px;}
+.tl-noval{font-size:11px;color:var(--red);font-weight:700;}
+.tl-toggle{font-size:12px;font-weight:700;color:var(--green);cursor:pointer;text-decoration:underline;margin-top:10px;display:inline-block;}
+
 @media(max-width:640px){
   .cal-cell{min-height:60px;}
   .cal-chip{font-size:9px;}
+  .stat-cards{gap:8px;}
+  .stat-card{min-width:100px;padding:10px 12px;}
+  .stat-num{font-size:19px;}
 }
 </style>
 </head>
@@ -154,6 +182,7 @@ body{background:var(--bg);color:var(--t1);font-family:var(--font);min-height:100
     <button class="tab-btn active" data-view="timeline" onclick="switchView('timeline')">📊 Timeline</button>
     <button class="tab-btn" data-view="calendar" onclick="switchView('calendar')">📅 Calendar</button>
     <button class="tab-btn" data-view="table" onclick="switchView('table')">📋 Table</button>
+    <button class="tab-btn" data-view="customers" onclick="switchView('customers')">👥 Customer Status</button>
   </div>
 
   <!-- Timeline View -->
@@ -163,6 +192,7 @@ body{background:var(--bg);color:var(--t1);font-family:var(--font);min-height:100
       <div class="tl-scroll">
         <div id="tl-content"></div>
       </div>
+      <div id="tl-toggle-wrap"></div>
     </div>
   </div>
 
@@ -187,6 +217,25 @@ body{background:var(--bg);color:var(--t1);font-family:var(--font);min-height:100
         <tbody id="table-body"></tbody>
       </table>
       <div class="pt-empty" id="table-empty" style="display:none;">No promotions found for the selected filters.</div>
+    </div>
+  </div>
+
+  <!-- Customer Status View -->
+  <div class="view" id="view-customers">
+    <div class="stat-cards" id="cs-cards"></div>
+    <div class="card">
+      <div class="cs-search">
+        <input type="text" id="cs-search" placeholder="🔍 Search customer…" oninput="renderCustomerStatus()">
+      </div>
+      <div style="overflow-x:auto;">
+        <table class="pt-table">
+          <thead>
+            <tr><th>#</th><th>Customer / Store</th><th>Last Promo</th><th>Days Since</th><th>Status</th><th>Last Activity</th></tr>
+          </thead>
+          <tbody id="cs-table-body"></tbody>
+        </table>
+        <div class="pt-empty" id="cs-empty" style="display:none;">No customers found.</div>
+      </div>
     </div>
   </div>
 
@@ -264,16 +313,22 @@ function ymd(d){
 
 // ── State ────────────────────────────────────────────────
 let allPromos=[];
+let allCustomers=[];
 let currentView='timeline';
 let periodMode='month';
+let csFilter=''; // '' | 'never' | 'stale' | 'ok'
+let tlShowNoPromo=false;
 
 document.getElementById('f-month').value=new Date().toISOString().slice(0,7);
 
 async function loadData(){
   try{
-    const {data,error}=await sb.from('promotions')
-      .select('id,date,store,region,activity_name,promo_type,promo_type_other,duration,manager')
-      .order('date',{ascending:true});
+    const [{data,error}, custRes] = await Promise.all([
+      sb.from('promotions')
+        .select('id,date,store,region,activity_name,promo_type,promo_type_other,duration,manager')
+        .order('date',{ascending:true}),
+      sb.from('customers').select('*').order('name',{ascending:true})
+    ]);
     if(error) throw error;
     allPromos=(data||[]).map(r=>{
       const days=parseDurationDays(r.duration);
@@ -281,6 +336,7 @@ async function loadData(){
       const end=addDays(r.date, days-1);
       return {...r, _start:start, _end:end, _days:days};
     });
+    allCustomers=(custRes && custRes.data) || [];
     populateFilterOptions();
     renderLegend();
     renderAll();
@@ -385,7 +441,44 @@ function renderAll(){
   const data=getFilteredByCategory();
   if(currentView==='timeline') renderTimeline(data);
   else if(currentView==='calendar') renderCalendar(data);
+  else if(currentView==='customers') renderCustomerStatus();
   else renderTable(data);
+}
+
+// ── Customer helpers ─────────────────────────────────────────
+function normName(s){ return (s||'').toString().trim().toLowerCase(); }
+
+function getNoPromoCustomers(periodPromos){
+  const storeFilter=document.getElementById('f-store').value;
+  if(storeFilter) return []; // only meaningful when viewing all stores
+  const present=new Set(periodPromos.map(r=>normName(r.store)));
+  return allCustomers.filter(c=>!present.has(normName(c.name)));
+}
+
+function noPromoRowHtml(c, cols){
+  return `<div class="tl-row no-promo" style="grid-template-columns:${cols};grid-column:1 / -1;display:grid;">
+    <div class="tl-label"><div class="tl-store">${escHtml(c.name)}</div></div>
+    <div class="tl-track" style="grid-column: 2 / -1;"><span class="tl-noval">⚠️ No promo this period</span></div>
+  </div>`;
+}
+
+function renderTlToggle(noPromoCustomers, cols, inData){
+  const wrap=document.getElementById('tl-toggle-wrap');
+  if(!noPromoCustomers.length){ wrap.innerHTML=''; return; }
+  wrap.innerHTML=`<span class="tl-toggle" onclick="toggleTlNoPromo()">${tlShowNoPromo?'▲ Hide':'▼ Show'} ${noPromoCustomers.length} customer${noPromoCustomers.length>1?'s':''} with no promo this period</span>`;
+  if(tlShowNoPromo){
+    const tlContent=document.getElementById('tl-content');
+    let extra='';
+    noPromoCustomers
+      .slice().sort((a,b)=>a.name.localeCompare(b.name))
+      .forEach(c=>{ extra+=noPromoRowHtml(c, cols); });
+    tlContent.insertAdjacentHTML('beforeend', extra);
+  }
+}
+
+function toggleTlNoPromo(){
+  tlShowNoPromo=!tlShowNoPromo;
+  renderAll();
 }
 
 // ── Timeline View ──────────────────────────────────────────
@@ -398,17 +491,20 @@ function renderTimeline(data){
 
   const daysInMonth=monthEnd.getDate();
   const inMonth=data.filter(r=> r._start<=monthEnd && r._end>=monthStart);
+  const noPromoCustomers=getNoPromoCustomers(inMonth);
+
+  const labelW='180px';
+  const cols=`${labelW} repeat(${daysInMonth}, minmax(24px,1fr))`;
 
   const tlContent=document.getElementById('tl-content');
   if(!inMonth.length){
     tlContent.innerHTML='<div class="tl-empty">No promotions scheduled in '+monthName+' for the selected filters.</div>';
+    renderTlToggle(noPromoCustomers, cols, inMonth);
     return;
   }
   // sort by store then date
   inMonth.sort((a,b)=> a.store.localeCompare(b.store) || a._start-b._start);
 
-  const labelW='180px';
-  const cols=`${labelW} repeat(${daysInMonth}, minmax(24px,1fr))`;
   let html='<div class="tl-grid" style="grid-template-columns:'+cols+'">';
 
   // header row
@@ -439,6 +535,7 @@ function renderTimeline(data){
 
   html+='</div>';
   tlContent.innerHTML=html;
+  renderTlToggle(noPromoCustomers, cols, inMonth);
 }
 
 // ── Timeline View — Whole Year ─────────────────────────────
@@ -448,16 +545,19 @@ function renderTimelineYear(data){
 
   const totalDays=Math.round((monthEnd-monthStart)/86400000)+1;
   const inYear=data.filter(r=> r._start<=monthEnd && r._end>=monthStart);
+  const noPromoCustomers=getNoPromoCustomers(inYear);
+  const labelW='180px';
+  const cols=`${labelW} 1fr`;
 
   const tlContent=document.getElementById('tl-content');
   if(!inYear.length){
     tlContent.innerHTML='<div class="tl-empty">No promotions scheduled in '+y+' for the selected filters.</div>';
+    renderTlToggle(noPromoCustomers, cols, inYear);
     return;
   }
   // sort by store then date
   inYear.sort((a,b)=> a.store.localeCompare(b.store) || a._start-b._start);
 
-  const labelW='180px';
   const monthNames=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   const monthDays=[];
   for(let mo=0; mo<12; mo++) monthDays.push(new Date(y, mo+1, 0).getDate());
@@ -492,6 +592,7 @@ function renderTimelineYear(data){
 
   html+='</div>';
   tlContent.innerHTML=html;
+  renderTlToggle(noPromoCustomers, cols, inYear);
 }
 
 // ── Calendar View ────────────────────────────────────────
@@ -552,6 +653,81 @@ function renderTable(data){
       <td><span class="cat-pill" style="background:${catColor(cat)}">${escHtml(catLabel(r))}</span></td>
       <td>${escHtml(r.activity_name||'—')}</td>
       <td>${escHtml(r.manager||'—')}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ── Customer Status View ───────────────────────────────────
+const STALE_DAYS=60;
+
+function getCustomerStatusData(){
+  const today=stripTime(new Date());
+  return allCustomers.map(c=>{
+    const matches=allPromos.filter(r=>normName(r.store)===normName(c.name));
+    let lastEnd=null, lastPromo=null;
+    matches.forEach(r=>{
+      if(!lastEnd || r._end>lastEnd){ lastEnd=r._end; lastPromo=r; }
+    });
+    let daysSince=null;
+    if(lastEnd){
+      daysSince=Math.floor((today-stripTime(lastEnd))/86400000);
+      if(daysSince<0) daysSince=0; // ongoing / future promo
+    }
+    const status = daysSince===null ? 'never' : (daysSince>STALE_DAYS ? 'stale' : 'ok');
+    return {customer:c, lastEnd, lastPromo, daysSince, status};
+  });
+}
+
+function setCsFilter(f){
+  csFilter = (csFilter===f) ? '' : f;
+  renderCustomerStatus();
+}
+
+function renderCustomerStatus(){
+  const allData=getCustomerStatusData();
+  const counts={never:0, stale:0, ok:0};
+  allData.forEach(d=>counts[d.status]++);
+
+  document.getElementById('cs-cards').innerHTML=`
+    <div class="stat-card ${csFilter===''?'active':''}" onclick="setCsFilter('')">
+      <div class="stat-num">${allData.length}</div><div class="stat-label">Total Customers</div>
+    </div>
+    <div class="stat-card c-red ${csFilter==='never'?'active':''}" onclick="setCsFilter('never')">
+      <div class="stat-num">${counts.never}</div><div class="stat-label">Never Promoted</div>
+    </div>
+    <div class="stat-card c-amber ${csFilter==='stale'?'active':''}" onclick="setCsFilter('stale')">
+      <div class="stat-num">${counts.stale}</div><div class="stat-label">&gt; ${STALE_DAYS} Days No Promo</div>
+    </div>
+    <div class="stat-card c-green ${csFilter==='ok'?'active':''}" onclick="setCsFilter('ok')">
+      <div class="stat-num">${counts.ok}</div><div class="stat-label">Recently Promoted</div>
+    </div>`;
+
+  const q=(document.getElementById('cs-search').value||'').trim().toLowerCase();
+  let filtered=allData;
+  if(csFilter) filtered=filtered.filter(d=>d.status===csFilter);
+  if(q) filtered=filtered.filter(d=>d.customer.name.toLowerCase().includes(q));
+
+  // Never promoted first, then longest-overdue first
+  filtered=filtered.slice().sort((a,b)=>{
+    const av=a.daysSince===null?Infinity:a.daysSince;
+    const bv=b.daysSince===null?Infinity:b.daysSince;
+    return bv-av;
+  });
+
+  const tbody=document.getElementById('cs-table-body');
+  const empty=document.getElementById('cs-empty');
+  if(!filtered.length){ tbody.innerHTML=''; empty.style.display='block'; return; }
+  empty.style.display='none';
+  tbody.innerHTML=filtered.map((d,i)=>{
+    const pillClass = d.status==='never'?'status-never':d.status==='stale'?'status-stale':'status-ok';
+    const pillLabel = d.status==='never'?'Never':d.status==='stale'?'Stale':'Active';
+    return `<tr>
+      <td>${i+1}</td>
+      <td><strong>${escHtml(d.customer.name)}</strong></td>
+      <td>${d.lastEnd?fmtDate(d.lastEnd):'—'}</td>
+      <td class="cs-days">${d.daysSince===null?'—':d.daysSince+' days'}</td>
+      <td><span class="status-pill ${pillClass}">${pillLabel}</span></td>
+      <td>${d.lastPromo?escHtml(d.lastPromo.activity_name||'—'):'—'}</td>
     </tr>`;
   }).join('');
 }
