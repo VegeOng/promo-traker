@@ -91,6 +91,35 @@
   .loading-text { text-align: center; padding: 24px; color: var(--muted); font-size: 13px; }
   .empty-text { text-align: center; padding: 24px; color: var(--muted); font-size: 13px; }
 
+  /* View toggle */
+  .view-toggle { display:flex; gap:6px; margin-bottom:14px; }
+  .vt-btn { padding:8px 16px; border-radius:20px; border:1.5px solid var(--border); background:white; font-size:13px; font-weight:700; color:var(--muted); cursor:pointer; font-family:inherit; }
+  .vt-btn.active { background:var(--green); border-color:var(--green); color:#fff; }
+  .main-view { display:none; }
+  .main-view.active { display:block; }
+
+  /* Calendar */
+  .cal-card { background:white; border:1px solid var(--border); border-radius:var(--radius); padding:16px; margin-bottom:14px; }
+  .cal-nav { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
+  .cal-nav-btn { padding:6px 12px; border:1.5px solid var(--border); border-radius:8px; background:white; font-size:13px; font-weight:700; cursor:pointer; font-family:inherit; }
+  .cal-nav-btn:hover { background:#f9fafb; }
+  .cal-title { font-size:15px; font-weight:800; }
+  .cal-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:6px; }
+  .cal-dow { font-size:10px; font-weight:700; color:var(--muted); text-align:center; text-transform:uppercase; letter-spacing:.05em; padding-bottom:4px; }
+  .cal-cell { background:var(--bg); border-radius:8px; padding:6px; min-height:78px; display:flex; flex-direction:column; gap:3px; cursor:pointer; border:2px solid transparent; }
+  .cal-cell.empty { background:transparent; cursor:default; }
+  .cal-cell.today { border-color:var(--green); }
+  .cal-cell.selected { border-color:var(--blue); background:var(--blue-light); }
+  .cal-date { font-size:11px; font-weight:700; color:var(--muted); }
+  .cal-cell.today .cal-date { color:var(--green); }
+  .cal-chip { font-size:9px; font-weight:700; border-radius:4px; padding:2px 5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .cal-chip.overdue, .cal-chip.escalated { background:var(--red-light); color:var(--red); }
+  .cal-chip.pending { background:var(--amber-light); color:var(--amber); }
+  .cal-chip.completed_ontime, .cal-chip.completed_late { background:var(--green-light); color:var(--green); }
+  .cal-more { font-size:9px; color:var(--muted); font-weight:700; }
+  .cal-day-panel-title { font-size:13px; font-weight:800; margin-bottom:10px; }
+  @media(max-width:500px){ .cal-cell{min-height:54px;} .cal-chip{font-size:8px;} }
+
 .mv-top{overflow:hidden}
 .mv-top-main{display:flex;justify-content:space-between;align-items:center;padding:12px 24px;background:#166534}
 .mv-top-left{display:flex;align-items:center;gap:12px}
@@ -139,6 +168,11 @@
 <script>document.querySelectorAll('.mv-top-date').forEach(e=>e.textContent=new Date().toLocaleDateString('en-MY',{weekday:'short',year:'numeric',month:'short',day:'numeric'}));</script>
 
 <div class="container">
+  <div class="view-toggle">
+    <button class="vt-btn active" id="vt-list" onclick="switchMainView('list')">📋 List</button>
+    <button class="vt-btn" id="vt-calendar" onclick="switchMainView('calendar')">📅 Calendar</button>
+  </div>
+
   <div class="task-summary-bar">
     <span class="tsb-item all active" onclick="filterTasks('all',this)">All <span id="cnt-all">0</span></span>
     <span class="tsb-item completed" onclick="filterTasks('completed',this)">✅ Completed <span id="cnt-completed">0</span></span>
@@ -163,7 +197,27 @@
       <button class="btn-ntf-cancel" onclick="toggleNewTaskForm()">Cancel</button>
     </div>
   </div>
-  <div id="task-list"><div class="loading-text">Loading…</div></div>
+
+  <!-- List View -->
+  <div class="main-view active" id="main-view-list">
+    <div id="task-list"><div class="loading-text">Loading…</div></div>
+  </div>
+
+  <!-- Calendar View -->
+  <div class="main-view" id="main-view-calendar">
+    <div class="cal-card">
+      <div class="cal-nav">
+        <button class="cal-nav-btn" onclick="calNav(-1)">‹ Prev</button>
+        <div class="cal-title" id="cal-title"></div>
+        <button class="cal-nav-btn" onclick="calNav(1)">Next ›</button>
+      </div>
+      <div class="cal-grid" id="cal-grid"></div>
+    </div>
+    <div class="cal-card" id="cal-day-panel" style="display:none;">
+      <div class="cal-day-panel-title" id="cal-day-panel-title"></div>
+      <div id="cal-day-tasks"></div>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -173,6 +227,9 @@ const H = { 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY, 'Content-
 const Hmin = { 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' };
 
 let allTasks = [], currentTaskFilter = 'all';
+let currentMainView = 'list';
+let calMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+let calSelectedDay = null;
 function fmtLocalDate(d){return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
 const todayStr = fmtLocalDate(new Date());
 
@@ -219,6 +276,42 @@ async function loadTasks() {
 
 function filterTasks(filter,el){currentTaskFilter=filter;document.querySelectorAll('.tsb-item').forEach(b=>b.classList.remove('active'));el.classList.add('active');renderTaskList();}
 
+function taskItemHtml(t){
+  const icon={overdue:'🔴',pending:'🟡',escalated:'⚠️',completed_ontime:'✅',completed_late:'🕐'}[t.status]||'📌';
+  const badgeClass={overdue:'tsb-overdue',pending:'tsb-pending',escalated:'tsb-escalated',completed_ontime:'tsb-ontime',completed_late:'tsb-late'}[t.status]||'tsb-pending';
+  const badgeText={overdue:'Overdue',pending:'Pending',escalated:'Escalated',completed_ontime:'Completed ✓',completed_late:'Completed (Late)'}[t.status]||t.status;
+  const sourceText={manager_created:'Manager',from_report:'From Report',rep_committed:'Rep Committed'}[t.source]||t.source;
+  const daysOverdue=t.status==='overdue'&&t.due_date?Math.floor((new Date()-new Date(t.due_date))/86400000):0;
+  const dueLabel=t.due_date?(t.status==='overdue'?`⚠️ ${daysOverdue}d overdue`:`Due: ${t.due_date}`):'No due date';
+  return `<div class="task-item ${t.status}" id="ti-${t.task_id}">
+    <div class="ti-header" onclick="toggleTask('${t.task_id}')">
+      <div class="ti-icon">${icon}</div>
+      <div class="ti-main">
+        <div class="ti-desc">${escHtml(t.description)}</div>
+        <div class="ti-meta"><span>👤 ${escHtml(t.assigned_to)}</span><span>📅 ${dueLabel}</span>${t.linked_customer?`<span>🏪 ${escHtml(t.linked_customer)}</span>`:''}</div>
+      </div>
+      <div class="ti-right"><span class="task-status-badge ${badgeClass}">${badgeText}</span><span class="source-tag">${sourceText}</span><span style="color:var(--muted);font-size:12px">▼</span></div>
+    </div>
+    <div class="ti-body" id="tibody-${t.task_id}">
+      <div class="ti-body-inner">
+        ${t.rep_reply?`<div class="ti-note-row"><label>Rep Reply</label><p>${escHtml(t.rep_reply)}</p></div>`:''}
+        ${t.rep_marked_done_at?`<div class="ti-note-row"><label>Rep Marked Done</label><p>${new Date(t.rep_marked_done_at).toLocaleString('en-MY')}</p></div>`:''}
+        ${t.manager_note?`<div class="ti-note-row"><label>Manager Note</label><p>${escHtml(t.manager_note)}</p></div>`:''}
+        <textarea class="ti-note-input" id="note-${t.task_id}" placeholder="Add manager note…">${t.manager_note||''}</textarea>
+        <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap">
+          <input type="date" id="due-${t.task_id}" value="${t.due_date||''}" style="padding:6px 10px;border:1.5px solid var(--border);border-radius:6px;font-size:12px;font-family:inherit">
+          <button style="padding:6px 12px;background:var(--amber-light);color:var(--amber);border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer" onclick="updateDueDate('${t.task_id}')">Update Due Date</button>
+        </div>
+        <div class="ti-actions">
+          <button class="btn-add-note" onclick="saveManagerNote('${t.task_id}')">💾 Save Note</button>
+          ${['overdue','escalated'].includes(t.status)?`<button class="btn-confirm" onclick="forceComplete('${t.task_id}')">✅ Mark Complete</button>`:''}
+          <button class="btn-delete-task" onclick="deleteTask('${t.task_id}')">🗑 Delete</button>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
 function renderTaskList() {
   const list=document.getElementById('task-list');
   let filtered=allTasks;
@@ -227,41 +320,84 @@ function renderTaskList() {
   else if(currentTaskFilter==='completed') filtered=allTasks.filter(t=>['completed_ontime','completed_late'].includes(t.status));
   filtered.sort((a,b)=>{const order={overdue:0,escalated:1,pending:2,completed_ontime:3,completed_late:4};const ao=order[a.status]??2,bo=order[b.status]??2;if(ao!==bo)return ao-bo;if(a.due_date&&b.due_date)return a.due_date.localeCompare(b.due_date);return 0;});
   if(!filtered.length){list.innerHTML='<div class="empty-text">No tasks found.</div>';return;}
-  list.innerHTML=filtered.map(t=>{
-    const icon={overdue:'🔴',pending:'🟡',escalated:'⚠️',completed_ontime:'✅',completed_late:'🕐'}[t.status]||'📌';
-    const badgeClass={overdue:'tsb-overdue',pending:'tsb-pending',escalated:'tsb-escalated',completed_ontime:'tsb-ontime',completed_late:'tsb-late'}[t.status]||'tsb-pending';
-    const badgeText={overdue:'Overdue',pending:'Pending',escalated:'Escalated',completed_ontime:'Completed ✓',completed_late:'Completed (Late)'}[t.status]||t.status;
-    const sourceText={manager_created:'Manager',from_report:'From Report',rep_committed:'Rep Committed'}[t.source]||t.source;
-    const daysOverdue=t.status==='overdue'&&t.due_date?Math.floor((new Date()-new Date(t.due_date))/86400000):0;
-    const dueLabel=t.due_date?(t.status==='overdue'?`⚠️ ${daysOverdue}d overdue`:`Due: ${t.due_date}`):'No due date';
-    return `<div class="task-item ${t.status}" id="ti-${t.task_id}">
-      <div class="ti-header" onclick="toggleTask('${t.task_id}')">
-        <div class="ti-icon">${icon}</div>
-        <div class="ti-main">
-          <div class="ti-desc">${escHtml(t.description)}</div>
-          <div class="ti-meta"><span>👤 ${escHtml(t.assigned_to)}</span><span>📅 ${dueLabel}</span>${t.linked_customer?`<span>🏪 ${escHtml(t.linked_customer)}</span>`:''}</div>
-        </div>
-        <div class="ti-right"><span class="task-status-badge ${badgeClass}">${badgeText}</span><span class="source-tag">${sourceText}</span><span style="color:var(--muted);font-size:12px">▼</span></div>
-      </div>
-      <div class="ti-body" id="tibody-${t.task_id}">
-        <div class="ti-body-inner">
-          ${t.rep_reply?`<div class="ti-note-row"><label>Rep Reply</label><p>${escHtml(t.rep_reply)}</p></div>`:''}
-          ${t.rep_marked_done_at?`<div class="ti-note-row"><label>Rep Marked Done</label><p>${new Date(t.rep_marked_done_at).toLocaleString('en-MY')}</p></div>`:''}
-          ${t.manager_note?`<div class="ti-note-row"><label>Manager Note</label><p>${escHtml(t.manager_note)}</p></div>`:''}
-          <textarea class="ti-note-input" id="note-${t.task_id}" placeholder="Add manager note…">${t.manager_note||''}</textarea>
-          <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap">
-            <input type="date" id="due-${t.task_id}" value="${t.due_date||''}" style="padding:6px 10px;border:1.5px solid var(--border);border-radius:6px;font-size:12px;font-family:inherit">
-            <button style="padding:6px 12px;background:var(--amber-light);color:var(--amber);border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer" onclick="updateDueDate('${t.task_id}')">Update Due Date</button>
-          </div>
-          <div class="ti-actions">
-            <button class="btn-add-note" onclick="saveManagerNote('${t.task_id}')">💾 Save Note</button>
-            ${['overdue','escalated'].includes(t.status)?`<button class="btn-confirm" onclick="forceComplete('${t.task_id}')">✅ Mark Complete</button>`:''}
-            <button class="btn-delete-task" onclick="deleteTask('${t.task_id}')">🗑 Delete</button>
-          </div>
-        </div>
-      </div>
-    </div>`;
-  }).join('');
+  list.innerHTML=filtered.map(taskItemHtml).join('');
+  if(currentMainView==='calendar') renderCalendar();
+}
+
+// ===== CALENDAR VIEW =====
+function switchMainView(view){
+  currentMainView=view;
+  document.getElementById('vt-list').classList.toggle('active', view==='list');
+  document.getElementById('vt-calendar').classList.toggle('active', view==='calendar');
+  document.getElementById('main-view-list').classList.toggle('active', view==='list');
+  document.getElementById('main-view-calendar').classList.toggle('active', view==='calendar');
+  if(view==='calendar') renderCalendar();
+}
+
+function calNav(delta){
+  calMonth=new Date(calMonth.getFullYear(), calMonth.getMonth()+delta, 1);
+  calSelectedDay=null;
+  document.getElementById('cal-day-panel').style.display='none';
+  renderCalendar();
+}
+
+function getCalFilteredTasks(){
+  // Respect the current status summary filter (All / Pending / Overdue / Completed)
+  if(currentTaskFilter==='overdue') return allTasks.filter(t=>t.status==='overdue');
+  if(currentTaskFilter==='pending') return allTasks.filter(t=>['pending','escalated'].includes(t.status));
+  if(currentTaskFilter==='completed') return allTasks.filter(t=>['completed_ontime','completed_late'].includes(t.status));
+  return allTasks;
+}
+
+function renderCalendar(){
+  const y=calMonth.getFullYear(), m=calMonth.getMonth();
+  document.getElementById('cal-title').textContent=calMonth.toLocaleDateString('en-MY',{month:'long',year:'numeric'});
+
+  const tasks=getCalFilteredTasks().filter(t=>t.due_date);
+  const byDay={};
+  tasks.forEach(t=>{ (byDay[t.due_date]=byDay[t.due_date]||[]).push(t); });
+
+  const daysInMonth=new Date(y, m+1, 0).getDate();
+  const firstDow=new Date(y, m, 1).getDay();
+  const todayStr=fmtLocalDate(new Date());
+
+  let html='';
+  ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].forEach(d=>html+=`<div class="cal-dow">${d}</div>`);
+  for(let i=0;i<firstDow;i++) html+='<div class="cal-cell empty"></div>';
+
+  for(let d=1; d<=daysInMonth; d++){
+    const dateStr=`${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const dayTasks=byDay[dateStr]||[];
+    const isToday=dateStr===todayStr;
+    const isSelected=dateStr===calSelectedDay;
+    let chips='';
+    const max=3;
+    dayTasks.slice(0,max).forEach(t=>{
+      chips+=`<div class="cal-chip ${t.status}" title="${escHtml(t.description)}">${escHtml(t.assigned_to)}: ${escHtml(t.description)}</div>`;
+    });
+    if(dayTasks.length>max) chips+=`<div class="cal-more">+${dayTasks.length-max} more</div>`;
+    html+=`<div class="cal-cell ${isToday?'today':''} ${isSelected?'selected':''}" onclick="selectCalDay('${dateStr}')"><div class="cal-date">${d}</div>${chips}</div>`;
+  }
+
+  document.getElementById('cal-grid').innerHTML=html;
+
+  if(calSelectedDay) showCalDayPanel(calSelectedDay, byDay[calSelectedDay]||[]);
+}
+
+function selectCalDay(dateStr){
+  calSelectedDay = calSelectedDay===dateStr ? null : dateStr;
+  if(!calSelectedDay){ document.getElementById('cal-day-panel').style.display='none'; renderCalendar(); return; }
+  const tasks=getCalFilteredTasks().filter(t=>t.due_date===dateStr);
+  showCalDayPanel(dateStr, tasks);
+  renderCalendar();
+}
+
+function showCalDayPanel(dateStr, tasks){
+  const panel=document.getElementById('cal-day-panel');
+  const d=new Date(dateStr+'T00:00:00');
+  document.getElementById('cal-day-panel-title').textContent='📅 '+d.toLocaleDateString('en-MY',{weekday:'long',day:'numeric',month:'long',year:'numeric'})+` (${tasks.length} task${tasks.length===1?'':'s'})`;
+  document.getElementById('cal-day-tasks').innerHTML = tasks.length ? tasks.map(taskItemHtml).join('') : '<div class="empty-text">No tasks due this day.</div>';
+  panel.style.display='block';
 }
 
 function toggleTask(id){document.getElementById('tibody-'+id).classList.toggle('open');}
