@@ -280,7 +280,7 @@ async function loadMembers(){
       const cur=sel.value;const isAssignee=id==='ntf-assignee';
       sel.innerHTML=isAssignee?'<option value="">Assign to…</option>':'<option value="">All Members</option>';
       const activeMembers=members.filter(m=>m.active!==false);
-      const filtered=isAssignee?activeMembers.filter(m=>(m.role||'sales')==='sales'):activeMembers;
+      const filtered=isAssignee?activeMembers.filter(m=>['sales','marketing'].includes(m.role||'sales')):activeMembers;
       filtered.forEach(m=>{const o=document.createElement('option');o.value=m.name;o.textContent=m.name;sel.appendChild(o);});
       if(!isAssignee)sel.value=cur;
     });
