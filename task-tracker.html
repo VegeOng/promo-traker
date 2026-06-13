@@ -98,27 +98,31 @@
   .main-view { display:none; }
   .main-view.active { display:block; }
 
-  /* Calendar */
+  /* Calendar (agenda / list style) */
   .cal-card { background:white; border:1px solid var(--border); border-radius:var(--radius); padding:16px; margin-bottom:14px; }
   .cal-nav { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
   .cal-nav-btn { padding:6px 12px; border:1.5px solid var(--border); border-radius:8px; background:white; font-size:13px; font-weight:700; cursor:pointer; font-family:inherit; }
   .cal-nav-btn:hover { background:#f9fafb; }
   .cal-title { font-size:15px; font-weight:800; }
-  .cal-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:6px; }
-  .cal-dow { font-size:10px; font-weight:700; color:var(--muted); text-align:center; text-transform:uppercase; letter-spacing:.05em; padding-bottom:4px; }
-  .cal-cell { background:var(--bg); border-radius:8px; padding:6px; min-height:78px; display:flex; flex-direction:column; gap:3px; cursor:pointer; border:2px solid transparent; }
-  .cal-cell.empty { background:transparent; cursor:default; }
-  .cal-cell.today { border-color:var(--green); }
-  .cal-cell.selected { border-color:var(--blue); background:var(--blue-light); }
-  .cal-date { font-size:11px; font-weight:700; color:var(--muted); }
-  .cal-cell.today .cal-date { color:var(--green); }
-  .cal-chip { font-size:9px; font-weight:700; border-radius:4px; padding:2px 5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-  .cal-chip.overdue, .cal-chip.escalated { background:var(--red-light); color:var(--red); }
-  .cal-chip.pending { background:var(--amber-light); color:var(--amber); }
-  .cal-chip.completed_ontime, .cal-chip.completed_late { background:var(--green-light); color:var(--green); }
-  .cal-more { font-size:9px; color:var(--muted); font-weight:700; }
+  .agenda-row { display:flex; gap:14px; border-bottom:1px solid var(--border); padding:10px 0; }
+  .agenda-row:last-child { border-bottom:none; }
+  .agenda-row.today .agenda-date-num { background:var(--green); color:#fff; }
+  .agenda-row.weekend .agenda-date { color:var(--muted); }
+  .agenda-row.selected { background:var(--blue-light); border-radius:8px; margin:0 -8px; padding:10px 8px; }
+  .agenda-date { flex:0 0 64px; text-align:center; }
+  .agenda-date-dow { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:var(--muted); }
+  .agenda-date-num { font-size:18px; font-weight:800; width:34px; height:34px; line-height:34px; border-radius:50%; margin:2px auto 0; }
+  .agenda-tasks { flex:1; min-width:0; display:flex; flex-direction:column; gap:6px; }
+  .agenda-empty { font-size:12px; color:var(--muted); padding:7px 0; }
+  .agenda-task { display:flex; align-items:center; gap:8px; padding:7px 10px; border-radius:8px; background:var(--bg); cursor:pointer; font-size:13px; }
+  .agenda-task:hover { background:#f3f4f6; }
+  .agenda-task.overdue, .agenda-task.escalated { background:var(--red-light); }
+  .agenda-task.pending { background:var(--amber-light); }
+  .agenda-task.completed_ontime, .agenda-task.completed_late { background:var(--green-light); }
+  .agenda-task-desc { flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-weight:600; }
+  .agenda-task-who { font-size:11px; color:var(--muted); flex-shrink:0; }
   .cal-day-panel-title { font-size:13px; font-weight:800; margin-bottom:10px; }
-  @media(max-width:500px){ .cal-cell{min-height:54px;} .cal-chip{font-size:8px;} }
+  @media(max-width:500px){ .agenda-date{flex:0 0 46px;} .agenda-date-num{width:28px;height:28px;line-height:28px;font-size:14px;} }
 
 .mv-top{overflow:hidden}
 .mv-top-main{display:flex;justify-content:space-between;align-items:center;padding:12px 24px;background:#166534}
@@ -203,7 +207,7 @@
     <div id="task-list"><div class="loading-text">Loading…</div></div>
   </div>
 
-  <!-- Calendar View -->
+  <!-- Calendar View (agenda / list style) -->
   <div class="main-view" id="main-view-calendar">
     <div class="cal-card">
       <div class="cal-nav">
@@ -211,7 +215,7 @@
         <div class="cal-title" id="cal-title"></div>
         <button class="cal-nav-btn" onclick="calNav(1)">Next ›</button>
       </div>
-      <div class="cal-grid" id="cal-grid"></div>
+      <div id="cal-agenda"></div>
     </div>
     <div class="cal-card" id="cal-day-panel" style="display:none;">
       <div class="cal-day-panel-title" id="cal-day-panel-title"></div>
@@ -313,6 +317,7 @@ function taskItemHtml(t){
 }
 
 function renderTaskList() {
+  if(currentMainView==='calendar'){ renderCalendar(); return; }
   const list=document.getElementById('task-list');
   let filtered=allTasks;
   if(currentTaskFilter==='overdue') filtered=allTasks.filter(t=>t.status==='overdue');
@@ -321,7 +326,6 @@ function renderTaskList() {
   filtered.sort((a,b)=>{const order={overdue:0,escalated:1,pending:2,completed_ontime:3,completed_late:4};const ao=order[a.status]??2,bo=order[b.status]??2;if(ao!==bo)return ao-bo;if(a.due_date&&b.due_date)return a.due_date.localeCompare(b.due_date);return 0;});
   if(!filtered.length){list.innerHTML='<div class="empty-text">No tasks found.</div>';return;}
   list.innerHTML=filtered.map(taskItemHtml).join('');
-  if(currentMainView==='calendar') renderCalendar();
 }
 
 // ===== CALENDAR VIEW =====
@@ -331,7 +335,15 @@ function switchMainView(view){
   document.getElementById('vt-calendar').classList.toggle('active', view==='calendar');
   document.getElementById('main-view-list').classList.toggle('active', view==='list');
   document.getElementById('main-view-calendar').classList.toggle('active', view==='calendar');
-  if(view==='calendar') renderCalendar();
+  if(view==='calendar'){
+    // Avoid duplicate element ids (note-/due-/tibody-) between the list view and the day panel
+    document.getElementById('task-list').innerHTML='';
+    renderCalendar();
+  } else {
+    document.getElementById('cal-day-panel').style.display='none';
+    calSelectedDay=null;
+    renderTaskList();
+  }
 }
 
 function calNav(delta){
@@ -358,28 +370,32 @@ function renderCalendar(){
   tasks.forEach(t=>{ (byDay[t.due_date]=byDay[t.due_date]||[]).push(t); });
 
   const daysInMonth=new Date(y, m+1, 0).getDate();
-  const firstDow=new Date(y, m, 1).getDay();
   const todayStr=fmtLocalDate(new Date());
+  const dowNames=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  const statusIcon={overdue:'🔴',pending:'🟡',escalated:'⚠️',completed_ontime:'✅',completed_late:'🕐'};
+  const statusOrder={overdue:0,escalated:1,pending:2,completed_ontime:3,completed_late:4};
 
   let html='';
-  ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].forEach(d=>html+=`<div class="cal-dow">${d}</div>`);
-  for(let i=0;i<firstDow;i++) html+='<div class="cal-cell empty"></div>';
-
   for(let d=1; d<=daysInMonth; d++){
     const dateStr=`${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-    const dayTasks=byDay[dateStr]||[];
+    const dayTasks=(byDay[dateStr]||[]).slice().sort((a,b)=>(statusOrder[a.status]??2)-(statusOrder[b.status]??2));
     const isToday=dateStr===todayStr;
     const isSelected=dateStr===calSelectedDay;
-    let chips='';
-    const max=3;
-    dayTasks.slice(0,max).forEach(t=>{
-      chips+=`<div class="cal-chip ${t.status}" title="${escHtml(t.description)}">${escHtml(t.assigned_to)}: ${escHtml(t.description)}</div>`;
-    });
-    if(dayTasks.length>max) chips+=`<div class="cal-more">+${dayTasks.length-max} more</div>`;
-    html+=`<div class="cal-cell ${isToday?'today':''} ${isSelected?'selected':''}" onclick="selectCalDay('${dateStr}')"><div class="cal-date">${d}</div>${chips}</div>`;
+    const dow=new Date(y,m,d).getDay();
+    const isWeekend=dow===0||dow===6;
+    let inner='';
+    if(!dayTasks.length){
+      inner='<div class="agenda-empty">No tasks due</div>';
+    } else {
+      inner=dayTasks.map(t=>`<div class="agenda-task ${t.status}" onclick="selectCalDay('${dateStr}')"><span>${statusIcon[t.status]||'📌'}</span><span class="agenda-task-desc">${escHtml(t.description)}</span><span class="agenda-task-who">👤 ${escHtml(t.assigned_to)}${t.linked_customer?' · 🏪 '+escHtml(t.linked_customer):''}</span></div>`).join('');
+    }
+    html+=`<div class="agenda-row ${isToday?'today':''} ${isWeekend?'weekend':''} ${isSelected?'selected':''}">
+      <div class="agenda-date" onclick="selectCalDay('${dateStr}')"><div class="agenda-date-dow">${dowNames[dow]}</div><div class="agenda-date-num">${d}</div></div>
+      <div class="agenda-tasks">${inner}</div>
+    </div>`;
   }
 
-  document.getElementById('cal-grid').innerHTML=html;
+  document.getElementById('cal-agenda').innerHTML=html;
 
   if(calSelectedDay) showCalDayPanel(calSelectedDay, byDay[calSelectedDay]||[]);
 }
