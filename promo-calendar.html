@@ -153,15 +153,23 @@ body{background:var(--bg);color:var(--t1);font-family:var(--font);min-height:100
 
   <div class="filter-card">
     <div class="filter-row">
-      <div class="filter-field">
+      <div class="filter-field" style="min-width:220px;">
+        <label>Period</label>
+        <div style="display:flex;gap:6px;">
+          <button type="button" class="period-btn active" data-period="month" onclick="setPeriod('month')" style="flex:1;padding:9px 10px;border-radius:var(--r);border:1.5px solid var(--green);background:var(--green);color:#fff;font-size:12.5px;font-weight:700;cursor:pointer;font-family:var(--font);">📅 Month</button>
+          <button type="button" class="period-btn" data-period="year" onclick="setPeriod('year')" style="flex:1;padding:9px 10px;border-radius:var(--r);border:1.5px solid var(--b1);background:var(--s1);color:var(--t2);font-size:12.5px;font-weight:700;cursor:pointer;font-family:var(--font);">🗓 Year</button>
+          <button type="button" class="period-btn" data-period="range" onclick="setPeriod('range')" style="flex:1;padding:9px 10px;border-radius:var(--r);border:1.5px solid var(--b1);background:var(--s1);color:var(--t2);font-size:12.5px;font-weight:700;cursor:pointer;font-family:var(--font);">🔧 Custom Range</button>
+        </div>
+      </div>
+      <div class="filter-field" id="f-month-wrap">
         <label>Month</label>
         <input type="month" id="f-month">
       </div>
-      <div class="filter-field" style="min-width:150px;">
-        <label>Period</label>
+      <div class="filter-field" id="f-range-wrap" style="display:none;min-width:220px;">
+        <label>Date Range</label>
         <div style="display:flex;gap:6px;">
-          <button type="button" class="period-btn active" data-period="month" onclick="setPeriod('month')" style="flex:1;padding:9px 10px;border-radius:var(--r);border:1.5px solid var(--green);background:var(--green);color:#fff;font-size:12.5px;font-weight:700;cursor:pointer;font-family:var(--font);">Month</button>
-          <button type="button" class="period-btn" data-period="year" onclick="setPeriod('year')" style="flex:1;padding:9px 10px;border-radius:var(--r);border:1.5px solid var(--b1);background:var(--s1);color:var(--t2);font-size:12.5px;font-weight:700;cursor:pointer;font-family:var(--font);">Whole Year</button>
+          <input type="date" id="f-range-start" style="flex:1;">
+          <input type="date" id="f-range-end" style="flex:1;">
         </div>
       </div>
       <div class="filter-field">
@@ -373,7 +381,7 @@ function escHtml(s){ return (s||'').toString().replace(/[&<>"']/g, m=>({'&':'&am
 function escAttr(s){ return escHtml(s); }
 
 // ── Filters ──────────────────────────────────────────────
-['f-month','f-region','f-store','f-category'].forEach(id=>{
+['f-month','f-region','f-store','f-category','f-range-start','f-range-end'].forEach(id=>{
   document.getElementById(id).addEventListener('change', renderAll);
 });
 function resetFilters(){
@@ -397,6 +405,14 @@ function getFilteredByCategory(){
 }
 
 function getMonthRange(){
+  if(periodMode==='range'){
+    const startVal=document.getElementById('f-range-start').value;
+    const endVal=document.getElementById('f-range-end').value;
+    const now=new Date();
+    const monthStart=startVal?new Date(startVal+'T00:00:00'):new Date(now.getFullYear(), now.getMonth(), 1);
+    const monthEnd=endVal?new Date(endVal+'T00:00:00'):now;
+    return {y:monthStart.getFullYear(), m:monthStart.getMonth()+1, monthStart, monthEnd};
+  }
   const val=document.getElementById('f-month').value || new Date().toISOString().slice(0,7);
   const [y,m]=val.split('-').map(Number);
   if(periodMode==='year'){
@@ -409,6 +425,17 @@ function getMonthRange(){
   return {y, m, monthStart, monthEnd};
 }
 
+function populateRangeDefaults(){
+  const s=document.getElementById('f-range-start');
+  const e=document.getElementById('f-range-end');
+  if(!s.value || !e.value){
+    const now=new Date();
+    const start=new Date(now.getFullYear(), now.getMonth(), 1);
+    s.value=ymd(start);
+    e.value=ymd(now);
+  }
+}
+
 function setPeriod(period){
   periodMode=period;
   document.querySelectorAll('.period-btn').forEach(b=>{
@@ -418,6 +445,9 @@ function setPeriod(period){
     b.style.color=active?'#fff':'var(--t2)';
     b.style.borderColor=active?'var(--green)':'var(--b1)';
   });
+  document.getElementById('f-month-wrap').style.display = period==='range' ? 'none' : 'flex';
+  document.getElementById('f-range-wrap').style.display = period==='range' ? 'flex' : 'none';
+  if(period==='range') populateRangeDefaults();
   // Calendar view doesn't make sense for a whole year — fall back to Timeline
   const calBtn=document.querySelector('.tab-btn[data-view="calendar"]');
   if(period==='year'){
@@ -488,6 +518,7 @@ function toggleTlNoPromo(){
 // ── Timeline View ──────────────────────────────────────────
 function renderTimeline(data){
   if(periodMode==='year') return renderTimelineYear(data);
+  if(periodMode==='range') return renderTimelineRange(data);
 
   const {y,m,monthStart,monthEnd}=getMonthRange();
   const monthName=monthStart.toLocaleDateString('en-MY',{month:'long',year:'numeric'});
@@ -544,27 +575,48 @@ function renderTimeline(data){
 
 // ── Timeline View — Whole Year ─────────────────────────────
 function renderTimelineYear(data){
-  const {y,monthStart,monthEnd}=getMonthRange(); // Jan 1 .. Dec 31 of year y
-  document.getElementById('tl-month-label').textContent='🗓 Year '+y;
+  const {y}=getMonthRange(); // Jan 1 .. Dec 31 of year y
+  renderTimelineProportional(data, '🗓 Year '+y);
+}
+
+// ── Timeline View — Custom Range ───────────────────────────
+function renderTimelineRange(data){
+  const {monthStart,monthEnd}=getMonthRange();
+  renderTimelineProportional(data, '🗓 '+fmtDate(monthStart)+' → '+fmtDate(monthEnd));
+}
+
+// ── Timeline View — generic proportional renderer (Year / Custom Range) ─
+function renderTimelineProportional(data, label){
+  const {monthStart,monthEnd}=getMonthRange();
+  document.getElementById('tl-month-label').textContent=label;
 
   const totalDays=Math.round((monthEnd-monthStart)/86400000)+1;
-  const inYear=data.filter(r=> r._start<=monthEnd && r._end>=monthStart);
-  const noPromoCustomers=getNoPromoCustomers(inYear);
+  const inRange=data.filter(r=> r._start<=monthEnd && r._end>=monthStart);
+  const noPromoCustomers=getNoPromoCustomers(inRange);
   const labelW='180px';
   const cols=`${labelW} 1fr`;
 
   const tlContent=document.getElementById('tl-content');
-  if(!inYear.length){
-    tlContent.innerHTML='<div class="tl-empty">No promotions scheduled in '+y+' for the selected filters.</div>';
-    renderTlToggle(noPromoCustomers, cols, inYear);
+  if(!inRange.length){
+    tlContent.innerHTML='<div class="tl-empty">No promotions scheduled in this period for the selected filters.</div>';
+    renderTlToggle(noPromoCustomers, cols, inRange);
     return;
   }
   // sort by store then date
-  inYear.sort((a,b)=> a.store.localeCompare(b.store) || a._start-b._start);
+  inRange.sort((a,b)=> a.store.localeCompare(b.store) || a._start-b._start);
 
   const monthNames=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  const monthDays=[];
-  for(let mo=0; mo<12; mo++) monthDays.push(new Date(y, mo+1, 0).getDate());
+  // build month segments within [monthStart, monthEnd]
+  const segments=[];
+  let cur=new Date(monthStart.getFullYear(), monthStart.getMonth(), 1);
+  while(cur<=monthEnd){
+    const segStart=cur>monthStart?cur:monthStart;
+    const monthLastDay=new Date(cur.getFullYear(), cur.getMonth()+1, 0);
+    const segEnd=monthLastDay<monthEnd?monthLastDay:monthEnd;
+    const days=Math.round((segEnd-segStart)/86400000)+1;
+    segments.push({name:monthNames[cur.getMonth()]+' '+cur.getFullYear(), days});
+    cur=new Date(cur.getFullYear(), cur.getMonth()+1, 1);
+  }
 
   let html='<div class="tl-grid" style="min-width:900px;grid-template-columns:'+labelW+' 1fr;">';
 
@@ -572,14 +624,14 @@ function renderTimelineYear(data){
   html+=`<div class="tl-header" style="grid-template-columns:${labelW} 1fr;grid-column:1 / -1;display:grid;">`;
   html+='<div class="tl-header-cell" style="border-right:1px solid var(--b1)"></div>';
   html+='<div style="display:flex;">';
-  monthNames.forEach((mn,i)=>{
-    html+=`<div class="tl-header-cell" style="flex:${monthDays[i]};border-right:1px solid var(--b1);">${mn}</div>`;
+  segments.forEach(seg=>{
+    html+=`<div class="tl-header-cell" style="flex:${seg.days};border-right:1px solid var(--b1);">${seg.name}</div>`;
   });
   html+='</div>';
   html+='</div>';
 
   // rows
-  inYear.forEach(r=>{
+  inRange.forEach(r=>{
     html+=`<div class="tl-row" style="grid-template-columns:${labelW} 1fr;grid-column:1 / -1;display:grid;">`;
     html+=`<div class="tl-label"><div class="tl-store">${escHtml(r.store)}</div><div class="tl-activity">${escHtml(r.activity_name||'')}</div></div>`;
     html+='<div class="tl-track" style="position:relative;">';
@@ -596,22 +648,25 @@ function renderTimelineYear(data){
 
   html+='</div>';
   tlContent.innerHTML=html;
-  renderTlToggle(noPromoCustomers, cols, inYear);
+  renderTlToggle(noPromoCustomers, cols, inRange);
 }
 
 // ── Calendar View (agenda / list style) ─────────────────────
 function renderCalendar(data){
-  const {y,m,monthStart,monthEnd}=getMonthRange();
-  const monthName=monthStart.toLocaleDateString('en-MY',{month:'long',year:'numeric'});
-  document.getElementById('cal-month-label').textContent='🗓 '+monthName;
+  const {monthStart,monthEnd}=getMonthRange();
+  const label = periodMode==='range'
+    ? '🗓 '+fmtDate(monthStart)+' → '+fmtDate(monthEnd)
+    : '🗓 '+monthStart.toLocaleDateString('en-MY',{month:'long',year:'numeric'});
+  document.getElementById('cal-month-label').textContent=label;
 
-  const daysInMonth=monthEnd.getDate();
+  const totalDays=Math.round((monthEnd-monthStart)/86400000)+1;
   const todayStr=ymd(new Date());
   const dowNames=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  const showMonth = periodMode==='range';
 
   let html='';
-  for(let d=1; d<=daysInMonth; d++){
-    const cellDate=new Date(y, m-1, d);
+  for(let i=0; i<totalDays; i++){
+    const cellDate=new Date(monthStart.getFullYear(), monthStart.getMonth(), monthStart.getDate()+i);
     const dayPromos=data.filter(r=> cellDate>=stripTime(r._start) && cellDate<=stripTime(r._end));
     const isToday=ymd(cellDate)===todayStr;
     const dow=cellDate.getDay();
@@ -632,8 +687,9 @@ function renderCalendar(data){
       }).join('');
     }
 
+    const dateNum = showMonth ? `${cellDate.getDate()}/${cellDate.getMonth()+1}` : cellDate.getDate();
     html+=`<div class="agenda-row ${isToday?'today':''} ${isWeekend?'weekend':''}">
-      <div class="agenda-date"><div class="agenda-date-dow">${dowNames[dow]}</div><div class="agenda-date-num">${d}</div></div>
+      <div class="agenda-date"><div class="agenda-date-dow">${dowNames[dow]}</div><div class="agenda-date-num" ${showMonth?'style="font-size:13px;width:auto;border-radius:8px;"':''}>${dateNum}</div></div>
       <div class="agenda-tasks">${inner}</div>
     </div>`;
   }
