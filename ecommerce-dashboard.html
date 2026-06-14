@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -95,15 +95,15 @@
 </div>
 
 <div class="wrap">
-  <div class="page-title">电商业绩仪表板</div>
-  <div class="page-sub">数据来源：Google Sheet「2025/26 Online Team Sales Record」· 自动汇总 Shopee / Lazada / TikTok / Website / Other 各渠道每日业绩</div>
+  <div class="page-title">E-commerce Performance Dashboard</div>
+  <div class="page-sub">Data source: Google Sheet "2025/26 Online Team Sales Record" - auto-summarizes daily performance for Shopee / Lazada / TikTok / Website / Other channels</div>
 
   <div style="display:flex;align-items:center;gap:10px;margin-bottom:18px;flex-wrap:wrap">
-    <label style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px">查看月份</label>
+    <label style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px">View Month</label>
     <select id="month-select" onchange="onMonthChange()" style="padding:8px 14px;border:1.5px solid var(--border);border-radius:8px;font-family:inherit;font-size:13px;background:#fff;cursor:pointer;min-width:160px"></select>
   </div>
 
-  <div id="loading" class="loading"><div class="spinner"></div>正在加载数据…</div>
+  <div id="loading" class="loading"><div class="spinner"></div>Loading data…</div>
   <div id="errBox"></div>
 
   <div id="content" style="display:none">
@@ -111,11 +111,11 @@
 
     <div class="grid-2">
       <div class="card">
-        <div class="card-title">📈 每日业绩趋势（<span id="lbl-month-1">本月</span>）</div>
+        <div class="card-title">📈 Daily Sales Trend (<span id="lbl-month-1">This Month</span>)</div>
         <div class="chart-box"><canvas id="chartTrend"></canvas></div>
       </div>
       <div class="card">
-        <div class="card-title">🏪 渠道业绩占比（<span id="lbl-month-2">本月</span>）</div>
+        <div class="card-title">🏪 Channel Sales Share (<span id="lbl-month-2">This Month</span>)</div>
         <div class="chart-box"><canvas id="chartChannel"></canvas></div>
         <div id="channel-legend" style="margin-top:10px"></div>
       </div>
@@ -123,24 +123,24 @@
 
     <div class="grid-2b">
       <div class="card">
-        <div class="card-title">💰 广告花费 vs ROI（<span id="lbl-month-3">本月</span>，按渠道）</div>
+        <div class="card-title">💰 Ad Spend vs ROI (<span id="lbl-month-3">This Month</span>, by channel)</div>
         <div class="chart-box sm"><canvas id="chartAds"></canvas></div>
       </div>
       <div class="card">
-        <div class="card-title">🏷️ Lazada / TikTok 子帐号业绩对比</div>
+        <div class="card-title">🏷️ Lazada / TikTok Sub-account Comparison</div>
         <table>
-          <thead><tr><th>子帐号</th><th class="num">业绩 (RM)</th><th class="num">广告花费 (RM)</th><th class="num">ROI</th></tr></thead>
+          <thead><tr><th>Sub-account</th><th class="num">Sales (RM)</th><th class="num">Ad Spend (RM)</th><th class="num">ROI</th></tr></thead>
           <tbody id="sub-account-table"></tbody>
         </table>
       </div>
     </div>
 
     <div class="card">
-      <div class="card-title">📋 每日业绩明细</div>
+      <div class="card-title">📋 Daily Sales Detail</div>
       <table>
         <thead><tr>
-          <th>日期</th><th class="num">Shopee</th><th class="num">Lazada</th><th class="num">TikTok</th>
-          <th class="num">Website</th><th class="num">Other</th><th class="num">总计</th>
+          <th>Date</th><th class="num">Shopee</th><th class="num">Lazada</th><th class="num">TikTok</th>
+          <th class="num">Website</th><th class="num">Other</th><th class="num">Total</th>
         </tr></thead>
         <tbody id="daily-table"></tbody>
       </table>
@@ -149,7 +149,7 @@
 </div>
 
 <script>
-document.querySelectorAll('.mv-top-date').forEach(e=>e.textContent=new Date().toLocaleDateString('zh-CN',{weekday:'short',year:'numeric',month:'short',day:'numeric'}));
+document.querySelectorAll('.mv-top-date').forEach(e=>e.textContent=new Date().toLocaleDateString('en-MY',{weekday:'short',year:'numeric',month:'short',day:'numeric'}));
 
 const ECOM_API = 'https://script.google.com/macros/s/AKfycbyqZ8w-aNLDSjFvySTXL_zVYQty0U7-HS-6Nw2EWz5ulqexPNoc1-q_V3WL0h1EEDXz/exec';
 
@@ -174,7 +174,7 @@ function populateMonthSelect(){
   for(let i=0;i<12;i++){
     const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
     const sheetName = currentSheetNameOf(d);
-    const label = d.toLocaleDateString('zh-CN', { year:'numeric', month:'long' });
+    const label = d.toLocaleDateString('en-MY', { year:'numeric', month:'long' });
     opts.push(`<option value="${sheetName}">${label}</option>`);
   }
   sel.innerHTML = opts.join('');
@@ -186,10 +186,10 @@ function onMonthChange(){
   loadAll(sheetName);
 }
 
-function fmtRM(n){ return 'RM ' + (n||0).toLocaleString('zh-CN', {minimumFractionDigits:2, maximumFractionDigits:2}); }
+function fmtRM(n){ return 'RM ' + (n||0).toLocaleString('en-MY', {minimumFractionDigits:2, maximumFractionDigits:2}); }
 function escHtml(s){ return String(s==null?'':s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 
-// Google Sheet 日期序列化偏移修正（GMT+8 表格存成 UTC ISO，需 +8 小时还原本地日期）
+// Google Sheet date offset correction (GMT+8 sheet stores UTC ISO, need +8 hours to restore local date)
 function parseSheetDate(raw){
   const d = new Date(raw);
   const adj = new Date(d.getTime() + 8*60*60*1000);
@@ -208,7 +208,7 @@ async function fetchEcomData(sheetName){
     const d = parseSheetDate(r.date);
     const channelTotal = (r.shopee.sales||0) + (r.lazada.total.sales||0) + (r.tiktok.total.sales||0) + (r.website.sales||0) + (r.other.sales||0);
     return Object.assign({}, r, { date: d, channelTotal: channelTotal });
-  }).filter(r => r.channelTotal > 0 || r.shopee.adsSpent > 0); // 过滤掉尚未发生的未来空白日
+  }).filter(r => r.channelTotal > 0 || r.shopee.adsSpent > 0); // filter out future blank days that haven't occurred yet
 }
 
 async function loadAll(sheetName){
@@ -229,9 +229,9 @@ async function loadAll(sheetName){
       monthDataCache[sheetName] = rows;
     }
     allRows = rows;
-    if(!allRows.length){ throw new Error(`「${sheetName}」暂无数据`); }
+    if(!allRows.length){ throw new Error(`No data available for "${sheetName}"`); }
 
-    // 更新各图表标题中的月份标签
+    // Update the month label shown in each chart title
     const opt = sel.querySelector(`option[value="${sheetName}"]`);
     const monthLabel = opt ? opt.textContent : sheetName;
     ['lbl-month-1','lbl-month-2','lbl-month-3','lbl-month-4','lbl-month-5'].forEach(id=>{
@@ -245,7 +245,7 @@ async function loadAll(sheetName){
   }catch(e){
     console.error(e);
     document.getElementById('loading').style.display='none';
-    document.getElementById('errBox').innerHTML = `<div class="err">❌ 数据加载失败：${escHtml(e.message)}<br>请确认 Google Sheet API 已正确部署且可公开访问，或该月份尚无数据。</div>`;
+    document.getElementById('errBox').innerHTML = `<div class="err">❌ Failed to load data: ${escHtml(e.message)}<br>Please confirm the Google Sheet API is correctly deployed and publicly accessible, or this month may not have data yet.</div>`;
   }
 }
 
@@ -256,7 +256,7 @@ function render(rows){
   const overallROI = totalAdsSpent > 0 ? (totalSales / totalAdsSpent) : null;
   const avgDaily = totalSales / (rows.length || 1);
 
-  // 找出业绩最高的渠道
+  // Find the top-performing channel
   const channelTotals = { shopee:0, lazada:0, tiktok:0, website:0, other:0 };
   rows.forEach(r=>{
     channelTotals.shopee += r.shopee.sales;
@@ -268,24 +268,24 @@ function render(rows){
   const topChannel = Object.entries(channelTotals).sort((a,b)=>b[1]-a[1])[0];
 
   document.getElementById('kpi-grid').innerHTML = `
-    <div class="kpi-card"><div class="kpi-label"><span id="lbl-month-4">本月</span>电商总业绩</div><div class="kpi-val">${fmtRM(totalSales)}</div><div class="kpi-sub">已记录 ${rows.length} 天</div></div>
-    <div class="kpi-card amber"><div class="kpi-label">广告总花费</div><div class="kpi-val amber">${fmtRM(totalAdsSpent)}</div><div class="kpi-sub">${overallROI!==null ? `整体 ROI ${overallROI.toFixed(2)}x` : '暂无数据'}</div></div>
-    <div class="kpi-card green"><div class="kpi-label">日均业绩</div><div class="kpi-val green">${fmtRM(avgDaily)}</div><div class="kpi-sub"><span id="lbl-month-5">本月</span>平均</div></div>
-    <div class="kpi-card"><div class="kpi-label">最佳渠道</div><div class="kpi-val">${channelLabel[topChannel[0]]}</div><div class="kpi-sub">${fmtRM(topChannel[1])}</div></div>
+    <div class="kpi-card"><div class="kpi-label"><span id="lbl-month-4">This Month</span> Total Sales</div><div class="kpi-val">${fmtRM(totalSales)}</div><div class="kpi-sub">${rows.length} days recorded</div></div>
+    <div class="kpi-card amber"><div class="kpi-label">Total Ad Spend</div><div class="kpi-val amber">${fmtRM(totalAdsSpent)}</div><div class="kpi-sub">${overallROI!==null ? `Overall ROI ${overallROI.toFixed(2)}x` : 'No data'}</div></div>
+    <div class="kpi-card green"><div class="kpi-label">Avg Daily Sales</div><div class="kpi-val green">${fmtRM(avgDaily)}</div><div class="kpi-sub"><span id="lbl-month-5">This Month</span> average</div></div>
+    <div class="kpi-card"><div class="kpi-label">Top Channel</div><div class="kpi-val">${channelLabel[topChannel[0]]}</div><div class="kpi-sub">${fmtRM(topChannel[1])}</div></div>
   `;
 
-  // ── 趋势图 ──
+  // ── Trend chart ──
   if(charts.trend) charts.trend.destroy();
   charts.trend = new Chart(document.getElementById('chartTrend'), {
     type:'line',
     data:{ labels: rows.map(r=>r.date.label),
-      datasets:[{ label:'每日总业绩 (RM)', data: rows.map(r=>r.channelTotal), borderColor:'#2563eb', backgroundColor:'#2563eb22', fill:true, tension:.3, borderWidth:2, pointRadius:2 }] },
+      datasets:[{ label:'Daily Total Sales (RM)', data: rows.map(r=>r.channelTotal), borderColor:'#2563eb', backgroundColor:'#2563eb22', fill:true, tension:.3, borderWidth:2, pointRadius:2 }] },
     options:{ responsive:true, maintainAspectRatio:false,
-      plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label:ctx=>'RM ' + ctx.parsed.y.toLocaleString('zh-CN',{minimumFractionDigits:2}) } } },
+      plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label:ctx=>'RM ' + ctx.parsed.y.toLocaleString('en-MY',{minimumFractionDigits:2}) } } },
       scales:{ y:{ beginAtZero:true } } }
   });
 
-  // ── 渠道占比 ──
+  // ── Channel share ──
   const chKeys = ['shopee','lazada','tiktok','website','other'];
   if(charts.channel) charts.channel.destroy();
   charts.channel = new Chart(document.getElementById('chartChannel'), {
@@ -293,7 +293,7 @@ function render(rows){
     data:{ labels: chKeys.map(k=>channelLabel[k]),
       datasets:[{ data: chKeys.map(k=>channelTotals[k]), backgroundColor: chKeys.map(k=>channelColor[k]), borderWidth:0 }] },
     options:{ responsive:true, maintainAspectRatio:false,
-      plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label:ctx=>`${ctx.label}: RM ${ctx.parsed.toLocaleString('zh-CN')}` } } } }
+      plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label:ctx=>`${ctx.label}: RM ${ctx.parsed.toLocaleString('en-MY')}` } } } }
   });
   const chSum = chKeys.reduce((s,k)=>s+channelTotals[k],0) || 1;
   document.getElementById('channel-legend').innerHTML = chKeys.map(k=>`
@@ -302,7 +302,7 @@ function render(rows){
       <span style="font-weight:700">${fmtRM(channelTotals[k])} <span style="color:#9ca3af;font-weight:400">(${(channelTotals[k]/chSum*100).toFixed(1)}%)</span></span>
     </div>`).join('');
 
-  // ── 广告花费 vs ROI ──
+  // ── Ad spend vs ROI ──
   const adsKeys = ['shopee','lazada','tiktok'];
   const adsSpentArr = adsKeys.map(k=> rows.reduce((s,r)=> s + (k==='shopee' ? r.shopee.adsSpent : r[k].total.adsSpent), 0));
   const roiArr = adsKeys.map((k,i)=> adsSpentArr[i] > 0 ? (channelTotals[k] / adsSpentArr[i]) : 0);
@@ -311,8 +311,8 @@ function render(rows){
     type:'bar',
     data:{ labels: adsKeys.map(k=>channelLabel[k]),
       datasets:[
-        { label:'广告花费 (RM)', data: adsSpentArr, backgroundColor:'#d97706cc', borderRadius:6, yAxisID:'y' },
-        { label:'ROI (倍数)', data: roiArr, backgroundColor:'#16a34acc', borderRadius:6, yAxisID:'y1', type:'line', borderColor:'#16a34a', tension:.3 }
+        { label:'Ad Spend (RM)', data: adsSpentArr, backgroundColor:'#d97706cc', borderRadius:6, yAxisID:'y' },
+        { label:'ROI (multiplier)', data: roiArr, backgroundColor:'#16a34acc', borderRadius:6, yAxisID:'y1', type:'line', borderColor:'#16a34a', tension:.3 }
       ] },
     options:{ responsive:true, maintainAspectRatio:false,
       plugins:{ legend:{ position:'bottom', labels:{boxWidth:12,font:{size:11}} } },
@@ -322,7 +322,7 @@ function render(rows){
       } }
   });
 
-  // ── 子帐号对比表 ──
+  // ── Sub-account comparison table ──
   const subAccounts = [
     { name: 'Lazada · MamaVege.OS', sales: channelTotalSubSum(rows,'lazada','mamavegeOS','sales'), ads: channelTotalSubSum(rows,'lazada','mamavegeOS','adsSpent') },
     { name: 'Lazada · MamaVege Malaysia', sales: channelTotalSubSum(rows,'lazada','mamavegeMalaysia','sales'), ads: channelTotalSubSum(rows,'lazada','mamavegeMalaysia','adsSpent') },
@@ -338,7 +338,7 @@ function render(rows){
     </tr>`;
   }).join('');
 
-  // ── 每日明细表 ──
+  // ── Daily detail table ──
   document.getElementById('daily-table').innerHTML = rows.slice().reverse().map(r=>`
     <tr>
       <td>${r.date.label}</td>
