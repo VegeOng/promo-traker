@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MamaVege | International Market Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<style>
+  :root{
+    --green:#166534; --green-light:#dcfce7; --red:#dc2626; --red-light:#fee2e2;
+    --amber:#d97706; --amber-light:#fef3c7; --blue:#2563eb; --blue-light:#dbeafe;
+    --purple:#7c3aed; --purple-light:#ede9fe;
+    --text:#1a1a1a; --muted:#6b7280; --border:#e5e7eb; --card:#ffffff; --bg:#f4f6f3;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+
+  /* Unified header */
+  .mv-top{overflow:hidden}
+  .mv-top-main{display:flex;justify-content:space-between;align-items:center;padding:12px 24px;background:#166534}
+  .mv-top-left{display:flex;align-items:center;gap:12px}
+  .mv-top-logo{height:34px;background:#fff;border-radius:8px;padding:3px 8px;display:flex;align-items:center;text-decoration:none}
+  .mv-top-logo img{height:26px}
+  .mv-top-sep{width:1px;height:24px;background:rgba(255,255,255,.2)}
+  .mv-top-tool{color:#fff;font-size:14px;font-weight:700;letter-spacing:.3px}
+  .mv-top-right{display:flex;align-items:center;gap:12px}
+  .mv-top-back{color:rgba(255,255,255,.8);text-decoration:none;font-size:13px;font-weight:600}
+  .mv-top-back:hover{color:#fff}
+  .mv-top-btn{background:rgba(255,255,255,.12);border:none;color:rgba(255,255,255,.8);padding:5px 14px;border-radius:6px;font-size:12px;cursor:pointer;font-family:inherit}
+  .mv-top-btn:hover{background:rgba(255,255,255,.2);color:#fff}
+  .mv-top-sub{display:flex;justify-content:space-between;align-items:center;padding:5px 24px;background:#15532d;color:rgba(255,255,255,.6);font-size:11px}
+
+  .wrap{max-width:1320px;margin:0 auto;padding:1.5rem 1.5rem 3rem;}
+  .page-title{font-family:'DM Serif Display',serif;font-size:1.6rem;color:var(--purple);margin-bottom:4px;}
+  .page-sub{font-size:13px;color:var(--muted);margin-bottom:20px;}
+
+  .kpi-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px;margin-bottom:20px;}
+  .kpi-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;position:relative;overflow:hidden;}
+  .kpi-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--purple);}
+  .kpi-card.red::before{background:var(--red);}
+  .kpi-card.amber::before{background:var(--amber);}
+  .kpi-card.blue::before{background:var(--blue);}
+  .kpi-card.green::before{background:var(--green);}
+  .kpi-label{font-size:10px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;}
+  .kpi-val{font-size:24px;font-weight:800;line-height:1.1;color:var(--purple);}
+  .kpi-val.red{color:var(--red);}
+  .kpi-val.amber{color:var(--amber);}
+  .kpi-val.blue{color:var(--blue);}
+  .kpi-val.green{color:var(--green);}
+  .kpi-sub{font-size:11px;color:#9ca3af;margin-top:4px;}
+
+  .grid-2{display:grid;grid-template-columns:1.4fr 1fr;gap:16px;margin-bottom:16px;}
+  .grid-2b{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;}
+  @media(max-width:900px){.grid-2,.grid-2b{grid-template-columns:1fr;}}
+
+  .card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px;}
+  .card-title{font-size:14px;font-weight:700;color:var(--text);margin-bottom:14px;display:flex;align-items:center;gap:8px;}
+  .chart-box{position:relative;height:280px;}
+  .chart-box.sm{height:240px;}
+
+  table{width:100%;border-collapse:collapse;font-size:13px;}
+  th{text-align:left;padding:8px 10px;font-size:11px;text-transform:uppercase;letter-spacing:.4px;color:#9ca3af;font-weight:700;border-bottom:1px solid var(--border);}
+  td{padding:9px 10px;border-bottom:1px solid #f3f4f6;}
+  tr:last-child td{border-bottom:none;}
+  .rank{font-weight:800;color:var(--purple);width:30px;}
+  .num{text-align:right;font-variant-numeric:tabular-nums;}
+  .pill{display:inline-block;padding:2px 9px;border-radius:20px;font-size:10px;font-weight:700;letter-spacing:.3px;background:var(--purple-light);color:var(--purple);}
+
+  .loading{text-align:center;padding:60px 20px;color:var(--muted);font-size:14px;}
+  .spinner{width:30px;height:30px;border:3px solid #e5e7eb;border-top-color:var(--purple);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 12px;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+  .err{background:var(--red-light);color:var(--red);border-radius:10px;padding:14px;font-size:13px;}
+
+  .empty-text{text-align:center;color:#9ca3af;padding:24px;}
+</style>
+</head>
+<body>
+
+<div class="mv-top">
+  <div class="mv-top-main">
+    <div class="mv-top-left">
+      <a href="index.html" class="mv-top-logo"><img src="Mamavege_Logo.png" alt="MamaVege"></a>
+      <div class="mv-top-sep"></div>
+      <span class="mv-top-tool">🌍 International Market Dashboard</span>
+    </div>
+    <div class="mv-top-right">
+      <a href="index.html" class="mv-top-back">← Hub</a>
+      <button class="mv-top-btn" onclick="loadAll()">⟳ Refresh</button>
+    </div>
+  </div>
+  <div class="mv-top-sub">
+    <span class="mv-top-date"></span>
+    <span>MamaVege Management Hub · International Business (IB)</span>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="page-title">International Market Dashboard</div>
+  <div class="page-sub">数据来源：Sales Record Google Sheet（TYPE = IB 国际业务订单），按 PO Date 统计</div>
+
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:18px;flex-wrap:wrap">
+    <label style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px">查看月份</label>
+    <select id="month-select" onchange="onMonthChange()" style="padding:8px 14px;border:1.5px solid var(--border);border-radius:8px;font-family:inherit;font-size:13px;background:#fff;cursor:pointer;min-width:160px"></select>
+  </div>
+
+  <div id="loading" class="loading"><div class="spinner"></div>Loading international market data…</div>
+  <div id="content" style="display:none">
+
+    <div class="kpi-grid" id="kpi-grid"></div>
+
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-title">📈 月度业绩走势（近12个月，RM）</div>
+        <div class="chart-box"><canvas id="chartTrend"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-title">🍜 产品销量分布 <span id="lbl-products" style="color:var(--muted);font-weight:500"></span></div>
+        <div class="chart-box sm"><canvas id="chartProducts"></canvas></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">🏆 国际客户业绩排行榜 <span id="lbl-customers" style="color:var(--muted);font-weight:500"></span></div>
+      <div style="overflow-x:auto">
+        <table>
+          <thead><tr><th></th><th>客户 / 公司</th><th class="num">订单数</th><th class="num">业绩 (RM)</th><th class="num">业绩 (USD)</th><th class="num">占比</th></tr></thead>
+          <tbody id="top-customers"></tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+  <div id="errBox"></div>
+</div>
+
+<script>
+document.querySelectorAll('.mv-top-date').forEach(e=>e.textContent=new Date().toLocaleDateString('zh-CN',{weekday:'short',year:'numeric',month:'short',day:'numeric'}));
+
+const API_URL = 'https://script.google.com/macros/s/AKfycbwxt23ZB0od7EeBSNvjurKTbkDcM7HLgrWhuoqHc3meKWmhbB0XQzfOdB-X2Pj5O_MY/exec';
+
+// SKU 产品列（与 Sales Dashboard 一致）
+const NON_SKU_COLS = new Set(['COMPANY','OUTLET','SALES PERSON','TYPE','YEAR','MONTH','WEEK',
+  'PO DATE','PO NUMBER','INVOICE DATE','INVOICE NUMBER','TOTAL (RM)','IB (RM)','IB (USD)','Unfullfill (RM)']);
+
+let charts = {};
+let allRows = [];
+const mNamesZh = ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
+
+function fmtRM(n){ return 'RM ' + Number(n||0).toLocaleString('en-MY',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+function fmtUSD(n){ return n ? '$' + Number(n).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}) : '—'; }
+function escHtml(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+// Google Sheet 日期是按表格时区（GMT+8）存的午夜时间，序列化成 UTC 后会往回退一天
+// 加 8 小时换算回本地日期，避免错位
+function parseSheetDate(raw){
+  if(!raw) return null;
+  const d = new Date(raw);
+  if(isNaN(d.getTime())) return null;
+  const shifted = new Date(d.getTime() + 8*3600*1000);
+  return { y: shifted.getUTCFullYear(), m: shifted.getUTCMonth()+1, day: shifted.getUTCDate(), ym: `${shifted.getUTCFullYear()}-${String(shifted.getUTCMonth()+1).padStart(2,'0')}` };
+}
+
+function monthKey(y,m){ return `${y}-${String(m).padStart(2,'0')}`; }
+
+async function fetchIBData(){
+  const res = await fetch(API_URL);
+  if(!res.ok) throw new Error('HTTP ' + res.status);
+  const json = await res.json();
+  const rows = json.data || [];
+  const skuCols = Object.keys(rows[0]||{}).filter(k=>!NON_SKU_COLS.has(k));
+  return rows.filter(r=>r['TYPE']==='IB').map(r=>{
+    const date = parseSheetDate(r['PO DATE']) || parseSheetDate(r['INVOICE DATE']);
+    return {
+      company: (r['COMPANY']||'').toString().trim() || 'Unknown',
+      rm: parseFloat(r['IB (RM)']) || 0,
+      usd: parseFloat(r['IB (USD)']) || 0,
+      date,
+      products: skuCols.reduce((acc,p)=>{ acc[p]=parseFloat(r[p])||0; return acc; },{}),
+    };
+  }).filter(r=>r.date);
+}
+
+function populateMonthSelect(){
+  const sel = document.getElementById('month-select');
+  const ymSet = new Set(allRows.map(r=>r.date.ym));
+  const now = new Date();
+  ymSet.add(monthKey(now.getFullYear(), now.getMonth()+1));
+  const yms = Array.from(ymSet).sort().reverse();
+  sel.innerHTML = yms.map(ym=>{
+    const [y,m] = ym.split('-');
+    return `<option value="${ym}">${y}年 ${mNamesZh[parseInt(m)-1]}</option>`;
+  }).join('');
+  sel.value = monthKey(now.getFullYear(), now.getMonth()+1);
+}
+
+function onMonthChange(){
+  render(allRows, document.getElementById('month-select').value);
+}
+
+async function loadAll(){
+  document.getElementById('loading').style.display='block';
+  document.getElementById('content').style.display='none';
+  document.getElementById('errBox').innerHTML='';
+  try{
+    allRows = await fetchIBData();
+    if(!allRows.length){ throw new Error('No IB records found in sheet'); }
+    populateMonthSelect();
+    render(allRows, document.getElementById('month-select').value);
+    document.getElementById('loading').style.display='none';
+    document.getElementById('content').style.display='block';
+  }catch(e){
+    console.error(e);
+    document.getElementById('loading').style.display='none';
+    document.getElementById('errBox').innerHTML = `<div class="err">❌ 数据加载失败：${escHtml(e.message)}<br>请确认 Google Sheet API 已正确部署且可公开访问。</div>`;
+  }
+}
+
+function render(rows, selectedYM){
+  const now = new Date();
+  const [selY, selM] = selectedYM.split('-').map(Number);
+  const curYM = selectedYM;
+  const monthLabel = `（${selY}年${selM}月）`;
+  const lastDate = new Date(selY, selM-1, 1); lastDate.setMonth(lastDate.getMonth()-1);
+  const lastYM = monthKey(lastDate.getFullYear(), lastDate.getMonth()+1);
+
+  document.getElementById('lbl-customers').textContent = monthLabel;
+  document.getElementById('lbl-products').textContent = monthLabel;
+
+  // ── 月度汇总（RM） ──
+  const monthMapRM = {};
+  rows.forEach(r=>{ monthMapRM[r.date.ym] = (monthMapRM[r.date.ym]||0) + r.rm; });
+
+  const thisMonthRM = monthMapRM[curYM] || 0;
+  const lastMonthRM = monthMapRM[lastYM] || 0;
+  const momPct = lastMonthRM > 0 ? ((thisMonthRM - lastMonthRM) / lastMonthRM * 100) : null;
+  const ytdRM = rows.filter(r=>r.date.y===selY).reduce((s,r)=>s+r.rm,0);
+  const ytdUSD = rows.filter(r=>r.date.y===selY).reduce((s,r)=>s+r.usd,0);
+
+  const momHtml = momPct===null
+    ? `<span style="color:#9ca3af">环比：无上月数据</span>`
+    : `<span style="color:${momPct>=0?'var(--green)':'var(--red)'};font-weight:700">${momPct>=0?'▲':'▼'} ${Math.abs(momPct).toFixed(1)}%</span> vs 上月`;
+
+  const monthRows = rows.filter(r=>r.date.ym===curYM);
+  const companiesThisMonth = new Set(monthRows.map(r=>r.company)).size;
+  const companiesYTD = new Set(rows.filter(r=>r.date.y===selY).map(r=>r.company)).size;
+  const thisMonthUSD = monthRows.reduce((s,r)=>s+r.usd,0);
+
+  document.getElementById('kpi-grid').innerHTML = `
+    <div class="kpi-card"><div class="kpi-label">${selY}年${selM}月业绩</div><div class="kpi-val">${fmtRM(thisMonthRM)}</div><div class="kpi-sub">${momHtml}${thisMonthUSD?`<br>另有 USD 订单：${fmtUSD(thisMonthUSD)}`:''}</div></div>
+    <div class="kpi-card amber"><div class="kpi-label">上月业绩</div><div class="kpi-val amber">${fmtRM(lastMonthRM)}</div><div class="kpi-sub">${lastYM}</div></div>
+    <div class="kpi-card green"><div class="kpi-label">YTD 累计 (${selY})</div><div class="kpi-val green">${fmtRM(ytdRM)}</div><div class="kpi-sub">${ytdUSD?`另有 USD 订单：${fmtUSD(ytdUSD)}`:'今年累计国际业务业绩'}</div></div>
+    <div class="kpi-card blue"><div class="kpi-label">国际客户</div><div class="kpi-val blue">${companiesThisMonth}</div><div class="kpi-sub">本月下单客户数（今年累计 ${companiesYTD} 家）</div></div>
+  `;
+
+  // ── 趋势图：近12个月 ──
+  const trendLabels = [], trendValues = [];
+  for(let i=11;i>=0;i--){
+    const d = new Date(selY, selM-1-i, 1);
+    const ym = monthKey(d.getFullYear(), d.getMonth()+1);
+    trendLabels.push(`${d.getFullYear()}/${d.getMonth()+1}`);
+    trendValues.push(monthMapRM[ym] || 0);
+  }
+  if(charts.trend) charts.trend.destroy();
+  charts.trend = new Chart(document.getElementById('chartTrend'), {
+    type:'bar',
+    data:{ labels:trendLabels, datasets:[{ label:'业绩 (RM)', data:trendValues, backgroundColor:'#7c3aedcc', borderColor:'#7c3aed', borderWidth:1, borderRadius:6 }] },
+    options:{ responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label:ctx=>'RM '+ctx.parsed.y.toLocaleString('en-MY',{minimumFractionDigits:2,maximumFractionDigits:2}) } } },
+      scales:{ y:{ beginAtZero:true, ticks:{ callback:v=>(v/1000)+'k' } } }
+    }
+  });
+
+  // ── 客户排行榜（本月）──
+  const customerMap = {};
+  monthRows.forEach(r=>{
+    if(!customerMap[r.company]) customerMap[r.company] = { rm:0, usd:0, orders:0 };
+    customerMap[r.company].rm += r.rm;
+    customerMap[r.company].usd += r.usd;
+    customerMap[r.company].orders += 1;
+  });
+  const sortedCustomers = Object.entries(customerMap).sort((a,b)=>b[1].rm-a[1].rm);
+  const grandTotalRM = monthRows.reduce((s,r)=>s+r.rm,0) || 1;
+  const tbody = document.getElementById('top-customers');
+  if(!sortedCustomers.length){
+    tbody.innerHTML = `<tr><td colspan="6" class="empty-text">${selY}年${selM}月暂无国际业务记录</td></tr>`;
+  } else {
+    tbody.innerHTML = sortedCustomers.map(([name,d],i)=>`<tr>
+        <td class="rank">${i===0?'🥇':i===1?'🥈':i===2?'🥉':i+1}</td>
+        <td><strong>${escHtml(name)}</strong></td>
+        <td class="num">${d.orders}</td>
+        <td class="num">${fmtRM(d.rm)}</td>
+        <td class="num">${fmtUSD(d.usd)}</td>
+        <td class="num">${d.rm?(d.rm/grandTotalRM*100).toFixed(1)+'%':'—'}</td>
+      </tr>`).join('');
+  }
+
+  // ── 产品销量（本月）──
+  const productTotalsMap = {};
+  monthRows.forEach(r=>{
+    Object.entries(r.products).forEach(([p,v])=>{ productTotalsMap[p] = (productTotalsMap[p]||0) + v; });
+  });
+  const productEntries = Object.entries(productTotalsMap).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]);
+  if(charts.products) charts.products.destroy();
+  if(!productEntries.length){
+    if(charts.products) charts.products.destroy();
+    document.getElementById('chartProducts').getContext('2d').clearRect(0,0,1000,1000);
+  }
+  charts.products = new Chart(document.getElementById('chartProducts'), {
+    type:'bar',
+    data:{ labels: productEntries.map(e=>e[0]), datasets:[{ label:'销量', data: productEntries.map(e=>e[1]), backgroundColor:'#7c3aedcc', borderWidth:0, borderRadius:6 }] },
+    options:{ indexAxis:'y', responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label:ctx=>ctx.parsed.x.toLocaleString('zh-CN')+' 件' } } },
+      scales:{ x:{ beginAtZero:true } } }
+  });
+}
+
+loadAll();
+</script>
+
+</body>
+</html>
