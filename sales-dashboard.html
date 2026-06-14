@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -113,6 +113,14 @@
     min-width: 120px;
   }
   .filter-select:focus { outline: none; border-color: var(--green); }
+
+  /* DATE SELECTOR */
+  .date-selector{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+  .ds-tabs{display:flex;gap:6px;}
+  .ds-tab{padding:8px 16px;border-radius:20px;border:1.5px solid var(--border);background:#fff;font-size:13px;font-weight:700;color:var(--text-muted);cursor:pointer;font-family:inherit;}
+  .ds-tab.active{background:var(--green);border-color:var(--green);color:#fff;}
+  .ds-controls{display:flex;align-items:center;gap:8px;}
+  .ds-controls select, .ds-controls input[type=date]{padding:7px 14px;border:1px solid var(--border);border-radius:8px;font-family:inherit;font-size:0.85rem;background:var(--white);cursor:pointer;min-width:140px;}
 
   /* MAIN */
   .main { padding: 1.5rem 2rem; max-width: 1400px; margin: 0 auto; }
@@ -343,31 +351,38 @@
 </div>
 
 <div class="nav">
-  <button class="nav-btn active" onclick="switchTab('overview', this)">📊 总览</button>
-  <button class="nav-btn" onclick="switchTab('salesperson', this)">👤 业务员</button>
-  <button class="nav-btn" onclick="switchTab('outlet', this)">🏪 客户</button>
-  <button class="nav-btn" onclick="switchTab('product', this)">📦 产品</button>
-  <button class="nav-btn" onclick="switchTab('trend', this)">📈 趋势</button>
-  <a href="performance-hub.html" class="nav-btn" style="color:#dc2626;font-weight:700">🎯 业绩管理</a>
+  <button class="nav-btn active" onclick="switchTab('overview', this)">📊 Overview</button>
+  <button class="nav-btn" onclick="switchTab('salesperson', this)">👤 Salesperson</button>
+  <button class="nav-btn" onclick="switchTab('outlet', this)">🏪 Outlets</button>
+  <button class="nav-btn" onclick="switchTab('product', this)">📦 Products</button>
+  <button class="nav-btn" onclick="switchTab('trend', this)">📈 Trends</button>
+  <a href="performance-hub.html" class="nav-btn" style="color:#dc2626;font-weight:700">🎯 Performance Hub</a>
 </div>
 
 <div class="filters">
-  <span class="filter-label">筛选</span>
-  <select class="filter-select" id="filterYear" onchange="applyFilters()">
-    <option value="">全部年份</option>
-  </select>
-  <select class="filter-select" id="filterMonth" onchange="applyFilters()">
-    <option value="">全部月份</option>
-    <option value="1">1月</option><option value="2">2月</option><option value="3">3月</option>
-    <option value="4">4月</option><option value="5">5月</option><option value="6">6月</option>
-    <option value="7">7月</option><option value="8">8月</option><option value="9">9月</option>
-    <option value="10">10月</option><option value="11">11月</option><option value="12">12月</option>
-  </select>
+  <div class="date-selector">
+    <div class="ds-tabs">
+      <button class="ds-tab active" data-mode="month" onclick="setMode('month')">📅 Month</button>
+      <button class="ds-tab" data-mode="year" onclick="setMode('year')">🗓 Year</button>
+      <button class="ds-tab" data-mode="range" onclick="setMode('range')">🔧 Custom Range</button>
+    </div>
+    <div class="ds-controls" id="ds-controls-month">
+      <select id="month-select" onchange="onSelectorChange()"></select>
+    </div>
+    <div class="ds-controls" id="ds-controls-year" style="display:none">
+      <select id="year-select" onchange="onSelectorChange()"></select>
+    </div>
+    <div class="ds-controls" id="ds-controls-range" style="display:none">
+      <input type="date" id="range-start" onchange="onSelectorChange()">
+      <span style="color:var(--text-muted)">→</span>
+      <input type="date" id="range-end" onchange="onSelectorChange()">
+    </div>
+  </div>
   <select class="filter-select" id="filterType" onchange="applyFilters()">
-    <option value="">全部类型</option>
+    <option value="">All Types</option>
   </select>
   <select class="filter-select" id="filterSP" onchange="applyFilters()">
-    <option value="">全部业务员</option>
+    <option value="">All Salespersons</option>
   </select>
 </div>
 
@@ -376,25 +391,25 @@
   <!-- OVERVIEW TAB -->
   <div class="tab-content active" id="tab-overview">
     <div class="kpi-grid" id="kpiGrid">
-      <div class="loading"><div class="spinner"></div><span>加载中...</span></div>
+      <div class="loading"><div class="spinner"></div><span>Loading...</span></div>
     </div>
     <div class="grid-2">
       <div class="chart-card">
-        <div class="chart-title"><span class="dot"></span>月度销售额 (RM)</div>
+        <div class="chart-title"><span class="dot"></span>Monthly Sales (RM)</div>
         <div class="chart-wrap"><canvas id="chartMonthly"></canvas></div>
       </div>
       <div class="chart-card">
-        <div class="chart-title"><span class="dot" style="background:var(--gold)"></span>业务员业绩占比</div>
+        <div class="chart-title"><span class="dot" style="background:var(--gold)"></span>Salesperson Share</div>
         <div class="chart-wrap"><canvas id="chartSPPie"></canvas></div>
       </div>
     </div>
     <div class="grid-2">
       <div class="chart-card">
-        <div class="chart-title"><span class="dot" style="background:var(--red)"></span>Top 10 客户</div>
+        <div class="chart-title"><span class="dot" style="background:var(--red)"></span>Top 10 Outlets</div>
         <div class="chart-wrap"><canvas id="chartTopOutlet"></canvas></div>
       </div>
       <div class="chart-card">
-        <div class="chart-title"><span class="dot" style="background:#3b82f6"></span>产品销量排行</div>
+        <div class="chart-title"><span class="dot" style="background:#3b82f6"></span>Product Sales Ranking</div>
         <div class="chart-wrap"><canvas id="chartProduct"></canvas></div>
       </div>
     </div>
@@ -402,18 +417,18 @@
 
   <!-- SALESPERSON TAB -->
   <div class="tab-content" id="tab-salesperson">
-    <div class="section-title">业务员业绩汇整</div>
-    <div class="sp-grid" id="spGrid"><div class="loading"><div class="spinner"></div><span>加载中...</span></div></div>
+    <div class="section-title">Salesperson Performance Summary</div>
+    <div class="sp-grid" id="spGrid"><div class="loading"><div class="spinner"></div><span>Loading...</span></div></div>
     <div class="table-card">
       <div class="table-header">
-        <span class="table-title">业务员详细数据</span>
+        <span class="table-title">Salesperson Details</span>
       </div>
       <div style="overflow-x:auto">
         <table id="spTable">
           <thead><tr>
-            <th>#</th><th>业务员</th><th>订单数</th><th>客户数</th>
+            <th>#</th><th>Salesperson</th><th>Orders</th><th>Outlets</th>
             <th onclick="sortTable('spTable',4)">Total (RM) ↕</th>
-            <th>占比</th>
+            <th>Share</th>
           </tr></thead>
           <tbody id="spTableBody"></tbody>
         </table>
@@ -423,18 +438,18 @@
 
   <!-- OUTLET TAB -->
   <div class="tab-content" id="tab-outlet">
-    <div class="section-title">客户业绩排行</div>
+    <div class="section-title">Outlet Performance Ranking</div>
     <div class="table-card">
       <div class="table-header">
-        <span class="table-title">客户列表</span>
-        <input type="text" class="table-search" id="outletSearch" placeholder="搜索客户..." oninput="filterTable('outletSearch','outletTableBody')">
+        <span class="table-title">Outlet List</span>
+        <input type="text" class="table-search" id="outletSearch" placeholder="Search outlets..." oninput="filterTable('outletSearch','outletTableBody')">
       </div>
       <div style="overflow-x:auto">
         <table id="outletTable">
           <thead><tr>
-            <th>#</th><th>公司/客户</th><th>类型</th><th>订单数</th>
+            <th>#</th><th>Company/Outlet</th><th>Type</th><th>Orders</th>
             <th onclick="sortTable('outletTable',4)">Total (RM) ↕</th>
-            <th>业绩条</th>
+            <th>Performance Bar</th>
           </tr></thead>
           <tbody id="outletTableBody"></tbody>
         </table>
@@ -444,15 +459,15 @@
 
   <!-- PRODUCT TAB -->
   <div class="tab-content" id="tab-product">
-    <div class="section-title">产品销量分析</div>
+    <div class="section-title">Product Sales Analysis</div>
     <div class="kpi-grid" id="productKpi"></div>
     <div class="table-card">
       <div class="table-header">
-        <span class="table-title">产品销量排行</span>
+        <span class="table-title">Product Sales Ranking</span>
       </div>
       <div style="overflow-x:auto">
         <table>
-          <thead><tr><th>#</th><th>产品</th><th>总销量</th><th>占比</th><th>销量条</th></tr></thead>
+          <thead><tr><th>#</th><th>Product</th><th>Total Qty</th><th>Share</th><th>Qty Bar</th></tr></thead>
           <tbody id="productTableBody"></tbody>
         </table>
       </div>
@@ -461,18 +476,18 @@
 
   <!-- TREND TAB -->
   <div class="tab-content" id="tab-trend">
-    <div class="section-title">销售趋势</div>
+    <div class="section-title">Sales Trend</div>
     <div class="chart-card" style="margin-bottom:1.5rem">
-      <div class="chart-title"><span class="dot"></span>周销售额走势</div>
+      <div class="chart-title"><span class="dot"></span>Weekly Sales Trend</div>
       <div class="chart-wrap" style="height:300px"><canvas id="chartWeekly"></canvas></div>
     </div>
     <div class="grid-2">
       <div class="chart-card">
-        <div class="chart-title"><span class="dot" style="background:var(--gold)"></span>各类型销售占比</div>
+        <div class="chart-title"><span class="dot" style="background:var(--gold)"></span>Sales Share by Type</div>
         <div class="chart-wrap"><canvas id="chartType"></canvas></div>
       </div>
       <div class="chart-card">
-        <div class="chart-title"><span class="dot" style="background:var(--red)"></span>月度订单量</div>
+        <div class="chart-title"><span class="dot" style="background:var(--red)"></span>Monthly Order Count</div>
         <div class="chart-wrap"><canvas id="chartOrders"></canvas></div>
       </div>
     </div>
@@ -500,9 +515,9 @@
 <div class="footer-nav">
   <span>MamaVege Management Hub</span>
   <span>|</span>
-  <a href="index.html">🏠 首页</a>
-  <a href="promo-fill.html">📋 促销填报</a>
-  <a href="promo-hq.html">📊 HQ仪表板</a>
+  <a href="index.html">🏠 Home</a>
+  <a href="promo-fill.html">📋 Promo Submission</a>
+  <a href="promo-hq.html">📊 HQ Dashboard</a>
 </div>
 
 <script>
@@ -512,6 +527,8 @@ const PRODUCTS = ['KPM','CLM','SHCR','SHTY','SHSS','SPM - BBQ','BBQ (BAG)','SPM 
 let allData = [];
 let filteredData = [];
 let charts = {};
+let currentMode = 'month';
+const mNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
 function fmt(n) {
   if (!n || isNaN(n)) return '0.00';
@@ -522,48 +539,115 @@ function fmtInt(n) {
   return Math.round(Number(n)).toLocaleString();
 }
 
+function parseSheetDate(raw) {
+  if (!raw) return null;
+  const d = new Date(raw);
+  if (isNaN(d)) return null;
+  const sh = new Date(d.getTime() + 8*3600*1000);
+  const y = sh.getUTCFullYear(), m = sh.getUTCMonth()+1, day = sh.getUTCDate();
+  return { y, m, day, ym: `${y}-${String(m).padStart(2,'0')}`, ymd: `${y}-${String(m).padStart(2,'0')}-${String(day).padStart(2,'0')}` };
+}
+
+function fmtDateInput(d) {
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+}
+
 async function loadData() {
-  document.getElementById('lastUpdated').textContent = '加载中...';
+  document.getElementById('lastUpdated').textContent = 'Loading...';
   try {
     const res = await fetch(API_URL);
     const json = await res.json();
     allData = json.data || [];
-    document.getElementById('lastUpdated').textContent = '更新: ' + new Date().toLocaleTimeString('zh-MY');
+    document.getElementById('lastUpdated').textContent = 'Updated: ' + new Date().toLocaleTimeString('en-MY');
     populateFilters();
+    populateMonthSelect();
+    populateYearSelect();
     applyFilters();
   } catch(e) {
     console.error(e);
-    document.getElementById('kpiGrid').innerHTML = '<div class="empty">❌ 无法加载数据，请检查 API 连接。<br><small>' + e.message + '</small></div>';
+    document.getElementById('kpiGrid').innerHTML = '<div class="empty">❌ Failed to load data, please check API connection.<br><small>' + e.message + '</small></div>';
   }
 }
 
 function populateFilters() {
-  const years = [...new Set(allData.map(r => String(r['YEAR'])).filter(Boolean))].sort();
   const types = [...new Set(allData.map(r => r['TYPE']).filter(Boolean))].sort();
   const sps = [...new Set(allData.map(r => r['SALES PERSON']).filter(Boolean))].sort();
 
-  const yr = document.getElementById('filterYear');
-  const cur = yr.value;
-  yr.innerHTML = '<option value="">全部年份</option>' + years.map(y=>`<option value="${y}">${y}</option>`).join('');
-  if (cur) yr.value = cur;
-
-
   const tp = document.getElementById('filterType');
-  tp.innerHTML = '<option value="">全部类型</option>' + types.map(t=>`<option value="${t}">${t}</option>`).join('');
+  tp.innerHTML = '<option value="">All Types</option>' + types.map(t=>`<option value="${t}">${t}</option>`).join('');
 
   const sp = document.getElementById('filterSP');
-  sp.innerHTML = '<option value="">全部业务员</option>' + sps.map(s=>`<option value="${s}">${s}</option>`).join('');
+  sp.innerHTML = '<option value="">All Salespersons</option>' + sps.map(s=>`<option value="${s}">${s}</option>`).join('');
 }
 
+function populateMonthSelect() {
+  const sel = document.getElementById('month-select');
+  const cur = sel.value;
+  const now = new Date();
+  const opts = [];
+  for (let i=0;i<24;i++) {
+    const d = new Date(now.getFullYear(), now.getMonth()-i, 1);
+    const y = d.getFullYear(), m = d.getMonth()+1;
+    opts.push(`<option value="${y}-${m}">${mNames[m-1]} ${y}</option>`);
+  }
+  sel.innerHTML = opts.join('');
+  if (cur) sel.value = cur;
+}
+
+function populateYearSelect() {
+  const sel = document.getElementById('year-select');
+  const cur = sel.value;
+  const years = [...new Set(allData.map(r=>String(r['YEAR'])).filter(Boolean))].sort((a,b)=>b-a);
+  sel.innerHTML = years.map(y=>`<option value="${y}">${y}</option>`).join('');
+  if (cur) sel.value = cur;
+}
+
+function populateRangeDefaults() {
+  const now = new Date();
+  const start = new Date(now.getFullYear(), now.getMonth(), 1);
+  document.getElementById('range-start').value = fmtDateInput(start);
+  document.getElementById('range-end').value = fmtDateInput(now);
+}
+
+function setMode(mode) {
+  currentMode = mode;
+  document.querySelectorAll('.ds-tab').forEach(b=>b.classList.toggle('active', b.dataset.mode===mode));
+  document.getElementById('ds-controls-month').style.display = mode==='month'?'flex':'none';
+  document.getElementById('ds-controls-year').style.display = mode==='year'?'flex':'none';
+  document.getElementById('ds-controls-range').style.display = mode==='range'?'flex':'none';
+  if (mode==='range') populateRangeDefaults();
+  applyFilters();
+}
+
+function onSelectorChange() { applyFilters(); }
+
 function applyFilters() {
-  const year = document.getElementById('filterYear').value;
-  const month = document.getElementById('filterMonth').value;
+  let rows = allData;
+
+  if (currentMode === 'month') {
+    const val = document.getElementById('month-select').value;
+    if (val) {
+      const [y,m] = val.split('-');
+      rows = rows.filter(r => String(r['YEAR']).trim() === y && String(r['MONTH']).trim() === String(parseInt(m)));
+    }
+  } else if (currentMode === 'year') {
+    const y = document.getElementById('year-select').value;
+    if (y) rows = rows.filter(r => String(r['YEAR']).trim() === y);
+  } else if (currentMode === 'range') {
+    const start = document.getElementById('range-start').value;
+    const end = document.getElementById('range-end').value;
+    if (start && end) {
+      rows = rows.filter(r => {
+        const pd = parseSheetDate(r['PO DATE']);
+        return pd && pd.ymd >= start && pd.ymd <= end;
+      });
+    }
+  }
+
   const type = document.getElementById('filterType').value;
   const sp = document.getElementById('filterSP').value;
 
-  filteredData = allData.filter(r => {
-    if (year && String(r['YEAR']).trim() !== String(year).trim()) return false;
-    if (month && String(r['MONTH']).trim() !== String(month).trim()) return false;
+  filteredData = rows.filter(r => {
     if (type && r['TYPE'] !== type) return false;
     if (sp && r['SALES PERSON'] !== sp) return false;
     return true;
@@ -588,11 +672,11 @@ function renderKPI() {
   const avgOrder = orders > 0 ? total / orders : 0;
 
   document.getElementById('kpiGrid').innerHTML = `
-    <div class="kpi-card green"><div class="kpi-icon">💰</div><div class="kpi-label">总销售额</div><div class="kpi-value">RM ${fmt(total)}</div><div class="kpi-sub">TOTAL (RM)</div></div>
-    <div class="kpi-card gold"><div class="kpi-icon">🧾</div><div class="kpi-label">订单数</div><div class="kpi-value">${orders}</div><div class="kpi-sub">条记录</div></div>
-    <div class="kpi-card blue"><div class="kpi-icon">🏪</div><div class="kpi-label">客户数</div><div class="kpi-value">${outlets}</div><div class="kpi-sub">家客户</div></div>
-    <div class="kpi-card green"><div class="kpi-icon">👤</div><div class="kpi-label">业务员</div><div class="kpi-value">${sps}</div><div class="kpi-sub">人</div></div>
-    <div class="kpi-card red"><div class="kpi-icon">📊</div><div class="kpi-label">平均订单</div><div class="kpi-value">RM ${fmt(avgOrder)}</div><div class="kpi-sub">每单平均</div></div>
+    <div class="kpi-card green"><div class="kpi-icon">💰</div><div class="kpi-label">Total Sales</div><div class="kpi-value">RM ${fmt(total)}</div><div class="kpi-sub">TOTAL (RM)</div></div>
+    <div class="kpi-card gold"><div class="kpi-icon">🧾</div><div class="kpi-label">Orders</div><div class="kpi-value">${orders}</div><div class="kpi-sub">records</div></div>
+    <div class="kpi-card blue"><div class="kpi-icon">🏪</div><div class="kpi-label">Outlets</div><div class="kpi-value">${outlets}</div><div class="kpi-sub">outlets</div></div>
+    <div class="kpi-card green"><div class="kpi-icon">👤</div><div class="kpi-label">Salespersons</div><div class="kpi-value">${sps}</div><div class="kpi-sub">people</div></div>
+    <div class="kpi-card red"><div class="kpi-icon">📊</div><div class="kpi-label">Avg Order</div><div class="kpi-value">RM ${fmt(avgOrder)}</div><div class="kpi-sub">per order</div></div>
   `;
 }
 
@@ -614,12 +698,11 @@ function renderCharts() {
     monthData[m] = (monthData[m] || 0) + getTotalField(r);
   });
   const months = Object.keys(monthData).sort((a,b)=>a-b);
-  const monthNames = ['','1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
   destroyChart('chartMonthly');
   charts.monthly = new Chart(document.getElementById('chartMonthly'), {
     type: 'bar',
     data: {
-      labels: months.map(m => monthNames[m]),
+      labels: months.map(m => mNames[m-1]),
       datasets: [{
         label: 'Total (RM)',
         data: months.map(m => monthData[m]),
@@ -677,7 +760,7 @@ function renderCharts() {
     type: 'bar',
     data: {
       labels: prodSorted.map(p=>p[0]),
-      datasets: [{ label: '数量', data: prodSorted.map(p=>p[1]), backgroundColor: '#3b82f699', borderColor: '#3b82f6', borderWidth: 1, borderRadius: 4 }]
+      datasets: [{ label: 'Qty', data: prodSorted.map(p=>p[1]), backgroundColor: '#3b82f699', borderColor: '#3b82f6', borderWidth: 1, borderRadius: 4 }]
     },
     options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { beginAtZero: true } } }
   });
@@ -737,8 +820,8 @@ function renderCharts() {
   charts.orders = new Chart(document.getElementById('chartOrders'), {
     type: 'bar',
     data: {
-      labels: oMonths.map(m=>monthNames[m]),
-      datasets: [{ label: '订单数', data: oMonths.map(m=>ordersData[m]), backgroundColor: '#dc262699', borderColor: '#dc2626', borderWidth: 1, borderRadius: 4 }]
+      labels: oMonths.map(m=>mNames[m-1]),
+      datasets: [{ label: 'Orders', data: oMonths.map(m=>ordersData[m]), backgroundColor: '#dc262699', borderColor: '#dc2626', borderWidth: 1, borderRadius: 4 }]
     },
     options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
   });
@@ -764,25 +847,25 @@ function renderSPTab() {
   spColorMap = {};
   sorted.forEach(([name],i) => spColorMap[name] = colors[i%colors.length]);
   document.getElementById('spGrid').innerHTML = sorted.map(([name, d], i) => `
-    <div class="sp-card" onclick="drillDown('${name.replace(/'/g,"\\'")}'" title="点击查看 ${name} 的客户与 SKU 详情">
+    <div class="sp-card" onclick="drillDown('${name.replace(/'/g,"\\'")}'" title="Click to view ${name}'s customer & SKU details">
       <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:0.75rem">
         <div style="width:40px;height:40px;border-radius:50%;background:${colors[i%colors.length]}20;color:${colors[i%colors.length]};display:flex;align-items:center;justify-content:center;font-weight:700;font-size:1rem">${name.charAt(0)}</div>
         <div>
           <div class="sp-name">${name}</div>
-          <div style="font-size:0.75rem;color:var(--text-muted)">#${i+1} 排名</div>
+          <div style="font-size:0.75rem;color:var(--text-muted)">Rank #${i+1}</div>
         </div>
       </div>
       <div class="sp-total">RM ${fmt(d.total)}</div>
       <div class="sp-stats">
-        <div class="sp-stat"><span>${d.orders}</span>订单</div>
-        <div class="sp-stat"><span>${d.outlets.size}</span>客户</div>
-        <div class="sp-stat"><span>${grandTotal>0?(d.total/grandTotal*100).toFixed(1):0}%</span>占比</div>
+        <div class="sp-stat"><span>${d.orders}</span>Orders</div>
+        <div class="sp-stat"><span>${d.outlets.size}</span>Outlets</div>
+        <div class="sp-stat"><span>${grandTotal>0?(d.total/grandTotal*100).toFixed(1):0}%</span>Share</div>
       </div>
       <div class="sp-bar">
         <div class="progress-bar"><div class="progress-fill" style="width:${(d.total/maxTotal*100).toFixed(1)}%;background:${colors[i%colors.length]}"></div></div>
       </div>
     </div>
-  `).join('') || '<div class="empty">暂无数据</div>';
+  `).join('') || '<div class="empty">No data</div>';
 
   // SP Table
   document.getElementById('spTableBody').innerHTML = sorted.map(([name,d],i) => `
@@ -794,7 +877,7 @@ function renderSPTab() {
       <td class="amount">RM ${fmt(d.total)}</td>
       <td><span class="tag tag-green">${grandTotal>0?(d.total/grandTotal*100).toFixed(1):0}%</span></td>
     </tr>
-  `).join('') || '<tr><td colspan="6" class="empty">暂无数据</td></tr>';
+  `).join('') || '<tr><td colspan="6" class="empty">No data</td></tr>';
 }
 
 function renderOutletTab() {
@@ -817,7 +900,7 @@ function renderOutletTab() {
       <td class="amount">RM ${fmt(d.total)}</td>
       <td><div class="progress-bar" style="min-width:120px"><div class="progress-fill" style="width:${(d.total/maxTotal*100).toFixed(1)}%"></div></div></td>
     </tr>
-  `).join('') || '<tr><td colspan="6" class="empty">暂无数据</td></tr>';
+  `).join('') || '<tr><td colspan="6" class="empty">No data</td></tr>';
 }
 
 function renderProductTab() {
@@ -835,7 +918,7 @@ function renderProductTab() {
   document.getElementById('productKpi').innerHTML = top3.map((p,i) => `
     <div class="kpi-card ${['green','gold','red'][i]}">
       <div class="kpi-icon">${['🥇','🥈','🥉'][i]}</div>
-      <div class="kpi-label">#${i+1} 产品</div>
+      <div class="kpi-label">#${i+1} Product</div>
       <div class="kpi-value">${fmtInt(p[1])}</div>
       <div class="kpi-sub">${p[0]}</div>
     </div>
@@ -849,7 +932,7 @@ function renderProductTab() {
       <td><span class="tag tag-green">${total>0?(qty/total*100).toFixed(1):0}%</span></td>
       <td><div class="progress-bar" style="min-width:120px"><div class="progress-fill" style="width:${(qty/maxQty*100).toFixed(1)}%"></div></div></td>
     </tr>
-  `).join('') || '<tr><td colspan="5" class="empty">暂无数据</td></tr>';
+  `).join('') || '<tr><td colspan="5" class="empty">No data</td></tr>';
 }
 
 function destroyChart(id) {
@@ -931,15 +1014,15 @@ function drillDown(name) {
   document.getElementById('drillAvatar').textContent = name.charAt(0);
   document.getElementById('drillAvatar').style.cssText = `width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:1.2rem;flex-shrink:0;background:${color}20;color:${color}`;
   document.getElementById('drillName').textContent = name;
-  document.getElementById('drillSub').textContent = `${orders} 笔订单 · RM ${Number(total).toLocaleString('en-MY',{minimumFractionDigits:2,maximumFractionDigits:2})} · ${custSorted.length} 位客户`;
+  document.getElementById('drillSub').textContent = `${orders} orders · RM ${Number(total).toLocaleString('en-MY',{minimumFractionDigits:2,maximumFractionDigits:2})} · ${custSorted.length} customers`;
 
   let html = '';
 
   // Customers table
   html += `<div class="modal-section">
-    <div class="modal-section-title">🏪 客户明细（${custSorted.length} 位）</div>
+    <div class="modal-section-title">🏪 Customer Details (${custSorted.length})</div>
     <table class="modal-table">
-      <thead><tr><th>#</th><th>客户/公司</th><th>类型</th><th>订单数</th><th class="num">业绩 (RM)</th></tr></thead>
+      <thead><tr><th>#</th><th>Customer/Company</th><th>Type</th><th>Orders</th><th class="num">Sales (RM)</th></tr></thead>
       <tbody>${custSorted.map(([cust, d], i) => `<tr>
         <td>${i+1}</td>
         <td><strong>${cust}</strong></td>
@@ -953,9 +1036,9 @@ function drillDown(name) {
   // SKU table
   if (skuSorted.length) {
     html += `<div class="modal-section">
-      <div class="modal-section-title">📦 SKU 销量（${skuSorted.length} 种）</div>
+      <div class="modal-section-title">📦 SKU Sales (${skuSorted.length} items)</div>
       <table class="modal-table">
-        <thead><tr><th>#</th><th>SKU</th><th class="num">总数量</th></tr></thead>
+        <thead><tr><th>#</th><th>SKU</th><th class="num">Total Qty</th></tr></thead>
         <tbody>${skuSorted.map(([sku, qty], i) => `<tr>
           <td>${i+1}</td>
           <td><strong>${sku}</strong></td>
