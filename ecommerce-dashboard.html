@@ -72,6 +72,14 @@
   .legend-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f3f4f6;font-size:13px;}
   .legend-row:last-child{border-bottom:none;}
   .legend-dot{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:8px;vertical-align:middle;}
+
+  /* Date selector */
+  .date-selector{display:flex;align-items:center;gap:10px;margin-bottom:18px;flex-wrap:wrap;}
+  .ds-tabs{display:flex;gap:6px;}
+  .ds-tab{padding:8px 16px;border-radius:20px;border:1.5px solid var(--border);background:#fff;font-size:13px;font-weight:700;color:var(--muted);cursor:pointer;font-family:inherit;}
+  .ds-tab.active{background:var(--blue);border-color:var(--blue);color:#fff;}
+  .ds-controls select, .ds-controls input[type=date]{padding:8px 14px;border:1.5px solid var(--border);border-radius:8px;font-family:inherit;font-size:13px;background:#fff;cursor:pointer;min-width:140px;}
+  .ds-controls{display:flex;align-items:center;gap:8px;}
 </style>
 </head>
 <body>
@@ -98,9 +106,23 @@
   <div class="page-title">E-commerce Performance Dashboard</div>
   <div class="page-sub">Data source: Google Sheet "2025/26 Online Team Sales Record" - auto-summarizes daily performance for Shopee / Lazada / TikTok / Website / Other channels</div>
 
-  <div style="display:flex;align-items:center;gap:10px;margin-bottom:18px;flex-wrap:wrap">
-    <label style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px">View Month</label>
-    <select id="month-select" onchange="onMonthChange()" style="padding:8px 14px;border:1.5px solid var(--border);border-radius:8px;font-family:inherit;font-size:13px;background:#fff;cursor:pointer;min-width:160px"></select>
+  <div class="date-selector">
+    <div class="ds-tabs">
+      <button class="ds-tab active" data-mode="month" onclick="setMode('month')">📅 By Month</button>
+      <button class="ds-tab" data-mode="year" onclick="setMode('year')">🗓 By Year</button>
+      <button class="ds-tab" data-mode="range" onclick="setMode('range')">🔧 Custom Range</button>
+    </div>
+    <div class="ds-controls" id="ds-controls-month">
+      <select id="month-select" onchange="onSelectorChange()"></select>
+    </div>
+    <div class="ds-controls" id="ds-controls-year" style="display:none">
+      <select id="year-select" onchange="onSelectorChange()"></select>
+    </div>
+    <div class="ds-controls" id="ds-controls-range" style="display:none">
+      <input type="date" id="range-start" onchange="onSelectorChange()">
+      <span style="color:var(--muted)">→</span>
+      <input type="date" id="range-end" onchange="onSelectorChange()">
+    </div>
   </div>
 
   <div id="loading" class="loading"><div class="spinner"></div>Loading data…</div>
@@ -181,9 +203,41 @@ function populateMonthSelect(){
   sel.value = currentSheetNameOf(now);
 }
 
-function onMonthChange(){
-  const sheetName = document.getElementById('month-select').value;
-  loadAll(sheetName);
+function populateYearSelect(){
+  const sel = document.getElementById('year-select');
+  const now = new Date();
+  const years = [];
+  for(let i=0;i<5;i++) years.push(now.getFullYear()-i);
+  sel.innerHTML = years.map(y=>`<option value="${y}">${y}</option>`).join('');
+  sel.value = now.getFullYear();
+}
+
+function fmtDateInput(d){ return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
+
+function populateRangeDefaults(){
+  const startEl = document.getElementById('range-start');
+  const endEl = document.getElementById('range-end');
+  if(startEl.value && endEl.value) return;
+  const now = new Date();
+  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+  if(!startEl.value) startEl.value = fmtDateInput(monthStart);
+  if(!endEl.value) endEl.value = fmtDateInput(now);
+}
+
+let currentMode = 'month';
+
+function setMode(mode){
+  currentMode = mode;
+  document.querySelectorAll('.ds-tab').forEach(b=>b.classList.toggle('active', b.dataset.mode===mode));
+  document.getElementById('ds-controls-month').style.display = mode==='month' ? 'flex' : 'none';
+  document.getElementById('ds-controls-year').style.display = mode==='year' ? 'flex' : 'none';
+  document.getElementById('ds-controls-range').style.display = mode==='range' ? 'flex' : 'none';
+  if(mode==='range') populateRangeDefaults();
+  onSelectorChange();
+}
+
+function onSelectorChange(){
+  loadAll();
 }
 
 function fmtRM(n){ return 'RM ' + (n||0).toLocaleString('en-MY', {minimumFractionDigits:2, maximumFractionDigits:2}); }
@@ -193,9 +247,11 @@ function escHtml(s){ return String(s==null?'':s).replace(/[&<>"']/g, c=>({'&':'&
 function parseSheetDate(raw){
   const d = new Date(raw);
   const adj = new Date(d.getTime() + 8*60*60*1000);
-  return { y: adj.getUTCFullYear(), m: adj.getUTCMonth()+1, day: adj.getUTCDate(),
-    ym: `${adj.getUTCFullYear()}-${String(adj.getUTCMonth()+1).padStart(2,'0')}`,
-    label: `${adj.getUTCMonth()+1}/${adj.getUTCDate()}` };
+  const y = adj.getUTCFullYear(), m = adj.getUTCMonth()+1, day = adj.getUTCDate();
+  return { y, m, day,
+    ym: `${y}-${String(m).padStart(2,'0')}`,
+    ymd: `${y}-${String(m).padStart(2,'0')}-${String(day).padStart(2,'0')}`,
+    label: `${m}/${day}` };
 }
 
 async function fetchEcomData(sheetName){
@@ -211,32 +267,71 @@ async function fetchEcomData(sheetName){
   }).filter(r => r.channelTotal > 0 || r.shopee.adsSpent > 0); // filter out future blank days that haven't occurred yet
 }
 
-async function loadAll(sheetName){
+async function fetchSheetCached(sheetName){
+  if(monthDataCache[sheetName]) return monthDataCache[sheetName];
+  let rows;
+  try{
+    rows = await fetchEcomData(sheetName);
+  }catch(e){
+    rows = []; // sheet may not exist yet (e.g. future months) - treat as empty
+  }
+  monthDataCache[sheetName] = rows;
+  return rows;
+}
+
+function getSheetNamesForRange(start, end){
+  const names = [];
+  const d = new Date(start.getFullYear(), start.getMonth(), 1);
+  const last = new Date(end.getFullYear(), end.getMonth(), 1);
+  while(d <= last){
+    names.push(currentSheetNameOf(d));
+    d.setMonth(d.getMonth()+1);
+  }
+  return names;
+}
+
+async function loadAll(){
   document.getElementById('loading').style.display='block';
   document.getElementById('content').style.display='none';
   document.getElementById('errBox').innerHTML='';
   try{
-    const sel = document.getElementById('month-select');
-    if(!sheetName){ sheetName = sel.value || currentSheetNameOf(new Date()); }
-    currentSheetName = sheetName;
-    sel.value = sheetName;
+    let rows = [];
+    let periodLabel = '';
 
-    let rows;
-    if(monthDataCache[sheetName]){
-      rows = monthDataCache[sheetName];
+    if(currentMode==='year'){
+      const y = parseInt(document.getElementById('year-select').value, 10);
+      const yy = y % 100;
+      const sheetNames = SHEET_MONTH_NAMES.map(name => `${name} ${String(yy).padStart(2,'0')}`);
+      const all = await Promise.all(sheetNames.map(fetchSheetCached));
+      rows = all.flat().filter(r => r.date.y === y);
+      periodLabel = `${y}`;
+    } else if(currentMode==='range'){
+      const startStr = document.getElementById('range-start').value;
+      const endStr = document.getElementById('range-end').value;
+      const start = startStr ? new Date(startStr+'T00:00:00') : new Date();
+      const end = endStr ? new Date(endStr+'T00:00:00') : new Date();
+      const startYmd = fmtDateInput(start), endYmd = fmtDateInput(end);
+      const sheetNames = getSheetNamesForRange(start, end);
+      const all = await Promise.all(sheetNames.map(fetchSheetCached));
+      rows = all.flat().filter(r => r.date.ymd >= startYmd && r.date.ymd <= endYmd);
+      periodLabel = `${startYmd} ~ ${endYmd}`;
     } else {
-      rows = await fetchEcomData(sheetName);
-      monthDataCache[sheetName] = rows;
+      const sel = document.getElementById('month-select');
+      const sheetName = sel.value || currentSheetNameOf(new Date());
+      currentSheetName = sheetName;
+      sel.value = sheetName;
+      rows = await fetchSheetCached(sheetName);
+      const opt = sel.querySelector(`option[value="${sheetName}"]`);
+      periodLabel = opt ? opt.textContent : sheetName;
     }
-    allRows = rows;
-    if(!allRows.length){ throw new Error(`No data available for "${sheetName}"`); }
 
-    // Update the month label shown in each chart title
-    const opt = sel.querySelector(`option[value="${sheetName}"]`);
-    const monthLabel = opt ? opt.textContent : sheetName;
+    allRows = rows.slice().sort((a,b)=> a.date.ymd < b.date.ymd ? -1 : a.date.ymd > b.date.ymd ? 1 : 0);
+    if(!allRows.length){ throw new Error(`No data available for "${periodLabel}"`); }
+
+    // Update the period label shown in each chart title
     ['lbl-month-1','lbl-month-2','lbl-month-3','lbl-month-4','lbl-month-5'].forEach(id=>{
       const el = document.getElementById(id);
-      if(el) el.textContent = monthLabel;
+      if(el) el.textContent = periodLabel;
     });
 
     render(allRows);
@@ -245,7 +340,7 @@ async function loadAll(sheetName){
   }catch(e){
     console.error(e);
     document.getElementById('loading').style.display='none';
-    document.getElementById('errBox').innerHTML = `<div class="err">❌ Failed to load data: ${escHtml(e.message)}<br>Please confirm the Google Sheet API is correctly deployed and publicly accessible, or this month may not have data yet.</div>`;
+    document.getElementById('errBox').innerHTML = `<div class="err">❌ Failed to load data: ${escHtml(e.message)}<br>Please confirm the Google Sheet API is correctly deployed and publicly accessible, or this period may not have data yet.</div>`;
   }
 }
 
@@ -356,6 +451,7 @@ function channelTotalSubSum(rows, channel, sub, field){
 }
 
 populateMonthSelect();
+populateYearSelect();
 loadAll();
 </script>
 </body>
