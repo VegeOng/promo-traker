@@ -77,8 +77,10 @@ async function fetchAllData() {
   async function fetchCalendar() {
     try {
       const calId = encodeURIComponent('ohy4896@gmail.com');
-      const timeMin = new Date(myt.getFullYear(), myt.getMonth(), myt.getDate()).toISOString();
-      const timeMax = new Date(myt.getFullYear(), myt.getMonth(), myt.getDate() + 4).toISOString();
+      // myt.getUTC*() 取出的是马来西亚当地的年月日；MYT 午夜 = UTC-8小时
+      const y = myt.getUTCFullYear(), mo = myt.getUTCMonth(), d = myt.getUTCDate();
+      const timeMin = new Date(Date.UTC(y, mo, d) - 8 * 60 * 60 * 1000).toISOString();
+      const timeMax = new Date(Date.UTC(y, mo, d + 4) - 8 * 60 * 60 * 1000).toISOString();
       const url = `https://www.googleapis.com/calendar/v3/calendars/${calId}/events?key=${process.env.GOOGLE_CALENDAR_API_KEY}&timeMin=${timeMin}&timeMax=${timeMax}&singleEvents=true&orderBy=startTime&maxResults=10`;
       const r = await fetch(url);
       const data = await r.json();
@@ -91,23 +93,24 @@ async function fetchAllData() {
     } catch { return []; }
   }
 
-  const [allOrders, visits, reports, tasks, calendarEvents] = await Promise.all([
+  const [allOrders, visits, reports, tasks, calendarEvents, promotions] = await Promise.all([
     fetchSheets(),
     query('visit_records', `visit_date=gte.${yesterday}&visit_date=lte.${today}&limit=100`),
     query('daily_reports', `date=gte.${yesterday}&limit=20`),
     query('tasks', `limit=50`),
     fetchCalendar(),
+    query('promotions', `date=gte.${today}&order=date.asc&limit=50`),
   ]);
 
   const thisMonthOrders = allOrders.filter(r => parseInt(r['YEAR']) === year && parseInt(r['MONTH']) === month);
   const totalSalesThisMonth = thisMonthOrders.reduce((s, r) => s + (parseFloat(r['TOTAL (RM)']) || 0), 0);
 
-  return { allOrders, thisMonthOrders, totalSalesThisMonth, visits, reports, tasks, calendarEvents, today, yesterday, year, month };
+  return { allOrders, thisMonthOrders, totalSalesThisMonth, visits, reports, tasks, calendarEvents, promotions, today, yesterday, year, month };
 }
 
 // ── 生成简报 ──
 async function generateBrief(data) {
-  const { thisMonthOrders, totalSalesThisMonth, visits, reports, tasks, calendarEvents, today, year, month } = data;
+  const { thisMonthOrders, totalSalesThisMonth, visits, reports, tasks, calendarEvents, promotions, today, year, month } = data;
 
   // 各销售员本月业绩
   const targets = { VEGE: 200000, CAROL: 100000, CHRIS: 100000, CHIN: 50000, RAYMOND: 50000 };
@@ -144,11 +147,21 @@ async function generateBrief(data) {
   const calSummary = calendarEvents && calendarEvents.length > 0
     ? calendarEvents.map(e => {
         const start = e.start ? new Date(e.start) : null;
-        const dateStr = start ? start.toLocaleDateString('zh-MY', { month: 'short', day: 'numeric', weekday: 'short' }) : '';
-        const timeStr = e.allDay ? '全天' : start ? start.toLocaleTimeString('zh-MY', { hour: '2-digit', minute: '2-digit' }) : '';
+        const dateStr = start ? start.toLocaleDateString('zh-MY', { month: 'short', day: 'numeric', weekday: 'short', timeZone: 'Asia/Kuala_Lumpur' }) : '';
+        const timeStr = e.allDay ? '全天' : start ? start.toLocaleTimeString('zh-MY', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Kuala_Lumpur' }) : '';
         return `- ${dateStr} ${timeStr}：${e.title}${e.location ? ' 📍' + e.location : ''}`;
       }).join('\n')
     : '暂无行程';
+
+  // 促销日历（未来30天即将开始的促销）
+  const upcomingPromos = (promotions || []).filter(p => {
+    const d = new Date(p.date);
+    const diffDays = (d - new Date(today)) / 86400000;
+    return diffDays >= 0 && diffDays <= 30;
+  });
+  const promoSummary = upcomingPromos.length > 0
+    ? upcomingPromos.map(p => `- ${p.date}：${p.store || ''} - ${p.activity_name}${p.products ? '（' + p.products + '）' : ''}`).join('\n')
+    : '近30天无新促销活动开始';
 
   const dataContext = `
 今天日期：${today}（${year}年${month}月）
@@ -171,7 +184,12 @@ ${overdue.slice(0,5).map(t=>`- ${t.description}（${t.assigned_to}）截止 ${t.
 📅 未来3天行程：
 ${calSummary}
 
+🎯 近期促销日历（未来30天）：
+${promoSummary}
+
 ⚠️ 7-Eleven：YTD 结构性亏损，每卖一杯亏一杯，不要建议提高销量。
+
+📌 持续提醒（柔佛业务员招聘）：Chin已离职，柔佛区目前无人接手，仍需HQ招聘新业务员。请在"今天 HQ 必做"或简报末尾提醒HQ此事，直到HQ告知已招聘到位为止。
 `;
 
   const systemPrompt = `你是萱萱，MamaVege 的 CEO助理。每天早上产出简洁有力的 HQ 日报。
@@ -184,8 +202,9 @@ ${calSummary}
 1. 📊 本月业绩进度
 2. 👣 昨日地面执行（拜访情况）
 3. 📅 今天及未来3天重要行程
-4. ⚠️ 需要关注的事（逾期任务/未提交报告）
-5. ✅ 今天 HQ 必做 3 件事`;
+4. 🎯 近期促销日历（未来30天即将开始的促销活动，按日期列出，没有就说"近期无新促销"）
+5. ⚠️ 需要关注的事（逾期任务/未提交报告）
+6. ✅ 今天 HQ 必做 3 件事`;
 
   const r = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
