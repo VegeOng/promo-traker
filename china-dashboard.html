@@ -74,6 +74,14 @@
   .legend-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f3f4f6;font-size:13px;}
   .legend-row:last-child{border-bottom:none;}
   .legend-dot{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:8px;vertical-align:middle;}
+
+  /* Date selector */
+  .date-selector{display:flex;align-items:center;gap:10px;margin-bottom:18px;flex-wrap:wrap;}
+  .ds-tabs{display:flex;gap:6px;}
+  .ds-tab{padding:8px 16px;border-radius:20px;border:1.5px solid var(--border);background:#fff;font-size:13px;font-weight:700;color:var(--muted);cursor:pointer;font-family:inherit;}
+  .ds-tab.active{background:var(--green);border-color:var(--green);color:#fff;}
+  .ds-controls select, .ds-controls input[type=date]{padding:8px 14px;border:1.5px solid var(--border);border-radius:8px;font-family:inherit;font-size:13px;background:#fff;cursor:pointer;min-width:140px;}
+  .ds-controls{display:flex;align-items:center;gap:8px;}
 </style>
 </head>
 <body>
@@ -102,9 +110,23 @@
   <div class="page-title">中国市场仪表板</div>
   <div class="page-sub">数据来源：Google Sheet「日常业绩」· 妈子素 China Operations · 自动汇总电商 / 博主代发 / 线下渠道业绩</div>
 
-  <div style="display:flex;align-items:center;gap:10px;margin-bottom:18px;flex-wrap:wrap">
-    <label style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px">查看月份</label>
-    <select id="month-select" onchange="onMonthChange()" style="padding:8px 14px;border:1.5px solid var(--border);border-radius:8px;font-family:inherit;font-size:13px;background:#fff;cursor:pointer;min-width:160px"></select>
+  <div class="date-selector">
+    <div class="ds-tabs">
+      <button class="ds-tab active" data-mode="month" onclick="setMode('month')">📅 按月</button>
+      <button class="ds-tab" data-mode="year" onclick="setMode('year')">🗓 按年</button>
+      <button class="ds-tab" data-mode="range" onclick="setMode('range')">🔧 自定义范围</button>
+    </div>
+    <div class="ds-controls" id="ds-controls-month">
+      <select id="month-select" onchange="onSelectorChange()"></select>
+    </div>
+    <div class="ds-controls" id="ds-controls-year" style="display:none">
+      <select id="year-select" onchange="onSelectorChange()"></select>
+    </div>
+    <div class="ds-controls" id="ds-controls-range" style="display:none">
+      <input type="date" id="range-start" onchange="onSelectorChange()">
+      <span style="color:var(--muted)">→</span>
+      <input type="date" id="range-end" onchange="onSelectorChange()">
+    </div>
   </div>
 
   <div id="loading" class="loading"><div class="spinner"></div>Loading China market data…</div>
@@ -218,7 +240,8 @@ function parseSheetDate(raw){
   const d = new Date(raw);
   if(isNaN(d.getTime())) return null;
   const shifted = new Date(d.getTime() + 8*3600*1000);
-  return { y: shifted.getUTCFullYear(), m: shifted.getUTCMonth()+1, day: shifted.getUTCDate(), ym: `${shifted.getUTCFullYear()}-${String(shifted.getUTCMonth()+1).padStart(2,'0')}` };
+  const y = shifted.getUTCFullYear(), m = shifted.getUTCMonth()+1, day = shifted.getUTCDate();
+  return { y, m, day, ym: `${y}-${String(m).padStart(2,'0')}`, ymd: `${y}-${String(m).padStart(2,'0')}-${String(day).padStart(2,'0')}` };
 }
 
 function classifyChannel(name){
@@ -264,8 +287,86 @@ function populateMonthSelect(){
   sel.value = monthKey(now.getFullYear(), now.getMonth()+1);
 }
 
-function onMonthChange(){
-  render(allRows, document.getElementById('month-select').value);
+function populateYearSelect(){
+  const sel = document.getElementById('year-select');
+  const ySet = new Set(allRows.map(r=>r.date.y));
+  const now = new Date();
+  ySet.add(now.getFullYear());
+  const years = Array.from(ySet).sort().reverse();
+  sel.innerHTML = years.map(y=>`<option value="${y}">${y}年</option>`).join('');
+  sel.value = now.getFullYear();
+}
+
+function fmtDateInput(d){ return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
+
+function populateRangeDefaults(){
+  const startEl = document.getElementById('range-start');
+  const endEl = document.getElementById('range-end');
+  if(startEl.value && endEl.value) return;
+  const now = new Date();
+  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+  if(!startEl.value) startEl.value = fmtDateInput(monthStart);
+  if(!endEl.value) endEl.value = fmtDateInput(now);
+}
+
+let currentMode = 'month';
+
+function setMode(mode){
+  currentMode = mode;
+  document.querySelectorAll('.ds-tab').forEach(b=>b.classList.toggle('active', b.dataset.mode===mode));
+  document.getElementById('ds-controls-month').style.display = mode==='month' ? 'flex' : 'none';
+  document.getElementById('ds-controls-year').style.display = mode==='year' ? 'flex' : 'none';
+  document.getElementById('ds-controls-range').style.display = mode==='range' ? 'flex' : 'none';
+  if(mode==='range') populateRangeDefaults();
+  onSelectorChange();
+}
+
+function onSelectorChange(){
+  render(allRows, getCurrentPeriod());
+}
+
+// 根据当前模式与控件数值，计算「本期」与「上一期」的过滤条件与标签
+function getCurrentPeriod(){
+  if(currentMode==='year'){
+    const y = parseInt(document.getElementById('year-select').value, 10);
+    return {
+      mode:'year',
+      curLabel: `${y}年`,
+      prevLabel: `${y-1}年`,
+      curRows: allRows.filter(r=>r.date.y===y),
+      prevRows: allRows.filter(r=>r.date.y===y-1),
+    };
+  }
+  if(currentMode==='range'){
+    const startStr = document.getElementById('range-start').value;
+    const endStr = document.getElementById('range-end').value;
+    const start = startStr ? new Date(startStr+'T00:00:00') : new Date();
+    const end = endStr ? new Date(endStr+'T00:00:00') : new Date();
+    const lenDays = Math.max(1, Math.round((end-start)/86400000) + 1);
+    const prevEnd = new Date(start); prevEnd.setDate(prevEnd.getDate()-1);
+    const prevStart = new Date(prevEnd); prevStart.setDate(prevStart.getDate()-(lenDays-1));
+    const startYmd = fmtDateInput(start), endYmd = fmtDateInput(end);
+    const prevStartYmd = fmtDateInput(prevStart), prevEndYmd = fmtDateInput(prevEnd);
+    return {
+      mode:'range',
+      curLabel: `${startYmd} ~ ${endYmd}`,
+      prevLabel: `${prevStartYmd} ~ ${prevEndYmd}`,
+      curRows: allRows.filter(r=>r.date.ymd>=startYmd && r.date.ymd<=endYmd),
+      prevRows: allRows.filter(r=>r.date.ymd>=prevStartYmd && r.date.ymd<=prevEndYmd),
+    };
+  }
+  // 按月（默认）
+  const selectedYM = document.getElementById('month-select').value;
+  const [selY, selM] = selectedYM.split('-').map(Number);
+  const lastDate = new Date(selY, selM-1, 1); lastDate.setMonth(lastDate.getMonth()-1);
+  const lastYM = monthKey(lastDate.getFullYear(), lastDate.getMonth()+1);
+  return {
+    mode:'month',
+    curLabel: `${selY}年${mNamesZh[selM-1]}`,
+    prevLabel: `${lastDate.getFullYear()}年${mNamesZh[lastDate.getMonth()]}`,
+    curRows: allRows.filter(r=>r.date.ym===selectedYM),
+    prevRows: allRows.filter(r=>r.date.ym===lastYM),
+  };
 }
 
 async function loadAll(){
@@ -276,7 +377,8 @@ async function loadAll(){
     allRows = await fetchChinaData();
     if(!allRows.length){ throw new Error('No data returned from sheet'); }
     populateMonthSelect();
-    render(allRows, document.getElementById('month-select').value);
+    populateYearSelect();
+    render(allRows, getCurrentPeriod());
     document.getElementById('loading').style.display='none';
     document.getElementById('content').style.display='block';
   }catch(e){
@@ -286,65 +388,58 @@ async function loadAll(){
   }
 }
 
-function render(rows, selectedYM){
+function render(rows, period){
+  const { curLabel, prevLabel, curRows, prevRows } = period;
   const now = new Date();
-  const [selY, selM] = selectedYM.split('-').map(Number);
-  const curYM = selectedYM;
-  const monthLabel = `（${selY}年${selM}月）`;
-  const lastDate = new Date(selY, selM-1, 1); lastDate.setMonth(lastDate.getMonth()-1);
-  const lastYM = monthKey(lastDate.getFullYear(), lastDate.getMonth()+1);
-  const isCurrentMonth = (selY===now.getFullYear() && selM===now.getMonth()+1);
+  const periodLabel = `（${curLabel}）`;
 
-  document.getElementById('lbl-channel').textContent = monthLabel;
-  document.getElementById('lbl-customers').textContent = monthLabel;
-  document.getElementById('lbl-products').textContent = monthLabel;
+  document.getElementById('lbl-channel').textContent = periodLabel;
+  document.getElementById('lbl-customers').textContent = periodLabel;
+  document.getElementById('lbl-products').textContent = periodLabel;
 
-  // ── 月度汇总 ──
-  const monthMap = {}; // ym -> revenue
-  rows.forEach(r=>{ monthMap[r.date.ym] = (monthMap[r.date.ym]||0) + r.revenue; });
+  // ── 本期 / 上一期汇总 ──
+  const curTotal = curRows.reduce((s,r)=>s+r.revenue,0);
+  const prevTotal = prevRows.reduce((s,r)=>s+r.revenue,0);
+  const momPct = prevTotal > 0 ? ((curTotal - prevTotal) / prevTotal * 100) : null;
+  const allTimeTotal = rows.reduce((s,r)=>s+r.revenue,0);
 
-  const thisMonthTotal = monthMap[curYM] || 0;
-  const lastMonthTotal = monthMap[lastYM] || 0;
-  const momPct = lastMonthTotal > 0 ? ((thisMonthTotal - lastMonthTotal) / lastMonthTotal * 100) : null;
-  const ytdTotal = rows.filter(r=>r.date.y===selY).reduce((s,r)=>s+r.revenue,0);
-
-  // 本周（周一为起点，仅在选择「当前月」时显示有意义的数据）
+  // 本周业绩（周一为起点，与所选期间无关，始终对应今天所在的周）
   const day = now.getDay();
   const mondayOffset = (day===0 ? -6 : 1-day);
   const monday = new Date(now.getFullYear(), now.getMonth(), now.getDate()+mondayOffset);
   const mondayStr = `${monday.getFullYear()}-${String(monday.getMonth()+1).padStart(2,'0')}-${String(monday.getDate()).padStart(2,'0')}`;
-  const weekTotal = rows.filter(r=>{
-    const ds = `${r.date.y}-${String(r.date.m).padStart(2,'0')}-${String(r.date.day).padStart(2,'0')}`;
-    return ds >= mondayStr;
-  }).reduce((s,r)=>s+r.revenue,0);
+  const weekTotal = rows.filter(r=> r.date.ymd >= mondayStr).reduce((s,r)=>s+r.revenue,0);
 
   // ── KPI cards ──
   const momHtml = momPct===null
-    ? `<span style="color:#9ca3af">环比：无上月数据</span>`
-    : `<span style="color:${momPct>=0?'var(--green)':'var(--red)'};font-weight:700">${momPct>=0?'▲':'▼'} ${Math.abs(momPct).toFixed(1)}%</span> vs 上月`;
-  const secondCard = isCurrentMonth
-    ? `<div class="kpi-card blue"><div class="kpi-label">本周业绩</div><div class="kpi-val blue">${fmtRMB(weekTotal)}</div><div class="kpi-sub">本周一至今</div></div>`
-    : `<div class="kpi-card blue"><div class="kpi-label">本周业绩（实时）</div><div class="kpi-val blue">${fmtRMB(weekTotal)}</div><div class="kpi-sub">本周一至今，与所选月份无关</div></div>`;
+    ? `<span style="color:#9ca3af">环比：无上一期数据</span>`
+    : `<span style="color:${momPct>=0?'var(--green)':'var(--red)'};font-weight:700">${momPct>=0?'▲':'▼'} ${Math.abs(momPct).toFixed(1)}%</span> vs 上一期`;
 
-  // 月度 / 年度目标达成进度
-  const monthGoalPct = (thisMonthTotal / MONTHLY_GOAL * 100);
-  const yearGoalPct = (ytdTotal / YEARLY_GOAL * 100);
-  const monthGoalColor = monthGoalPct >= 100 ? 'var(--green)' : (monthGoalPct >= 60 ? '#d97706' : 'var(--red)');
-  const yearGoalColor = yearGoalPct >= 100 ? 'var(--green)' : (yearGoalPct >= 60 ? '#d97706' : 'var(--red)');
-  const monthGoalSub = `${momHtml}<br><span style="color:${monthGoalColor};font-weight:700">目标达成 ${monthGoalPct.toFixed(1)}%</span>（目标 RMB ${MONTHLY_GOAL.toLocaleString('zh-CN')}）${progressBarHtml(monthGoalPct, monthGoalColor)}`;
-  const yearGoalSub = `${selY} 年累计　<span style="color:${yearGoalColor};font-weight:700">目标达成 ${yearGoalPct.toFixed(1)}%</span>（目标 RMB ${YEARLY_GOAL.toLocaleString('zh-CN')}）${progressBarHtml(yearGoalPct, yearGoalColor)}`;
+  // 月度 / 年度目标达成进度（仅在「按月」「按年」模式下显示，自定义范围不设目标）
+  let goalSub = momHtml;
+  if(period.mode==='month'){
+    const monthGoalPct = (curTotal / MONTHLY_GOAL * 100);
+    const monthGoalColor = monthGoalPct >= 100 ? 'var(--green)' : (monthGoalPct >= 60 ? '#d97706' : 'var(--red)');
+    goalSub = `${momHtml}<br><span style="color:${monthGoalColor};font-weight:700">月度目标达成 ${monthGoalPct.toFixed(1)}%</span>（目标 RMB ${MONTHLY_GOAL.toLocaleString('zh-CN')}）${progressBarHtml(monthGoalPct, monthGoalColor)}`;
+  } else if(period.mode==='year'){
+    const yearGoalPct = (curTotal / YEARLY_GOAL * 100);
+    const yearGoalColor = yearGoalPct >= 100 ? 'var(--green)' : (yearGoalPct >= 60 ? '#d97706' : 'var(--red)');
+    goalSub = `${momHtml}<br><span style="color:${yearGoalColor};font-weight:700">年度目标达成 ${yearGoalPct.toFixed(1)}%</span>（目标 RMB ${YEARLY_GOAL.toLocaleString('zh-CN')}）${progressBarHtml(yearGoalPct, yearGoalColor)}`;
+  }
 
   document.getElementById('kpi-grid').innerHTML = `
-    <div class="kpi-card"><div class="kpi-label">${selY}年${selM}月业绩</div><div class="kpi-val">${fmtRMB(thisMonthTotal)}</div><div class="kpi-sub">${monthGoalSub}</div></div>
-    ${secondCard}
-    <div class="kpi-card amber"><div class="kpi-label">上月业绩</div><div class="kpi-val amber">${fmtRMB(lastMonthTotal)}</div><div class="kpi-sub">${lastYM}</div></div>
-    <div class="kpi-card"><div class="kpi-label">YTD 累计</div><div class="kpi-val">${fmtRMB(ytdTotal)}</div><div class="kpi-sub">${yearGoalSub}</div></div>
+    <div class="kpi-card"><div class="kpi-label">${escHtml(curLabel)} 业绩</div><div class="kpi-val">${fmtRMB(curTotal)}</div><div class="kpi-sub">${goalSub}</div></div>
+    <div class="kpi-card blue"><div class="kpi-label">本周业绩（实时）</div><div class="kpi-val blue">${fmtRMB(weekTotal)}</div><div class="kpi-sub">本周一至今，与所选期间无关</div></div>
+    <div class="kpi-card amber"><div class="kpi-label">上一期业绩</div><div class="kpi-val amber">${fmtRMB(prevTotal)}</div><div class="kpi-sub">${escHtml(prevLabel)}</div></div>
+    <div class="kpi-card"><div class="kpi-label">历史累计</div><div class="kpi-val">${fmtRMB(allTimeTotal)}</div><div class="kpi-sub">中国市场累计总业绩</div></div>
   `;
 
-  // ── 趋势图：近12个月 ──
+  // ── 趋势图：始终显示近12个月（以今天为基准）──
+  const monthMap = {}; // ym -> revenue
+  rows.forEach(r=>{ monthMap[r.date.ym] = (monthMap[r.date.ym]||0) + r.revenue; });
   const trendLabels = [], trendValues = [];
   for(let i=11;i>=0;i--){
-    const d = new Date(selY, selM-1-i, 1);
+    const d = new Date(now.getFullYear(), now.getMonth()-i, 1);
     const ym = monthKey(d.getFullYear(), d.getMonth()+1);
     trendLabels.push(`${d.getFullYear()}/${d.getMonth()+1}`);
     trendValues.push(monthMap[ym] || 0);
@@ -359,11 +454,10 @@ function render(rows, selectedYM){
     }
   });
 
-  // ── 本月渠道分布 + 客户榜（基于本月数据）──
-  const monthRows = rows.filter(r=>r.date.ym===curYM);
+  // ── 渠道分布 + 客户榜（基于所选期间数据）──
   const channelTotals = { ec:0, ot:0 };
   const customerMap = {}; // name -> {revenue, orders, channel}
-  monthRows.forEach(r=>{
+  curRows.forEach(r=>{
     const ch = classifyChannel(r.name);
     channelTotals[ch] += r.revenue;
     if(!customerMap[r.name]) customerMap[r.name] = { revenue:0, orders:0, channel:ch };
@@ -388,10 +482,10 @@ function render(rows, selectedYM){
 
   // ── TOP 15 客户/达人 ──
   const sortedCustomers = Object.entries(customerMap).sort((a,b)=>b[1].revenue-a[1].revenue).slice(0,15);
-  const grandTotal = monthRows.reduce((s,r)=>s+r.revenue,0) || 1;
+  const grandTotal = curRows.reduce((s,r)=>s+r.revenue,0) || 1;
   const tbody = document.getElementById('top-customers');
   if(!sortedCustomers.length){
-    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:#9ca3af;padding:24px">${selY}年${selM}月暂无数据</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:#9ca3af;padding:24px">${escHtml(curLabel)}暂无数据</td></tr>`;
   } else {
     tbody.innerHTML = sortedCustomers.map(([name,d],i)=>{
       const pillClass = d.channel==='ec'?'ec':'ot';
@@ -406,8 +500,8 @@ function render(rows, selectedYM){
     }).join('');
   }
 
-  // ── 产品销量（本月）──
-  const productTotals = PRODUCT_COLS.map(p=>monthRows.reduce((s,r)=>s+(r.products[p]||0),0));
+  // ── 产品销量（所选期间）──
+  const productTotals = PRODUCT_COLS.map(p=>curRows.reduce((s,r)=>s+(r.products[p]||0),0));
   if(charts.products) charts.products.destroy();
   charts.products = new Chart(document.getElementById('chartProducts'), {
     type:'bar',
