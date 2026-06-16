@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>粉丝问题收件箱</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --green:#166534;--green2:#22c55e;--green-bg:#f0fdf4;--green-border:#bbf7d0;
+  --bg:#fafafa;--s1:#fff;--s2:#f3f4f6;
+  --t1:#111827;--t2:#4b5563;--t3:#9ca3af;--b1:#e5e7eb;
+  --font:'Plus Jakarta Sans',sans-serif;
+}
+body{background:var(--bg);color:var(--t1);font-family:var(--font);min-height:100vh;}
+
+/* TOP BAR */
+.top{background:var(--green);padding:16px 28px;display:flex;align-items:center;justify-content:space-between;}
+.top-left{display:flex;align-items:center;gap:12px;}
+.top-icon{font-size:24px;}
+.top-title{color:white;font-size:18px;font-weight:800;}
+.top-sub{color:rgba(255,255,255,.6);font-size:12px;}
+.top-right{display:flex;gap:10px;align-items:center;}
+.btn-reload{
+  background:rgba(255,255,255,.15);color:white;border:1px solid rgba(255,255,255,.3);
+  border-radius:8px;padding:8px 16px;font-size:13px;font-weight:600;
+  cursor:pointer;font-family:var(--font);transition:all .2s;
+}
+.btn-reload:hover{background:rgba(255,255,255,.25);}
+
+/* STATS */
+.stats{display:flex;gap:12px;padding:20px 28px;flex-wrap:wrap;}
+.stat{
+  background:white;border:1px solid var(--b1);border-radius:12px;
+  padding:14px 20px;flex:1;min-width:120px;
+}
+.stat-num{font-size:28px;font-weight:800;line-height:1;}
+.stat-label{font-size:12px;color:var(--t3);margin-top:4px;}
+.stat.pending .stat-num{color:#d97706;}
+.stat.done .stat-num{color:var(--green);}
+.stat.total .stat-num{color:var(--t1);}
+
+/* FILTERS */
+.filters{padding:0 28px 16px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+.filter-btn{
+  padding:7px 16px;border-radius:999px;font-size:13px;font-weight:600;
+  border:1.5px solid var(--b1);background:white;color:var(--t2);
+  cursor:pointer;font-family:var(--font);transition:all .2s;
+}
+.filter-btn.active{background:var(--green);color:white;border-color:var(--green);}
+.search{
+  margin-left:auto;padding:8px 14px;border:1.5px solid var(--b1);border-radius:10px;
+  font-size:13px;font-family:var(--font);color:var(--t1);background:white;
+  width:220px;outline:none;
+}
+.search:focus{border-color:var(--green);}
+
+/* CARDS */
+.cards{padding:0 28px 40px;display:flex;flex-direction:column;gap:12px;}
+.card{
+  background:white;border:1.5px solid var(--b1);border-radius:16px;
+  padding:20px 22px;transition:box-shadow .2s;
+}
+.card:hover{box-shadow:0 4px 16px rgba(0,0,0,.08);}
+.card.pending{border-left:4px solid #f59e0b;}
+.card.done{border-left:4px solid var(--green2);}
+
+.card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:12px;}
+.card-meta{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.badge{
+  display:inline-flex;align-items:center;gap:4px;
+  border-radius:999px;font-size:11px;font-weight:700;padding:3px 10px;
+}
+.badge.pending{background:#fef3c7;color:#92400e;}
+.badge.done{background:var(--green-bg);color:var(--green);}
+.name{font-size:14px;font-weight:700;color:var(--t1);}
+.time{font-size:12px;color:var(--t3);}
+
+.question{
+  font-size:15px;color:var(--t1);line-height:1.65;
+  background:var(--s2);border-radius:10px;padding:12px 14px;margin-bottom:12px;
+}
+
+.contact-row{display:flex;align-items:center;gap:8px;margin-bottom:14px;}
+.contact-chip{
+  display:inline-flex;align-items:center;gap:6px;
+  background:#eff6ff;color:#1d4ed8;border-radius:8px;
+  padding:6px 12px;font-size:13px;font-weight:600;
+}
+.copy-btn{
+  background:none;border:none;color:var(--t3);cursor:pointer;
+  font-size:12px;padding:2px 6px;border-radius:4px;
+  font-family:var(--font);transition:all .2s;
+}
+.copy-btn:hover{background:var(--s2);color:var(--t1);}
+
+.card-actions{display:flex;gap:8px;flex-wrap:wrap;}
+.action-btn{
+  padding:8px 16px;border-radius:8px;font-size:13px;font-weight:600;
+  cursor:pointer;font-family:var(--font);transition:all .2s;border:none;
+}
+.btn-done{background:var(--green-bg);color:var(--green);}
+.btn-done:hover{background:#dcfce7;}
+.btn-undone{background:#fef3c7;color:#92400e;}
+.btn-undone:hover{background:#fde68a;}
+.btn-delete{background:#fef2f2;color:#dc2626;}
+.btn-delete:hover{background:#fee2e2;}
+
+/* EMPTY */
+.empty{text-align:center;padding:60px 20px;color:var(--t3);}
+.empty-icon{font-size:48px;margin-bottom:12px;}
+
+/* LOADING */
+.loading{text-align:center;padding:60px;color:var(--t3);font-size:14px;}
+
+/* CONFIG BANNER */
+.config-banner{
+  background:#fef9c3;border-bottom:1px solid #fde047;
+  padding:12px 28px;font-size:13px;color:#713f12;
+  display:flex;align-items:center;gap:8px;
+}
+</style>
+</head>
+<body>
+
+<div class="top">
+  <div class="top-left">
+    <div class="top-icon">📬</div>
+    <div>
+      <div class="top-title">粉丝问题收件箱</div>
+      <div class="top-sub">查看问题 → 去私信 → 标记已回复</div>
+    </div>
+  </div>
+  <div class="top-right">
+    <button class="btn-reload" onclick="loadData()">🔄 刷新</button>
+  </div>
+</div>
+
+<div class="config-banner" id="configBanner" style="display:none">
+  ⚠️ 请先在代码里设置 <strong>SCRIPT_URL</strong> 和 <strong>SHEET_URL</strong>，才能加载数据
+</div>
+
+<div class="stats">
+  <div class="stat total"><div class="stat-num" id="totalCount">—</div><div class="stat-label">总问题</div></div>
+  <div class="stat pending"><div class="stat-num" id="pendingCount">—</div><div class="stat-label">待回复</div></div>
+  <div class="stat done"><div class="stat-num" id="doneCount">—</div><div class="stat-label">已回复</div></div>
+</div>
+
+<div class="filters">
+  <button class="filter-btn active" onclick="setFilter('all',this)">全部</button>
+  <button class="filter-btn" onclick="setFilter('pending',this)">待回复</button>
+  <button class="filter-btn" onclick="setFilter('done',this)">已回复</button>
+  <input class="search" type="text" id="searchInput" placeholder="🔍 搜索问题或昵称…" oninput="renderCards()">
+</div>
+
+<div class="cards" id="cardContainer">
+  <div class="loading">加载中…</div>
+</div>
+
+<script>
+// ✅ 填入你的 Google Apps Script URL（同 fan-ask.html 里的那个）
+const SCRIPT_URL = 'YOUR_GOOGLE_APPS_SCRIPT_URL';
+
+let allData = [];
+let currentFilter = 'all';
+const CONTACT_ICONS = {
+  '微信':'💬','WhatsApp':'📱','手机号':'📞',
+  '小红书':'🌸','抖音':'🎵','Instagram':'📷','其他':'💌'
+};
+
+if (!SCRIPT_URL || SCRIPT_URL === 'YOUR_GOOGLE_APPS_SCRIPT_URL') {
+  document.getElementById('configBanner').style.display = 'flex';
+}
+
+async function loadData() {
+  document.getElementById('cardContainer').innerHTML = '<div class="loading">加载中…</div>';
+  try {
+    const res = await fetch(SCRIPT_URL + '?action=get');
+    const json = await res.json();
+    allData = json.data || [];
+    updateStats();
+    renderCards();
+  } catch(e) {
+    document.getElementById('cardContainer').innerHTML =
+      '<div class="empty"><div class="empty-icon">⚠️</div><p>加载失败，请检查 Script URL 设置</p></div>';
+  }
+}
+
+function updateStats() {
+  const pending = allData.filter(d => d.status === '待回复').length;
+  document.getElementById('totalCount').textContent = allData.length;
+  document.getElementById('pendingCount').textContent = pending;
+  document.getElementById('doneCount').textContent = allData.length - pending;
+}
+
+function setFilter(f, btn) {
+  currentFilter = f;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderCards();
+}
+
+function renderCards() {
+  const q = document.getElementById('searchInput').value.toLowerCase();
+  let data = allData;
+  if (currentFilter !== 'all') {
+    data = data.filter(d => (currentFilter === 'pending' ? d.status === '待回复' : d.status === '已回复'));
+  }
+  if (q) {
+    data = data.filter(d =>
+      d.question.toLowerCase().includes(q) ||
+      (d.nickname || '').toLowerCase().includes(q) ||
+      (d.contactValue || '').toLowerCase().includes(q)
+    );
+  }
+
+  if (!data.length) {
+    document.getElementById('cardContainer').innerHTML =
+      '<div class="empty"><div class="empty-icon">💬</div><p>暂无问题</p></div>';
+    return;
+  }
+
+  document.getElementById('cardContainer').innerHTML = data.map((d, i) => {
+    const icon = CONTACT_ICONS[d.contactType] || '💌';
+    const isDone = d.status === '已回复';
+    const realIdx = allData.indexOf(d);
+    return `
+    <div class="card ${isDone ? 'done' : 'pending'}">
+      <div class="card-top">
+        <div class="card-meta">
+          <span class="badge ${isDone ? 'done' : 'pending'}">${isDone ? '✅ 已回复' : '⏳ 待回复'}</span>
+          <span class="name">👤 ${d.nickname || '匿名'}</span>
+          <span class="time">🕐 ${d.timestamp}</span>
+        </div>
+      </div>
+      <div class="question">${escHtml(d.question)}</div>
+      <div class="contact-row">
+        <div class="contact-chip">${icon} ${d.contactType}：${escHtml(d.contactValue)}</div>
+        <button class="copy-btn" onclick="copy('${escAttr(d.contactValue)}', this)">复制</button>
+      </div>
+      <div class="card-actions">
+        ${isDone
+          ? `<button class="action-btn btn-undone" onclick="updateStatus(${realIdx},'待回复')">↩️ 标为未回复</button>`
+          : `<button class="action-btn btn-done" onclick="updateStatus(${realIdx},'已回复')">✅ 标为已回复</button>`
+        }
+        <button class="action-btn btn-delete" onclick="deleteItem(${realIdx})">🗑️ 删除</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function updateStatus(idx, status) {
+  allData[idx].status = status;
+  updateStats();
+  renderCards();
+  try {
+    await fetch(SCRIPT_URL, {
+      method:'POST', mode:'no-cors',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({action:'update', rowIndex: allData[idx].rowIndex, status})
+    });
+  } catch(e) { console.warn('同步失败', e); }
+}
+
+async function deleteItem(idx) {
+  if (!confirm('确认删除这条问题？')) return;
+  const item = allData[idx];
+  allData.splice(idx, 1);
+  updateStats();
+  renderCards();
+  try {
+    await fetch(SCRIPT_URL, {
+      method:'POST', mode:'no-cors',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({action:'delete', rowIndex: item.rowIndex})
+    });
+  } catch(e) { console.warn('同步失败', e); }
+}
+
+function copy(text, btn) {
+  navigator.clipboard.writeText(text).then(() => {
+    const orig = btn.textContent;
+    btn.textContent = '已复制！';
+    setTimeout(() => btn.textContent = orig, 1500);
+  });
+}
+
+function escHtml(s='') {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function escAttr(s='') {
+  return s.replace(/'/g,"\\'");
+}
+
+loadData();
+</script>
+</body>
+</html>

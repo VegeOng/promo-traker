@@ -615,8 +615,8 @@ YTD（截至6月）：RM 1,915,395 / 达成率：31.9%
 - Vege（老手）负责所有MT客户 + 北马 / 月目标 RM 200,000
 - Carol（老手）负责吉兰丹/登嘉楼/马六甲/彭亨/森美兰/KL / 月目标 RM 100,000
 - Chris（新人，第2个月）负责吉隆坡南部、西部 / 月目标 RM 100,000
-- Chin（新人，第2个月）负责柔佛 / 月目标 RM 50,000
 - Raymond（新人，第2个月）负责沙巴、砂拉越 / 月目标 RM 50,000
+- 柔佛区（原由Chin负责，已离职）暂无人接手，待HQ重新分配
 - Wan 负责每月巡视100家门店 + 协助Chris（无销售目标）
 
 MT客户：Lotus's, AEON, MYNEWS, Jaya Grocer, Village Grocer, 7-Eleven
@@ -697,11 +697,11 @@ Telegram 自动简报：
 你是【笑笑】，MamaVege 的销售总监。
 
 你的核心职责：
-1. 监督6个销售员的业绩，分析原因，给出改善建议
+1. 监督5个销售员的业绩，分析原因，给出改善建议
 2. 重点追踪 KPM / CLM / SMTS / SMCL 四个核心SKU
 3. 每月分析各SKU销售数量金额、vs上月对比（↑/↓/百分比）
 4. 监控 MT 客户月度业绩
-5. 对新人（Chris/Chin/Raymond）给出辅导性建议，不用老手标准评判他们
+5. 对新人（Chris/Raymond）给出辅导性建议，不用老手标准评判他们
 
 MT客户分析重点：
 - 哪个MT客户本月还没下单？
@@ -712,7 +712,7 @@ MT客户分析重点：
 - 本周各人业绩 vs 上周
 - 重点SKU本周表现
 - 每个销售员下周行动建议
-- Chris/Chin/Raymond 专项辅导建议
+- Chris/Raymond 专项辅导建议
 
 根据 Supabase sales_orders 数据给出准确分析。
 
@@ -830,7 +830,7 @@ activities / activity_reports 是地推活动追踪（Sampling、Roadshow、Exhi
 4. 产品过期预警
 
 重要：visit_records 只有销售人员填写：
-Vege / Carol / Chris / Chin / Raymond
+Vege / Carol / Chris / Raymond
 （Wan 不填 visit_records，她有独立巡店追踪）
 
 产品过期预警（三级，每级只提醒一次）：
@@ -1298,7 +1298,7 @@ function formatDataAsContext(data) {
       bySP[sp] = (bySP[sp] || 0) + (parseFloat(r['TOTAL (RM)']) || 0);
     });
     ctx += `\n各销售员本月业绩：\n`;
-    const targets = { VEGE: 200000, CAROL: 100000, CHRIS: 100000, CHIN: 50000, RAYMOND: 50000 };
+    const targets = { VEGE: 200000, CAROL: 100000, CHRIS: 100000, RAYMOND: 50000 };
     Object.entries(bySP).sort((a, b) => b[1] - a[1]).forEach(([name, amt]) => {
       const target = targets[name.toUpperCase()] || 0;
       const pct = target > 0 ? ((amt / target) * 100).toFixed(1) : '-';
@@ -1365,7 +1365,7 @@ function formatDataAsContext(data) {
   // 日报提交情况
   if (data.reports) {
     const submitted = data.reports.map(r => (r.name || '').toUpperCase());
-    const allSales = ['VEGE', 'CAROL', 'CHRIS', 'CHIN', 'RAYMOND'];
+    const allSales = ['VEGE', 'CAROL', 'CHRIS', 'RAYMOND'];
     const missing = allSales.filter(n => !submitted.includes(n));
     ctx += `\n📋 昨日日报：\n`;
     ctx += `  已提交：${submitted.length > 0 ? submitted.join(', ') : '无'}\n`;
@@ -1469,7 +1469,7 @@ function formatDataAsContext(data) {
       byPerson[name] = (byPerson[name] || 0) + 1;
     });
     ctx += `\n👣 本周拜访汇总：\n`;
-    const salesTeam = ['VEGE', 'CAROL', 'CHRIS', 'CHIN', 'RAYMOND'];
+    const salesTeam = ['VEGE', 'CAROL', 'CHRIS', 'RAYMOND'];
     salesTeam.forEach(name => {
       const count = byPerson[name] || byPerson[name.toLowerCase()] || 0;
       const warn = count === 0 ? ' ⚠️ 本周零拜访！' : '';
