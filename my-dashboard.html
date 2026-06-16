@@ -264,6 +264,11 @@
       <div class="tool-name">Break-even Calculator</div>
       <span class="tbadge">LIVE</span>
     </a>
+    <a class="tool" href="my-sales-dashboard.html">
+      <div class="tool-icon">📊</div>
+      <div class="tool-name">My Sales Dashboard</div>
+      <span class="tbadge">NEW</span>
+    </a>
   </div>
 
   <div class="sec-title">My Data</div>
@@ -272,8 +277,6 @@
     <div class="tab" id="tab-visits" onclick="switchTab('visits', event)">Visit History</div>
     <div class="tab" id="tab-daily-reports" style="display:none" onclick="switchTab('daily_reports', event)">Daily Reports</div>
     <div class="tab" onclick="switchTab('weekly', event)">Weekly Reports</div>
-    <div class="tab" id="tab-sales" onclick="switchTab('sales', event)">Sales Data</div>
-    <div class="tab" onclick="switchTab('brief', event)">📊 My Brief</div>
   </div>
 
   <!-- MY TASKS -->
@@ -321,9 +324,8 @@
     <div id="list-weekly"></div>
   </div>
 
-  <!-- SALES DATA -->
-  <div class="panel" id="panel-sales">
-    <div class="loading" id="loading-sales">Loading sales data…</div>
+  <!-- SALES DATA MOVED TO my-sales-dashboard.html -->
+  <div class="panel" id="panel-sales" style="display:none">
     <div id="sales-content" style="display:none">
       <div class="kpi-grid" id="kpi-grid"></div>
       <div id="churn-section"></div>
@@ -366,8 +368,8 @@
     </div>
   </div>
 
-  <!-- MY BRIEF -->
-  <div class="panel" id="panel-brief">
+  <!-- MY BRIEF MOVED TO my-sales-dashboard.html -->
+  <div class="panel" id="panel-brief" style="display:none">
     <div id="brief-loading" class="loading">Loading your brief…</div>
     <div id="brief-content" style="display:none">
 

@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Sales Dashboard - MamaVege</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #fafafa; min-height: 100vh; color: #1f2937; }
+
+  .header { background: white; padding: 16px 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 10; }
+  .header-left { display: flex; align-items: center; gap: 12px; }
+  .back-btn { background: none; border: 1px solid #e5e7eb; padding: 6px 12px; border-radius: 8px; font-size: 13px; color: #6b7280; cursor: pointer; text-decoration: none; display: flex; align-items: center; gap: 5px; }
+  .back-btn:hover { background: #f9fafb; }
+  .header h1 { color: #166534; font-size: 18px; }
+  .header .user { font-size: 13px; color: #6b7280; }
+
+  .container { max-width: 900px; margin: 0 auto; padding: 20px; }
+
+  .section-title { font-size: 11px; font-weight: 700; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.07em; margin: 24px 0 12px; display: flex; align-items: center; gap: 8px; }
+  .section-title::after { content:''; flex:1; height:1px; background:#e5e7eb; }
+  .section-title:first-child { margin-top: 0; }
+
+  /* Progress */
+  .progress-wrap { background: white; border-radius: 12px; padding: 18px; border: 1px solid #e5e7eb; margin-bottom: 14px; }
+  .progress-label { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+  .progress-label .p-name { font-size: 14px; font-weight: 700; color: #1f2937; }
+  .progress-label .p-pct { font-size: 24px; font-weight: 800; }
+  .progress-track { height: 14px; background: #f3f4f6; border-radius: 99px; overflow: hidden; margin-bottom: 8px; }
+  .progress-fill { height: 100%; border-radius: 99px; transition: width 0.8s ease; }
+  .progress-meta { display: flex; justify-content: space-between; font-size: 12px; color: #9ca3af; }
+
+  /* Stat grid */
+  .stat-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 14px; }
+  @media (min-width: 480px) { .stat-grid { grid-template-columns: repeat(4, 1fr); } }
+  .stat-box { background: white; border: 1px solid #e5e7eb; border-radius: 12px; padding: 14px; }
+  .stat-box .s-label { font-size: 10px; font-weight: 700; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; }
+  .stat-box .s-val { font-size: 20px; font-weight: 800; color: #1f2937; line-height: 1.1; }
+  .stat-box .s-sub { font-size: 11px; color: #9ca3af; margin-top: 4px; }
+  .s-badge { display: inline-block; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 20px; margin-top: 5px; }
+  .badge-up { background: #dcfce7; color: #166534; }
+  .badge-down { background: #fee2e2; color: #dc2626; }
+  .badge-warn { background: #fef3c7; color: #92400e; }
+
+  /* Visit grid (2-col only) */
+  .visit-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+
+  /* Alerts */
+  .alert-box { border-radius: 12px; padding: 14px; margin-bottom: 10px; }
+  .alert-box.warn  { background: #fffbeb; border: 1px solid #fde68a; }
+  .alert-box.danger{ background: #fef2f2; border: 1px solid #fecaca; }
+  .alert-box.ok    { background: #f0fdf4; border: 1px solid #bbf7d0; }
+  .alert-box .a-title { font-size: 13px; font-weight: 700; margin-bottom: 6px; }
+  .alert-box.warn  .a-title { color: #92400e; }
+  .alert-box.danger .a-title { color: #991b1b; }
+  .alert-box.ok    .a-title { color: #166534; }
+  .task-row { font-size: 12px; color: #7f1d1d; padding: 4px 0; border-bottom: 1px solid #fecaca; }
+  .task-row:last-child { border-bottom: none; }
+  .chip { display: inline-block; font-size: 11px; padding: 2px 9px; border-radius: 20px; margin: 2px 3px 2px 0; }
+  .chip-warn { background: #fef3c7; border: 1px solid #f59e0b; color: #92400e; }
+
+  /* Chart */
+  .chart-card { background: white; border: 1px solid #e5e7eb; border-radius: 12px; padding: 16px; margin-bottom: 14px; }
+  .chart-wrap { position: relative; height: 220px; }
+
+  /* Table */
+  .table-card { background: white; border: 1px solid #e5e7eb; border-radius: 12px; overflow: hidden; margin-bottom: 14px; }
+  .data-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .data-table th { background: #f9fafb; padding: 10px 14px; text-align: left; font-size: 11px; font-weight: 700; color: #6b7280; text-transform: uppercase; letter-spacing: 0.04em; border-bottom: 1px solid #e5e7eb; }
+  .data-table td { padding: 10px 14px; border-bottom: 1px solid #f3f4f6; }
+  .data-table tr:last-child td { border-bottom: none; }
+  .data-table .rank { font-weight: 700; color: #9ca3af; font-size: 12px; width: 36px; }
+  .data-table .amount { font-weight: 700; color: #166534; }
+  .data-table .last-date { font-size: 12px; color: #6b7280; }
+
+  /* Period toggle */
+  .period-bar { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-bottom: 1px solid #e5e7eb; flex-wrap: wrap; gap: 8px; }
+  .period-title { font-size: 13px; font-weight: 700; color: #374151; }
+  .period-btns { display: flex; gap: 4px; }
+  .period-btn { padding: 5px 12px; border: 1px solid #e5e7eb; background: white; border-radius: 8px; font-size: 12px; font-weight: 600; color: #6b7280; cursor: pointer; }
+  .period-btn.active { background: #166534; color: white; border-color: #166534; }
+
+  .empty { text-align: center; color: #9ca3af; padding: 30px; font-size: 14px; }
+  .loading { text-align: center; padding: 60px 20px; color: #6b7280; font-size: 14px; }
+  .spinner { width: 32px; height: 32px; border: 3px solid #e5e7eb; border-top-color: #166534; border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 12px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-left">
+    <a class="back-btn" href="my-dashboard.html">← Back</a>
+    <div>
+      <h1>📊 My Sales Dashboard</h1>
+      <div class="user" id="userLabel"></div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div id="main-loading" class="loading">
+    <div class="spinner"></div>
+    Loading your sales data…
+  </div>
+  <div id="main-content" style="display:none">
+
+    <!-- 1. Monthly Target -->
+    <div class="section-title">📊 This Month's Target</div>
+    <div class="progress-wrap">
+      <div class="progress-label">
+        <span class="p-name" id="s-month-label"></span>
+        <span class="p-pct" id="s-ach-pct">0%</span>
+      </div>
+      <div class="progress-track"><div class="progress-fill" id="s-progress-fill" style="width:0%"></div></div>
+      <div class="progress-meta">
+        <span id="s-achieved"></span>
+        <span id="s-gap"></span>
+      </div>
+    </div>
+    <div class="stat-grid">
+      <div class="stat-box">
+        <div class="s-label">This Month</div>
+        <div class="s-val" id="s-this-month">—</div>
+        <div class="s-sub" id="s-orders-count"></div>
+      </div>
+      <div class="stat-box">
+        <div class="s-label">vs Last Month</div>
+        <div class="s-val" id="s-last-month">—</div>
+        <div id="s-mom-badge"></div>
+      </div>
+      <div class="stat-box">
+        <div class="s-label">YTD Total</div>
+        <div class="s-val" id="s-ytd">—</div>
+        <div class="s-sub" id="s-ytd-sub"></div>
+      </div>
+      <div class="stat-box">
+        <div class="s-label">Active Customers</div>
+        <div class="s-val" id="s-custs">—</div>
+        <div class="s-sub" id="s-custs-sub"></div>
+      </div>
+    </div>
+
+    <!-- 2. Ground Execution -->
+    <div class="section-title">👣 Ground Execution</div>
+    <div class="visit-grid">
+      <div class="stat-box">
+        <div class="s-label">This Week Visits</div>
+        <div class="s-val" id="s-visits-this">—</div>
+        <div class="s-sub">outlets visited</div>
+      </div>
+      <div class="stat-box">
+        <div class="s-label">Last Week Visits</div>
+        <div class="s-val" id="s-visits-last">—</div>
+        <div id="s-visits-badge"></div>
+      </div>
+    </div>
+
+    <!-- 3. Needs Attention -->
+    <div class="section-title">⚠️ Needs Attention</div>
+    <div id="s-overdue-box"></div>
+    <div id="s-churn-box"></div>
+
+    <!-- 4. Monthly Trend -->
+    <div class="section-title">📈 Monthly Sales Trend</div>
+    <div class="chart-card">
+      <div class="chart-wrap"><canvas id="s-chart-monthly"></canvas></div>
+    </div>
+
+    <!-- 5. Top Customers -->
+    <div class="section-title">🏆 Top Customers</div>
+    <div class="table-card">
+      <div class="period-bar">
+        <span class="period-title">Customer Ranking</span>
+        <div class="period-btns" id="cust-period">
+          <button class="period-btn active" onclick="setCustPeriod('month',this)">This Month</button>
+          <button class="period-btn" onclick="setCustPeriod('year',this)">This Year</button>
+          <button class="period-btn" onclick="setCustPeriod('all',this)">All Time</button>
+        </div>
+      </div>
+      <table class="data-table" id="s-top-customers">
+        <thead><tr><th>#</th><th>Customer</th><th>Orders</th><th>Sales</th><th>Last Order</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <!-- 6. SKU Ranking -->
+    <div class="section-title">📦 SKU Ranking</div>
+    <div class="table-card">
+      <div class="period-bar">
+        <span class="period-title">Product Performance</span>
+        <div class="period-btns" id="sku-period">
+          <button class="period-btn active" onclick="setSkuPeriod('month',this)">This Month</button>
+          <button class="period-btn" onclick="setSkuPeriod('year',this)">This Year</button>
+          <button class="period-btn" onclick="setSkuPeriod('all',this)">All Time</button>
+        </div>
+      </div>
+      <table class="data-table" id="s-top-skus">
+        <thead><tr><th>#</th><th>Product</th><th>Qty</th><th>%</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  const SUPABASE_URL = 'https://wjhgezvrxlhpexocfsea.supabase.co';
+  const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndqaGdlenZyeGxocGV4b2Nmc2VhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg1MDU4NzgsImV4cCI6MjA5NDA4MTg3OH0.jENcrgEDYDlSRUCqve-T6rxYRJfz-dnZQHnXpPLJ_RE';
+  const supa = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  const SALES_API = 'https://script.google.com/macros/s/AKfycbwxt23ZB0od7EeBSNvjurKTbkDcM7HLgrWhuoqHc3meKWmhbB0XQzfOdB-X2Pj5O_MY/exec';
+  const PRODUCTS = ['KPM','CLM','SHCR','SHTY','SHSS','SPM - BBQ','BBQ (BAG)','SPM - MALA','MALA (BAG)','MRBR','TYSN','TYSP','TMSP','SMTS','SMCL','SPTS','SPCL','CMBR','KETUPAT'];
+
+  function lsGet(k) {
+    const raw = localStorage.getItem(k);
+    if (!raw) return null;
+    try { const i = JSON.parse(raw); if (Date.now() > i.expiry) { localStorage.removeItem(k); return null; } return i.value; } catch { return null; }
+  }
+
+  const userName = lsGet('userName');
+  const userRole = lsGet('userRole');
+  if (!userName || userRole !== 'member') { location.href = 'index.html'; }
+  if (lsGet('memberRole') === 'china') { location.href = 'china-hub.html'; }
+  document.getElementById('userLabel').textContent = userName;
+
+  function fmt(n) { return Number(n||0).toLocaleString('en-MY', { maximumFractionDigits: 0 }); }
+  function fmtRM(n) { return 'RM ' + fmt(n); }
+  function escHtml(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+  function getTotalField(r) {
+    for (const k of Object.keys(r)) { const c = k.replace(/[^A-Za-z]/g,'').toUpperCase(); if (c === 'TOTALRM') return parseFloat(r[k])||0; }
+    return 0;
+  }
+
+  const now = new Date();
+  const mNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const thisY = now.getFullYear(), thisM = now.getMonth() + 1;
+  const lastMNum = thisM === 1 ? 12 : thisM - 1;
+  const lastMYear = thisM === 1 ? thisY - 1 : thisY;
+
+  let allMyData = [];
+  let custPeriod = 'month', skuPeriod = 'month';
+
+  function filterByPeriod(period) {
+    if (period === 'month') return allMyData.filter(r => parseInt(r['YEAR']) === thisY && parseInt(r['MONTH']) === thisM);
+    if (period === 'year')  return allMyData.filter(r => parseInt(r['YEAR']) === thisY);
+    return allMyData;
+  }
+
+  function renderTopCustomers() {
+    const data = filterByPeriod(custPeriod);
+    const custMap = {}, lastOrderMap = {};
+    allMyData.forEach(r => {
+      const c = r['COMPANY'] || 'Unknown';
+      const d = r['INVOICE DATE'] || r['PO DATE'] || '';
+      if (d && (!lastOrderMap[c] || d > lastOrderMap[c])) lastOrderMap[c] = d;
+    });
+    data.forEach(r => {
+      const c = r['COMPANY'] || 'Unknown';
+      if (!custMap[c]) custMap[c] = { orders: 0, total: 0 };
+      custMap[c].orders++; custMap[c].total += getTotalField(r);
+    });
+    const top = Object.entries(custMap).sort((a,b) => b[1].total - a[1].total).slice(0, 10);
+    const medals = ['🥇','🥈','🥉'];
+    document.querySelector('#s-top-customers tbody').innerHTML = top.length
+      ? top.map(([name, d], i) => {
+          const raw = lastOrderMap[name] || '';
+          const lastDate = raw ? new Date(raw).toLocaleDateString('en-MY', { day:'2-digit', month:'short', year:'2-digit' }) : '—';
+          return `<tr><td class="rank">${medals[i]||i+1}</td><td><strong>${escHtml(name)}</strong></td><td>${d.orders}</td><td class="amount">${fmtRM(d.total)}</td><td class="last-date">${lastDate}</td></tr>`;
+        }).join('')
+      : '<tr><td colspan="5" class="empty">No data</td></tr>';
+  }
+
+  function renderTopSkus() {
+    const data = filterByPeriod(skuPeriod);
+    const skuMap = {};
+    PRODUCTS.forEach(p => { const qty = data.reduce((s,r) => s + (parseFloat(r[p])||0), 0); if (qty > 0) skuMap[p] = qty; });
+    const sorted = Object.entries(skuMap).sort((a,b) => b[1]-a[1]);
+    const total = sorted.reduce((s,e) => s+e[1], 0);
+    document.querySelector('#s-top-skus tbody').innerHTML = sorted.length
+      ? sorted.map(([name, qty], i) => `<tr><td class="rank">${i+1}</td><td><strong>${escHtml(name)}</strong></td><td style="font-weight:700;color:#3b82f6">${fmt(qty)}</td><td>${total>0?(qty/total*100).toFixed(1):0}%</td></tr>`).join('')
+      : '<tr><td colspan="4" class="empty">No data</td></tr>';
+  }
+
+  function setCustPeriod(p, btn) { custPeriod = p; document.querySelectorAll('#cust-period .period-btn').forEach(b=>b.classList.remove('active')); btn.classList.add('active'); renderTopCustomers(); }
+  function setSkuPeriod(p, btn) { skuPeriod = p; document.querySelectorAll('#sku-period .period-btn').forEach(b=>b.classList.remove('active')); btn.classList.add('active'); renderTopSkus(); }
+
+  async function loadAll() {
+    try {
+      const dow = now.getDay() === 0 ? 6 : now.getDay() - 1;
+      const weekStart = new Date(now); weekStart.setDate(now.getDate() - dow); weekStart.setHours(0,0,0,0);
+      const lastWeekStart = new Date(weekStart); lastWeekStart.setDate(weekStart.getDate() - 7);
+      const lastWeekEnd = new Date(weekStart); lastWeekEnd.setDate(weekStart.getDate() - 1);
+      const fmt2 = d => d.toISOString().split('T')[0];
+      const todayStr = fmt2(now);
+
+      const [memberRes, salesRes, visitsThisRes, visitsLastRes, tasksRes] = await Promise.all([
+        supa.from('members').select('monthly_kpi').eq('name', userName).maybeSingle(),
+        fetch(SALES_API).then(r=>r.json()).then(j=>j.data||[]),
+        supa.from('visit_records').select('visit_id').eq('rep_name', userName).gte('visit_date', fmt2(weekStart)).lte('visit_date', todayStr),
+        supa.from('visit_records').select('visit_id').eq('rep_name', userName).gte('visit_date', fmt2(lastWeekStart)).lte('visit_date', fmt2(lastWeekEnd)),
+        supa.from('tasks').select('task_id,description,due_date,status,linked_customer').eq('assigned_to', userName.toUpperCase()).in('status', ['pending','overdue']),
+      ]);
+
+      const kpiTarget = memberRes.data?.monthly_kpi || 0;
+      allMyData = salesRes.filter(r => (r['SALES PERSON']||'').trim() === userName.trim());
+
+      const yearData  = allMyData.filter(r => parseInt(r['YEAR']) === thisY);
+      const monthData = yearData.filter(r => parseInt(r['MONTH']) === thisM);
+      const lastMData = allMyData.filter(r => parseInt(r['YEAR']) === lastMYear && parseInt(r['MONTH']) === lastMNum);
+      const monthTotal = monthData.reduce((s,r) => s + getTotalField(r), 0);
+      const lastMTotal = lastMData.reduce((s,r) => s + getTotalField(r), 0);
+      const ytdTotal   = yearData.reduce((s,r) => s + getTotalField(r), 0);
+      const achPct = kpiTarget > 0 ? Math.min(Math.round(monthTotal / kpiTarget * 100), 100) : 0;
+      const momDiff = monthTotal - lastMTotal;
+      const momPct  = lastMTotal > 0 ? Math.round(momDiff / lastMTotal * 100) : null;
+      const thisMonthCusts = new Set(monthData.map(r => r['COMPANY']).filter(Boolean));
+      const lastMonthCusts = new Set(lastMData.map(r => r['COMPANY']).filter(Boolean));
+      const churnList = [...lastMonthCusts].filter(c => !thisMonthCusts.has(c));
+
+      // Progress bar
+      const pColor = achPct >= 100 ? '#166534' : achPct >= 70 ? '#d97706' : '#dc2626';
+      document.getElementById('s-month-label').textContent = `${mNames[thisM-1]} ${thisY}`;
+      document.getElementById('s-ach-pct').textContent = kpiTarget > 0 ? achPct + '%' : '—';
+      document.getElementById('s-ach-pct').style.color = pColor;
+      document.getElementById('s-progress-fill').style.width = achPct + '%';
+      document.getElementById('s-progress-fill').style.background = pColor;
+      document.getElementById('s-achieved').textContent = 'Achieved: ' + fmtRM(monthTotal);
+      document.getElementById('s-gap').textContent = kpiTarget > 0 ? (monthTotal >= kpiTarget ? '🎉 Target met!' : 'Gap: ' + fmtRM(kpiTarget - monthTotal)) : 'KPI not set by HQ';
+
+      // Stat cards
+      document.getElementById('s-this-month').textContent = fmtRM(monthTotal);
+      document.getElementById('s-orders-count').textContent = monthData.length + ' orders · ' + thisMonthCusts.size + ' customers';
+      document.getElementById('s-last-month').textContent = fmtRM(lastMTotal);
+      if (momPct !== null) {
+        document.getElementById('s-mom-badge').innerHTML = `<span class="s-badge ${momDiff >= 0 ? 'badge-up':'badge-down'}">${momDiff >= 0 ? '↑':'↓'} ${Math.abs(momPct)}% vs ${mNames[lastMNum-1]}</span>`;
+      }
+      document.getElementById('s-ytd').textContent = fmtRM(ytdTotal);
+      document.getElementById('s-ytd-sub').textContent = thisY + ' YTD';
+      document.getElementById('s-custs').textContent = thisMonthCusts.size;
+      document.getElementById('s-custs-sub').textContent = [...lastMonthCusts].filter(c => thisMonthCusts.has(c)).length + ' returned from last month';
+
+      // Visits
+      const visitsThis = visitsThisRes.data?.length || 0;
+      const visitsLast = visitsLastRes.data?.length || 0;
+      const visitDiff = visitsThis - visitsLast;
+      document.getElementById('s-visits-this').textContent = visitsThis;
+      document.getElementById('s-visits-last').textContent = visitsLast;
+      document.getElementById('s-visits-badge').innerHTML = visitsLast > 0
+        ? `<span class="s-badge ${visitDiff >= 0 ? 'badge-up':'badge-down'}">${visitDiff >= 0 ? '↑':'↓'} ${Math.abs(visitDiff)} vs last week</span>`
+        : '<span class="s-badge badge-warn">No data last week</span>';
+
+      // Overdue tasks
+      const overdueTasks = (tasksRes.data || []).filter(t => t.status === 'overdue' || (t.due_date && new Date(t.due_date) < now));
+      document.getElementById('s-overdue-box').innerHTML = overdueTasks.length
+        ? `<div class="alert-box danger">
+            <div class="a-title">🔴 ${overdueTasks.length} Overdue Task${overdueTasks.length > 1 ? 's' : ''}</div>
+            ${overdueTasks.map(t => `<div class="task-row">${escHtml(t.description)}${t.linked_customer ? ' — <em>'+escHtml(t.linked_customer)+'</em>' : ''} <span style="color:#9ca3af">(due ${t.due_date||'?'})</span></div>`).join('')}
+          </div>`
+        : '<div class="alert-box ok"><div class="a-title">✅ No overdue tasks</div></div>';
+
+      // Churn warning
+      document.getElementById('s-churn-box').innerHTML = churnList.length
+        ? `<div class="alert-box warn">
+            <div class="a-title">⚠️ ${churnList.length} Customer${churnList.length > 1 ? 's' : ''} not reordered this month</div>
+            <div style="margin-top:6px">${churnList.map(c => `<span class="chip chip-warn">${escHtml(c)}</span>`).join('')}</div>
+            <div style="font-size:11px;color:#b45309;margin-top:8px">Ordered in ${mNames[lastMNum-1]} — follow up now!</div>
+          </div>`
+        : '<div class="alert-box ok"><div class="a-title">✅ All last month\'s customers still active</div></div>';
+
+      // Monthly trend chart with target line
+      const monthMap = {};
+      yearData.forEach(r => { const m = parseInt(r['MONTH']); if (m) monthMap[m] = (monthMap[m]||0) + getTotalField(r); });
+      const chartLabels = [], chartValues = [], targetLine = [];
+      for (let m = 1; m <= 12; m++) { chartLabels.push(mNames[m-1]); chartValues.push(monthMap[m]||0); targetLine.push(kpiTarget||null); }
+      new Chart(document.getElementById('s-chart-monthly'), {
+        type: 'bar',
+        data: {
+          labels: chartLabels,
+          datasets: [
+            { label: 'Sales', data: chartValues, backgroundColor: chartValues.map((_,i) => i+1===thisM ? '#166534' : '#166534aa'), borderRadius: 5 },
+            { label: 'Monthly Target', data: targetLine, type: 'line', borderColor: '#d97706', borderDash: [5,4], borderWidth: 2, pointRadius: 0, fill: false }
+          ]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: { legend: { display: kpiTarget > 0 }, tooltip: { callbacks: { label: ctx => ctx.dataset.label + ': RM ' + fmt(ctx.parsed.y) } } },
+          scales: { y: { beginAtZero: true, ticks: { callback: v => 'RM ' + fmt(v) } } }
+        }
+      });
+
+      // Render tables
+      renderTopCustomers();
+      renderTopSkus();
+
+      document.getElementById('main-loading').style.display = 'none';
+      document.getElementById('main-content').style.display = 'block';
+    } catch(e) {
+      console.error(e);
+      document.getElementById('main-loading').innerHTML = '<div class="empty">❌ Failed to load. Please try again.</div>';
+    }
+  }
+
+  loadAll();
+</script>
+</body>
+</html>
