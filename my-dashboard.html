@@ -86,6 +86,39 @@
   .chart-title { font-size: 13px; font-weight: 700; color: #374151; margin-bottom: 12px; }
   .chart-wrap { position: relative; height: 220px; }
 
+  /* My Brief tab */
+  .brief-section { margin-bottom: 16px; }
+  .brief-section-title { font-size: 11px; font-weight: 700; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+  .brief-section-title::after { content:''; flex:1; height:1px; background:#e5e7eb; }
+  .progress-wrap { background: white; border-radius: 12px; padding: 16px; border: 1px solid #e5e7eb; margin-bottom: 10px; }
+  .progress-label { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+  .progress-label .p-name { font-size: 13px; font-weight: 700; color: #1f2937; }
+  .progress-label .p-pct { font-size: 16px; font-weight: 800; }
+  .progress-track { height: 12px; background: #f3f4f6; border-radius: 99px; overflow: hidden; margin-bottom: 6px; }
+  .progress-fill { height: 100%; border-radius: 99px; transition: width 0.8s ease; }
+  .progress-meta { display: flex; justify-content: space-between; font-size: 11px; color: #9ca3af; }
+  .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+  .stat-box { background: white; border: 1px solid #e5e7eb; border-radius: 12px; padding: 14px; }
+  .stat-box .s-label { font-size: 10px; font-weight: 700; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; }
+  .stat-box .s-val { font-size: 22px; font-weight: 800; color: #1f2937; line-height: 1; }
+  .stat-box .s-sub { font-size: 11px; color: #9ca3af; margin-top: 4px; }
+  .stat-box .s-badge { display: inline-block; font-size: 11px; font-weight: 700; padding: 2px 7px; border-radius: 20px; margin-top: 4px; }
+  .badge-up { background: #dcfce7; color: #166534; }
+  .badge-down { background: #fee2e2; color: #dc2626; }
+  .badge-warn { background: #fef3c7; color: #92400e; }
+  .alert-box { border-radius: 12px; padding: 14px; margin-bottom: 10px; }
+  .alert-box.warn { background: #fffbeb; border: 1px solid #fde68a; }
+  .alert-box.danger { background: #fef2f2; border: 1px solid #fecaca; }
+  .alert-box.ok { background: #f0fdf4; border: 1px solid #bbf7d0; }
+  .alert-box .a-title { font-size: 13px; font-weight: 700; margin-bottom: 6px; }
+  .alert-box.warn .a-title { color: #92400e; }
+  .alert-box.danger .a-title { color: #991b1b; }
+  .alert-box.ok .a-title { color: #166534; }
+  .chip { display: inline-block; font-size: 11px; padding: 2px 9px; border-radius: 20px; margin: 2px 3px 2px 0; border: 1px solid; }
+  .chip-warn { background: #fef3c7; border-color: #f59e0b; color: #92400e; }
+  .chip-danger { background: #fee2e2; border-color: #fca5a5; color: #991b1b; }
+  .brief-chart-wrap { position: relative; height: 200px; }
+
   .period-bar { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-bottom: 1px solid #e5e7eb; flex-wrap: wrap; gap: 8px; }
   .period-title { font-size: 13px; font-weight: 700; color: #374151; }
   .period-btns { display: flex; gap: 4px; background: #f3f4f6; border-radius: 8px; padding: 3px; }
@@ -240,6 +273,7 @@
     <div class="tab" id="tab-daily-reports" style="display:none" onclick="switchTab('daily_reports', event)">Daily Reports</div>
     <div class="tab" onclick="switchTab('weekly', event)">Weekly Reports</div>
     <div class="tab" id="tab-sales" onclick="switchTab('sales', event)">Sales Data</div>
+    <div class="tab" onclick="switchTab('brief', event)">📊 My Brief</div>
   </div>
 
   <!-- MY TASKS -->
@@ -292,6 +326,7 @@
     <div class="loading" id="loading-sales">Loading sales data…</div>
     <div id="sales-content" style="display:none">
       <div class="kpi-grid" id="kpi-grid"></div>
+      <div id="churn-section"></div>
       <div class="chart-card">
         <div class="chart-title">📈 Monthly Sales Trend (This Year)</div>
         <div class="chart-wrap"><canvas id="chartMonthly"></canvas></div>
@@ -307,7 +342,7 @@
         </div>
         <div style="overflow-x:auto">
           <table class="data-table" id="topOutletTable">
-            <thead><tr><th>#</th><th>Customer</th><th>Orders</th><th>Sales</th></tr></thead>
+            <thead><tr><th>#</th><th>Customer</th><th>Orders</th><th>Sales</th><th>Last Order</th></tr></thead>
             <tbody></tbody>
           </table>
         </div>
@@ -328,6 +363,95 @@
           </table>
         </div>
       </div>
+    </div>
+  </div>
+
+  <!-- MY BRIEF -->
+  <div class="panel" id="panel-brief">
+    <div id="brief-loading" class="loading">Loading your brief…</div>
+    <div id="brief-content" style="display:none">
+
+      <!-- 1. Monthly Target Progress -->
+      <div class="brief-section">
+        <div class="brief-section-title">📊 This Month's Target</div>
+        <div class="progress-wrap">
+          <div class="progress-label">
+            <span class="p-name" id="b-month-label">Jun 2026</span>
+            <span class="p-pct" id="b-ach-pct" style="color:#166534">0%</span>
+          </div>
+          <div class="progress-track"><div class="progress-fill" id="b-progress-fill" style="width:0%;background:#166534"></div></div>
+          <div class="progress-meta">
+            <span id="b-achieved">Achieved: RM 0</span>
+            <span id="b-gap">Gap: RM 0</span>
+          </div>
+        </div>
+        <div class="stat-grid">
+          <div class="stat-box">
+            <div class="s-label">This Month</div>
+            <div class="s-val" id="b-this-month">—</div>
+            <div class="s-sub" id="b-orders-count"></div>
+          </div>
+          <div class="stat-box">
+            <div class="s-label">vs Last Month</div>
+            <div class="s-val" id="b-last-month">—</div>
+            <div id="b-mom-badge"></div>
+          </div>
+          <div class="stat-box">
+            <div class="s-label">YTD Total</div>
+            <div class="s-val" id="b-ytd">—</div>
+            <div class="s-sub" id="b-ytd-sub"></div>
+          </div>
+          <div class="stat-box">
+            <div class="s-label">Active Customers</div>
+            <div class="s-val" id="b-custs">—</div>
+            <div class="s-sub" id="b-custs-sub"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. Visits This Week -->
+      <div class="brief-section">
+        <div class="brief-section-title">👣 Ground Execution</div>
+        <div class="stat-grid">
+          <div class="stat-box">
+            <div class="s-label">This Week Visits</div>
+            <div class="s-val" id="b-visits-this">—</div>
+            <div class="s-sub">outlets visited</div>
+          </div>
+          <div class="stat-box">
+            <div class="s-label">Last Week Visits</div>
+            <div class="s-val" id="b-visits-last">—</div>
+            <div id="b-visits-badge"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. Attention Required -->
+      <div class="brief-section">
+        <div class="brief-section-title">⚠️ Needs Attention</div>
+        <div id="b-overdue-box"></div>
+        <div id="b-churn-box"></div>
+      </div>
+
+      <!-- 4. Monthly Trend Chart -->
+      <div class="brief-section">
+        <div class="brief-section-title">📈 Monthly Sales Trend</div>
+        <div class="chart-card" style="padding:14px">
+          <div class="brief-chart-wrap"><canvas id="b-chart-monthly"></canvas></div>
+        </div>
+      </div>
+
+      <!-- 5. Top Customers with Last Order -->
+      <div class="brief-section">
+        <div class="brief-section-title">🏆 Top Customers This Month</div>
+        <div class="card" style="padding:0;overflow:hidden">
+          <table class="data-table" id="b-top-customers">
+            <thead><tr><th>#</th><th>Customer</th><th>Sales</th><th>Last Order</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+
     </div>
   </div>
 
@@ -385,6 +509,7 @@
     else if (name === 'weekly') loadWeekly();
     else if (name === 'sales' && !salesLoaded) loadSales();
     else if (name === 'daily_reports') loadDailyReportsTab();
+    else if (name === 'brief') loadBrief();
   }
 
   function openLightbox(url) {
@@ -589,11 +714,22 @@
   function renderTopOutlets(){
     const data=filterByPeriod(outletPeriod);
     const outletMap={};
+    // Build last order date map from ALL myData (not period-filtered)
+    const lastOrderMap={};
+    myData.forEach(r=>{
+      const o=r['COMPANY']||'Unknown';
+      const d=r['INVOICE DATE']||r['PO DATE']||'';
+      if(d&&(!lastOrderMap[o]||d>lastOrderMap[o]))lastOrderMap[o]=d;
+    });
     data.forEach(r=>{const o=r['COMPANY']||'Unknown';if(!outletMap[o])outletMap[o]={orders:0,total:0};outletMap[o].orders++;outletMap[o].total+=getTotalField(r);});
     const top=Object.entries(outletMap).sort((a,b)=>b[1].total-a[1].total).slice(0,10);
     document.querySelector('#topOutletTable tbody').innerHTML=top.length
-      ?top.map(([name,d],i)=>`<tr><td class="rank">${i===0?'🥇':i===1?'🥈':i===2?'🥉':i+1}</td><td><strong>${escHtml(name)}</strong></td><td>${d.orders}</td><td class="amount">${fmtRM(d.total)}</td></tr>`).join('')
-      :'<tr><td colspan="4" style="text-align:center;color:#9ca3af;padding:20px">No data</td></tr>';
+      ?top.map(([name,d],i)=>{
+        const raw=lastOrderMap[name]||'';
+        const lastDate=raw?new Date(raw).toLocaleDateString('en-MY',{day:'2-digit',month:'short',year:'2-digit'}):'—';
+        return `<tr><td class="rank">${i===0?'🥇':i===1?'🥈':i===2?'🥉':i+1}</td><td><strong>${escHtml(name)}</strong></td><td>${d.orders}</td><td class="amount">${fmtRM(d.total)}</td><td style="font-size:12px;color:#6b7280">${lastDate}</td></tr>`;
+      }).join('')
+      :'<tr><td colspan="5" style="text-align:center;color:#9ca3af;padding:20px">No data</td></tr>';
   }
 
   function renderTopSkus(){
@@ -629,12 +765,40 @@
       const monthTotal=monthData.reduce((s,r)=>s+getTotalField(r),0);
       const achPct=kpiTarget>0?Math.round(monthTotal/kpiTarget*100):0;
       const myOutlets=new Set(myData.map(r=>r['COMPANY']).filter(Boolean)).size;
+
+      // Last month data for MoM comparison
+      const lastMonthNum = curMonth===1?12:curMonth-1;
+      const lastMonthYear = curMonth===1?curYear-1:curYear;
+      const lastMonthData = myData.filter(r=>parseInt(r['YEAR'])===lastMonthYear&&parseInt(r['MONTH'])===lastMonthNum);
+      const lastMonthTotal = lastMonthData.reduce((s,r)=>s+getTotalField(r),0);
+      const momDiff = monthTotal - lastMonthTotal;
+      const momPct = lastMonthTotal>0?Math.round(momDiff/lastMonthTotal*100):null;
+      const momLabel = momPct===null?'No prev data':momDiff>=0?`↑ ${momPct}% vs last month`:`↓ ${Math.abs(momPct)}% vs last month`;
+      const momColor = momDiff>=0?'green':'red';
+
+      // Churn: customers who ordered last month but NOT this month
+      const thisMonthCustomers = new Set(monthData.map(r=>r['COMPANY']).filter(Boolean));
+      const churnList = [...new Set(lastMonthData.map(r=>r['COMPANY']).filter(Boolean))].filter(c=>!thisMonthCustomers.has(c));
+
       document.getElementById('kpi-grid').innerHTML=`
         <div class="kpi-card green"><div class="kpi-label">This Month</div><div class="kpi-val green">${fmtRM(monthTotal)}</div><div class="kpi-sub">${curYear}/${curMonth} · ${monthData.length} orders</div></div>
         <div class="kpi-card amber"><div class="kpi-label">Monthly KPI</div><div class="kpi-val amber">${kpiTarget>0?fmtRM(kpiTarget):'Not set'}</div><div class="kpi-sub">${kpiTarget>0?'Contact HQ to change':'HQ has not set'}</div></div>
         <div class="kpi-card ${achPct>=100?'green':achPct>=70?'amber':'red'}"><div class="kpi-label">Achievement</div><div class="kpi-val ${achPct>=100?'green':achPct>=70?'amber':'red'}">${kpiTarget>0?achPct+'%':'—'}</div><div class="kpi-sub">${kpiTarget>0?(achPct>=100?'🎉 Target met!':'Gap: '+fmtRM(kpiTarget-monthTotal)):'Set KPI to show'}</div></div>
+        <div class="kpi-card ${momColor}"><div class="kpi-label">vs Last Month</div><div class="kpi-val ${momColor}">${fmtRM(lastMonthTotal)}</div><div class="kpi-sub">${momLabel}</div></div>
         <div class="kpi-card blue"><div class="kpi-label">YTD Total</div><div class="kpi-val blue">${fmtRM(yearTotal)}</div><div class="kpi-sub">${curYear} cumulative</div></div>
         <div class="kpi-card green"><div class="kpi-label">Customers</div><div class="kpi-val green">${myOutlets}</div><div class="kpi-sub">Total served</div></div>`;
+
+      // Churn warning section
+      const churnEl = document.getElementById('churn-section');
+      if(churnList.length){
+        churnEl.innerHTML=`<div class="card" style="border-left:4px solid #d97706;background:#fffbeb;margin-bottom:12px">
+          <div style="font-size:13px;font-weight:700;color:#d97706;margin-bottom:8px">⚠️ ${churnList.length} Customer${churnList.length>1?'s':''} Not Reordered This Month</div>
+          <div style="font-size:12px;color:#92400e;">${churnList.map(c=>`<span style="display:inline-block;background:#fef3c7;border:1px solid #f59e0b;border-radius:6px;padding:2px 8px;margin:2px 4px 2px 0">${escHtml(c)}</span>`).join('')}</div>
+          <div style="font-size:11px;color:#b45309;margin-top:8px">Ordered in ${lastMonthYear}/${lastMonthNum} but no orders yet in ${curYear}/${curMonth}</div>
+        </div>`;
+      } else {
+        churnEl.innerHTML='';
+      }
       loadEl.style.display='none';contentEl.style.display='block';
       const monthMap={};
       yearData.forEach(r=>{const m=parseInt(r['MONTH']);if(m)monthMap[m]=(monthMap[m]||0)+getTotalField(r);});
@@ -727,6 +891,155 @@
   }
   loadMyTasks();
   loadWeekly();
+
+  // ===== MY BRIEF =====
+  let briefLoaded = false;
+  async function loadBrief() {
+    if (briefLoaded) return;
+    briefLoaded = true;
+    const loadEl = document.getElementById('brief-loading');
+    const contentEl = document.getElementById('brief-content');
+    try {
+      const now = new Date();
+      const mNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+      const thisY = now.getFullYear(), thisM = now.getMonth() + 1;
+      const lastMNum = thisM === 1 ? 12 : thisM - 1;
+      const lastMYear = thisM === 1 ? thisY - 1 : thisY;
+
+      // Week boundaries (Mon–Sun)
+      const dow = now.getDay() === 0 ? 6 : now.getDay() - 1; // 0=Mon
+      const weekStart = new Date(now); weekStart.setDate(now.getDate() - dow); weekStart.setHours(0,0,0,0);
+      const lastWeekStart = new Date(weekStart); lastWeekStart.setDate(weekStart.getDate() - 7);
+      const lastWeekEnd = new Date(weekStart); lastWeekEnd.setDate(weekStart.getDate() - 1);
+      const fmt2 = d => d.toISOString().split('T')[0];
+
+      // Fetch all in parallel
+      const [memberRes, salesRes, visitsThisRes, visitsLastRes, tasksRes] = await Promise.all([
+        supa.from('members').select('monthly_kpi').eq('name', userName).maybeSingle(),
+        fetch(SALES_API).then(r => r.json()).then(j => j.data || []),
+        supa.from('visit_records').select('visit_id,customer_name,visit_date').eq('rep_name', userName).gte('visit_date', fmt2(weekStart)).lte('visit_date', fmt2(now)),
+        supa.from('visit_records').select('visit_id').eq('rep_name', userName).gte('visit_date', fmt2(lastWeekStart)).lte('visit_date', fmt2(lastWeekEnd)),
+        supa.from('tasks').select('task_id,description,due_date,status,linked_customer').eq('assigned_to', userName.toUpperCase()).in('status', ['pending','overdue']),
+      ]);
+
+      const kpiTarget = memberRes.data?.monthly_kpi || 0;
+      const myAll = salesRes.filter(r => (r['SALES PERSON'] || '').trim() === userName.trim());
+      const yearData = myAll.filter(r => parseInt(r['YEAR']) === thisY);
+      const monthData = yearData.filter(r => parseInt(r['MONTH']) === thisM);
+      const lastMData = myAll.filter(r => parseInt(r['YEAR']) === lastMYear && parseInt(r['MONTH']) === lastMNum);
+      const monthTotal = monthData.reduce((s, r) => s + getTotalField(r), 0);
+      const lastMTotal = lastMData.reduce((s, r) => s + getTotalField(r), 0);
+      const ytdTotal = yearData.reduce((s, r) => s + getTotalField(r), 0);
+      const achPct = kpiTarget > 0 ? Math.min(Math.round(monthTotal / kpiTarget * 100), 100) : 0;
+      const momDiff = monthTotal - lastMTotal;
+      const momPct = lastMTotal > 0 ? Math.round(momDiff / lastMTotal * 100) : null;
+      const thisMonthCusts = new Set(monthData.map(r => r['COMPANY']).filter(Boolean));
+      const lastMonthCusts = new Set(lastMData.map(r => r['COMPANY']).filter(Boolean));
+      const churnList = [...lastMonthCusts].filter(c => !thisMonthCusts.has(c));
+
+      // Progress bar
+      const pColor = achPct >= 100 ? '#166534' : achPct >= 70 ? '#d97706' : '#dc2626';
+      document.getElementById('b-month-label').textContent = `${mNames[thisM-1]} ${thisY}`;
+      document.getElementById('b-ach-pct').textContent = kpiTarget > 0 ? achPct + '%' : '—';
+      document.getElementById('b-ach-pct').style.color = pColor;
+      document.getElementById('b-progress-fill').style.width = achPct + '%';
+      document.getElementById('b-progress-fill').style.background = pColor;
+      document.getElementById('b-achieved').textContent = 'Achieved: ' + fmtRM(monthTotal);
+      document.getElementById('b-gap').textContent = kpiTarget > 0 ? (monthTotal >= kpiTarget ? '🎉 Target met!' : 'Gap: ' + fmtRM(kpiTarget - monthTotal)) : 'KPI not set';
+
+      // Stats
+      document.getElementById('b-this-month').textContent = fmtRM(monthTotal);
+      document.getElementById('b-orders-count').textContent = monthData.length + ' orders · ' + thisMonthCusts.size + ' customers';
+      document.getElementById('b-last-month').textContent = fmtRM(lastMTotal);
+      if (momPct !== null) {
+        document.getElementById('b-mom-badge').innerHTML = `<span class="s-badge ${momDiff >= 0 ? 'badge-up' : 'badge-down'}">${momDiff >= 0 ? '↑' : '↓'} ${Math.abs(momPct)}% vs ${mNames[lastMNum-1]}</span>`;
+      }
+      document.getElementById('b-ytd').textContent = fmtRM(ytdTotal);
+      document.getElementById('b-ytd-sub').textContent = thisY + ' YTD';
+      document.getElementById('b-custs').textContent = thisMonthCusts.size;
+      document.getElementById('b-custs-sub').textContent = `${[...lastMonthCusts].filter(c => thisMonthCusts.has(c)).length} returned from last month`;
+
+      // Visits
+      const visitsThis = visitsThisRes.data?.length || 0;
+      const visitsLast = visitsLastRes.data?.length || 0;
+      const visitDiff = visitsThis - visitsLast;
+      document.getElementById('b-visits-this').textContent = visitsThis;
+      document.getElementById('b-visits-last').textContent = visitsLast;
+      document.getElementById('b-visits-badge').innerHTML = visitsLast > 0
+        ? `<span class="s-badge ${visitDiff >= 0 ? 'badge-up' : 'badge-down'}">${visitDiff >= 0 ? '↑' : '↓'} ${Math.abs(visitDiff)} vs last week</span>`
+        : '<span class="s-badge badge-warn">No data last week</span>';
+
+      // Overdue tasks
+      const overdueTasks = (tasksRes.data || []).filter(t => t.status === 'overdue' || (t.due_date && new Date(t.due_date) < now));
+      const overdueEl = document.getElementById('b-overdue-box');
+      if (overdueTasks.length) {
+        overdueEl.innerHTML = `<div class="alert-box danger">
+          <div class="a-title">🔴 ${overdueTasks.length} Overdue Task${overdueTasks.length > 1 ? 's' : ''}</div>
+          ${overdueTasks.map(t => `<div style="font-size:12px;color:#7f1d1d;padding:3px 0;border-bottom:1px solid #fecaca">${escHtml(t.description)}${t.linked_customer ? ' — <em>' + escHtml(t.linked_customer) + '</em>' : ''} <span style="color:#9ca3af">(due ${t.due_date || '?'})</span></div>`).join('')}
+        </div>`;
+      } else {
+        overdueEl.innerHTML = `<div class="alert-box ok"><div class="a-title">✅ No overdue tasks</div></div>`;
+      }
+
+      // Churn
+      const churnEl = document.getElementById('b-churn-box');
+      if (churnList.length) {
+        churnEl.innerHTML = `<div class="alert-box warn">
+          <div class="a-title">⚠️ ${churnList.length} Customer${churnList.length > 1 ? 's' : ''} not reordered this month</div>
+          <div style="margin-top:6px">${churnList.map(c => `<span class="chip chip-warn">${escHtml(c)}</span>`).join('')}</div>
+          <div style="font-size:11px;color:#b45309;margin-top:8px">Ordered in ${mNames[lastMNum-1]} but silent in ${mNames[thisM-1]} — time to follow up!</div>
+        </div>`;
+      } else {
+        churnEl.innerHTML = `<div class="alert-box ok"><div class="a-title">✅ All last month's customers still active</div></div>`;
+      }
+
+      // Monthly trend chart with target line
+      const monthMap = {};
+      yearData.forEach(r => { const m = parseInt(r['MONTH']); if (m) monthMap[m] = (monthMap[m] || 0) + getTotalField(r); });
+      const chartLabels = [], chartValues = [], targetLine = [];
+      for (let m = 1; m <= 12; m++) { chartLabels.push(mNames[m-1]); chartValues.push(monthMap[m] || 0); targetLine.push(kpiTarget || null); }
+      new Chart(document.getElementById('b-chart-monthly'), {
+        type: 'bar',
+        data: {
+          labels: chartLabels,
+          datasets: [
+            { label: 'Sales', data: chartValues, backgroundColor: chartValues.map((v,i) => i+1 === thisM ? '#166534' : '#166534aa'), borderRadius: 5 },
+            { label: 'Target', data: targetLine, type: 'line', borderColor: '#d97706', borderDash: [5,4], borderWidth: 2, pointRadius: 0, fill: false }
+          ]
+        },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: kpiTarget > 0 }, tooltip: { callbacks: { label: ctx => ctx.dataset.label + ': RM ' + fmt(ctx.parsed.y) } } }, scales: { y: { beginAtZero: true, ticks: { callback: v => 'RM ' + fmt(v) } } } }
+      });
+
+      // Top customers
+      const custMap = {};
+      const lastOrderMap = {};
+      myAll.forEach(r => {
+        const c = r['COMPANY'] || 'Unknown';
+        const d = r['INVOICE DATE'] || r['PO DATE'] || '';
+        if (d && (!lastOrderMap[c] || d > lastOrderMap[c])) lastOrderMap[c] = d;
+      });
+      monthData.forEach(r => {
+        const c = r['COMPANY'] || 'Unknown';
+        if (!custMap[c]) custMap[c] = 0;
+        custMap[c] += getTotalField(r);
+      });
+      const topCusts = Object.entries(custMap).sort((a, b) => b[1] - a[1]).slice(0, 10);
+      const medals = ['🥇','🥈','🥉'];
+      document.querySelector('#b-top-customers tbody').innerHTML = topCusts.length
+        ? topCusts.map(([name, total], i) => {
+            const raw = lastOrderMap[name] || '';
+            const lastDate = raw ? new Date(raw).toLocaleDateString('en-MY', { day: '2-digit', month: 'short', year: '2-digit' }) : '—';
+            return `<tr><td class="rank">${medals[i] || i+1}</td><td><strong>${escHtml(name)}</strong></td><td class="amount">${fmtRM(total)}</td><td style="font-size:12px;color:#6b7280">${lastDate}</td></tr>`;
+          }).join('')
+        : '<tr><td colspan="4" style="text-align:center;color:#9ca3af;padding:20px">No orders this month</td></tr>';
+
+      loadEl.style.display = 'none';
+      contentEl.style.display = 'block';
+    } catch(e) {
+      console.error(e);
+      loadEl.innerHTML = '<div class="empty">❌ Failed to load brief.</div>';
+    }
+  }
 </script>
 </body>
 </html>
