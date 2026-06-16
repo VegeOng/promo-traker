@@ -163,6 +163,19 @@
     <div id="s-overdue-box"></div>
     <div id="s-churn-box"></div>
 
+    <!-- 4. Not Ordered This Month -->
+    <div class="section-title">🔔 Not Ordered This Month</div>
+    <div class="table-card">
+      <div class="period-bar">
+        <span class="period-title">Active customers with no order yet</span>
+        <span id="s-inactive-count" style="font-size:12px;color:#6b7280"></span>
+      </div>
+      <table class="data-table" id="s-inactive-customers">
+        <thead><tr><th>#</th><th>Customer</th><th>Last Order</th><th>Months Silent</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
     <!-- 4. Monthly Trend -->
     <div class="section-title">📈 Monthly Sales Trend</div>
     <div class="chart-card">
@@ -389,6 +402,47 @@
           scales: { y: { beginAtZero: true, ticks: { callback: v => 'RM ' + fmt(v) } } }
         }
       });
+
+      // Not ordered this month (active in last 3 months but no order this month)
+      const last3Months = [];
+      for (let i = 1; i <= 3; i++) {
+        let m = thisM - i, y = thisY;
+        if (m <= 0) { m += 12; y -= 1; }
+        last3Months.push({ y, m });
+      }
+      const recentData = allMyData.filter(r => last3Months.some(p => parseInt(r['YEAR']) === p.y && parseInt(r['MONTH']) === p.m));
+      const recentCusts = new Set(recentData.map(r => r['COMPANY']).filter(Boolean));
+      // Build last order info for all customers
+      const allLastOrder = {};
+      allMyData.forEach(r => {
+        const c = r['COMPANY'] || 'Unknown';
+        const yr = parseInt(r['YEAR']), mo = parseInt(r['MONTH']);
+        if (!allLastOrder[c] || yr > allLastOrder[c].y || (yr === allLastOrder[c].y && mo > allLastOrder[c].m)) {
+          const rawDate = r['INVOICE DATE'] || r['PO DATE'] || '';
+          allLastOrder[c] = { y: yr, m: mo, rawDate };
+        }
+      });
+      const inactiveList = [...recentCusts]
+        .filter(c => !thisMonthCusts.has(c))
+        .map(c => {
+          const lo = allLastOrder[c] || {};
+          const monthsAgo = lo.y && lo.m ? (thisY - lo.y) * 12 + (thisM - lo.m) : null;
+          const lastDateStr = lo.rawDate ? new Date(lo.rawDate).toLocaleDateString('en-MY', { day:'2-digit', month:'short', year:'2-digit' }) : `${mNames[(lo.m||1)-1]} ${lo.y||''}`;
+          return { name: c, lastDateStr, monthsAgo: monthsAgo || 1 };
+        })
+        .sort((a, b) => a.monthsAgo - b.monthsAgo);
+
+      document.getElementById('s-inactive-count').textContent = inactiveList.length ? `${inactiveList.length} customer${inactiveList.length > 1 ? 's' : ''} to follow up` : '';
+      const urgencyColor = n => n <= 1 ? '#dc2626' : n <= 2 ? '#d97706' : '#6b7280';
+      const urgencyLabel = n => n <= 1 ? '🔴 1 month' : n <= 2 ? '🟠 2 months' : `⚪ ${n} months`;
+      document.querySelector('#s-inactive-customers tbody').innerHTML = inactiveList.length
+        ? inactiveList.map((c, i) => `<tr>
+            <td class="rank">${i+1}</td>
+            <td><strong>${escHtml(c.name)}</strong></td>
+            <td class="last-date">${c.lastDateStr}</td>
+            <td style="font-size:12px;font-weight:600;color:${urgencyColor(c.monthsAgo)}">${urgencyLabel(c.monthsAgo)}</td>
+          </tr>`).join('')
+        : '<tr><td colspan="4" class="empty">🎉 All recent customers have ordered this month!</td></tr>';
 
       // Render tables
       renderTopCustomers();
