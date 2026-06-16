@@ -222,7 +222,7 @@ h1 span{
 </div>
 
 <script>
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyTyhZQv4k1OnXNg4BhLzejaovy44GwGHG0G9ZUko6VnZbFRc_2r_UK7pvrAo-EyLZ7Ug/exec';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyvC3WuRG2nPSq3nittnW61u3_v20dG-q053IxBbBtgYTYcbXecVntUrzfrd0spHEw_mw/exec';
 
 const qEl = document.getElementById('question');
 qEl.addEventListener('input', () => {
@@ -256,11 +256,9 @@ async function submitQuestion() {
   };
 
   try {
-    await fetch(SCRIPT_URL, {
-      method:'POST', mode:'no-cors',
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify(data)
-    });
+    const form = new FormData();
+    form.append('data', JSON.stringify(data));
+    await fetch(SCRIPT_URL, {method:'POST', body: form});
     document.getElementById('replyVia').textContent = contactType;
     document.getElementById('formView').style.display = 'none';
     document.getElementById('successView').style.display = 'block';
