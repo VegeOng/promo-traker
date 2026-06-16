@@ -3,165 +3,230 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>问我任何问题 ✨</title>
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<title>Ask Vege ✨</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Noto+Sans+SC:wght@400;500;700;900&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-:root{
-  --green:#166534;--green2:#22c55e;--green-bg:#f0fdf4;--green-border:#bbf7d0;
-  --t1:#111827;--t2:#4b5563;--t3:#9ca3af;
-  --b1:#e5e7eb;--font:'Plus Jakarta Sans',sans-serif;
-}
 body{
-  background:linear-gradient(135deg,#f0fdf4 0%,#dcfce7 50%,#bbf7d0 100%);
-  min-height:100vh;display:flex;align-items:center;justify-content:center;
-  padding:24px;font-family:var(--font);
-}
-.card{
-  background:white;border-radius:24px;
-  box-shadow:0 20px 60px rgba(22,101,52,.15);
-  padding:40px 36px;width:100%;max-width:480px;
-}
-.header{text-align:center;margin-bottom:32px;}
-.avatar{
-  width:80px;height:80px;border-radius:50%;
-  background:linear-gradient(135deg,#166534,#22c55e);
-  margin:0 auto 16px;display:flex;align-items:center;justify-content:center;
-  font-size:36px;box-shadow:0 8px 24px rgba(22,101,52,.3);
-}
-h1{font-size:22px;font-weight:800;color:var(--t1);margin-bottom:6px;}
-.sub{font-size:14px;color:var(--t2);line-height:1.6;}
-.tag{
-  display:inline-block;background:var(--green-bg);color:var(--green);
-  border:1px solid var(--green-border);border-radius:999px;
-  font-size:12px;font-weight:600;padding:4px 12px;margin-top:10px;
+  background:#fff;
+  font-family:'Nunito','Noto Sans SC',sans-serif;
+  min-height:100vh;overflow-x:hidden;
 }
 
-.field{margin-bottom:18px;}
-.field label{
-  display:block;font-size:12px;font-weight:700;color:var(--t2);
-  text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;
+/* ── HERO ── */
+.hero{
+  background:linear-gradient(160deg,#e8fdf0 0%,#d4f5e2 40%,#f0faf5 100%);
+  padding:48px 24px 36px;
+  text-align:center;
+  position:relative;overflow:hidden;
 }
+.hero::before{
+  content:'';position:absolute;top:-60px;right:-60px;
+  width:200px;height:200px;border-radius:50%;
+  background:rgba(34,197,94,.1);pointer-events:none;
+}
+.hero::after{
+  content:'';position:absolute;bottom:-40px;left:-40px;
+  width:150px;height:150px;border-radius:50%;
+  background:rgba(34,197,94,.08);pointer-events:none;
+}
+
+.badge-top{
+  display:inline-flex;align-items:center;gap:6px;
+  background:#fff;border:2px solid #bbf7d0;border-radius:999px;
+  padding:6px 18px;font-size:13px;font-weight:800;color:#15803d;
+  margin-bottom:20px;box-shadow:0 2px 12px rgba(34,197,94,.15);
+}
+h1{
+  font-size:clamp(28px,8vw,44px);font-weight:900;
+  color:#14532d;line-height:1.15;margin-bottom:8px;letter-spacing:-.02em;
+}
+h1 span{
+  background:linear-gradient(135deg,#16a34a,#22c55e);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+.sub-en{font-size:14px;font-weight:700;color:#15803d;opacity:.65;letter-spacing:.06em;text-transform:uppercase;margin-bottom:4px;}
+.sub-zh{font-size:16px;font-weight:600;color:#4b5563;line-height:1.7;margin-bottom:24px;}
+.sub-zh small{font-size:13px;opacity:.6;}
+
+.pills{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:4px;}
+.pill{
+  background:#fff;border:1.5px solid #d1fae5;border-radius:999px;
+  padding:5px 14px;font-size:12px;font-weight:800;color:#15803d;
+  box-shadow:0 1px 6px rgba(0,0,0,.06);
+}
+
+/* ── FORM ── */
+.form-wrap{max-width:480px;margin:0 auto;padding:0 20px 20px;}
+.card{
+  background:#fff;border-radius:24px;
+  box-shadow:0 8px 40px rgba(22,101,52,.12),0 2px 8px rgba(0,0,0,.06);
+  padding:28px 24px 0;margin-top:-4px;overflow:hidden;
+}
+
+.field{margin-bottom:16px;}
+.field label{
+  display:flex;align-items:center;gap:5px;flex-wrap:wrap;
+  font-size:11.5px;font-weight:900;color:#374151;
+  text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px;
+}
+.field label .en{color:#9ca3af;font-size:10.5px;font-weight:700;}
+.field label .opt{font-size:10px;color:#d1d5db;font-weight:600;text-transform:none;letter-spacing:0;}
+
 .field input,.field textarea,.field select{
-  width:100%;padding:12px 14px;
-  border:1.5px solid var(--b1);border-radius:12px;
-  font-size:15px;font-family:var(--font);color:var(--t1);
-  background:#fafafa;transition:all .2s;outline:none;
+  width:100%;padding:13px 16px;
+  border:2px solid #e5e7eb;border-radius:14px;
+  font-size:15px;font-family:'Nunito','Noto Sans SC',sans-serif;
+  color:#111827;background:#fafafa;transition:all .2s;outline:none;
 }
 .field input:focus,.field textarea:focus,.field select:focus{
-  border-color:var(--green);background:white;
-  box-shadow:0 0 0 3px rgba(34,197,94,.1);
+  border-color:#22c55e;background:#fff;
+  box-shadow:0 0 0 4px rgba(34,197,94,.1);
 }
-.field textarea{resize:vertical;min-height:100px;line-height:1.6;}
-.field select{cursor:pointer;}
-
-.contact-row{display:grid;grid-template-columns:140px 1fr;gap:10px;}
-
-.note{font-size:12px;color:var(--t3);margin-top:6px;}
+.field input::placeholder,.field textarea::placeholder{color:#d1d5db;font-size:14px;}
+.field textarea{resize:vertical;min-height:96px;line-height:1.65;}
+.field select{
+  cursor:pointer;-webkit-appearance:none;appearance:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%239ca3af' stroke-width='2.5'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 14px center;padding-right:40px;
+}
+.contact-row{display:grid;grid-template-columns:152px 1fr;gap:10px;}
+.char-count{font-size:11px;color:#d1d5db;text-align:right;margin-top:5px;font-weight:700;}
+.privacy-note{font-size:12px;color:#9ca3af;margin-top:7px;font-weight:600;display:flex;align-items:center;gap:5px;}
 
 .btn{
-  width:100%;padding:15px;
-  background:linear-gradient(135deg,#166534,#16a34a);
-  color:white;border:none;border-radius:12px;
-  font-size:16px;font-weight:700;cursor:pointer;
-  font-family:var(--font);transition:all .2s;margin-top:8px;
-  box-shadow:0 4px 16px rgba(22,101,52,.3);
+  width:100%;padding:16px;margin-top:4px;
+  background:linear-gradient(135deg,#16a34a,#22c55e);
+  color:#fff;border:none;border-radius:16px;
+  font-size:16px;font-weight:900;cursor:pointer;
+  font-family:'Nunito','Noto Sans SC',sans-serif;
+  box-shadow:0 4px 20px rgba(34,197,94,.4);
+  transition:all .2s;
 }
-.btn:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(22,101,52,.4);}
+.btn:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(34,197,94,.5);}
 .btn:active{transform:translateY(0);}
-.btn:disabled{opacity:.5;cursor:not-allowed;transform:none;}
-
-.success{
-  text-align:center;padding:32px 20px;display:none;
-}
-.success-icon{font-size:56px;margin-bottom:16px;}
-.success h2{font-size:20px;font-weight:800;color:var(--t1);margin-bottom:8px;}
-.success p{font-size:14px;color:var(--t2);line-height:1.7;}
-.success .back{
-  display:inline-block;margin-top:20px;
-  background:var(--green-bg);color:var(--green);
-  border:1px solid var(--green-border);border-radius:12px;
-  padding:10px 24px;font-size:14px;font-weight:600;cursor:pointer;
-  font-family:var(--font);border:none;
-}
+.btn:disabled{opacity:.5;cursor:not-allowed;transform:none;box-shadow:none;}
+.btn-row{display:flex;align-items:center;justify-content:center;gap:8px;}
+.btn-en{font-size:12px;opacity:.75;font-weight:700;}
 
 .err{
-  background:#fef2f2;color:#dc2626;border-radius:10px;
+  background:#fef2f2;color:#dc2626;border-radius:12px;
   padding:10px 14px;font-size:13px;margin-top:12px;display:none;
+  font-weight:700;border:1.5px solid #fecaca;
 }
-.char-count{font-size:11px;color:var(--t3);text-align:right;margin-top:4px;}
 
-/* 配置提示 */
+/* ── SUCCESS ── */
+.success{text-align:center;padding:24px 0;display:none;}
+.success-icon{font-size:64px;margin-bottom:14px;display:block;animation:pop .5s ease;}
+@keyframes pop{0%{transform:scale(.6);opacity:0}80%{transform:scale(1.15)}100%{transform:scale(1);opacity:1}}
+.success h2{font-size:22px;font-weight:900;color:#14532d;margin-bottom:3px;}
+.success .en-label{font-size:12px;color:#9ca3af;font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin-bottom:14px;}
+.success p{font-size:14px;color:#4b5563;line-height:1.75;font-weight:600;}
+.success p strong{color:#15803d;}
+.btn-back{
+  display:inline-block;margin-top:20px;
+  background:#f0fdf4;color:#15803d;border:2px solid #bbf7d0;border-radius:14px;
+  padding:11px 28px;font-size:14px;font-weight:900;cursor:pointer;
+  font-family:'Nunito','Noto Sans SC',sans-serif;transition:all .2s;
+}
+.btn-back:hover{background:#dcfce7;}
+
+/* ── ILLUSTRATION ── */
+.illustration{width:100%;margin:0;padding:0;}
+.illustration img{width:100%;height:auto;display:block;border-radius:0 0 24px 24px;}
+.footer{text-align:center;padding:0 20px 36px;}
+.footer-brand{font-size:19px;font-weight:900;color:#14532d;letter-spacing:-.01em;}
+.footer-tag{font-size:11px;color:#9ca3af;font-weight:700;text-transform:uppercase;letter-spacing:.1em;margin-top:2px;}
+
+/* CONFIG */
 .config-banner{
-  background:#fef9c3;border:1px solid #fde047;border-radius:10px;
-  padding:10px 14px;font-size:12px;color:#713f12;margin-bottom:20px;
-  display:none;
+  background:#fef9c3;border-bottom:2px solid #fde047;
+  padding:10px 20px;font-size:12px;color:#713f12;
+  font-weight:700;text-align:center;display:none;
 }
 </style>
 </head>
 <body>
 
-<div class="card">
-  <!-- 配置缺失提示（仅开发时可见） -->
-  <div class="config-banner" id="configBanner">
-    ⚠️ 请先设置 Google Apps Script URL，详见页面底部注释
-  </div>
+<div class="config-banner" id="configBanner">
+  ⚠️ 请设置 Google Apps Script URL 后再发布使用
+</div>
 
-  <div id="formView">
-    <div class="header">
-      <div class="avatar">🌿</div>
-      <h1>问我任何问题</h1>
-      <p class="sub">关于素食、健康、生活方式……<br>什么都可以问！</p>
-      <span class="tag">✨ 我会私信回复你</span>
-    </div>
+<div class="hero">
+  <p class="sub-en">Got a question for Vege?</p>
+  <h1>问我吧！<span>Ask Vege~</span></h1>
+  <p class="sub-zh">
+    如果你对素食有任何的问题<br>
+    <small>Any questions about vegan? Ask me!</small>
+  </p>
+</div>
 
-    <div class="field">
-      <label>你的问题 *</label>
-      <textarea id="question" placeholder="想问什么就写什么～" maxlength="500"></textarea>
-      <div class="char-count"><span id="qCount">0</span>/500</div>
-    </div>
+<div class="form-wrap">
+  <div class="card">
 
-    <div class="field">
-      <label>昵称（可选）</label>
-      <input type="text" id="nickname" placeholder="叫我叫你什么？">
-    </div>
-
-    <div class="field">
-      <label>联系方式 * <span style="font-weight:400;text-transform:none;font-size:11px;">（方便我私信回你）</span></label>
-      <div class="contact-row">
-        <select id="contactType">
-          <option value="微信">💬 微信</option>
-          <option value="WhatsApp">📱 WhatsApp</option>
-          <option value="手机号">📞 手机号</option>
-          <option value="小红书">🌸 小红书</option>
-          <option value="抖音">🎵 抖音</option>
-          <option value="Instagram">📷 Instagram</option>
-          <option value="其他">💌 其他</option>
-        </select>
-        <input type="text" id="contactValue" placeholder="填写账号/号码">
+    <div id="formView">
+      <div class="field">
+        <label>你的问题 <span class="en">/ Your Question</span> *</label>
+        <textarea id="question" placeholder="想问什么就写吧～ Ask me anything!" maxlength="500"></textarea>
+        <div class="char-count"><span id="qCount">0</span> / 500</div>
       </div>
-      <p class="note">🔒 联系方式仅用于私信回复，不会公开</p>
+
+      <div class="field">
+        <label>昵称 <span class="en">/ Nickname</span> <span class="opt">（可选 Optional）</span></label>
+        <input type="text" id="nickname" placeholder="要如何称呼你？ What should I call you?">
+      </div>
+
+      <div class="field">
+        <label>联系方式 <span class="en">/ Contact</span> *</label>
+        <div class="contact-row">
+          <select id="contactType">
+            <option value="微信 WeChat">💬 微信 WeChat</option>
+            <option value="WhatsApp">📱 WhatsApp</option>
+            <option value="手机号 Phone">📞 手机号 Phone</option>
+            <option value="小红书">🌸 小红书</option>
+            <option value="抖音 TikTok">🎵 抖音 TikTok</option>
+            <option value="Instagram">📷 Instagram</option>
+            <option value="其他 Others">💌 其他 Others</option>
+          </select>
+          <input type="text" id="contactValue" placeholder="账号 / 号码 ID or number">
+        </div>
+        <div class="privacy-note">🔒 仅用于私信回复，不会公开 · For reply only, never shared</div>
+      </div>
+
+      <button class="btn" id="submitBtn" onclick="submitQuestion()">
+        <div class="btn-row">
+          <span>提交问题</span>
+          <span style="opacity:.5">·</span>
+          <span class="btn-en">Submit Question →</span>
+        </div>
+      </button>
+      <div class="err" id="errMsg"></div>
     </div>
 
-    <button class="btn" id="submitBtn" onclick="submitQuestion()">提交问题 →</button>
-    <div class="err" id="errMsg"></div>
+    <div class="success" id="successView">
+      <span class="success-icon">🎉</span>
+      <h2>问题已收到！</h2>
+      <div class="en-label">Question Received!</div>
+      <p>
+        我会尽快通过 <strong id="replyVia"></strong> 私信回复你～<br>
+        <span style="font-size:13px;color:#9ca3af;">I'll reply you privately as soon as I can! 🌿</span>
+      </p>
+      <button class="btn-back" onclick="resetForm()">再问一个 · Ask Another 🌿</button>
+    </div>
+
   </div>
 
-  <div class="success" id="successView">
-    <div class="success-icon">🎉</div>
-    <h2>问题已收到！</h2>
-    <p>我会尽快通过 <strong id="replyVia"></strong> 私信回复你～<br>感谢你的提问，期待和你聊聊！🌿</p>
-    <button class="back" onclick="resetForm()">再问一个问题</button>
+  <div class="illustration">
+    <img src="mamavege-box.png" alt="MamaVege">
   </div>
 </div>
 
 <script>
-// ✅ 第一步：把你的 Google Apps Script URL 粘贴在这里
 const SCRIPT_URL = 'YOUR_GOOGLE_APPS_SCRIPT_URL';
 
-const qTextarea = document.getElementById('question');
-qTextarea.addEventListener('input', () => {
-  document.getElementById('qCount').textContent = qTextarea.value.length;
+const qEl = document.getElementById('question');
+qEl.addEventListener('input', () => {
+  document.getElementById('qCount').textContent = qEl.value.length;
 });
 
 if (!SCRIPT_URL || SCRIPT_URL === 'YOUR_GOOGLE_APPS_SCRIPT_URL') {
@@ -169,58 +234,51 @@ if (!SCRIPT_URL || SCRIPT_URL === 'YOUR_GOOGLE_APPS_SCRIPT_URL') {
 }
 
 async function submitQuestion() {
-  const question = document.getElementById('question').value.trim();
+  const question = qEl.value.trim();
   const nickname = document.getElementById('nickname').value.trim();
   const contactType = document.getElementById('contactType').value;
   const contactValue = document.getElementById('contactValue').value.trim();
   const err = document.getElementById('errMsg');
 
   err.style.display = 'none';
-
-  if (!question) { showErr('请填写你的问题 😊'); return; }
-  if (question.length < 5) { showErr('问题太短啦，多说一点～'); return; }
-  if (!contactValue) { showErr('请留下联系方式，方便我回复你'); return; }
+  if (!question) { showErr('请填写你的问题 · Please enter your question 😊'); return; }
+  if (question.length < 5) { showErr('问题太短了，多说一点～ Question too short!'); return; }
+  if (!contactValue) { showErr('请留下联系方式 · Please leave your contact info'); return; }
 
   const btn = document.getElementById('submitBtn');
   btn.disabled = true;
-  btn.textContent = '提交中…';
+  btn.innerHTML = '<div class="btn-row">提交中… Submitting…</div>';
 
   const data = {
     timestamp: new Date().toLocaleString('zh-CN', {timeZone:'Asia/Kuala_Lumpur'}),
-    nickname: nickname || '匿名',
-    question,
-    contactType,
-    contactValue,
-    status: '待回复'
+    nickname: nickname || '匿名 Anonymous',
+    question, contactType, contactValue, status: '待回复'
   };
 
   try {
     await fetch(SCRIPT_URL, {
-      method: 'POST',
-      mode: 'no-cors',
-      headers: {'Content-Type': 'application/json'},
+      method:'POST', mode:'no-cors',
+      headers:{'Content-Type':'application/json'},
       body: JSON.stringify(data)
     });
-
     document.getElementById('replyVia').textContent = contactType;
     document.getElementById('formView').style.display = 'none';
     document.getElementById('successView').style.display = 'block';
   } catch(e) {
-    showErr('提交失败，请稍后再试 😢');
+    showErr('提交失败，请稍后再试 · Submission failed, please try again 😢');
   }
 
   btn.disabled = false;
-  btn.textContent = '提交问题 →';
+  btn.innerHTML = '<div class="btn-row"><span>提交问题</span><span style="opacity:.5">·</span><span class="btn-en">Submit Question →</span></div>';
 }
 
 function showErr(msg) {
   const err = document.getElementById('errMsg');
-  err.textContent = msg;
-  err.style.display = 'block';
+  err.textContent = msg; err.style.display = 'block';
 }
 
 function resetForm() {
-  document.getElementById('question').value = '';
+  qEl.value = '';
   document.getElementById('nickname').value = '';
   document.getElementById('contactValue').value = '';
   document.getElementById('qCount').textContent = '0';
