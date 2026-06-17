@@ -97,6 +97,9 @@
   .briefing-date-bar input[type=date]:focus { outline: none; border-color: var(--green); }
   .btn-load { padding: 8px 16px; background: var(--green); color: white; border: none; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; }
   .btn-load:hover { background: var(--green-mid); }
+  .period-btn { padding: 8px 14px; border: 1.5px solid var(--border); background: white; border-radius: 8px; font-size: 13px; font-weight: 600; color: var(--muted); cursor: pointer; transition: all 0.15s; }
+  .period-btn.active { background: var(--green); color: white; border-color: var(--green); }
+  .period-btn:hover:not(.active) { border-color: var(--green); color: var(--green); }
 
   .briefing-summary { display: grid; grid-template-columns: repeat(2,1fr); gap: 10px; margin-bottom: 20px; }
   @media(min-width:500px){ .briefing-summary { grid-template-columns: repeat(4,1fr); } }
@@ -377,25 +380,52 @@
   <div class="tab" onclick="switchTab('weekly')">📅 Weekly Reports</div>
   <div class="tab" onclick="switchTab('stats')">📈 Miss Stats</div>
   <div class="tab" onclick="switchTab('hqstats')">🏪 Outlet Stats</div>
-  <div class="tab" onclick="switchTab('visits')">📍 Visit Records</div>
   <div class="tab" onclick="switchTab('members')">👥 Members</div>
 </div>
 
 <div class="container">
 
-  <!-- DAILY BRIEFING -->
+  <!-- DAILY BRIEFING + VISIT RECORDS -->
   <div class="section active" id="sec-briefing">
-    <div class="briefing-date-bar">
-      <input type="date" id="briefing-date">
-      <button class="btn-load" onclick="loadBriefing()">Load</button>
+
+    <!-- Mode toggle -->
+    <div style="display:flex;gap:6px;margin-bottom:14px">
+      <button id="mode-btn-daily" class="period-btn active" onclick="switchBriefingMode('daily')" style="flex:1;padding:9px;font-size:13px">📋 Daily Briefing</button>
+      <button id="mode-btn-visits" class="period-btn" onclick="switchBriefingMode('visits')" style="flex:1;padding:9px;font-size:13px">📍 Visit Records</button>
     </div>
-    <div class="briefing-summary">
-      <div class="bs-card green"><div class="bs-val" id="bs-submitted">—</div><div class="bs-label">Submitted</div></div>
-      <div class="bs-card red"><div class="bs-val" id="bs-missing">—</div><div class="bs-label">Not Submitted</div></div>
-      <div class="bs-card blue"><div class="bs-val" id="bs-visits">—</div><div class="bs-label">Total Visits</div></div>
-      <div class="bs-card amber"><div class="bs-val" id="bs-orders">—</div><div class="bs-label">Total Orders (RM)</div></div>
+
+    <!-- Daily Briefing mode -->
+    <div id="mode-daily">
+      <div class="briefing-date-bar">
+        <input type="date" id="briefing-date">
+        <button class="btn-load" onclick="loadBriefing()">Load</button>
+      </div>
+      <div class="briefing-summary">
+        <div class="bs-card green"><div class="bs-val" id="bs-submitted">—</div><div class="bs-label">Submitted</div></div>
+        <div class="bs-card red"><div class="bs-val" id="bs-missing">—</div><div class="bs-label">Not Submitted</div></div>
+        <div class="bs-card blue"><div class="bs-val" id="bs-visits">—</div><div class="bs-label">Total Visits</div></div>
+        <div class="bs-card amber"><div class="bs-val" id="bs-orders">—</div><div class="bs-label">Total Orders (RM)</div></div>
+      </div>
+      <div id="briefing-list"><div class="loading-text">Loading…</div></div>
     </div>
-    <div id="briefing-list"><div class="loading-text">Loading…</div></div>
+
+    <!-- Visit Records mode -->
+    <div id="mode-visits" style="display:none">
+      <div class="filter-bar" style="flex-wrap:wrap;gap:8px;margin-bottom:12px">
+        <select id="vr-filter-rep" onchange="loadVisitRecords()">
+          <option value="">All Salesperson</option>
+          <option>VEGE</option><option>CAROL</option><option>CHRIS</option>
+          <option>CHIN</option><option>RAYMOND</option>
+        </select>
+        <input type="date" id="vr-filter-from" onchange="loadVisitRecords()">
+        <input type="date" id="vr-filter-to" onchange="loadVisitRecords()">
+        <input type="text" id="vr-search" placeholder="🔍 Search customer / notes..." oninput="filterVisitDisplay()" style="min-width:180px">
+        <button class="btn-load" onclick="resetVisitFilters()">Reset</button>
+      </div>
+      <div id="vr-summary" style="font-size:12px;color:var(--muted);margin-bottom:10px"></div>
+      <div id="vr-list"><div class="loading-text">Loading…</div></div>
+    </div>
+
   </div>
 
   <!-- ACTIVITIES -->
@@ -522,26 +552,6 @@
   </div>
 
   <!-- MEMBERS -->
-  <!-- VISIT RECORDS -->
-  <div class="section" id="sec-visits">
-    <div class="card">
-      <div class="card-title">📍 Visit Records</div>
-      <div class="filter-bar" style="flex-wrap:wrap;gap:8px;margin-bottom:12px">
-        <select id="vr-filter-rep" onchange="loadVisitRecords()">
-          <option value="">All Salesperson</option>
-          <option>VEGE</option><option>CAROL</option><option>CHRIS</option>
-          <option>CHIN</option><option>RAYMOND</option>
-        </select>
-        <input type="date" id="vr-filter-from" onchange="loadVisitRecords()">
-        <input type="date" id="vr-filter-to" onchange="loadVisitRecords()">
-        <input type="text" id="vr-search" placeholder="🔍 Search customer..." oninput="filterVisitDisplay()" style="min-width:180px">
-        <button class="btn-load" onclick="resetVisitFilters()">Reset</button>
-      </div>
-      <div id="vr-summary" style="font-size:12px;color:var(--muted);margin-bottom:10px"></div>
-      <div id="vr-list"><div class="loading-text">Select filters above to load</div></div>
-    </div>
-  </div>
-
   <div class="section" id="sec-members">
     <div class="card">
       <div class="card-title">👥 Team Members</div>
@@ -704,6 +714,15 @@ function toggleAc(id){document.getElementById(id).classList.toggle('open');}
 async function setActivityStatus(id,status){try{await fetch(SUPA_URL+'/rest/v1/activities?activity_id=eq.'+id,{method:'PATCH',headers:Hmin,body:JSON.stringify({status})});loadActivities();}catch(e){alert('Failed.');}}
 async function deleteActivity(id){if(!confirm('Delete this activity and all reports?'))return;try{await fetch(SUPA_URL+'/rest/v1/activity_reports?activity_id=eq.'+id,{method:'DELETE',headers:H});await fetch(SUPA_URL+'/rest/v1/activities?activity_id=eq.'+id,{method:'DELETE',headers:H});loadActivities();}catch(e){alert('Failed.');}}
 
+// ===== BRIEFING MODE TOGGLE =====
+function switchBriefingMode(mode) {
+  document.getElementById('mode-daily').style.display = mode === 'daily' ? '' : 'none';
+  document.getElementById('mode-visits').style.display = mode === 'visits' ? '' : 'none';
+  document.getElementById('mode-btn-daily').classList.toggle('active', mode === 'daily');
+  document.getElementById('mode-btn-visits').classList.toggle('active', mode === 'visits');
+  if (mode === 'visits') initVisitRecords();
+}
+
 // ===== VISIT RECORDS =====
 let allVisitData = [];
 
@@ -780,7 +799,7 @@ function resetVisitFilters() {
   loadVisitRecords();
 }
 
-const tabNames = ['briefing','activities','overview','daily','weekly','stats','hqstats','visits','members'];
+const tabNames = ['briefing','activities','overview','daily','weekly','stats','hqstats','members'];
 function switchTab(tab) {
   document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',tabNames[i]===tab));
   document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
@@ -792,7 +811,6 @@ function switchTab(tab) {
   else if(tab==='weekly') loadWeeklyReports();
   else if(tab==='stats') loadMissStats();
   else if(tab==='hqstats') loadHQStats();
-  else if(tab==='visits') initVisitRecords();
   else if(tab==='members') renderMembers();
 }
 
