@@ -113,7 +113,7 @@ async function generateBrief(data) {
   const { thisMonthOrders, totalSalesThisMonth, visits, reports, tasks, calendarEvents, promotions, today, year, month } = data;
 
   // 各销售员本月业绩
-  const targets = { VEGE: 200000, CAROL: 100000, CHRIS: 100000, CHIN: 50000, RAYMOND: 50000 };
+  const targets = { VEGE: 250000, CAROL: 100000, CHRIS: 100000, RAYMOND: 50000 };
   const bySP = {};
   thisMonthOrders.forEach(o => {
     const name = (o['SALES PERSON'] || 'Unknown').toUpperCase();
