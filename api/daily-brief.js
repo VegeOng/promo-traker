@@ -132,13 +132,13 @@ async function generateBrief(data) {
     const name = (v.rep_name || 'Unknown').toUpperCase();
     byVisit[name] = (byVisit[name] || 0) + 1;
   });
-  const visitSummary = ['VEGE','CAROL','CHRIS','CHIN','RAYMOND'].map(n =>
+  const visitSummary = ['VEGE','CAROL','CHRIS','RAYMOND'].map(n =>
     `- ${n}: ${byVisit[n] || 0} 家${!byVisit[n] ? ' ⚠️ 零拜访' : ''}`
   ).join('\n');
 
   // 日报
   const submitted = reports.map(r => (r.name || '').toUpperCase());
-  const notSubmitted = ['VEGE','CAROL','CHRIS','CHIN','RAYMOND'].filter(n => !submitted.includes(n));
+  const notSubmitted = ['VEGE','CAROL','CHRIS','RAYMOND'].filter(n => !submitted.includes(n));
 
   // 逾期任务
   const overdue = tasks.filter(t => t.due_date && new Date(t.due_date) < new Date(today));
