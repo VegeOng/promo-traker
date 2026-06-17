@@ -149,12 +149,12 @@
     </div>
     <div class="stat-grid">
       <div class="stat-box">
-        <div class="s-label">This Month</div>
+        <div class="s-label" id="s-label-cur">This Period</div>
         <div class="s-val" id="s-this-month">—</div>
         <div class="s-sub" id="s-orders-count"></div>
       </div>
       <div class="stat-box">
-        <div class="s-label">vs Last Month</div>
+        <div class="s-label" id="s-label-prev">vs Previous</div>
         <div class="s-val" id="s-last-month">—</div>
         <div id="s-mom-badge"></div>
       </div>
@@ -248,7 +248,7 @@
 
 <script>
   const SUPABASE_URL = 'https://wjhgezvrxlhpexocfsea.supabase.co';
-  const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ4.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndqaGdlenZyeGxocGV4b2Nmc2VhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg1MDU4NzgsImV4cCI6MjA5NDA4MTg3OH0.jENcrgEDYDlSRUCqve-T6rxYRJfz-dnZQHnXpPLJ_RE';
+  const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndqaGdlenZyeGxocGV4b2Nmc2VhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg1MDU4NzgsImV4cCI6MjA5NDA4MTg3OH0.jENcrgEDYDlSRUCqve-T6rxYRJfz-dnZQHnXpPLJ_RE';
   const supa = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
   const SALES_API = 'https://script.google.com/macros/s/AKfycbwxt23ZB0od7EeBSNvjurKTbkDcM7HLgrWhuoqHc3meKWmhbB0XQzfOdB-X2Pj5O_MY/exec';
   const PRODUCTS = ['KPM','CLM','SHCR','SHTY','SHSS','SPM - BBQ','BBQ (BAG)','SPM - MALA','MALA (BAG)','MRBR','TYSN','TYSP','TMSP','SMTS','SMCL','SPTS','SPCL','CMBR','KETUPAT'];
@@ -345,10 +345,11 @@
     document.getElementById('s-gap').textContent = (kpiTarget>0&&selM) ? (curTotal>=kpiTarget?'🎉 Target met!':'Gap: '+fmtRM(kpiTarget-curTotal)) : (selM?'KPI not set':'Full year view');
 
     // Stat cards
+    document.getElementById('s-label-cur').textContent = label;
+    document.getElementById('s-label-prev').textContent = `vs ${prevLabel}`;
     document.getElementById('s-this-month').textContent = fmtRM(curTotal);
     document.getElementById('s-orders-count').textContent = curData.length + ' orders · ' + curCusts.size + ' customers';
     document.getElementById('s-last-month').textContent = fmtRM(prevTotal);
-    document.querySelector('.stat-box:nth-child(2) .s-label').textContent = `vs ${prevLabel}`;
     document.getElementById('s-mom-badge').innerHTML = diffPct!==null
       ? `<span class="s-badge ${diff>=0?'badge-up':'badge-down'}">${diff>=0?'↑':'↓'} ${Math.abs(diffPct)}% vs ${prevLabel}</span>` : '';
     document.getElementById('s-ytd').textContent = fmtRM(ytdTotal);
