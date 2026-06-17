@@ -377,6 +377,7 @@
   <div class="tab" onclick="switchTab('weekly')">📅 Weekly Reports</div>
   <div class="tab" onclick="switchTab('stats')">📈 Miss Stats</div>
   <div class="tab" onclick="switchTab('hqstats')">🏪 Outlet Stats</div>
+  <div class="tab" onclick="switchTab('visits')">📍 Visit Records</div>
   <div class="tab" onclick="switchTab('members')">👥 Members</div>
 </div>
 
@@ -521,6 +522,26 @@
   </div>
 
   <!-- MEMBERS -->
+  <!-- VISIT RECORDS -->
+  <div class="section" id="sec-visits">
+    <div class="card">
+      <div class="card-title">📍 Visit Records</div>
+      <div class="filter-bar" style="flex-wrap:wrap;gap:8px;margin-bottom:12px">
+        <select id="vr-filter-rep" onchange="loadVisitRecords()">
+          <option value="">All Salesperson</option>
+          <option>VEGE</option><option>CAROL</option><option>CHRIS</option>
+          <option>CHIN</option><option>RAYMOND</option>
+        </select>
+        <input type="date" id="vr-filter-from" onchange="loadVisitRecords()">
+        <input type="date" id="vr-filter-to" onchange="loadVisitRecords()">
+        <input type="text" id="vr-search" placeholder="🔍 Search customer..." oninput="filterVisitDisplay()" style="min-width:180px">
+        <button class="btn-load" onclick="resetVisitFilters()">Reset</button>
+      </div>
+      <div id="vr-summary" style="font-size:12px;color:var(--muted);margin-bottom:10px"></div>
+      <div id="vr-list"><div class="loading-text">Select filters above to load</div></div>
+    </div>
+  </div>
+
   <div class="section" id="sec-members">
     <div class="card">
       <div class="card-title">👥 Team Members</div>
@@ -683,7 +704,83 @@ function toggleAc(id){document.getElementById(id).classList.toggle('open');}
 async function setActivityStatus(id,status){try{await fetch(SUPA_URL+'/rest/v1/activities?activity_id=eq.'+id,{method:'PATCH',headers:Hmin,body:JSON.stringify({status})});loadActivities();}catch(e){alert('Failed.');}}
 async function deleteActivity(id){if(!confirm('Delete this activity and all reports?'))return;try{await fetch(SUPA_URL+'/rest/v1/activity_reports?activity_id=eq.'+id,{method:'DELETE',headers:H});await fetch(SUPA_URL+'/rest/v1/activities?activity_id=eq.'+id,{method:'DELETE',headers:H});loadActivities();}catch(e){alert('Failed.');}}
 
-const tabNames = ['briefing','activities','overview','daily','weekly','stats','hqstats','members'];
+// ===== VISIT RECORDS =====
+let allVisitData = [];
+
+function initVisitRecords() {
+  // Default: last 7 days
+  const to = new Date();
+  const from = new Date(); from.setDate(from.getDate() - 7);
+  const fmt = d => d.toISOString().split('T')[0];
+  const fromEl = document.getElementById('vr-filter-from');
+  const toEl = document.getElementById('vr-filter-to');
+  if (!fromEl.value) fromEl.value = fmt(from);
+  if (!toEl.value) toEl.value = fmt(to);
+  loadVisitRecords();
+}
+
+async function loadVisitRecords() {
+  const rep = document.getElementById('vr-filter-rep').value;
+  const from = document.getElementById('vr-filter-from').value;
+  const to = document.getElementById('vr-filter-to').value;
+  const list = document.getElementById('vr-list');
+  list.innerHTML = '<div class="loading-text">Loading…</div>';
+  try {
+    let q = `visit_records?order=visit_date.desc,created_at.desc&limit=300`;
+    if (rep) q += `&rep_name=eq.${encodeURIComponent(rep)}`;
+    if (from) q += `&visit_date=gte.${from}`;
+    if (to)   q += `&visit_date=lte.${to}`;
+    allVisitData = await db(q);
+    filterVisitDisplay();
+  } catch(e) {
+    list.innerHTML = '<div class="empty-text">❌ Failed to load.</div>';
+  }
+}
+
+function filterVisitDisplay() {
+  const search = (document.getElementById('vr-search').value || '').toLowerCase();
+  const filtered = search
+    ? allVisitData.filter(v => (v.customer_name||'').toLowerCase().includes(search) || (v.notes||'').toLowerCase().includes(search) || (v.followup_notes||'').toLowerCase().includes(search))
+    : allVisitData;
+
+  document.getElementById('vr-summary').textContent = `${filtered.length} record${filtered.length!==1?'s':''} found`;
+
+  if (!filtered.length) {
+    document.getElementById('vr-list').innerHTML = '<div class="empty-text">No visit records found.</div>';
+    return;
+  }
+
+  const repColors = { VEGE:'#166534', CAROL:'#7c3aed', CHRIS:'#0369a1', RAYMOND:'#b45309', CHIN:'#9ca3af' };
+
+  document.getElementById('vr-list').innerHTML = filtered.map(v => {
+    const color = repColors[(v.rep_name||'').toUpperCase()] || '#6b7280';
+    return `<div class="visit-record-item" style="border-left:3px solid ${color}">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;flex-wrap:wrap;gap:4px">
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="font-size:11px;font-weight:700;color:white;background:${color};padding:2px 8px;border-radius:20px">${escHtml(v.rep_name||'—')}</span>
+          <span style="font-size:13px;font-weight:700;color:#1f2937">${escHtml(v.customer_name||'—')}</span>
+        </div>
+        <span style="font-size:12px;color:#9ca3af">${v.visit_date||'—'}</span>
+      </div>
+      ${v.notes ? `<div class="vri-notes">📝 ${escHtml(v.notes)}</div>` : ''}
+      ${v.followup_notes ? `<div class="vri-followup">📌 <strong>Followup:</strong> ${escHtml(v.followup_notes)}${v.followup_date?' · Due: '+v.followup_date:''}${v.has_task_created?' ✅ Task created':''}</div>` : ''}
+      ${v.order_amount>0 ? `<div style="font-size:12px;font-weight:700;color:#166534;margin-top:4px">💰 Order: RM ${Number(v.order_amount).toLocaleString()}</div>` : ''}
+    </div>`;
+  }).join('');
+}
+
+function resetVisitFilters() {
+  const to = new Date();
+  const from = new Date(); from.setDate(from.getDate() - 7);
+  const fmt = d => d.toISOString().split('T')[0];
+  document.getElementById('vr-filter-rep').value = '';
+  document.getElementById('vr-filter-from').value = fmt(from);
+  document.getElementById('vr-filter-to').value = fmt(to);
+  document.getElementById('vr-search').value = '';
+  loadVisitRecords();
+}
+
+const tabNames = ['briefing','activities','overview','daily','weekly','stats','hqstats','visits','members'];
 function switchTab(tab) {
   document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',tabNames[i]===tab));
   document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
@@ -695,6 +792,7 @@ function switchTab(tab) {
   else if(tab==='weekly') loadWeeklyReports();
   else if(tab==='stats') loadMissStats();
   else if(tab==='hqstats') loadHQStats();
+  else if(tab==='visits') initVisitRecords();
   else if(tab==='members') renderMembers();
 }
 
