@@ -360,19 +360,29 @@
     // Chart — always show full year of selY as monthly bars
     const monthMap = {};
     yearData.forEach(r => { const m = parseInt(r['MONTH']); if(m) monthMap[m]=(monthMap[m]||0)+getTotalField(r); });
+    // Current year monthly data
     const chartLabels=[],chartVals=[],targetLine=[];
     for(let m=1;m<=12;m++){chartLabels.push(mNames[m-1]);chartVals.push(monthMap[m]||0);targetLine.push(kpiTarget||null);}
     const highlightM = selM || thisM;
+
+    // Last year monthly data for comparison
+    const prevYearMap = {};
+    allMyData.filter(r=>parseInt(r['YEAR'])===selY-1).forEach(r=>{const m=parseInt(r['MONTH']);if(m)prevYearMap[m]=(prevYearMap[m]||0)+getTotalField(r);});
+    const prevYearVals = [];
+    for(let m=1;m<=12;m++) prevYearVals.push(prevYearMap[m]||null);
+    const hasPrevYear = prevYearVals.some(v=>v>0);
+
     const chartEl = document.getElementById('s-chart-monthly');
     if (chartInstance) { chartInstance.destroy(); chartInstance = null; }
     chartInstance = new Chart(chartEl, {
       type:'bar',
       data:{labels:chartLabels,datasets:[
-        {label:'Sales',data:chartVals,backgroundColor:chartVals.map((_,i)=>i+1===highlightM?'#166534':'#166534aa'),borderRadius:5},
+        {label:`${selY} Sales`,data:chartVals,backgroundColor:chartVals.map((_,i)=>i+1===highlightM?'#166534':'#166534aa'),borderRadius:5},
+        ...(hasPrevYear?[{label:`${selY-1} (prev year)`,data:prevYearVals,type:'line',borderColor:'#6366f1',backgroundColor:'#6366f122',borderWidth:2,pointRadius:3,pointBackgroundColor:'#6366f1',fill:false,tension:0.3}]:[]),
         {label:'Monthly Target',data:targetLine,type:'line',borderColor:'#d97706',borderDash:[5,4],borderWidth:2,pointRadius:0,fill:false}
       ]},
       options:{responsive:true,maintainAspectRatio:false,
-        plugins:{legend:{display:kpiTarget>0},tooltip:{callbacks:{label:ctx=>ctx.dataset.label+': RM '+fmt(ctx.parsed.y)}}},
+        plugins:{legend:{display:true},tooltip:{callbacks:{label:ctx=>ctx.dataset.label+': RM '+fmt(ctx.parsed.y)}}},
         scales:{y:{beginAtZero:true,ticks:{callback:v=>'RM '+fmt(v)}}}}
     });
 
