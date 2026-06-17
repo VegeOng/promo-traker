@@ -134,6 +134,9 @@
       </div>
     </div>
 
+    <!-- Data status -->
+    <div id="data-status" style="font-size:11px;color:#9ca3af;margin-bottom:8px;padding:0 2px"></div>
+
     <!-- 1. Target Progress -->
     <div class="section-title" id="s-period-title">📊 This Month's Target</div>
     <div class="progress-wrap">
@@ -451,12 +454,20 @@
       ]);
 
       kpiTarget = memberRes.data?.monthly_kpi || 0;
-      allMyData = salesRes.filter(r=>(r['SALES PERSON']||'').trim()===userName.trim());
+      const userNameUpper = userName.trim().toUpperCase();
+      allMyData = salesRes.filter(r=>(r['SALES PERSON']||'').trim().toUpperCase()===userNameUpper);
 
       // Populate year dropdown
       const years=[...new Set(allMyData.map(r=>parseInt(r['YEAR'])).filter(Boolean))].sort((a,b)=>b-a);
       const yearSel=document.getElementById('custom-year');
       yearSel.innerHTML=years.map(y=>`<option value="${y}"${y===thisY?' selected':''}>${y}</option>`).join('');
+
+      // Debug status
+      const totalRows = salesRes.length;
+      document.getElementById('data-status').textContent =
+        allMyData.length > 0
+          ? `✅ Loaded ${allMyData.length} orders for ${userName} | Years: ${years.join(', ')}`
+          : `⚠️ No data found for "${userName}" (total sheet rows: ${totalRows}) — check name spelling`;
 
       // Visits (always current week)
       visitsThis=visitsThisRes.data?.length||0;
