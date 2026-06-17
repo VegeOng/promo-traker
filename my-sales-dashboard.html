@@ -82,6 +82,15 @@
   .period-btn { padding: 5px 12px; border: 1px solid #e5e7eb; background: white; border-radius: 8px; font-size: 12px; font-weight: 600; color: #6b7280; cursor: pointer; }
   .period-btn.active { background: #166534; color: white; border-color: #166534; }
 
+  /* Period picker */
+  .period-picker { background: white; border: 1px solid #e5e7eb; border-radius: 12px; padding: 12px 16px; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .period-picker .pp-btn { padding: 7px 14px; border: 1.5px solid #e5e7eb; background: white; border-radius: 8px; font-size: 13px; font-weight: 600; color: #6b7280; cursor: pointer; transition: all 0.15s; white-space: nowrap; }
+  .period-picker .pp-btn.active { background: #166534; color: white; border-color: #166534; }
+  .period-picker .pp-btn:hover:not(.active) { border-color: #166534; color: #166534; }
+  .custom-range { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .custom-range select, .custom-range input { padding: 6px 10px; border: 1.5px solid #e5e7eb; border-radius: 8px; font-size: 13px; color: #374151; background: white; }
+  .custom-range select:focus, .custom-range input:focus { outline: none; border-color: #166534; }
+
   .empty { text-align: center; color: #9ca3af; padding: 30px; font-size: 14px; }
   .loading { text-align: center; padding: 60px 20px; color: #6b7280; font-size: 14px; }
   .spinner { width: 32px; height: 32px; border: 3px solid #e5e7eb; border-top-color: #166534; border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 12px; }
@@ -107,8 +116,26 @@
   </div>
   <div id="main-content" style="display:none">
 
-    <!-- 1. Monthly Target -->
-    <div class="section-title">📊 This Month's Target</div>
+    <!-- Period Picker -->
+    <div class="period-picker">
+      <button class="pp-btn active" onclick="setPeriod('month',this)">This Month</button>
+      <button class="pp-btn" onclick="setPeriod('lastmonth',this)">Last Month</button>
+      <button class="pp-btn" onclick="setPeriod('year',this)">This Year</button>
+      <button class="pp-btn" onclick="setPeriod('custom',this)">Custom</button>
+      <div class="custom-range" id="custom-range" style="display:none">
+        <select id="custom-year" onchange="renderPeriod()"></select>
+        <select id="custom-month" onchange="renderPeriod()">
+          <option value="">All months</option>
+          <option value="1">Jan</option><option value="2">Feb</option><option value="3">Mar</option>
+          <option value="4">Apr</option><option value="5">May</option><option value="6">Jun</option>
+          <option value="7">Jul</option><option value="8">Aug</option><option value="9">Sep</option>
+          <option value="10">Oct</option><option value="11">Nov</option><option value="12">Dec</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- 1. Target Progress -->
+    <div class="section-title" id="s-period-title">📊 This Month's Target</div>
     <div class="progress-wrap">
       <div class="progress-label">
         <span class="p-name" id="s-month-label"></span>
@@ -221,19 +248,16 @@
 
 <script>
   const SUPABASE_URL = 'https://wjhgezvrxlhpexocfsea.supabase.co';
-  const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndqaGdlenZyeGxocGV4b2Nmc2VhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg1MDU4NzgsImV4cCI6MjA5NDA4MTg3OH0.jENcrgEDYDlSRUCqve-T6rxYRJfz-dnZQHnXpPLJ_RE';
+  const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ4.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndqaGdlenZyeGxocGV4b2Nmc2VhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg1MDU4NzgsImV4cCI6MjA5NDA4MTg3OH0.jENcrgEDYDlSRUCqve-T6rxYRJfz-dnZQHnXpPLJ_RE';
   const supa = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
   const SALES_API = 'https://script.google.com/macros/s/AKfycbwxt23ZB0od7EeBSNvjurKTbkDcM7HLgrWhuoqHc3meKWmhbB0XQzfOdB-X2Pj5O_MY/exec';
   const PRODUCTS = ['KPM','CLM','SHCR','SHTY','SHSS','SPM - BBQ','BBQ (BAG)','SPM - MALA','MALA (BAG)','MRBR','TYSN','TYSP','TMSP','SMTS','SMCL','SPTS','SPCL','CMBR','KETUPAT'];
 
   function lsGet(k) {
-    const raw = localStorage.getItem(k);
-    if (!raw) return null;
+    const raw = localStorage.getItem(k); if (!raw) return null;
     try { const i = JSON.parse(raw); if (Date.now() > i.expiry) { localStorage.removeItem(k); return null; } return i.value; } catch { return null; }
   }
-
-  const userName = lsGet('userName');
-  const userRole = lsGet('userRole');
+  const userName = lsGet('userName'), userRole = lsGet('userRole');
   if (!userName || userRole !== 'member') { location.href = 'index.html'; }
   if (lsGet('memberRole') === 'china') { location.href = 'china-hub.html'; }
   document.getElementById('userLabel').textContent = userName;
@@ -241,218 +265,221 @@
   function fmt(n) { return Number(n||0).toLocaleString('en-MY', { maximumFractionDigits: 0 }); }
   function fmtRM(n) { return 'RM ' + fmt(n); }
   function escHtml(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-  function getTotalField(r) {
-    for (const k of Object.keys(r)) { const c = k.replace(/[^A-Za-z]/g,'').toUpperCase(); if (c === 'TOTALRM') return parseFloat(r[k])||0; }
-    return 0;
-  }
+  function getTotalField(r) { for (const k of Object.keys(r)) { const c = k.replace(/[^A-Za-z]/g,'').toUpperCase(); if (c==='TOTALRM') return parseFloat(r[k])||0; } return 0; }
 
   const now = new Date();
   const mNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   const thisY = now.getFullYear(), thisM = now.getMonth() + 1;
-  const lastMNum = thisM === 1 ? 12 : thisM - 1;
-  const lastMYear = thisM === 1 ? thisY - 1 : thisY;
 
-  let allMyData = [];
-  let custPeriod = 'month', skuPeriod = 'month';
+  // Global state
+  let allMyData = [], kpiTarget = 0, visitsThis = 0, visitsLast = 0, overdueTasks = [];
+  let activePeriod = 'month'; // month | lastmonth | year | custom
+  let chartInstance = null;
 
-  function filterByPeriod(period) {
-    if (period === 'month') return allMyData.filter(r => parseInt(r['YEAR']) === thisY && parseInt(r['MONTH']) === thisM);
-    if (period === 'year')  return allMyData.filter(r => parseInt(r['YEAR']) === thisY);
-    return allMyData;
+  // ── Period picker ──
+  function setPeriod(p, btn) {
+    activePeriod = p;
+    document.querySelectorAll('.pp-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('custom-range').style.display = p === 'custom' ? 'flex' : 'none';
+    renderPeriod();
   }
 
-  function renderTopCustomers() {
-    const data = filterByPeriod(custPeriod);
-    const custMap = {}, lastOrderMap = {};
-    allMyData.forEach(r => {
-      const c = r['COMPANY'] || 'Unknown';
-      const d = r['INVOICE DATE'] || r['PO DATE'] || '';
-      if (d && (!lastOrderMap[c] || d > lastOrderMap[c])) lastOrderMap[c] = d;
+  function getPeriodData() {
+    const cy = parseInt(document.getElementById('custom-year')?.value) || thisY;
+    const cm = parseInt(document.getElementById('custom-month')?.value) || 0;
+    let selY, selM; // selM = 0 means full year
+    if (activePeriod === 'month')     { selY = thisY; selM = thisM; }
+    else if (activePeriod === 'lastmonth') { selM = thisM===1?12:thisM-1; selY = thisM===1?thisY-1:thisY; }
+    else if (activePeriod === 'year') { selY = thisY; selM = 0; }
+    else                              { selY = cy; selM = cm; }
+
+    const curData = selM
+      ? allMyData.filter(r => parseInt(r['YEAR'])===selY && parseInt(r['MONTH'])===selM)
+      : allMyData.filter(r => parseInt(r['YEAR'])===selY);
+
+    // Previous period for comparison
+    let prevY, prevM;
+    if (selM) { prevM = selM===1?12:selM-1; prevY = selM===1?selY-1:selY; }
+    else       { prevY = selY-1; prevM = 0; }
+    const prevData = prevM
+      ? allMyData.filter(r => parseInt(r['YEAR'])===prevY && parseInt(r['MONTH'])===prevM)
+      : allMyData.filter(r => parseInt(r['YEAR'])===prevY);
+
+    // Chart year
+    const chartY = selY;
+    const yearData = allMyData.filter(r => parseInt(r['YEAR'])===chartY);
+
+    // Label
+    let label = selM ? `${mNames[selM-1]} ${selY}` : `${selY} Full Year`;
+    let prevLabel = prevM ? `${mNames[prevM-1]} ${prevY}` : `${prevY}`;
+
+    return { curData, prevData, yearData, selY, selM, label, prevLabel };
+  }
+
+  function renderPeriod() {
+    if (!allMyData.length) return;
+    const { curData, prevData, yearData, selY, selM, label, prevLabel } = getPeriodData();
+
+    const curTotal  = curData.reduce((s,r) => s + getTotalField(r), 0);
+    const prevTotal = prevData.reduce((s,r) => s + getTotalField(r), 0);
+    const ytdTotal  = allMyData.filter(r => parseInt(r['YEAR'])===selY).reduce((s,r) => s + getTotalField(r), 0);
+    const diff = curTotal - prevTotal;
+    const diffPct = prevTotal > 0 ? Math.round(diff/prevTotal*100) : null;
+    const curCusts = new Set(curData.map(r => r['COMPANY']).filter(Boolean));
+    const prevCusts = new Set(prevData.map(r => r['COMPANY']).filter(Boolean));
+    const churnList = [...prevCusts].filter(c => !curCusts.has(c));
+
+    // Section title
+    document.getElementById('s-period-title').textContent = selM ? `📊 ${label} Performance` : `📊 ${label} Performance`;
+
+    // Progress bar (only meaningful for monthly periods)
+    const achPct = (kpiTarget > 0 && selM) ? Math.min(Math.round(curTotal/kpiTarget*100),100) : 0;
+    const pColor = achPct>=100?'#166534':achPct>=70?'#d97706':'#dc2626';
+    document.getElementById('s-month-label').textContent = label;
+    document.getElementById('s-ach-pct').textContent = (kpiTarget>0&&selM) ? achPct+'%' : '—';
+    document.getElementById('s-ach-pct').style.color = pColor;
+    document.getElementById('s-progress-fill').style.width = (kpiTarget>0&&selM?achPct:0)+'%';
+    document.getElementById('s-progress-fill').style.background = pColor;
+    document.getElementById('s-achieved').textContent = 'Total: ' + fmtRM(curTotal);
+    document.getElementById('s-gap').textContent = (kpiTarget>0&&selM) ? (curTotal>=kpiTarget?'🎉 Target met!':'Gap: '+fmtRM(kpiTarget-curTotal)) : (selM?'KPI not set':'Full year view');
+
+    // Stat cards
+    document.getElementById('s-this-month').textContent = fmtRM(curTotal);
+    document.getElementById('s-orders-count').textContent = curData.length + ' orders · ' + curCusts.size + ' customers';
+    document.getElementById('s-last-month').textContent = fmtRM(prevTotal);
+    document.querySelector('.stat-box:nth-child(2) .s-label').textContent = `vs ${prevLabel}`;
+    document.getElementById('s-mom-badge').innerHTML = diffPct!==null
+      ? `<span class="s-badge ${diff>=0?'badge-up':'badge-down'}">${diff>=0?'↑':'↓'} ${Math.abs(diffPct)}% vs ${prevLabel}</span>` : '';
+    document.getElementById('s-ytd').textContent = fmtRM(ytdTotal);
+    document.getElementById('s-ytd-sub').textContent = selY + ' Total';
+    document.getElementById('s-custs').textContent = curCusts.size;
+    document.getElementById('s-custs-sub').textContent = [...prevCusts].filter(c=>curCusts.has(c)).length + ' returned from prev period';
+
+    // Churn
+    document.getElementById('s-churn-box').innerHTML = churnList.length
+      ? `<div class="alert-box warn"><div class="a-title">⚠️ ${churnList.length} Customer${churnList.length>1?'s':''} not reordered (vs ${prevLabel})</div><div style="margin-top:6px">${churnList.map(c=>`<span class="chip chip-warn">${escHtml(c)}</span>`).join('')}</div></div>`
+      : '<div class="alert-box ok"><div class="a-title">✅ All previous customers still active</div></div>';
+
+    // Chart — always show full year of selY as monthly bars
+    const monthMap = {};
+    yearData.forEach(r => { const m = parseInt(r['MONTH']); if(m) monthMap[m]=(monthMap[m]||0)+getTotalField(r); });
+    const chartLabels=[],chartVals=[],targetLine=[];
+    for(let m=1;m<=12;m++){chartLabels.push(mNames[m-1]);chartVals.push(monthMap[m]||0);targetLine.push(kpiTarget||null);}
+    const highlightM = selM || thisM;
+    const chartEl = document.getElementById('s-chart-monthly');
+    if (chartInstance) { chartInstance.destroy(); chartInstance = null; }
+    chartInstance = new Chart(chartEl, {
+      type:'bar',
+      data:{labels:chartLabels,datasets:[
+        {label:'Sales',data:chartVals,backgroundColor:chartVals.map((_,i)=>i+1===highlightM?'#166534':'#166534aa'),borderRadius:5},
+        {label:'Monthly Target',data:targetLine,type:'line',borderColor:'#d97706',borderDash:[5,4],borderWidth:2,pointRadius:0,fill:false}
+      ]},
+      options:{responsive:true,maintainAspectRatio:false,
+        plugins:{legend:{display:kpiTarget>0},tooltip:{callbacks:{label:ctx=>ctx.dataset.label+': RM '+fmt(ctx.parsed.y)}}},
+        scales:{y:{beginAtZero:true,ticks:{callback:v=>'RM '+fmt(v)}}}}
     });
-    data.forEach(r => {
-      const c = r['COMPANY'] || 'Unknown';
-      if (!custMap[c]) custMap[c] = { orders: 0, total: 0 };
-      custMap[c].orders++; custMap[c].total += getTotalField(r);
-    });
-    const top = Object.entries(custMap).sort((a,b) => b[1].total - a[1].total).slice(0, 10);
-    const medals = ['🥇','🥈','🥉'];
-    document.querySelector('#s-top-customers tbody').innerHTML = top.length
-      ? top.map(([name, d], i) => {
-          const raw = lastOrderMap[name] || '';
-          const lastDate = raw ? new Date(raw).toLocaleDateString('en-MY', { day:'2-digit', month:'short', year:'2-digit' }) : '—';
-          return `<tr><td class="rank">${medals[i]||i+1}</td><td><strong>${escHtml(name)}</strong></td><td>${d.orders}</td><td class="amount">${fmtRM(d.total)}</td><td class="last-date">${lastDate}</td></tr>`;
-        }).join('')
-      : '<tr><td colspan="5" class="empty">No data</td></tr>';
+
+    // Not ordered this period
+    const last3 = [];
+    for(let i=1;i<=3;i++){let m=(selM||thisM)-i,y=selY;if(m<=0){m+=12;y--;}last3.push({y,m});}
+    const recentData = allMyData.filter(r=>last3.some(p=>parseInt(r['YEAR'])===p.y&&parseInt(r['MONTH'])===p.m));
+    const recentCusts = new Set(recentData.map(r=>r['COMPANY']).filter(Boolean));
+    const allLastOrder = {};
+    allMyData.forEach(r=>{const c=r['COMPANY']||'?';const yr=parseInt(r['YEAR']),mo=parseInt(r['MONTH']);if(!allLastOrder[c]||yr>allLastOrder[c].y||(yr===allLastOrder[c].y&&mo>allLastOrder[c].m)){allLastOrder[c]={y:yr,m:mo,rawDate:r['INVOICE DATE']||r['PO DATE']||''};}});
+    const refY=selY,refM=selM||thisM;
+    const inactiveList=[...recentCusts].filter(c=>!curCusts.has(c)).map(c=>{
+      const lo=allLastOrder[c]||{};
+      const monthsAgo=lo.y&&lo.m?(refY-lo.y)*12+(refM-lo.m):1;
+      const lastDateStr=lo.rawDate?new Date(lo.rawDate).toLocaleDateString('en-MY',{day:'2-digit',month:'short',year:'2-digit'}):`${mNames[(lo.m||1)-1]} ${lo.y||''}`;
+      return {name:c,lastDateStr,monthsAgo:monthsAgo||1};
+    }).sort((a,b)=>a.monthsAgo-b.monthsAgo);
+    const urgencyColor=n=>n<=1?'#dc2626':n<=2?'#d97706':'#6b7280';
+    const urgencyLabel=n=>n<=1?'🔴 1 month':n<=2?'🟠 2 months':`⚪ ${n} months`;
+    document.getElementById('s-inactive-count').textContent=inactiveList.length?`${inactiveList.length} customer${inactiveList.length>1?'s':''} to follow up`:'';
+    document.querySelector('#s-inactive-customers tbody').innerHTML=inactiveList.length
+      ?inactiveList.map((c,i)=>`<tr><td class="rank">${i+1}</td><td><strong>${escHtml(c.name)}</strong></td><td class="last-date">${c.lastDateStr}</td><td style="font-size:12px;font-weight:600;color:${urgencyColor(c.monthsAgo)}">${urgencyLabel(c.monthsAgo)}</td></tr>`).join('')
+      :'<tr><td colspan="4" class="empty">🎉 All recent customers ordered this period!</td></tr>';
+
+    // Tables follow period
+    renderTopCustomers(curData);
+    renderTopSkus(curData);
   }
 
-  function renderTopSkus() {
-    const data = filterByPeriod(skuPeriod);
-    const skuMap = {};
-    PRODUCTS.forEach(p => { const qty = data.reduce((s,r) => s + (parseFloat(r[p])||0), 0); if (qty > 0) skuMap[p] = qty; });
-    const sorted = Object.entries(skuMap).sort((a,b) => b[1]-a[1]);
-    const total = sorted.reduce((s,e) => s+e[1], 0);
-    document.querySelector('#s-top-skus tbody').innerHTML = sorted.length
-      ? sorted.map(([name, qty], i) => `<tr><td class="rank">${i+1}</td><td><strong>${escHtml(name)}</strong></td><td style="font-weight:700;color:#3b82f6">${fmt(qty)}</td><td>${total>0?(qty/total*100).toFixed(1):0}%</td></tr>`).join('')
-      : '<tr><td colspan="4" class="empty">No data</td></tr>';
+  function renderTopCustomers(data) {
+    data = data || getPeriodData().curData;
+    const custMap={},lastOrderMap={};
+    allMyData.forEach(r=>{const c=r['COMPANY']||'?';const d=r['INVOICE DATE']||r['PO DATE']||'';if(d&&(!lastOrderMap[c]||d>lastOrderMap[c]))lastOrderMap[c]=d;});
+    data.forEach(r=>{const c=r['COMPANY']||'?';if(!custMap[c])custMap[c]={orders:0,total:0};custMap[c].orders++;custMap[c].total+=getTotalField(r);});
+    const top=Object.entries(custMap).sort((a,b)=>b[1].total-a[1].total).slice(0,10);
+    const medals=['🥇','🥈','🥉'];
+    document.querySelector('#s-top-customers tbody').innerHTML=top.length
+      ?top.map(([name,d],i)=>{const raw=lastOrderMap[name]||'';const lastDate=raw?new Date(raw).toLocaleDateString('en-MY',{day:'2-digit',month:'short',year:'2-digit'}):'—';return`<tr><td class="rank">${medals[i]||i+1}</td><td><strong>${escHtml(name)}</strong></td><td>${d.orders}</td><td class="amount">${fmtRM(d.total)}</td><td class="last-date">${lastDate}</td></tr>`;}).join('')
+      :'<tr><td colspan="5" class="empty">No data</td></tr>';
   }
 
-  function setCustPeriod(p, btn) { custPeriod = p; document.querySelectorAll('#cust-period .period-btn').forEach(b=>b.classList.remove('active')); btn.classList.add('active'); renderTopCustomers(); }
-  function setSkuPeriod(p, btn) { skuPeriod = p; document.querySelectorAll('#sku-period .period-btn').forEach(b=>b.classList.remove('active')); btn.classList.add('active'); renderTopSkus(); }
+  function renderTopSkus(data) {
+    data = data || getPeriodData().curData;
+    const skuMap={};
+    PRODUCTS.forEach(p=>{const qty=data.reduce((s,r)=>s+(parseFloat(r[p])||0),0);if(qty>0)skuMap[p]=qty;});
+    const sorted=Object.entries(skuMap).sort((a,b)=>b[1]-a[1]);
+    const total=sorted.reduce((s,e)=>s+e[1],0);
+    document.querySelector('#s-top-skus tbody').innerHTML=sorted.length
+      ?sorted.map(([name,qty],i)=>`<tr><td class="rank">${i+1}</td><td><strong>${escHtml(name)}</strong></td><td style="font-weight:700;color:#3b82f6">${fmt(qty)}</td><td>${total>0?(qty/total*100).toFixed(1):0}%</td></tr>`).join('')
+      :'<tr><td colspan="4" class="empty">No data</td></tr>';
+  }
+
+  // Customer/SKU period toggles now just re-render with same data (period picker controls all)
+  function setCustPeriod(p,btn){document.querySelectorAll('#cust-period .period-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderTopCustomers();}
+  function setSkuPeriod(p,btn){document.querySelectorAll('#sku-period .period-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderTopSkus();}
 
   async function loadAll() {
     try {
-      const dow = now.getDay() === 0 ? 6 : now.getDay() - 1;
-      const weekStart = new Date(now); weekStart.setDate(now.getDate() - dow); weekStart.setHours(0,0,0,0);
-      const lastWeekStart = new Date(weekStart); lastWeekStart.setDate(weekStart.getDate() - 7);
-      const lastWeekEnd = new Date(weekStart); lastWeekEnd.setDate(weekStart.getDate() - 1);
-      const fmt2 = d => d.toISOString().split('T')[0];
-      const todayStr = fmt2(now);
+      const dow=now.getDay()===0?6:now.getDay()-1;
+      const weekStart=new Date(now);weekStart.setDate(now.getDate()-dow);weekStart.setHours(0,0,0,0);
+      const lastWeekStart=new Date(weekStart);lastWeekStart.setDate(weekStart.getDate()-7);
+      const lastWeekEnd=new Date(weekStart);lastWeekEnd.setDate(weekStart.getDate()-1);
+      const fmt2=d=>d.toISOString().split('T')[0];
 
-      const [memberRes, salesRes, visitsThisRes, visitsLastRes, tasksRes] = await Promise.all([
-        supa.from('members').select('monthly_kpi').eq('name', userName).maybeSingle(),
+      const [memberRes,salesRes,visitsThisRes,visitsLastRes,tasksRes]=await Promise.all([
+        supa.from('members').select('monthly_kpi').eq('name',userName).maybeSingle(),
         fetch(SALES_API).then(r=>r.json()).then(j=>j.data||[]),
-        supa.from('visit_records').select('visit_id').eq('rep_name', userName).gte('visit_date', fmt2(weekStart)).lte('visit_date', todayStr),
-        supa.from('visit_records').select('visit_id').eq('rep_name', userName).gte('visit_date', fmt2(lastWeekStart)).lte('visit_date', fmt2(lastWeekEnd)),
-        supa.from('tasks').select('task_id,description,due_date,status,linked_customer').eq('assigned_to', userName.toUpperCase()).in('status', ['pending','overdue']),
+        supa.from('visit_records').select('visit_id').eq('rep_name',userName).gte('visit_date',fmt2(weekStart)).lte('visit_date',fmt2(now)),
+        supa.from('visit_records').select('visit_id').eq('rep_name',userName).gte('visit_date',fmt2(lastWeekStart)).lte('visit_date',fmt2(lastWeekEnd)),
+        supa.from('tasks').select('task_id,description,due_date,status,linked_customer').eq('assigned_to',userName.toUpperCase()).in('status',['pending','overdue']),
       ]);
 
-      const kpiTarget = memberRes.data?.monthly_kpi || 0;
-      allMyData = salesRes.filter(r => (r['SALES PERSON']||'').trim() === userName.trim());
+      kpiTarget = memberRes.data?.monthly_kpi || 0;
+      allMyData = salesRes.filter(r=>(r['SALES PERSON']||'').trim()===userName.trim());
 
-      const yearData  = allMyData.filter(r => parseInt(r['YEAR']) === thisY);
-      const monthData = yearData.filter(r => parseInt(r['MONTH']) === thisM);
-      const lastMData = allMyData.filter(r => parseInt(r['YEAR']) === lastMYear && parseInt(r['MONTH']) === lastMNum);
-      const monthTotal = monthData.reduce((s,r) => s + getTotalField(r), 0);
-      const lastMTotal = lastMData.reduce((s,r) => s + getTotalField(r), 0);
-      const ytdTotal   = yearData.reduce((s,r) => s + getTotalField(r), 0);
-      const achPct = kpiTarget > 0 ? Math.min(Math.round(monthTotal / kpiTarget * 100), 100) : 0;
-      const momDiff = monthTotal - lastMTotal;
-      const momPct  = lastMTotal > 0 ? Math.round(momDiff / lastMTotal * 100) : null;
-      const thisMonthCusts = new Set(monthData.map(r => r['COMPANY']).filter(Boolean));
-      const lastMonthCusts = new Set(lastMData.map(r => r['COMPANY']).filter(Boolean));
-      const churnList = [...lastMonthCusts].filter(c => !thisMonthCusts.has(c));
+      // Populate year dropdown
+      const years=[...new Set(allMyData.map(r=>parseInt(r['YEAR'])).filter(Boolean))].sort((a,b)=>b-a);
+      const yearSel=document.getElementById('custom-year');
+      yearSel.innerHTML=years.map(y=>`<option value="${y}"${y===thisY?' selected':''}>${y}</option>`).join('');
 
-      // Progress bar
-      const pColor = achPct >= 100 ? '#166534' : achPct >= 70 ? '#d97706' : '#dc2626';
-      document.getElementById('s-month-label').textContent = `${mNames[thisM-1]} ${thisY}`;
-      document.getElementById('s-ach-pct').textContent = kpiTarget > 0 ? achPct + '%' : '—';
-      document.getElementById('s-ach-pct').style.color = pColor;
-      document.getElementById('s-progress-fill').style.width = achPct + '%';
-      document.getElementById('s-progress-fill').style.background = pColor;
-      document.getElementById('s-achieved').textContent = 'Achieved: ' + fmtRM(monthTotal);
-      document.getElementById('s-gap').textContent = kpiTarget > 0 ? (monthTotal >= kpiTarget ? '🎉 Target met!' : 'Gap: ' + fmtRM(kpiTarget - monthTotal)) : 'KPI not set by HQ';
+      // Visits (always current week)
+      visitsThis=visitsThisRes.data?.length||0;
+      visitsLast=visitsLastRes.data?.length||0;
+      const visitDiff=visitsThis-visitsLast;
+      document.getElementById('s-visits-this').textContent=visitsThis;
+      document.getElementById('s-visits-last').textContent=visitsLast;
+      document.getElementById('s-visits-badge').innerHTML=visitsLast>0
+        ?`<span class="s-badge ${visitDiff>=0?'badge-up':'badge-down'}">${visitDiff>=0?'↑':'↓'} ${Math.abs(visitDiff)} vs last week</span>`
+        :'<span class="s-badge badge-warn">No data last week</span>';
 
-      // Stat cards
-      document.getElementById('s-this-month').textContent = fmtRM(monthTotal);
-      document.getElementById('s-orders-count').textContent = monthData.length + ' orders · ' + thisMonthCusts.size + ' customers';
-      document.getElementById('s-last-month').textContent = fmtRM(lastMTotal);
-      if (momPct !== null) {
-        document.getElementById('s-mom-badge').innerHTML = `<span class="s-badge ${momDiff >= 0 ? 'badge-up':'badge-down'}">${momDiff >= 0 ? '↑':'↓'} ${Math.abs(momPct)}% vs ${mNames[lastMNum-1]}</span>`;
-      }
-      document.getElementById('s-ytd').textContent = fmtRM(ytdTotal);
-      document.getElementById('s-ytd-sub').textContent = thisY + ' YTD';
-      document.getElementById('s-custs').textContent = thisMonthCusts.size;
-      document.getElementById('s-custs-sub').textContent = [...lastMonthCusts].filter(c => thisMonthCusts.has(c)).length + ' returned from last month';
+      // Tasks (always current)
+      overdueTasks=(tasksRes.data||[]).filter(t=>t.status==='overdue'||(t.due_date&&new Date(t.due_date)<now));
+      document.getElementById('s-overdue-box').innerHTML=overdueTasks.length
+        ?`<div class="alert-box danger"><div class="a-title">🔴 ${overdueTasks.length} Overdue Task${overdueTasks.length>1?'s':''}</div>${overdueTasks.map(t=>`<div class="task-row">${escHtml(t.description)}${t.linked_customer?' — <em>'+escHtml(t.linked_customer)+'</em>':''} <span style="color:#9ca3af">(due ${t.due_date||'?'})</span></div>`).join('')}</div>`
+        :'<div class="alert-box ok"><div class="a-title">✅ No overdue tasks</div></div>';
 
-      // Visits
-      const visitsThis = visitsThisRes.data?.length || 0;
-      const visitsLast = visitsLastRes.data?.length || 0;
-      const visitDiff = visitsThis - visitsLast;
-      document.getElementById('s-visits-this').textContent = visitsThis;
-      document.getElementById('s-visits-last').textContent = visitsLast;
-      document.getElementById('s-visits-badge').innerHTML = visitsLast > 0
-        ? `<span class="s-badge ${visitDiff >= 0 ? 'badge-up':'badge-down'}">${visitDiff >= 0 ? '↑':'↓'} ${Math.abs(visitDiff)} vs last week</span>`
-        : '<span class="s-badge badge-warn">No data last week</span>';
+      document.getElementById('main-loading').style.display='none';
+      document.getElementById('main-content').style.display='block';
 
-      // Overdue tasks
-      const overdueTasks = (tasksRes.data || []).filter(t => t.status === 'overdue' || (t.due_date && new Date(t.due_date) < now));
-      document.getElementById('s-overdue-box').innerHTML = overdueTasks.length
-        ? `<div class="alert-box danger">
-            <div class="a-title">🔴 ${overdueTasks.length} Overdue Task${overdueTasks.length > 1 ? 's' : ''}</div>
-            ${overdueTasks.map(t => `<div class="task-row">${escHtml(t.description)}${t.linked_customer ? ' — <em>'+escHtml(t.linked_customer)+'</em>' : ''} <span style="color:#9ca3af">(due ${t.due_date||'?'})</span></div>`).join('')}
-          </div>`
-        : '<div class="alert-box ok"><div class="a-title">✅ No overdue tasks</div></div>';
-
-      // Churn warning
-      document.getElementById('s-churn-box').innerHTML = churnList.length
-        ? `<div class="alert-box warn">
-            <div class="a-title">⚠️ ${churnList.length} Customer${churnList.length > 1 ? 's' : ''} not reordered this month</div>
-            <div style="margin-top:6px">${churnList.map(c => `<span class="chip chip-warn">${escHtml(c)}</span>`).join('')}</div>
-            <div style="font-size:11px;color:#b45309;margin-top:8px">Ordered in ${mNames[lastMNum-1]} — follow up now!</div>
-          </div>`
-        : '<div class="alert-box ok"><div class="a-title">✅ All last month\'s customers still active</div></div>';
-
-      // Monthly trend chart with target line
-      const monthMap = {};
-      yearData.forEach(r => { const m = parseInt(r['MONTH']); if (m) monthMap[m] = (monthMap[m]||0) + getTotalField(r); });
-      const chartLabels = [], chartValues = [], targetLine = [];
-      for (let m = 1; m <= 12; m++) { chartLabels.push(mNames[m-1]); chartValues.push(monthMap[m]||0); targetLine.push(kpiTarget||null); }
-      new Chart(document.getElementById('s-chart-monthly'), {
-        type: 'bar',
-        data: {
-          labels: chartLabels,
-          datasets: [
-            { label: 'Sales', data: chartValues, backgroundColor: chartValues.map((_,i) => i+1===thisM ? '#166534' : '#166534aa'), borderRadius: 5 },
-            { label: 'Monthly Target', data: targetLine, type: 'line', borderColor: '#d97706', borderDash: [5,4], borderWidth: 2, pointRadius: 0, fill: false }
-          ]
-        },
-        options: {
-          responsive: true, maintainAspectRatio: false,
-          plugins: { legend: { display: kpiTarget > 0 }, tooltip: { callbacks: { label: ctx => ctx.dataset.label + ': RM ' + fmt(ctx.parsed.y) } } },
-          scales: { y: { beginAtZero: true, ticks: { callback: v => 'RM ' + fmt(v) } } }
-        }
-      });
-
-      // Not ordered this month (active in last 3 months but no order this month)
-      const last3Months = [];
-      for (let i = 1; i <= 3; i++) {
-        let m = thisM - i, y = thisY;
-        if (m <= 0) { m += 12; y -= 1; }
-        last3Months.push({ y, m });
-      }
-      const recentData = allMyData.filter(r => last3Months.some(p => parseInt(r['YEAR']) === p.y && parseInt(r['MONTH']) === p.m));
-      const recentCusts = new Set(recentData.map(r => r['COMPANY']).filter(Boolean));
-      // Build last order info for all customers
-      const allLastOrder = {};
-      allMyData.forEach(r => {
-        const c = r['COMPANY'] || 'Unknown';
-        const yr = parseInt(r['YEAR']), mo = parseInt(r['MONTH']);
-        if (!allLastOrder[c] || yr > allLastOrder[c].y || (yr === allLastOrder[c].y && mo > allLastOrder[c].m)) {
-          const rawDate = r['INVOICE DATE'] || r['PO DATE'] || '';
-          allLastOrder[c] = { y: yr, m: mo, rawDate };
-        }
-      });
-      const inactiveList = [...recentCusts]
-        .filter(c => !thisMonthCusts.has(c))
-        .map(c => {
-          const lo = allLastOrder[c] || {};
-          const monthsAgo = lo.y && lo.m ? (thisY - lo.y) * 12 + (thisM - lo.m) : null;
-          const lastDateStr = lo.rawDate ? new Date(lo.rawDate).toLocaleDateString('en-MY', { day:'2-digit', month:'short', year:'2-digit' }) : `${mNames[(lo.m||1)-1]} ${lo.y||''}`;
-          return { name: c, lastDateStr, monthsAgo: monthsAgo || 1 };
-        })
-        .sort((a, b) => a.monthsAgo - b.monthsAgo);
-
-      document.getElementById('s-inactive-count').textContent = inactiveList.length ? `${inactiveList.length} customer${inactiveList.length > 1 ? 's' : ''} to follow up` : '';
-      const urgencyColor = n => n <= 1 ? '#dc2626' : n <= 2 ? '#d97706' : '#6b7280';
-      const urgencyLabel = n => n <= 1 ? '🔴 1 month' : n <= 2 ? '🟠 2 months' : `⚪ ${n} months`;
-      document.querySelector('#s-inactive-customers tbody').innerHTML = inactiveList.length
-        ? inactiveList.map((c, i) => `<tr>
-            <td class="rank">${i+1}</td>
-            <td><strong>${escHtml(c.name)}</strong></td>
-            <td class="last-date">${c.lastDateStr}</td>
-            <td style="font-size:12px;font-weight:600;color:${urgencyColor(c.monthsAgo)}">${urgencyLabel(c.monthsAgo)}</td>
-          </tr>`).join('')
-        : '<tr><td colspan="4" class="empty">🎉 All recent customers have ordered this month!</td></tr>';
-
-      // Render tables
-      renderTopCustomers();
-      renderTopSkus();
-
-      document.getElementById('main-loading').style.display = 'none';
-      document.getElementById('main-content').style.display = 'block';
+      renderPeriod();
     } catch(e) {
       console.error(e);
-      document.getElementById('main-loading').innerHTML = '<div class="empty">❌ Failed to load. Please try again.</div>';
+      document.getElementById('main-loading').innerHTML='<div class="empty">❌ Failed to load. Please try again.</div>';
     }
   }
 
