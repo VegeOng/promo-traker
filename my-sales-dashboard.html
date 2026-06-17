@@ -217,11 +217,7 @@
     <div class="table-card">
       <div class="period-bar">
         <span class="period-title">Customer Ranking</span>
-        <div class="period-btns" id="cust-period">
-          <button class="period-btn active" onclick="setCustPeriod('month',this)">This Month</button>
-          <button class="period-btn" onclick="setCustPeriod('year',this)">This Year</button>
-          <button class="period-btn" onclick="setCustPeriod('all',this)">All Time</button>
-        </div>
+        <span id="cust-period-label" style="font-size:12px;color:#6b7280"></span>
       </div>
       <table class="data-table" id="s-top-customers">
         <thead><tr><th>#</th><th>Customer</th><th>Orders</th><th>Sales</th><th>Last Order</th></tr></thead>
@@ -234,11 +230,7 @@
     <div class="table-card">
       <div class="period-bar">
         <span class="period-title">Product Performance</span>
-        <div class="period-btns" id="sku-period">
-          <button class="period-btn active" onclick="setSkuPeriod('month',this)">This Month</button>
-          <button class="period-btn" onclick="setSkuPeriod('year',this)">This Year</button>
-          <button class="period-btn" onclick="setSkuPeriod('all',this)">All Time</button>
-        </div>
+        <span id="sku-period-label" style="font-size:12px;color:#6b7280"></span>
       </div>
       <table class="data-table" id="s-top-skus">
         <thead><tr><th>#</th><th>Product</th><th>Qty</th><th>%</th></tr></thead>
@@ -405,7 +397,11 @@
       ?inactiveList.map((c,i)=>`<tr><td class="rank">${i+1}</td><td><strong>${escHtml(c.name)}</strong></td><td class="last-date">${c.lastDateStr}</td><td style="font-size:12px;font-weight:600;color:${urgencyColor(c.monthsAgo)}">${urgencyLabel(c.monthsAgo)}</td></tr>`).join('')
       :'<tr><td colspan="4" class="empty">🎉 All recent customers ordered this period!</td></tr>';
 
-    // Tables follow period
+    // Tables follow main period
+    const plabel = document.getElementById('cust-period-label');
+    const slabel = document.getElementById('sku-period-label');
+    if (plabel) plabel.textContent = label;
+    if (slabel) slabel.textContent = label;
     renderTopCustomers(curData);
     renderTopSkus(curData);
   }
@@ -433,9 +429,6 @@
       :'<tr><td colspan="4" class="empty">No data</td></tr>';
   }
 
-  // Customer/SKU period toggles now just re-render with same data (period picker controls all)
-  function setCustPeriod(p,btn){document.querySelectorAll('#cust-period .period-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderTopCustomers();}
-  function setSkuPeriod(p,btn){document.querySelectorAll('#sku-period .period-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderTopSkus();}
 
   async function loadAll() {
     try {
