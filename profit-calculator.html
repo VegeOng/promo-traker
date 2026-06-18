@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Profit Calculator — MamaVege</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#fafafa;--white:#fff;
+  --green:#166534;--gd:#14532d;--gm:#15803d;--gl:#dcfce7;--gxl:#f0fdf4;
+  --red:#dc2626;--rl:#fee2e2;
+  --amber:#d97706;--al:#fef3c7;
+  --border:#e5e7eb;--bd:#d1d5db;
+  --muted:#6b7280;--ml:#9ca3af;
+  --text:#111827;--t2:#374151;--t3:#4b5563;
+  --r:13px;
+}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;-webkit-font-smoothing:antialiased}
+
+/* NAV */
+.mv-top{overflow:hidden}
+.mv-top-main{display:flex;justify-content:space-between;align-items:center;padding:12px 24px;background:var(--green)}
+.mv-top-left{display:flex;align-items:center;gap:12px}
+.mv-top-logo{height:34px;background:#fff;border-radius:8px;padding:3px 8px;display:flex;align-items:center;text-decoration:none}
+.mv-top-logo img{height:26px}
+.mv-top-sep{width:1px;height:24px;background:rgba(255,255,255,.2)}
+.mv-top-tool{color:#fff;font-size:14px;font-weight:700;letter-spacing:.3px}
+.mv-top-right{display:flex;align-items:center;gap:12px}
+.mv-top-back{color:rgba(255,255,255,.8);text-decoration:none;font-size:13px;font-weight:600}
+.mv-top-back:hover{color:#fff}
+.mv-top-sub{display:flex;justify-content:space-between;align-items:center;padding:5px 24px;background:#15532d;color:rgba(255,255,255,.6);font-size:11px}
+
+/* HERO */
+.hero{background:var(--green);padding:1.65rem 1.2rem 1.35rem;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;right:-50px;top:-50px;width:200px;height:200px;border-radius:50%;background:rgba(255,255,255,.05);pointer-events:none}
+.hero-tag{display:inline-flex;align-items:center;font-size:.67rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.15);border-radius:20px;padding:3px 10px;color:rgba(255,255,255,.85);margin-bottom:.6rem}
+.hero h1{font-family:'DM Serif Display',serif;font-size:1.55rem;color:#fff;line-height:1.15;font-style:italic}
+.hero p{font-size:.78rem;color:rgba(255,255,255,.6);margin-top:.3rem;line-height:1.55}
+
+main{padding:1.05rem 1.1rem 4rem;max-width:640px;margin:0 auto}
+
+/* CARD */
+.card{background:var(--white);border:1.5px solid var(--border);border-radius:var(--r);padding:1.1rem;margin-bottom:.8rem}
+.card-hd{font-size:.67rem;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);margin-bottom:.9rem;display:flex;align-items:center;justify-content:space-between}
+.hint{font-size:.68rem;color:var(--ml);margin-top:3px;line-height:1.4}
+
+label{display:block;font-size:.72rem;font-weight:600;color:var(--t2);margin-bottom:3px}
+.req{color:var(--red)}
+
+input[type=number],input[type=text],select{
+  width:100%;padding:.55rem .7rem;border:1.5px solid var(--bd);border-radius:7px;
+  font-family:inherit;font-size:.85rem;color:var(--text);background:var(--white);
+  outline:none;transition:border-color .15s,box-shadow .15s;-moz-appearance:textfield
+}
+input::-webkit-outer-spin-button,input::-webkit-inner-spin-button{-webkit-appearance:none}
+input:focus,select:focus{border-color:var(--green);box-shadow:0 0 0 3px rgba(22,101,52,.09)}
+input::placeholder{color:var(--ml)}
+
+.pfx{position:relative}
+.pfx .sym{position:absolute;left:.68rem;top:50%;transform:translateY(-50%);font-size:.78rem;color:var(--ml);pointer-events:none;font-weight:500}
+.pfx input{padding-left:2rem}
+.sfx{position:relative}
+.sfx .sym{position:absolute;right:.68rem;top:50%;transform:translateY(-50%);font-size:.78rem;color:var(--ml);pointer-events:none}
+.sfx input{padding-right:1.9rem;text-align:right}
+
+/* SKU ROWS */
+.sku-section-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:.65rem}
+.sku-section-hd span{font-size:.67rem;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--muted)}
+.add-sku-btn{font-size:.76rem;font-weight:700;color:var(--green);background:var(--gxl);border:1.5px solid var(--gl);border-radius:7px;padding:.3rem .65rem;cursor:pointer;font-family:inherit;transition:all .15s}
+.add-sku-btn:hover{background:var(--gl)}
+
+.sku-list{display:flex;flex-direction:column;gap:.6rem;margin-bottom:.5rem}
+.sku-row{background:#fafafa;border:1.5px solid var(--border);border-radius:10px;padding:.75rem .8rem;position:relative}
+.sku-row-top{display:grid;grid-template-columns:1fr 80px 100px 26px;gap:.5rem;align-items:end}
+.sku-row-top label{font-size:.72rem}
+.sku-del{width:24px;height:24px;border-radius:5px;border:1.5px solid #fca5a5;background:var(--white);color:var(--red);font-size:.95rem;cursor:pointer;display:grid;place-items:center;align-self:end;transition:background .12s}
+.sku-del:hover{background:var(--rl)}
+
+.sku-bar{margin-top:.5rem;padding:.35rem .65rem;border-radius:6px;background:var(--gxl);border:1px solid var(--gl);font-size:.72rem;color:var(--gm);font-weight:600;display:none;align-items:center;gap:.55rem;flex-wrap:wrap}
+.sku-bar.warn{background:var(--rl);border-color:#fecaca;color:var(--red)}
+.sku-bar .sv{font-weight:700;font-size:.78rem}
+.sku-bar .sep{color:var(--ml)}
+
+/* DEDUCTION ROWS */
+.ded-list{display:flex;flex-direction:column;gap:.6rem;margin-bottom:.55rem}
+.ded-row{background:#fafafa;border:1.5px solid var(--border);border-radius:10px;padding:.7rem .8rem}
+.ded-row-top{display:grid;grid-template-columns:1fr 26px;gap:.5rem;align-items:start;margin-bottom:.5rem}
+.ded-row-top label{font-size:.72rem;margin-bottom:3px}
+.del-btn{width:24px;height:24px;border-radius:5px;border:1.5px solid #fca5a5;background:var(--white);color:var(--red);font-size:.95rem;cursor:pointer;display:grid;place-items:center;transition:background .12s;margin-top:1px}
+.del-btn:hover{background:var(--rl)}
+
+.radio-group{display:flex;gap:1rem;margin-bottom:.5rem}
+.radio-opt{display:flex;align-items:center;gap:.35rem;cursor:pointer}
+.radio-opt input[type=radio]{width:15px;height:15px;accent-color:var(--green);cursor:pointer;margin:0;flex-shrink:0}
+.radio-opt span{font-size:.78rem;font-weight:600;color:var(--t2)}
+.radio-opt input[type=radio]:checked + span{color:var(--green)}
+
+.amt-wrap{position:relative}
+.amt-sym{position:absolute;top:50%;transform:translateY(-50%);font-size:.78rem;color:var(--ml);pointer-events:none;font-weight:500}
+.amt-sym.left{left:.68rem}
+.amt-sym.right{right:.68rem}
+.inp-rm{padding-left:2rem!important}
+.inp-pct{padding-right:1.9rem!important;text-align:right}
+
+.add-ded-btn{width:100%;border:1.5px dashed var(--bd);background:transparent;border-radius:8px;padding:.46rem;font-family:inherit;font-size:.78rem;color:var(--green);font-weight:600;cursor:pointer;transition:all .15s}
+.add-ded-btn:hover{background:var(--gxl);border-color:var(--green)}
+
+/* CALC BTN */
+.calc-btn{width:100%;padding:.8rem;background:var(--green);color:#fff;border:none;border-radius:10px;font-family:inherit;font-size:.93rem;font-weight:700;cursor:pointer;transition:background .18s,transform .1s;margin:.9rem 0 .4rem;display:flex;align-items:center;justify-content:center;gap:6px}
+.calc-btn:hover{background:var(--gd)}
+.calc-btn:active{transform:scale(.985)}
+
+/* RESULTS */
+#results{display:none}
+.r-sep{display:flex;align-items:center;gap:.55rem;margin:1rem 0 .75rem;font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--ml)}
+.r-sep::before,.r-sep::after{content:'';flex:1;height:1px;background:var(--border)}
+
+.summary-grid{display:grid;grid-template-columns:1fr 1fr;gap:.65rem;margin-bottom:.8rem}
+.sum-card{border-radius:var(--r);padding:1rem .95rem;position:relative;overflow:hidden}
+.sum-card.green{background:var(--green)}
+.sum-card.amber{background:#92400e}
+.sum-card.red{background:var(--red)}
+.sum-card.blue{background:#1d4ed8}
+.sum-card::after{content:'';position:absolute;right:-18px;bottom:-18px;width:80px;height:80px;border-radius:50%;background:rgba(255,255,255,.07);pointer-events:none}
+.sum-card .sc-label{font-size:.62rem;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:rgba(255,255,255,.55);margin-bottom:.35rem}
+.sum-card .sc-val{font-family:'DM Serif Display',serif;font-size:1.65rem;color:#fff;line-height:1;font-style:italic}
+.sum-card .sc-sub{font-size:.68rem;color:rgba(255,255,255,.5);margin-top:.25rem}
+.sum-card.full{grid-column:1/-1}
+
+.breakdown{background:var(--white);border:1.5px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:.8rem}
+.bk-hd{background:var(--gxl);padding:.55rem .95rem;font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--green)}
+.bk-hd.amber{background:var(--al);color:var(--amber)}
+.bk-row{display:flex;justify-content:space-between;align-items:center;padding:.45rem .95rem;border-bottom:1px solid #f3f4f6;font-size:.8rem}
+.bk-row:last-child{border-bottom:none}
+.bk-row.total{font-weight:700;font-size:.84rem;background:#fafafa;padding:.52rem .95rem}
+.bk-row.net{font-weight:700;font-size:.87rem;background:var(--gxl);padding:.55rem .95rem;border-top:2px solid var(--gl)}
+.bk-row.net.loss{background:var(--rl);border-top-color:#fca5a5}
+.bk-name{color:var(--t3)}
+.bk-amt{font-weight:600;color:var(--text)}
+.bk-amt.neg{color:var(--red)}
+.bk-amt.pos{color:var(--green)}
+.bk-tag{font-size:.65rem;color:var(--ml);margin-left:4px;font-weight:400}
+
+.sku-result-tbl{background:var(--white);border:1.5px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:.8rem}
+.srt-hd{background:var(--gxl);padding:.55rem .95rem;font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--green)}
+.srtable{width:100%;border-collapse:collapse;font-size:.77rem}
+.srtable th{padding:.4rem .6rem;text-align:left;font-size:.63rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--green);border-bottom:1.5px solid var(--gl)}
+.srtable td{padding:.42rem .6rem;border-bottom:1px solid #f3f4f6;color:var(--t3)}
+.srtable tr:last-child td{border-bottom:none}
+.srtable td:first-child{color:var(--text);font-weight:600}
+.srtable td.pos{color:var(--green);font-weight:700}
+.srtable td.neg{color:var(--red);font-weight:700}
+
+/* WA */
+.wa-section{margin-bottom:.75rem}
+.wa-label{font-size:.67rem;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);margin-bottom:.5rem}
+.wa-btn{display:flex;align-items:center;justify-content:center;gap:7px;padding:.65rem .5rem;border-radius:9px;border:none;font-family:inherit;font-size:.8rem;font-weight:700;cursor:pointer;text-decoration:none;transition:all .18s;width:100%;background:#25D366;color:#fff}
+.wa-btn:hover{background:#1ebe5d}
+
+.reset-btn{width:100%;padding:.58rem;background:transparent;color:var(--muted);border:1.5px solid var(--bd);border-radius:9px;font-family:inherit;font-size:.8rem;font-weight:500;cursor:pointer;transition:all .15s}
+.reset-btn:hover{border-color:var(--red);color:var(--red)}
+
+.loading-skus{font-size:.78rem;color:var(--ml);padding:.4rem 0;}
+</style>
+</head>
+<body>
+
+<div class="mv-top">
+  <div class="mv-top-main">
+    <div class="mv-top-left">
+      <a href="index.html" class="mv-top-logo"><img src="Mamavege_Logo.png" alt="MamaVege"></a>
+      <div class="mv-top-sep"></div>
+      <span class="mv-top-tool">💰 Profit Calculator</span>
+    </div>
+    <div class="mv-top-right">
+      <a href="index.html" class="mv-top-back">← Hub</a>
+    </div>
+  </div>
+  <div class="mv-top-sub">
+    <span class="mv-top-date"></span>
+    <span>MamaVege Management Hub</span>
+  </div>
+</div>
+<script>document.querySelectorAll('.mv-top-date').forEach(e=>e.textContent=new Date().toLocaleDateString('en-MY',{weekday:'short',year:'numeric',month:'short',day:'numeric'}));</script>
+
+<div class="hero">
+  <div class="hero-tag">💰 Sales Tool</div>
+  <h1>Order Profit Calculator</h1>
+  <p>Enter customer invoice prices to instantly see gross profit, margin, and net profit after deductions.</p>
+</div>
+
+<main>
+
+  <!-- ORDER INFO -->
+  <div class="card">
+    <div class="card-hd" style="margin-bottom:.6rem">📋 Order Info <span style="font-weight:400;font-size:.75rem;text-transform:none;letter-spacing:0;color:var(--ml)">(optional)</span></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:.6rem">
+      <div>
+        <label>Customer Name</label>
+        <input type="text" id="customer-name" placeholder="e.g. Lotus's HQ">
+      </div>
+      <div>
+        <label>PO / Reference</label>
+        <input type="text" id="po-ref" placeholder="e.g. PO-20260618">
+      </div>
+    </div>
+  </div>
+
+  <!-- SKU LINES -->
+  <div class="card">
+    <div class="sku-section-hd">
+      <span>📦 Products</span>
+      <button class="add-sku-btn" onclick="addSkuRow()">＋ Add Product</button>
+    </div>
+    <div id="sku-loading" class="loading-skus">Loading SKUs…</div>
+    <div class="sku-list" id="sku-list"></div>
+  </div>
+
+  <!-- DEDUCTIONS -->
+  <div class="card">
+    <div class="card-hd">
+      <span>📉 Additional Deductions</span>
+    </div>
+    <div class="hint" style="margin-bottom:.8rem">E.g. DC Rebate, listing fee, freight, commission — fixed RM or % of revenue.</div>
+    <div class="ded-list" id="ded-list"></div>
+    <button class="add-ded-btn" onclick="addDedRow()">＋ Add Deduction</button>
+  </div>
+
+  <button class="calc-btn" onclick="calculate()">
+    <span>📊</span> Calculate Profit
+  </button>
+
+  <!-- RESULTS -->
+  <div id="results">
+    <div class="r-sep">Results</div>
+
+    <div class="summary-grid">
+      <div class="sum-card green">
+        <div class="sc-label">Gross Profit</div>
+        <div class="sc-val" id="r-gp">—</div>
+        <div class="sc-sub" id="r-gm">—</div>
+      </div>
+      <div class="sum-card blue">
+        <div class="sc-label">Net Profit</div>
+        <div class="sc-val" id="r-np">—</div>
+        <div class="sc-sub" id="r-nm">—</div>
+      </div>
+      <div class="sum-card amber full">
+        <div class="sc-label">Total Revenue</div>
+        <div class="sc-val" id="r-rev">—</div>
+        <div class="sc-sub" id="r-rev-sub">—</div>
+      </div>
+    </div>
+
+    <div class="breakdown">
+      <div class="bk-hd">📊 P&L Summary</div>
+      <div id="r-pl-rows"></div>
+    </div>
+
+    <div class="sku-result-tbl" id="r-sku-wrap">
+      <div class="srt-hd">📦 Per-SKU Breakdown</div>
+      <div style="overflow-x:auto">
+        <table class="srtable">
+          <thead>
+            <tr>
+              <th>SKU</th>
+              <th>Cartons</th>
+              <th>Invoice/ctn</th>
+              <th>Cost/ctn</th>
+              <th>GP/ctn</th>
+              <th>Line GP</th>
+              <th>GM%</th>
+            </tr>
+          </thead>
+          <tbody id="r-sku-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="wa-section">
+      <div class="wa-label">📤 Share via WhatsApp</div>
+      <a class="wa-btn" id="wa-link" href="#" target="_blank">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.127.558 4.122 1.532 5.859L0 24l6.335-1.506A11.942 11.942 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.794 9.794 0 01-5.012-1.374l-.36-.214-3.732.887.936-3.618-.235-.372A9.755 9.755 0 012.182 12C2.182 6.57 6.57 2.182 12 2.182S21.818 6.57 21.818 12 17.43 21.818 12 21.818z"/></svg>
+        Share Summary
+      </a>
+    </div>
+
+    <button class="reset-btn" onclick="resetAll()">↺ Recalculate</button>
+  </div>
+
+</main>
+
+<script>
+const SUPA_URL = 'https://wjhgezvrxlhpexocfsea.supabase.co';
+const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndqaGdlenZyeGxocGV4b2Nmc2VhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg1MDU4NzgsImV4cCI6MjA5NDA4MTg3OH0.jENcrgEDYDlSRUCqve-T6rxYRJfz-dnZQHnXpPLJ_RE';
+const H = { 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY };
+
+let skus = [];
+let rowCount = 0, dedCount = 0;
+
+const fmtRM  = n => 'RM ' + Number(n).toLocaleString('en-MY', { minimumFractionDigits:2, maximumFractionDigits:2 });
+const fmtPct = n => n.toFixed(1) + '%';
+
+// ── LOAD SKUs ──
+async function loadSkus() {
+  try {
+    const res = await fetch(SUPA_URL + '/rest/v1/sample_skus?order=sort_order.asc,sku_name.asc', { headers: H });
+    skus = await res.json();
+    document.getElementById('sku-loading').style.display = 'none';
+    addSkuRow();
+  } catch(e) {
+    document.getElementById('sku-loading').textContent = 'Failed to load SKUs.';
+  }
+}
+
+function skuOptions(selectedName) {
+  return skus.map(s =>
+    `<option value="${s.sku_name}" data-cost="${s.cost_price||0}" data-upc="${s.units_per_carton||0}" ${s.sku_name===selectedName?'selected':''}>
+      ${s.sku_name}${s.units_per_carton ? ' ('+s.units_per_carton+' units/ctn)' : ''}
+    </option>`
+  ).join('');
+}
+
+// ── SKU ROWS ──
+function addSkuRow() {
+  rowCount++;
+  const id = 'r' + rowCount;
+  const div = document.createElement('div');
+  div.className = 'sku-row';
+  div.id = 'srow-' + id;
+  div.innerHTML = `
+    <div class="sku-row-top">
+      <div>
+        <label>SKU <span class="req">*</span></label>
+        <select id="${id}-sku" onchange="onSkuChange('${id}')">
+          <option value="">— Select SKU —</option>
+          ${skuOptions('')}
+        </select>
+      </div>
+      <div>
+        <label>Cartons <span class="req">*</span></label>
+        <input type="number" id="${id}-qty" placeholder="0" min="1" step="1" oninput="updateBar('${id}')">
+      </div>
+      <div>
+        <label>Invoice RM/ctn <span class="req">*</span></label>
+        <div class="pfx"><span class="sym">RM</span>
+          <input type="number" id="${id}-price" placeholder="0.00" min="0" step="0.01" oninput="updateBar('${id}')">
+        </div>
+      </div>
+      <button class="sku-del" onclick="document.getElementById('srow-${id}').remove()" title="Remove">×</button>
+    </div>
+    <div class="sku-bar" id="${id}-bar">
+      <span>Cost/ctn: <span class="sv" id="${id}-cost-lbl">—</span></span>
+      <span class="sep">·</span>
+      <span>GP/ctn: <span class="sv" id="${id}-gp-lbl">—</span></span>
+      <span class="sep">·</span>
+      <span>Line GP: <span class="sv" id="${id}-line-lbl">—</span></span>
+      <span class="sep">·</span>
+      <span>GM: <span class="sv" id="${id}-gm-lbl">—</span></span>
+    </div>`;
+  document.getElementById('sku-list').appendChild(div);
+}
+
+function onSkuChange(id) {
+  updateBar(id);
+}
+
+function getSkuData(id) {
+  const sel = document.getElementById(id + '-sku');
+  const opt = sel.options[sel.selectedIndex];
+  if (!opt || !opt.value) return null;
+  return {
+    name: opt.value,
+    cost: parseFloat(opt.dataset.cost) || 0,
+    upc:  parseInt(opt.dataset.upc) || 0
+  };
+}
+
+function updateBar(id) {
+  const sku   = getSkuData(id);
+  const qty   = parseFloat(document.getElementById(id + '-qty').value) || 0;
+  const price = parseFloat(document.getElementById(id + '-price').value) || 0;
+  const bar   = document.getElementById(id + '-bar');
+
+  if (!sku || price <= 0) { bar.style.display = 'none'; return; }
+
+  const gpCtn  = price - sku.cost;
+  const lineGP = gpCtn * qty;
+  const gm     = price > 0 ? (gpCtn / price * 100) : 0;
+
+  document.getElementById(id + '-cost-lbl').textContent = fmtRM(sku.cost);
+  document.getElementById(id + '-gp-lbl').textContent   = fmtRM(gpCtn);
+  document.getElementById(id + '-line-lbl').textContent = qty > 0 ? fmtRM(lineGP) : '—';
+  document.getElementById(id + '-gm-lbl').textContent   = fmtPct(gm);
+
+  bar.style.display = 'flex';
+  bar.classList.toggle('warn', gpCtn < 0);
+}
+
+// ── DEDUCTION ROWS ──
+function addDedRow() {
+  dedCount++;
+  const id = 'd' + dedCount;
+  const div = document.createElement('div');
+  div.className = 'ded-row';
+  div.id = 'drow-' + id;
+  div.innerHTML = `
+    <div class="ded-row-top">
+      <div>
+        <label>Deduction Name</label>
+        <input type="text" id="${id}-name" placeholder="e.g. DC Rebate, Freight, Commission">
+      </div>
+      <button class="del-btn" onclick="document.getElementById('drow-${id}').remove()" title="Remove">×</button>
+    </div>
+    <div class="radio-group">
+      <label class="radio-opt">
+        <input type="radio" name="${id}-type" value="rm" checked onchange="setDedType('${id}','rm')">
+        <span>Fixed RM</span>
+      </label>
+      <label class="radio-opt">
+        <input type="radio" name="${id}-type" value="pct" onchange="setDedType('${id}','pct')">
+        <span>% of Revenue</span>
+      </label>
+    </div>
+    <div id="${id}-amtwrap" class="amt-wrap">
+      <span class="amt-sym left">RM</span>
+      <input type="number" id="${id}-amt" placeholder="0.00" min="0" step="0.01" class="inp-rm">
+    </div>`;
+  document.getElementById('ded-list').appendChild(div);
+}
+
+function setDedType(id, type) {
+  const wrap = document.getElementById(id + '-amtwrap');
+  if (type === 'rm') {
+    wrap.innerHTML = `<span class="amt-sym left">RM</span><input type="number" id="${id}-amt" placeholder="0.00" min="0" step="0.01" class="inp-rm">`;
+  } else {
+    wrap.innerHTML = `<span class="amt-sym right">%</span><input type="number" id="${id}-amt" placeholder="0.0" min="0" max="100" step="0.1" class="inp-pct">`;
+  }
+}
+
+function getDedType(id) {
+  for (const r of document.querySelectorAll(`input[name="${id}-type"]`)) { if (r.checked) return r.value; }
+  return 'rm';
+}
+
+// ── CALCULATE ──
+function calculate() {
+  const skuRows = document.querySelectorAll('.sku-row');
+  if (!skuRows.length) { alert('Please add at least one product.'); return; }
+
+  // Parse SKU lines
+  const lines = [...skuRows].map(r => {
+    const id    = r.id.replace('srow-', '');
+    const sku   = getSkuData(id);
+    const qty   = parseFloat(document.getElementById(id + '-qty').value) || 0;
+    const price = parseFloat(document.getElementById(id + '-price').value) || 0;
+    if (!sku || qty <= 0 || price <= 0) return null;
+    const revenue = price * qty;
+    const cost    = sku.cost * qty;
+    const gp      = revenue - cost;
+    const gm      = revenue > 0 ? (gp / revenue * 100) : 0;
+    return { name: sku.name, qty, price, cost: sku.cost, revenue, totalCost: cost, gp, gm, upc: sku.upc };
+  }).filter(Boolean);
+
+  if (!lines.length) { alert('Please fill in SKU, cartons and invoice price for at least one product.'); return; }
+
+  const totalRevenue = lines.reduce((s, l) => s + l.revenue, 0);
+  const totalCOGS    = lines.reduce((s, l) => s + l.totalCost, 0);
+  const grossProfit  = totalRevenue - totalCOGS;
+  const grossMargin  = totalRevenue > 0 ? (grossProfit / totalRevenue * 100) : 0;
+
+  // Parse deductions
+  const dedRows = document.querySelectorAll('.ded-row');
+  const deds = [...dedRows].map(r => {
+    const id   = r.id.replace('drow-', '');
+    const name = document.getElementById(id + '-name').value.trim() || 'Deduction';
+    const type = getDedType(id);
+    const val  = parseFloat(document.getElementById(id + '-amt').value) || 0;
+    if (val <= 0) return null;
+    const amount = type === 'rm' ? val : (val / 100 * totalRevenue);
+    return { name, type, val, amount };
+  }).filter(Boolean);
+
+  const totalDeds  = deds.reduce((s, d) => s + d.amount, 0);
+  const netProfit  = grossProfit - totalDeds;
+  const netMargin  = totalRevenue > 0 ? (netProfit / totalRevenue * 100) : 0;
+
+  // ── RENDER ──
+  const customer = document.getElementById('customer-name').value.trim();
+  const po       = document.getElementById('po-ref').value.trim();
+
+  document.getElementById('r-gp').textContent  = fmtRM(grossProfit);
+  document.getElementById('r-gm').textContent  = 'Gross Margin ' + fmtPct(grossMargin);
+  document.getElementById('r-np').textContent  = fmtRM(netProfit);
+  document.getElementById('r-nm').textContent  = 'Net Margin ' + fmtPct(netMargin);
+  document.getElementById('r-rev').textContent = fmtRM(totalRevenue);
+  document.getElementById('r-rev-sub').textContent = lines.length + ' SKU line' + (lines.length > 1 ? 's' : '') + (customer ? ' · ' + customer : '');
+
+  // Colour net profit card
+  const npCard = document.querySelector('.sum-card.blue');
+  npCard.className = 'sum-card full ' + (netProfit >= 0 ? 'green' : 'red');
+
+  // P&L rows
+  const pl = document.getElementById('r-pl-rows');
+  pl.innerHTML = `
+    <div class="bk-row"><span class="bk-name">Revenue</span><span class="bk-amt pos">${fmtRM(totalRevenue)}</span></div>
+    <div class="bk-row"><span class="bk-name">Cost of Goods (COGS)</span><span class="bk-amt neg">− ${fmtRM(totalCOGS)}</span></div>
+    <div class="bk-row total"><span class="bk-name">Gross Profit</span><span class="bk-amt ${grossProfit>=0?'pos':'neg'}">${fmtRM(grossProfit)} <span class="bk-tag">(${fmtPct(grossMargin)})</span></span></div>
+    ${deds.map(d=>`<div class="bk-row"><span class="bk-name">${d.name}${d.type==='pct'?`<span class="bk-tag">(${d.val}%)</span>`:''}</span><span class="bk-amt neg">− ${fmtRM(d.amount)}</span></div>`).join('')}
+    ${deds.length ? `<div class="bk-row"><span class="bk-name">Total Deductions</span><span class="bk-amt neg">− ${fmtRM(totalDeds)}</span></div>` : ''}
+    <div class="bk-row net ${netProfit<0?'loss':''}"><span class="bk-name">Net Profit</span><span class="bk-amt ${netProfit>=0?'pos':'neg'}">${fmtRM(netProfit)} <span class="bk-tag">(${fmtPct(netMargin)})</span></span></div>`;
+
+  // Per-SKU table
+  const tbody = document.getElementById('r-sku-tbody');
+  tbody.innerHTML = lines.map(l => `
+    <tr>
+      <td>${l.name}</td>
+      <td>${l.qty}</td>
+      <td>${fmtRM(l.price)}</td>
+      <td>${fmtRM(l.cost)}</td>
+      <td class="${(l.price-l.cost)>=0?'pos':'neg'}">${fmtRM(l.price - l.cost)}</td>
+      <td class="${l.gp>=0?'pos':'neg'}">${fmtRM(l.gp)}</td>
+      <td class="${l.gm>=0?'pos':'neg'}">${fmtPct(l.gm)}</td>
+    </tr>`).join('');
+  document.getElementById('r-sku-wrap').style.display = lines.length > 1 ? 'block' : 'none';
+
+  // WhatsApp
+  const waLines = lines.map(l =>
+    `  • ${l.name}: ${l.qty} ctn × ${fmtRM(l.price)} = ${fmtRM(l.revenue)} (GP ${fmtRM(l.gp)}, ${fmtPct(l.gm)})`
+  ).join('\n');
+  const waDeds = deds.length
+    ? '\n\n📉 *Deductions:*\n' + deds.map(d => `  • ${d.name}: − ${fmtRM(d.amount)}`).join('\n')
+    : '';
+  const waMsg = [
+    '💰 *MamaVege Profit Calculator*',
+    customer ? `👤 Customer: ${customer}` : '',
+    po ? `📋 PO: ${po}` : '',
+    '',
+    '📦 *Products:*',
+    waLines,
+    '',
+    `💵 Revenue: ${fmtRM(totalRevenue)}`,
+    `📦 COGS: − ${fmtRM(totalCOGS)}`,
+    `✅ Gross Profit: ${fmtRM(grossProfit)} (${fmtPct(grossMargin)})`,
+    waDeds,
+    deds.length ? `\n🏁 *Net Profit: ${fmtRM(netProfit)} (${fmtPct(netMargin)})*` : '',
+    '',
+    '_Calculated via MamaVege Management Hub_'
+  ].filter(l => l !== '').join('\n');
+  document.getElementById('wa-link').href = 'https://wa.me/?text=' + encodeURIComponent(waMsg);
+
+  document.getElementById('results').style.display = 'block';
+  setTimeout(() => document.getElementById('results').scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
+}
+
+function resetAll() {
+  document.getElementById('results').style.display = 'none';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+loadSkus();
+</script>
+</body>
+</html>
