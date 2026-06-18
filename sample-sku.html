@@ -163,11 +163,12 @@ async function loadSkus() {
   const list = document.getElementById('skuList');
   list.innerHTML = '<div class="loading">Loading…</div>';
   try {
-    const res = await fetch(SUPABASE_URL + '/rest/v1/sample_skus?order=sku_name.asc', { headers: H });
+    const res = await fetch(SUPABASE_URL + '/rest/v1/sample_skus?order=sort_order.asc,sku_name.asc', { headers: H });
     const data = await res.json();
     if (!data.length) { list.innerHTML = '<div class="empty">No SKUs yet. Add your first one above.</div>'; return; }
     list.innerHTML = `<div class="sku-list">${data.map(d => `
       <div class="sku-item" id="sku-row-${d.id}">
+        <input class="sku-cost-input" type="number" min="0" step="1" value="${d.sort_order||0}" id="order-${d.id}" title="Sort order" style="width:48px;text-align:center;color:var(--t3)">
         <span class="sku-name">${escH(d.sku_name)}</span>
         <div class="sku-cost-wrap">
           <span class="sku-cost-label">RM</span>
@@ -182,14 +183,15 @@ async function loadSkus() {
 }
 
 async function saveCost(id) {
-  const val = parseFloat(document.getElementById('cost-' + id).value) || 0;
+  const cost = parseFloat(document.getElementById('cost-' + id).value) || 0;
+  const order = parseInt(document.getElementById('order-' + id).value) || 0;
   try {
     const res = await fetch(SUPABASE_URL + '/rest/v1/sample_skus?id=eq.' + id, {
       method: 'PATCH', headers: { ...H, 'Prefer': 'return=minimal' },
-      body: JSON.stringify({ cost_price: val })
+      body: JSON.stringify({ cost_price: cost, sort_order: order })
     });
     if (!res.ok) throw new Error(await res.text());
-    showMsg('success', '✅ Cost price updated.');
+    showMsg('success', '✅ Saved.');
   } catch(e) {
     showMsg('error', 'Failed to save: ' + e.message);
   }
