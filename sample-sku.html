@@ -42,8 +42,14 @@ input:focus{border-color:var(--green);background:white;box-shadow:0 0 0 3px rgba
 .alert-success{background:var(--green-bg);border:1px solid var(--green-border);color:var(--green);}
 .alert-error{background:var(--red-bg);border:1px solid var(--red-border);color:var(--red);}
 .sku-list{display:flex;flex-direction:column;gap:8px;}
-.sku-item{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:var(--s2);border-radius:10px;border:1px solid var(--b1);}
-.sku-name{font-size:14px;font-weight:600;font-family:var(--mono);}
+.sku-item{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:var(--s2);border-radius:10px;border:1px solid var(--b1);gap:10px;}
+.sku-name{font-size:14px;font-weight:600;font-family:var(--mono);flex:1;}
+.sku-cost-wrap{display:flex;align-items:center;gap:6px;flex:0 0 auto;}
+.sku-cost-label{font-size:11px;color:var(--t3);font-weight:600;}
+.sku-cost-input{width:80px;padding:5px 8px;border:1.5px solid var(--b1);border-radius:7px;font-size:13px;font-family:var(--mono);font-weight:600;color:var(--green);background:#fff;text-align:right;outline:none;}
+.sku-cost-input:focus{border-color:var(--green);}
+.sku-save{background:var(--green-bg);color:var(--green);border:1px solid var(--green-border);border-radius:7px;padding:5px 10px;font-size:12px;font-weight:700;cursor:pointer;font-family:var(--font);}
+.sku-save:hover{background:#bbf7d0;}
 .sku-del{background:var(--red-bg);color:var(--red);border:none;border-radius:7px;padding:5px 10px;font-size:12px;font-weight:700;cursor:pointer;font-family:var(--font);}
 .sku-del:hover{background:#fca5a5;}
 .loading{text-align:center;padding:20px;color:var(--t3);font-size:13px;}
@@ -93,8 +99,8 @@ input:focus{border-color:var(--green);background:white;box-shadow:0 0 0 3px rgba
 
 <div class="main">
   <div class="page-title">
-    <h2>📦 SKU Management</h2>
-    <p>Add or remove SKUs available in the Sample Request form.</p>
+    <h2>📦 SKU & Cost Management</h2>
+    <p>Manage SKUs and their standard cost prices. Used by the Sample Request form and Profit Calculator.</p>
   </div>
 
   <!-- PASSWORD GATE -->
@@ -120,6 +126,10 @@ input:focus{border-color:var(--green);background:white;box-shadow:0 0 0 3px rgba
       <div class="card-title">Add New SKU</div>
       <div class="add-row">
         <input type="text" id="newSku" placeholder="e.g. KPM, CLM, SHCR…" onkeydown="if(event.key==='Enter')addSku()">
+        <div style="position:relative;flex:0 0 140px">
+          <span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:12px;color:var(--t3);font-weight:600">RM</span>
+          <input type="number" id="newCost" placeholder="0.00" min="0" step="0.01" style="padding-left:30px" onkeydown="if(event.key==='Enter')addSku()">
+        </div>
         <button class="btn-add" onclick="addSku()">＋ Add</button>
       </div>
     </div>
@@ -157,8 +167,13 @@ async function loadSkus() {
     const data = await res.json();
     if (!data.length) { list.innerHTML = '<div class="empty">No SKUs yet. Add your first one above.</div>'; return; }
     list.innerHTML = `<div class="sku-list">${data.map(d => `
-      <div class="sku-item">
+      <div class="sku-item" id="sku-row-${d.id}">
         <span class="sku-name">${escH(d.sku_name)}</span>
+        <div class="sku-cost-wrap">
+          <span class="sku-cost-label">RM</span>
+          <input class="sku-cost-input" type="number" min="0" step="0.01" value="${parseFloat(d.cost_price||0).toFixed(2)}" id="cost-${d.id}" onkeydown="if(event.key==='Enter')saveCost(${d.id})">
+          <button class="sku-save" onclick="saveCost(${d.id})">Save</button>
+        </div>
         <button class="sku-del" onclick="deleteSku(${d.id}, '${escH(d.sku_name)}')">Remove</button>
       </div>`).join('')}</div>`;
   } catch(e) {
@@ -166,16 +181,32 @@ async function loadSkus() {
   }
 }
 
+async function saveCost(id) {
+  const val = parseFloat(document.getElementById('cost-' + id).value) || 0;
+  try {
+    const res = await fetch(SUPABASE_URL + '/rest/v1/sample_skus?id=eq.' + id, {
+      method: 'PATCH', headers: { ...H, 'Prefer': 'return=minimal' },
+      body: JSON.stringify({ cost_price: val })
+    });
+    if (!res.ok) throw new Error(await res.text());
+    showMsg('success', '✅ Cost price updated.');
+  } catch(e) {
+    showMsg('error', 'Failed to save: ' + e.message);
+  }
+}
+
 async function addSku() {
   const val = document.getElementById('newSku').value.trim().toUpperCase();
+  const cost = parseFloat(document.getElementById('newCost').value) || 0;
   if (!val) { alert('Please enter a SKU name.'); return; }
   try {
     const res = await fetch(SUPABASE_URL + '/rest/v1/sample_skus', {
       method: 'POST', headers: { ...H, 'Prefer': 'return=minimal' },
-      body: JSON.stringify({ sku_name: val })
+      body: JSON.stringify({ sku_name: val, cost_price: cost })
     });
     if (!res.ok) throw new Error(await res.text());
     document.getElementById('newSku').value = '';
+    document.getElementById('newCost').value = '';
     showMsg('success', `✅ SKU "${val}" added.`);
     await loadSkus();
   } catch(e) {
