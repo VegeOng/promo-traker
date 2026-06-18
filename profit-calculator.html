@@ -73,7 +73,7 @@ input::placeholder{color:var(--ml)}
 
 .sku-list{display:flex;flex-direction:column;gap:.6rem;margin-bottom:.5rem}
 .sku-row{background:#fafafa;border:1.5px solid var(--border);border-radius:10px;padding:.75rem .8rem;position:relative}
-.sku-row-top{display:grid;grid-template-columns:1fr 80px 100px 26px;gap:.5rem;align-items:end}
+.sku-row-top{display:grid;grid-template-columns:1fr 80px 70px 100px 26px;gap:.5rem;align-items:end}
 .sku-row-top label{font-size:.72rem}
 .sku-del{width:24px;height:24px;border-radius:5px;border:1.5px solid #fca5a5;background:var(--white);color:var(--red);font-size:.95rem;cursor:pointer;display:grid;place-items:center;align-self:end;transition:background .12s}
 .sku-del:hover{background:var(--rl)}
@@ -196,15 +196,9 @@ input::placeholder{color:var(--ml)}
   <!-- ORDER INFO -->
   <div class="card">
     <div class="card-hd" style="margin-bottom:.6rem">📋 Order Info <span style="font-weight:400;font-size:.75rem;text-transform:none;letter-spacing:0;color:var(--ml)">(optional)</span></div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:.6rem">
-      <div>
-        <label>Customer Name</label>
-        <input type="text" id="customer-name" placeholder="e.g. Lotus's HQ">
-      </div>
-      <div>
-        <label>PO / Reference</label>
-        <input type="text" id="po-ref" placeholder="e.g. PO-20260618">
-      </div>
+    <div>
+      <label>Customer Name</label>
+      <input type="text" id="customer-name" placeholder="e.g. Lotus's HQ">
     </div>
   </div>
 
@@ -340,11 +334,18 @@ function addSkuRow() {
         </select>
       </div>
       <div>
-        <label>Cartons <span class="req">*</span></label>
+        <label>UOM</label>
+        <select id="${id}-uom" onchange="updateBar('${id}')">
+          <option value="carton">Carton</option>
+          <option value="unit">Unit</option>
+        </select>
+      </div>
+      <div>
+        <label>Qty <span class="req">*</span></label>
         <input type="number" id="${id}-qty" placeholder="0" min="1" step="1" oninput="updateBar('${id}')">
       </div>
       <div>
-        <label>Invoice RM/ctn <span class="req">*</span></label>
+        <label>RM <span class="req">*</span></label>
         <div class="pfx"><span class="sym">RM</span>
           <input type="number" id="${id}-price" placeholder="0.00" min="0" step="0.01" oninput="updateBar('${id}')">
         </div>
@@ -378,25 +379,34 @@ function getSkuData(id) {
   };
 }
 
+function getUnitCost(sku, uom) {
+  if (uom === 'unit') return sku.upc > 0 ? sku.cost / sku.upc : null;
+  return sku.cost;
+}
+
 function updateBar(id) {
   const sku   = getSkuData(id);
   const qty   = parseFloat(document.getElementById(id + '-qty').value) || 0;
   const price = parseFloat(document.getElementById(id + '-price').value) || 0;
+  const uom   = document.getElementById(id + '-uom').value;
   const bar   = document.getElementById(id + '-bar');
 
   if (!sku || price <= 0) { bar.style.display = 'none'; return; }
 
-  const gpCtn  = price - sku.cost;
-  const lineGP = gpCtn * qty;
-  const gm     = price > 0 ? (gpCtn / price * 100) : 0;
+  const unitCost = getUnitCost(sku, uom);
+  if (unitCost === null) { bar.style.display = 'none'; return; }
 
-  document.getElementById(id + '-cost-lbl').textContent = fmtRM(sku.cost);
-  document.getElementById(id + '-gp-lbl').textContent   = fmtRM(gpCtn);
+  const gpUnit = price - unitCost;
+  const lineGP = gpUnit * qty;
+  const gm     = price > 0 ? (gpUnit / price * 100) : 0;
+
+  document.getElementById(id + '-cost-lbl').textContent = fmtRM(unitCost);
+  document.getElementById(id + '-gp-lbl').textContent   = fmtRM(gpUnit);
   document.getElementById(id + '-line-lbl').textContent = qty > 0 ? fmtRM(lineGP) : '—';
   document.getElementById(id + '-gm-lbl').textContent   = fmtPct(gm);
 
   bar.style.display = 'flex';
-  bar.classList.toggle('warn', gpCtn < 0);
+  bar.classList.toggle('warn', gpUnit < 0);
 }
 
 // ── DEDUCTION ROWS ──
@@ -456,12 +466,15 @@ function calculate() {
     const sku   = getSkuData(id);
     const qty   = parseFloat(document.getElementById(id + '-qty').value) || 0;
     const price = parseFloat(document.getElementById(id + '-price').value) || 0;
+    const uom   = document.getElementById(id + '-uom').value;
     if (!sku || qty <= 0 || price <= 0) return null;
-    const revenue = price * qty;
-    const cost    = sku.cost * qty;
-    const gp      = revenue - cost;
-    const gm      = revenue > 0 ? (gp / revenue * 100) : 0;
-    return { name: sku.name, qty, price, cost: sku.cost, revenue, totalCost: cost, gp, gm, upc: sku.upc };
+    const unitCost = getUnitCost(sku, uom);
+    if (unitCost === null) { alert(`"${sku.name}" is missing units/carton — please set it in SKU Management first.`); return null; }
+    const revenue  = price * qty;
+    const totalCost = unitCost * qty;
+    const gp       = revenue - totalCost;
+    const gm       = revenue > 0 ? (gp / revenue * 100) : 0;
+    return { name: sku.name, qty, uom, price, cost: unitCost, revenue, totalCost, gp, gm };
   }).filter(Boolean);
 
   if (!lines.length) { alert('Please fill in SKU, cartons and invoice price for at least one product.'); return; }
@@ -517,7 +530,7 @@ function calculate() {
   tbody.innerHTML = lines.map(l => `
     <tr>
       <td>${l.name}</td>
-      <td>${l.qty}</td>
+      <td>${l.qty} ${l.uom==='unit'?'units':'ctns'}</td>
       <td>${fmtRM(l.price)}</td>
       <td>${fmtRM(l.cost)}</td>
       <td class="${(l.price-l.cost)>=0?'pos':'neg'}">${fmtRM(l.price - l.cost)}</td>
@@ -536,7 +549,6 @@ function calculate() {
   const waMsg = [
     '💰 *MamaVege Profit Calculator*',
     customer ? `👤 Customer: ${customer}` : '',
-    po ? `📋 PO: ${po}` : '',
     '',
     '📦 *Products:*',
     waLines,
