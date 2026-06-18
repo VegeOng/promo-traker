@@ -73,7 +73,8 @@ input::placeholder{color:var(--ml)}
 
 .sku-list{display:flex;flex-direction:column;gap:.6rem;margin-bottom:.5rem}
 .sku-row{background:#fafafa;border:1.5px solid var(--border);border-radius:10px;padding:.75rem .8rem;position:relative}
-.sku-row-top{display:grid;grid-template-columns:1fr 80px 70px 100px 26px;gap:.5rem;align-items:end}
+.sku-row-top{display:grid;grid-template-columns:1fr 80px 70px 100px 90px 26px;gap:.5rem;align-items:end}
+.total-display{padding:.55rem .7rem;border:1.5px solid var(--gl);border-radius:7px;font-size:.82rem;font-weight:700;color:var(--green);background:var(--gxl);white-space:nowrap;min-width:0;overflow:hidden;text-overflow:ellipsis;}
 .sku-row-top label{font-size:.72rem}
 .sku-del{width:24px;height:24px;border-radius:5px;border:1.5px solid #fca5a5;background:var(--white);color:var(--red);font-size:.95rem;cursor:pointer;display:grid;place-items:center;align-self:end;transition:background .12s}
 .sku-del:hover{background:var(--rl)}
@@ -345,10 +346,14 @@ function addSkuRow() {
         <input type="number" id="${id}-qty" placeholder="0" min="1" step="1" oninput="updateBar('${id}')">
       </div>
       <div>
-        <label>RM <span class="req">*</span></label>
+        <label id="${id}-price-lbl">RM/ctn <span class="req">*</span></label>
         <div class="pfx"><span class="sym">RM</span>
           <input type="number" id="${id}-price" placeholder="0.00" min="0" step="0.01" oninput="updateBar('${id}')">
         </div>
+      </div>
+      <div>
+        <label>Total</label>
+        <div class="total-display" id="${id}-total">—</div>
       </div>
       <button class="sku-del" onclick="document.getElementById('srow-${id}').remove()" title="Remove">×</button>
     </div>
@@ -390,6 +395,14 @@ function updateBar(id) {
   const price = parseFloat(document.getElementById(id + '-price').value) || 0;
   const uom   = document.getElementById(id + '-uom').value;
   const bar   = document.getElementById(id + '-bar');
+
+  // Update RM label to reflect UOM
+  const lbl = document.getElementById(id + '-price-lbl');
+  if (lbl) lbl.innerHTML = (uom === 'unit' ? 'RM/unit' : 'RM/ctn') + ' <span class="req">*</span>';
+
+  // Update total display
+  const totalEl = document.getElementById(id + '-total');
+  if (totalEl) totalEl.textContent = qty > 0 && price > 0 ? fmtRM(qty * price) : '—';
 
   if (!sku || price <= 0) { bar.style.display = 'none'; return; }
 
