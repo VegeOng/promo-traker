@@ -172,9 +172,13 @@ async function loadSkus() {
         <span class="sku-name">${escH(d.sku_name)}</span>
         <div class="sku-cost-wrap">
           <span class="sku-cost-label">RM</span>
-          <input class="sku-cost-input" type="number" min="0" step="0.01" value="${parseFloat(d.cost_price||0).toFixed(2)}" id="cost-${d.id}" onkeydown="if(event.key==='Enter')saveCost(${d.id})">
-          <button class="sku-save" onclick="saveCost(${d.id})">Save</button>
+          <input class="sku-cost-input" type="number" min="0" step="0.01" value="${parseFloat(d.cost_price||0).toFixed(2)}" id="cost-${d.id}" onkeydown="if(event.key==='Enter')saveCost(${d.id})" title="Cost price per carton">
         </div>
+        <div class="sku-cost-wrap">
+          <span class="sku-cost-label">units/ctn</span>
+          <input class="sku-cost-input" type="number" min="0" step="1" value="${d.units_per_carton||0}" id="upc-${d.id}" onkeydown="if(event.key==='Enter')saveCost(${d.id})" title="Units per carton" style="width:60px">
+        </div>
+        <button class="sku-save" onclick="saveCost(${d.id})">Save</button>
         <button class="sku-del" onclick="deleteSku(${d.id}, '${escH(d.sku_name)}')">Remove</button>
       </div>`).join('')}</div>`;
   } catch(e) {
@@ -185,10 +189,11 @@ async function loadSkus() {
 async function saveCost(id) {
   const cost = parseFloat(document.getElementById('cost-' + id).value) || 0;
   const order = parseInt(document.getElementById('order-' + id).value) || 0;
+  const upc = parseInt(document.getElementById('upc-' + id).value) || 0;
   try {
     const res = await fetch(SUPABASE_URL + '/rest/v1/sample_skus?id=eq.' + id, {
       method: 'PATCH', headers: { ...H, 'Prefer': 'return=minimal' },
-      body: JSON.stringify({ cost_price: cost, sort_order: order })
+      body: JSON.stringify({ cost_price: cost, sort_order: order, units_per_carton: upc })
     });
     if (!res.ok) throw new Error(await res.text());
     showMsg('success', '✅ Saved.');
