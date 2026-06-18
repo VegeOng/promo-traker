@@ -385,8 +385,7 @@ function getSkuData(id) {
 }
 
 function getUnitCost(sku, uom) {
-  if (uom === 'unit') return sku.upc > 0 ? sku.cost / sku.upc : null;
-  return sku.cost;
+  return sku.cost; // cost_price is always per unit
 }
 
 function updateBar(id) {
@@ -404,8 +403,8 @@ function updateBar(id) {
   if (!sku || price <= 0) { bar.style.display = 'none'; return; }
 
   // Cost is always per unit (cost_price/upc); warn if upc missing in carton mode
-  const unitCost = sku.upc > 0 ? sku.cost / sku.upc : null;
-  if (unitCost === null) { bar.style.display = 'none'; return; }
+  const unitCost = sku.cost;
+  if (uom === 'carton' && sku.upc <= 0) { bar.style.display = 'none'; return; }
 
   const gpUnit = price - unitCost;
   const lineGP = gpUnit * totalUnits;
@@ -479,8 +478,8 @@ function calculate() {
     const price = parseFloat(document.getElementById(id + '-price').value) || 0;
     const uom   = document.getElementById(id + '-uom').value;
     if (!sku || qty <= 0 || price <= 0) return null;
-    if (sku.upc <= 0) { alert(`"${sku.name}" is missing units/carton — please set it in SKU Management first.`); return null; }
-    const unitCost   = sku.cost / sku.upc;
+    if (uom === 'carton' && sku.upc <= 0) { alert(`"${sku.name}" is missing units/carton — please set it in SKU Management first.`); return null; }
+    const unitCost   = sku.cost;
     const totalUnits = uom === 'carton' ? qty * sku.upc : qty;
     const revenue    = totalUnits * price;
     const totalCost  = totalUnits * unitCost;
