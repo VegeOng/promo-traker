@@ -346,7 +346,7 @@ function addSkuRow() {
         <input type="number" id="${id}-qty" placeholder="0" min="1" step="1" oninput="updateBar('${id}')">
       </div>
       <div>
-        <label id="${id}-price-lbl">RM/ctn <span class="req">*</span></label>
+        <label>RM/unit <span class="req">*</span></label>
         <div class="pfx"><span class="sym">RM</span>
           <input type="number" id="${id}-price" placeholder="0.00" min="0" step="0.01" oninput="updateBar('${id}')">
         </div>
@@ -396,21 +396,19 @@ function updateBar(id) {
   const uom   = document.getElementById(id + '-uom').value;
   const bar   = document.getElementById(id + '-bar');
 
-  // Update RM label to reflect UOM
-  const lbl = document.getElementById(id + '-price-lbl');
-  if (lbl) lbl.innerHTML = (uom === 'unit' ? 'RM/unit' : 'RM/ctn') + ' <span class="req">*</span>';
-
-  // Update total display
+  // Total = qty × price (unit) OR qty × upc × price (carton)
+  const totalUnits = uom === 'carton' ? qty * (sku ? sku.upc : 0) : qty;
   const totalEl = document.getElementById(id + '-total');
-  if (totalEl) totalEl.textContent = qty > 0 && price > 0 ? fmtRM(qty * price) : '—';
+  if (totalEl) totalEl.textContent = qty > 0 && price > 0 ? fmtRM(totalUnits * price) : '—';
 
   if (!sku || price <= 0) { bar.style.display = 'none'; return; }
 
-  const unitCost = getUnitCost(sku, uom);
+  // Cost is always per unit (cost_price/upc); warn if upc missing in carton mode
+  const unitCost = sku.upc > 0 ? sku.cost / sku.upc : null;
   if (unitCost === null) { bar.style.display = 'none'; return; }
 
   const gpUnit = price - unitCost;
-  const lineGP = gpUnit * qty;
+  const lineGP = gpUnit * totalUnits;
   const gm     = price > 0 ? (gpUnit / price * 100) : 0;
 
   document.getElementById(id + '-cost-lbl').textContent = fmtRM(unitCost);
@@ -481,13 +479,14 @@ function calculate() {
     const price = parseFloat(document.getElementById(id + '-price').value) || 0;
     const uom   = document.getElementById(id + '-uom').value;
     if (!sku || qty <= 0 || price <= 0) return null;
-    const unitCost = getUnitCost(sku, uom);
-    if (unitCost === null) { alert(`"${sku.name}" is missing units/carton — please set it in SKU Management first.`); return null; }
-    const revenue  = price * qty;
-    const totalCost = unitCost * qty;
-    const gp       = revenue - totalCost;
-    const gm       = revenue > 0 ? (gp / revenue * 100) : 0;
-    return { name: sku.name, qty, uom, price, cost: unitCost, revenue, totalCost, gp, gm };
+    if (sku.upc <= 0) { alert(`"${sku.name}" is missing units/carton — please set it in SKU Management first.`); return null; }
+    const unitCost   = sku.cost / sku.upc;
+    const totalUnits = uom === 'carton' ? qty * sku.upc : qty;
+    const revenue    = totalUnits * price;
+    const totalCost  = totalUnits * unitCost;
+    const gp         = revenue - totalCost;
+    const gm         = revenue > 0 ? (gp / revenue * 100) : 0;
+    return { name: sku.name, qty, uom, upc: sku.upc, totalUnits, price, cost: unitCost, revenue, totalCost, gp, gm };
   }).filter(Boolean);
 
   if (!lines.length) { alert('Please fill in SKU, cartons and invoice price for at least one product.'); return; }
@@ -543,7 +542,7 @@ function calculate() {
   tbody.innerHTML = lines.map(l => `
     <tr>
       <td>${l.name}</td>
-      <td>${l.qty} ${l.uom==='unit'?'units':'ctns'}</td>
+      <td>${l.qty} ${l.uom==='unit'?'units':'ctns'}${l.uom==='carton'?' ('+l.totalUnits+' units)':''}</td>
       <td>${fmtRM(l.price)}</td>
       <td>${fmtRM(l.cost)}</td>
       <td class="${(l.price-l.cost)>=0?'pos':'neg'}">${fmtRM(l.price - l.cost)}</td>
