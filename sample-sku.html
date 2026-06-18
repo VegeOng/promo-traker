@@ -171,7 +171,7 @@ async function loadSkus() {
         <input class="sku-cost-input" type="number" min="0" step="1" value="${d.sort_order||0}" id="order-${d.id}" title="Sort order" style="width:48px;text-align:center;color:var(--t3)">
         <span class="sku-name">${escH(d.sku_name)}</span>
         <div class="sku-cost-wrap">
-          <span class="sku-cost-label">RM</span>
+          <span class="sku-cost-label">RM/unit</span>
           <input class="sku-cost-input" type="number" min="0" step="0.01" value="${parseFloat(d.cost_price||0).toFixed(2)}" id="cost-${d.id}" onkeydown="if(event.key==='Enter')saveCost(${d.id})" title="Cost price per carton">
         </div>
         <div class="sku-cost-wrap">
