@@ -388,8 +388,17 @@ async function db(path, opts = {}) {
 }
 
 async function init() {
-  const { data: member } = await supa.from('members').select('role').eq('name', loggedUser).maybeSingle();
-  const mRole = member?.role || 'sales';
+  let mRole = 'sales';
+  try {
+    const timeout = new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 6000));
+    const { data: member } = await Promise.race([
+      supa.from('members').select('role').eq('name', loggedUser).maybeSingle(),
+      timeout
+    ]);
+    mRole = member?.role || 'sales';
+  } catch (e) {
+    console.error('Failed to load member role, defaulting to sales:', e);
+  }
 
   const cards = document.getElementById('modeCards');
   if (mRole === 'sales') {
