@@ -486,40 +486,53 @@ async function doLogin() {
   btn.disabled = true;
   btn.textContent = 'Logging in...';
 
-  // 1. Try HQ password
-  const { data: hqRow } = await supa.from('settings').select('value').eq('key', 'hq_password').single();
-  if (hqRow && pw === hqRow.value) {
-    lsSet('userName', name);
-    lsSet('userRole', 'hq');
-    lsSet('hq_auth', '1');
-    showApp();
-    return;
-  }
+  try {
+    const timeout = ms => new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), ms));
 
-  // 2. Try member
-  const { data: member } = await supa.from('members').select('id, name, password, role, active').eq('name', name).maybeSingle();
-  if (member && member.active === false) {
-    err.textContent = 'This account has been deactivated. Please contact your manager.';
-    err.classList.add('show');
-    btn.disabled = false;
-    btn.textContent = 'Login';
-    return;
-  }
-  if (member && member.password === pw) {
-    lsSet('userName', member.name);
-    lsSet('userRole', 'member');
-    lsSet('userId', member.id);
-    lsSet('memberRole', member.role || 'sales');
-    if ((member.role || '') === 'china') {
-      location.href = 'china-hub.html';
-    } else {
-      location.href = 'my-dashboard.html';
+    // 1. Try HQ password
+    const { data: hqRow } = await Promise.race([
+      supa.from('settings').select('value').eq('key', 'hq_password').single(),
+      timeout(8000)
+    ]);
+    if (hqRow && pw === hqRow.value) {
+      lsSet('userName', name);
+      lsSet('userRole', 'hq');
+      lsSet('hq_auth', '1');
+      showApp();
+      return;
     }
-    return;
-  }
 
-  err.textContent = 'Incorrect name or password';
-  err.classList.add('show');
+    // 2. Try member
+    const { data: member } = await Promise.race([
+      supa.from('members').select('id, name, password, role, active').eq('name', name).maybeSingle(),
+      timeout(8000)
+    ]);
+    if (member && member.active === false) {
+      err.textContent = 'This account has been deactivated. Please contact your manager.';
+      err.classList.add('show');
+      btn.disabled = false;
+      btn.textContent = 'Login';
+      return;
+    }
+    if (member && member.password === pw) {
+      lsSet('userName', member.name);
+      lsSet('userRole', 'member');
+      lsSet('userId', member.id);
+      lsSet('memberRole', member.role || 'sales');
+      if ((member.role || '') === 'china') {
+        location.href = 'china-hub.html';
+      } else {
+        location.href = 'my-dashboard.html';
+      }
+      return;
+    }
+
+    err.textContent = 'Incorrect name or password';
+    err.classList.add('show');
+  } catch (e) {
+    err.textContent = 'Network error, please check your connection and try again.';
+    err.classList.add('show');
+  }
   btn.disabled = false;
   btn.textContent = 'Login';
 }
