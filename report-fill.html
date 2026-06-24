@@ -380,12 +380,36 @@ let todayReportId = null;
 const today = new Date().toISOString().split('T')[0];
 
 async function db(path, opts = {}) {
-  const r = await fetch(SUPA_URL + '/rest/v1/' + path, { headers: { ...H, 'Prefer': 'return=representation' }, ...opts });
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 15000);
+  let r;
+  try {
+    r = await fetch(SUPA_URL + '/rest/v1/' + path, { headers: { ...H, 'Prefer': 'return=representation' }, signal: controller.signal, ...opts });
+  } catch (e) {
+    if (e.name === 'AbortError') throw new Error('Request timed out — please check your connection and try again.');
+    throw e;
+  } finally {
+    clearTimeout(timer);
+  }
   const text = await r.text();
   if (!r.ok) { try { throw JSON.parse(text); } catch { throw text || r.status; } }
   if (!text || text.trim() === '') return null;
   try { return JSON.parse(text); } catch { return null; }
 }
+
+// ===== Draft autosave (survives network failure / page reload) =====
+const DRAFT_FIELDS = ['weekly-target', 'weekly-assist', 'daily-today', 'daily-tomorrow', 'daily-assist'];
+function draftKey(id) { return 'mv_draft_' + id; }
+function setupDraftAutosave() {
+  DRAFT_FIELDS.forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const saved = localStorage.getItem(draftKey(id));
+    if (saved) el.value = saved;
+    el.addEventListener('input', () => localStorage.setItem(draftKey(id), el.value));
+  });
+}
+function clearDrafts(ids) { ids.forEach(id => localStorage.removeItem(draftKey(id))); }
 
 async function init() {
   let mRole = 'sales';
@@ -440,6 +464,7 @@ async function init() {
   const params = new URLSearchParams(location.search);
   if (params.get('type') === 'weekly') setTimeout(() => selectMode('weekly'), 100);
 
+  setupDraftAutosave();
   if (mRole === 'sales') await loadTodayReport();
 }
 
@@ -729,7 +754,7 @@ async function submitDailyReport() {
     updateReportStatusBadge('submitted');
     btn.textContent = '✅ Report Submitted';
     window.scrollTo({ top: 0, behavior: 'smooth' });
-  } catch(e) { console.error(e); alert('Submission failed.'); btn.disabled = false; btn.innerHTML = 'Submit Today\'s Report'; }
+  } catch(e) { console.error(e); alert((e.message || 'Submission failed') + '\n\nYour visit records are still here — just try again once your connection is back.'); btn.disabled = false; btn.innerHTML = 'Submit Today\'s Report'; }
 }
 
 async function submitWeekly() {
@@ -749,8 +774,9 @@ async function submitWeekly() {
     document.getElementById('successText').textContent = 'Your weekly report has been recorded.';
     document.getElementById('successBanner').classList.add('visible');
     document.getElementById('form-weekly').classList.remove('visible');
+    clearDrafts(['weekly-target', 'weekly-assist']);
     window.scrollTo({ top: 0, behavior: 'smooth' });
-  } catch(e) { alert('Submission failed.'); }
+  } catch(e) { alert((e.message || 'Submission failed') + '\n\nYour text is saved — just try submitting again once your connection is back.'); }
   btn.disabled = false; btn.textContent = 'Submit Weekly Report';
 }
 
@@ -773,8 +799,9 @@ async function submitDaily() {
     document.getElementById('successText').textContent = 'Your daily report has been recorded.';
     document.getElementById('successBanner').classList.add('visible');
     document.getElementById('form-daily-old').classList.remove('visible');
+    clearDrafts(['daily-today', 'daily-tomorrow', 'daily-assist']);
     window.scrollTo({ top: 0, behavior: 'smooth' });
-  } catch(e) { alert('Submission failed.'); }
+  } catch(e) { alert((e.message || 'Submission failed') + '\n\nYour text is saved — just try submitting again once your connection is back.'); }
   btn.disabled = false; btn.textContent = 'Submit Daily Report';
 }
 
