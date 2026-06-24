@@ -448,12 +448,16 @@
       const lastWeekEnd=new Date(weekStart);lastWeekEnd.setDate(weekStart.getDate()-1);
       const fmt2=d=>d.toISOString().split('T')[0];
 
-      const [memberRes,salesRes,visitsThisRes,visitsLastRes,tasksRes]=await Promise.all([
-        supa.from('members').select('monthly_kpi').eq('name',userName).maybeSingle(),
-        fetch(SALES_API).then(r=>r.json()).then(j=>j.data||[]),
-        supa.from('visit_records').select('visit_id').eq('rep_name',userName).gte('visit_date',fmt2(weekStart)).lte('visit_date',fmt2(now)),
-        supa.from('visit_records').select('visit_id').eq('rep_name',userName).gte('visit_date',fmt2(lastWeekStart)).lte('visit_date',fmt2(lastWeekEnd)),
-        supa.from('tasks').select('task_id,description,due_date,status,linked_customer').eq('assigned_to',userName.toUpperCase()).in('status',['pending','overdue']),
+      const timeout=ms=>new Promise((_,reject)=>setTimeout(()=>reject(new Error('timeout')),ms));
+      const [memberRes,salesRes,visitsThisRes,visitsLastRes,tasksRes]=await Promise.race([
+        Promise.all([
+          supa.from('members').select('monthly_kpi').eq('name',userName).maybeSingle(),
+          fetch(SALES_API).then(r=>r.json()).then(j=>j.data||[]),
+          supa.from('visit_records').select('visit_id').eq('rep_name',userName).gte('visit_date',fmt2(weekStart)).lte('visit_date',fmt2(now)),
+          supa.from('visit_records').select('visit_id').eq('rep_name',userName).gte('visit_date',fmt2(lastWeekStart)).lte('visit_date',fmt2(lastWeekEnd)),
+          supa.from('tasks').select('task_id,description,due_date,status,linked_customer').eq('assigned_to',userName.toUpperCase()).in('status',['pending','overdue']),
+        ]),
+        timeout(15000)
       ]);
 
       kpiTarget = memberRes.data?.monthly_kpi || 0;
