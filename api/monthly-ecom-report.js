@@ -20,6 +20,14 @@ module.exports = async function handler(req, res) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
 
+  // 只在"明天是1号"时发月报（即今天是月末）
+  const now = new Date();
+  const myt = new Date(now.getTime() + 8 * 60 * 60 * 1000);
+  const tomorrow = new Date(myt.getTime() + 24 * 60 * 60 * 1000);
+  if (tomorrow.getUTCDate() !== 1) {
+    return res.status(200).json({ message: '今天不是月末，跳过月报' });
+  }
+
   try {
     const { thisMonth, lastMonth } = await fetchTwoMonths();
     const brief = await generateBrief(thisMonth, lastMonth);
