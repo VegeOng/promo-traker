@@ -28,6 +28,10 @@
     {
       "path": "/api/china-report",
       "schedule": "0 23 * * *"
+    },
+    {
+      "path": "/api/monthly-ecom-report",
+      "schedule": "0 23 L * *"
     }
   ]
 }
