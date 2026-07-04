@@ -156,7 +156,7 @@
 
 <div class="container">
 
-  <div class="mode-cards">
+  <div class="mode-cards" style="grid-template-columns:1fr 1fr 1fr">
     <div class="mode-card" id="card-new" onclick="selectMode('new')">
       <div class="mc-icon">➕</div>
       <div class="mc-name">New Activity</div>
@@ -166,6 +166,11 @@
       <div class="mc-icon">📊</div>
       <div class="mc-name">Daily Report</div>
       <div class="mc-sub">Submit today's figures</div>
+    </div>
+    <div class="mode-card" id="card-review" onclick="selectMode('review')">
+      <div class="mc-icon">🔍</div>
+      <div class="mc-name">活动检讨</div>
+      <div class="mc-sub">Post-activity review</div>
     </div>
   </div>
 
@@ -228,6 +233,51 @@
     </div>
 
     <button class="btn-primary" id="btn-new" onclick="submitNewActivity()">Create Activity</button>
+  </div>
+
+  <!-- 活动检讨 FORM -->
+  <div class="form-card" id="form-review">
+    <div class="form-title">🔍 活动检讨</div>
+    <div class="form-subtitle">由负责人在活动结束后统一整理填写。</div>
+
+    <div class="field">
+      <label>选择活动 <span class="req">*</span></label>
+      <div class="activity-select-list" id="review-activity-list">
+        <div class="loading-text">Loading activities…</div>
+      </div>
+    </div>
+
+    <div id="review-form-body" style="display:none">
+      <div class="field-row">
+        <div class="field">
+          <label>检讨日期 <span class="req">*</span></label>
+          <input type="date" id="rv-date">
+        </div>
+        <div class="field">
+          <label>负责人</label>
+          <input type="text" id="rv-responsible" readonly>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>✅ 做得好的地方</label>
+        <textarea id="rv-good" placeholder="这次活动表现好的地方、值得继续保留的做法…" style="min-height:90px"></textarea>
+      </div>
+
+      <div class="field">
+        <label>⚠️ 需要改进的地方</label>
+        <textarea id="rv-improve" placeholder="哪里出了问题、下次怎么改…" style="min-height:90px"></textarea>
+      </div>
+
+      <div class="field">
+        <label style="font-size:12px;color:var(--green);font-weight:800;letter-spacing:.04em">🔒 闭关保证收藏</label>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:8px">团队承诺下次会改变或坚守的事项，逐条列出。</div>
+        <div id="rv-pledge-list" style="margin-bottom:8px"></div>
+        <button type="button" onclick="addPledge()" style="background:none;border:1.5px dashed var(--border);border-radius:8px;padding:8px 14px;font-size:13px;color:var(--muted);cursor:pointer;width:100%;font-family:inherit">＋ 新增一条承诺</button>
+      </div>
+
+      <button class="btn-primary" id="btn-review" onclick="submitReview()">提交检讨</button>
+    </div>
   </div>
 
   <!-- DAILY REPORT FORM -->
@@ -344,17 +394,114 @@ function selectMode(mode) {
   document.getElementById('card-' + mode).classList.add('active');
   document.getElementById('form-new').classList.remove('visible');
   document.getElementById('form-report').classList.remove('visible');
+  document.getElementById('form-review').classList.remove('visible');
   document.getElementById('successBanner').classList.remove('visible');
   if (mode === 'new') {
     document.getElementById('form-new').classList.add('visible');
-  } else {
+  } else if (mode === 'report') {
     document.getElementById('form-report').classList.add('visible');
     loadActivities();
+  } else if (mode === 'review') {
+    document.getElementById('form-review').classList.add('visible');
+    loadReviewActivities();
   }
   setTimeout(() => {
     const el = document.getElementById('form-' + mode);
     el.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }, 100);
+}
+
+let selectedReviewActivityId = null;
+let pledgeCount = 0;
+
+async function loadReviewActivities() {
+  const list = document.getElementById('review-activity-list');
+  list.innerHTML = '<div class="loading-text">Loading…</div>';
+  try {
+    const data = await db('activities?select=*&order=created_at.desc') || [];
+    if (!data.length) { list.innerHTML = '<div class="empty-text">No activities found.</div>'; return; }
+    const typeIcons = { Sampling:'🧪', Roadshow:'🚗', Exhibition:'🏟️', 'Food Fair':'🍱', 'Food Expo':'🏪', Other:'📌' };
+    list.innerHTML = data.map(a => `
+      <div class="activity-item ${selectedReviewActivityId===a.activity_id?'selected':''}" onclick="selectReviewActivity('${a.activity_id}','${escHtml(a.responsible||'')}')">
+        <div class="ai-icon">${typeIcons[a.type]||'📌'}</div>
+        <div class="ai-info">
+          <div class="ai-name">${escHtml(a.name)}</div>
+          <div class="ai-meta">${a.type}${a.location?' · '+escHtml(a.location):''}${a.start_date?' · '+a.start_date:''}</div>
+        </div>
+        <span class="ai-status ${a.status==='active'?'active':'ended'}">${a.status==='active'?'Active':'Ended'}</span>
+      </div>`).join('');
+  } catch(e) { list.innerHTML = '<div class="empty-text">Failed to load.</div>'; }
+}
+
+function selectReviewActivity(id, responsible) {
+  selectedReviewActivityId = id;
+  document.querySelectorAll('#review-activity-list .activity-item').forEach(el => el.classList.remove('selected'));
+  event.currentTarget.classList.add('selected');
+  document.getElementById('rv-date').value = today;
+  document.getElementById('rv-responsible').value = responsible || loggedUser;
+  const pledgeList = document.getElementById('rv-pledge-list');
+  pledgeList.innerHTML = '';
+  pledgeCount = 0;
+  addPledge();
+  document.getElementById('review-form-body').style.display = 'block';
+  setTimeout(() => document.getElementById('review-form-body').scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
+}
+
+function addPledge() {
+  const list = document.getElementById('rv-pledge-list');
+  const idx = pledgeCount++;
+  const row = document.createElement('div');
+  row.id = 'pledge-row-' + idx;
+  row.style.cssText = 'display:flex;gap:8px;margin-bottom:8px;align-items:flex-start';
+  row.innerHTML = `
+    <div style="background:var(--green);color:white;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;margin-top:11px">${idx+1}</div>
+    <textarea id="pledge-${idx}" placeholder="例：下次提前3天确认场地摆设…" style="flex:1;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:inherit;resize:vertical;min-height:60px" oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'"></textarea>
+    <button onclick="removePledge(${idx})" style="background:none;border:none;color:var(--muted);font-size:16px;cursor:pointer;padding:8px;margin-top:4px;flex-shrink:0" title="删除">✕</button>`;
+  list.appendChild(row);
+}
+
+function removePledge(idx) {
+  const row = document.getElementById('pledge-row-' + idx);
+  if (row) row.remove();
+}
+
+async function submitReview() {
+  if (!selectedReviewActivityId) { alert('请先选择活动。'); return; }
+  const date = document.getElementById('rv-date').value;
+  if (!date) { alert('请选择检讨日期。'); return; }
+
+  const pledges = [];
+  document.querySelectorAll('#rv-pledge-list textarea').forEach(t => {
+    const v = t.value.trim();
+    if (v) pledges.push(v);
+  });
+
+  const btn = document.getElementById('btn-review');
+  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>提交中…';
+
+  try {
+    await db('activity_reviews', {
+      method: 'POST',
+      body: JSON.stringify({
+        activity_id: selectedReviewActivityId,
+        review_date: date,
+        responsible: document.getElementById('rv-responsible').value.trim() || loggedUser,
+        went_well: document.getElementById('rv-good').value.trim() || null,
+        to_improve: document.getElementById('rv-improve').value.trim() || null,
+        pledges: pledges.length ? pledges : null,
+        submitted_by: loggedUser
+      })
+    });
+    document.getElementById('successTitle').textContent = '检讨已提交！';
+    document.getElementById('successText').textContent = `活动检讨（${date}）已成功记录。`;
+    document.getElementById('successBanner').classList.add('visible');
+    document.getElementById('form-review').classList.remove('visible');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  } catch(e) {
+    console.error(e);
+    alert('提交失败，请检查网络后重试。');
+  }
+  btn.disabled = false; btn.innerHTML = '提交检讨';
 }
 
 function selectType(type) {
@@ -542,6 +689,13 @@ function resetAll() {
   document.querySelectorAll('.mode-card').forEach(c => c.classList.remove('active'));
   document.getElementById('form-new').classList.remove('visible');
   document.getElementById('form-report').classList.remove('visible');
+  document.getElementById('form-review').classList.remove('visible');
+  document.getElementById('review-form-body').style.display = 'none';
+  document.getElementById('rv-good').value = '';
+  document.getElementById('rv-improve').value = '';
+  document.getElementById('rv-pledge-list').innerHTML = '';
+  pledgeCount = 0;
+  selectedReviewActivityId = null;
   document.getElementById('n-name').value = '';
   document.getElementById('n-location').value = '';
   document.getElementById('n-responsible').value = '';
