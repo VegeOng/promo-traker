@@ -156,7 +156,7 @@
 
 <div class="container">
 
-  <div class="mode-cards" style="grid-template-columns:1fr 1fr 1fr">
+  <div class="mode-cards" style="grid-template-columns:1fr 1fr">
     <div class="mode-card" id="card-new" onclick="selectMode('new')">
       <div class="mc-icon">➕</div>
       <div class="mc-name">New Activity</div>
@@ -171,6 +171,11 @@
       <div class="mc-icon">🔍</div>
       <div class="mc-name">活动检讨</div>
       <div class="mc-sub">Post-activity review</div>
+    </div>
+    <div class="mode-card" id="card-history" onclick="selectMode('history')">
+      <div class="mc-icon">📋</div>
+      <div class="mc-name">查看检讨</div>
+      <div class="mc-sub">Browse past reviews</div>
     </div>
   </div>
 
@@ -278,6 +283,19 @@
 
       <button class="btn-primary" id="btn-review" onclick="submitReview()">提交检讨</button>
     </div>
+  </div>
+
+  <!-- 查看检讨 -->
+  <div class="form-card" id="form-history">
+    <div class="form-title">📋 查看检讨</div>
+    <div class="form-subtitle">选择活动，查看历史检讨记录。</div>
+    <div class="field">
+      <label>选择活动</label>
+      <div class="activity-select-list" id="history-activity-list">
+        <div class="loading-text">Loading activities…</div>
+      </div>
+    </div>
+    <div id="history-reviews" style="display:none;margin-top:8px"></div>
   </div>
 
   <!-- DAILY REPORT FORM -->
@@ -404,6 +422,9 @@ function selectMode(mode) {
   } else if (mode === 'review') {
     document.getElementById('form-review').classList.add('visible');
     loadReviewActivities();
+  } else if (mode === 'history') {
+    document.getElementById('form-history').classList.add('visible');
+    loadHistoryActivities();
   }
   setTimeout(() => {
     const el = document.getElementById('form-' + mode);
@@ -690,6 +711,8 @@ function resetAll() {
   document.getElementById('form-new').classList.remove('visible');
   document.getElementById('form-report').classList.remove('visible');
   document.getElementById('form-review').classList.remove('visible');
+  document.getElementById('form-history').classList.remove('visible');
+  document.getElementById('history-reviews').style.display = 'none';
   document.getElementById('review-form-body').style.display = 'none';
   document.getElementById('rv-good').value = '';
   document.getElementById('rv-improve').value = '';
@@ -707,6 +730,67 @@ function resetAll() {
   selectedActivityId = null;
   photoFiles = [null, null, null];
   document.getElementById('report-form-body').style.display = 'none';
+}
+
+async function loadHistoryActivities() {
+  const list = document.getElementById('history-activity-list');
+  list.innerHTML = '<div class="loading-text">Loading…</div>';
+  document.getElementById('history-reviews').style.display = 'none';
+  try {
+    const data = await db('activities?select=*&order=created_at.desc') || [];
+    if (!data.length) { list.innerHTML = '<div class="empty-text">No activities found.</div>'; return; }
+    const typeIcons = { Sampling:'🧪', Roadshow:'🚗', Exhibition:'🏟️', 'Food Fair':'🍱', 'Food Expo':'🏪', Other:'📌' };
+    list.innerHTML = data.map(a => `
+      <div class="activity-item" onclick="loadReviews('${a.activity_id}','${escHtml(a.name)}')">
+        <div class="ai-icon">${typeIcons[a.type]||'📌'}</div>
+        <div class="ai-info">
+          <div class="ai-name">${escHtml(a.name)}</div>
+          <div class="ai-meta">${a.type}${a.location?' · '+escHtml(a.location):''}${a.start_date?' · '+a.start_date:''}</div>
+        </div>
+        <span class="ai-status ${a.status==='active'?'active':'ended'}">${a.status==='active'?'Active':'Ended'}</span>
+      </div>`).join('');
+  } catch(e) { list.innerHTML = '<div class="empty-text">Failed to load.</div>'; }
+}
+
+async function loadReviews(activityId, activityName) {
+  document.querySelectorAll('#history-activity-list .activity-item').forEach(el => el.classList.remove('selected'));
+  event.currentTarget.classList.add('selected');
+  const box = document.getElementById('history-reviews');
+  box.style.display = 'block';
+  box.innerHTML = '<div class="loading-text">Loading reviews…</div>';
+  try {
+    const data = await db(`activity_reviews?activity_id=eq.${activityId}&order=review_date.desc`) || [];
+    if (!data.length) {
+      box.innerHTML = `<div class="empty-text" style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:20px">「${escHtml(activityName)}」暂无检讨记录。</div>`;
+      return;
+    }
+    box.innerHTML = data.map(r => `
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:12px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+          <div style="font-size:14px;font-weight:800;color:var(--green)">${escHtml(activityName)}</div>
+          <div style="font-size:12px;color:var(--muted)">${r.review_date} · ${escHtml(r.responsible||r.submitted_by||'')}</div>
+        </div>
+        ${r.went_well ? `
+        <div style="margin-bottom:12px">
+          <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:6px">✅ 做得好的地方</div>
+          <div style="font-size:13px;line-height:1.6;white-space:pre-wrap">${escHtml(r.went_well)}</div>
+        </div>` : ''}
+        ${r.to_improve ? `
+        <div style="margin-bottom:12px">
+          <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:6px">⚠️ 需要改进的地方</div>
+          <div style="font-size:13px;line-height:1.6;white-space:pre-wrap">${escHtml(r.to_improve)}</div>
+        </div>` : ''}
+        ${r.pledges && r.pledges.length ? `
+        <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:14px">
+          <div style="font-size:11px;font-weight:800;color:var(--green);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px">🔒 闭关保证收藏</div>
+          ${r.pledges.map((p,i) => `
+          <div style="display:flex;gap:10px;margin-bottom:8px;align-items:flex-start">
+            <div style="background:var(--green);color:white;border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;margin-top:1px">${i+1}</div>
+            <div style="font-size:13px;line-height:1.5">${escHtml(p)}</div>
+          </div>`).join('')}
+        </div>` : ''}
+      </div>`).join('');
+  } catch(e) { box.innerHTML = '<div class="empty-text">Failed to load reviews.</div>'; }
 }
 
 function escHtml(s) { return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
