@@ -169,12 +169,12 @@
     </div>
     <div class="mode-card" id="card-review" onclick="selectMode('review')">
       <div class="mc-icon">🔍</div>
-      <div class="mc-name">活动检讨</div>
-      <div class="mc-sub">Post-activity review</div>
+      <div class="mc-name">Activity Review</div>
+      <div class="mc-sub">Post-activity debrief</div>
     </div>
     <div class="mode-card" id="card-history" onclick="selectMode('history')">
       <div class="mc-icon">📋</div>
-      <div class="mc-name">查看检讨</div>
+      <div class="mc-name">View Reviews</div>
       <div class="mc-sub">Browse past reviews</div>
     </div>
   </div>
@@ -242,11 +242,11 @@
 
   <!-- 活动检讨 FORM -->
   <div class="form-card" id="form-review">
-    <div class="form-title">🔍 活动检讨</div>
-    <div class="form-subtitle">由负责人在活动结束后统一整理填写。</div>
+    <div class="form-title">🔍 Activity Review</div>
+    <div class="form-subtitle">Completed by the person-in-charge after the activity ends.</div>
 
     <div class="field">
-      <label>选择活动 <span class="req">*</span></label>
+      <label>Select Activity <span class="req">*</span></label>
       <div class="activity-select-list" id="review-activity-list">
         <div class="loading-text">Loading activities…</div>
       </div>
@@ -255,42 +255,42 @@
     <div id="review-form-body" style="display:none">
       <div class="field-row">
         <div class="field">
-          <label>检讨日期 <span class="req">*</span></label>
+          <label>Review Date <span class="req">*</span></label>
           <input type="date" id="rv-date">
         </div>
         <div class="field">
-          <label>负责人</label>
+          <label>Person in Charge</label>
           <input type="text" id="rv-responsible" readonly>
         </div>
       </div>
 
       <div class="field">
-        <label>✅ 做得好的地方</label>
-        <textarea id="rv-good" placeholder="这次活动表现好的地方、值得继续保留的做法…" style="min-height:90px"></textarea>
+        <label>✅ What Went Well</label>
+        <textarea id="rv-good" placeholder="Things that worked well and should be kept…" style="min-height:90px"></textarea>
       </div>
 
       <div class="field">
-        <label>⚠️ 需要改进的地方</label>
-        <textarea id="rv-improve" placeholder="哪里出了问题、下次怎么改…" style="min-height:90px"></textarea>
+        <label>⚠️ Areas to Improve</label>
+        <textarea id="rv-improve" placeholder="What went wrong and how to fix it next time…" style="min-height:90px"></textarea>
       </div>
 
       <div class="field">
-        <label style="font-size:12px;color:var(--green);font-weight:800;letter-spacing:.04em">🔒 闭关保证收藏</label>
-        <div style="font-size:11px;color:var(--muted);margin-bottom:8px">团队承诺下次会改变或坚守的事项，逐条列出。</div>
+        <label style="font-size:12px;color:var(--green);font-weight:800;letter-spacing:.04em">🔒 Commitments & Takeaways</label>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:8px">List each commitment the team promises to change or uphold next time.</div>
         <div id="rv-pledge-list" style="margin-bottom:8px"></div>
-        <button type="button" onclick="addPledge()" style="background:none;border:1.5px dashed var(--border);border-radius:8px;padding:8px 14px;font-size:13px;color:var(--muted);cursor:pointer;width:100%;font-family:inherit">＋ 新增一条承诺</button>
+        <button type="button" onclick="addPledge()" style="background:none;border:1.5px dashed var(--border);border-radius:8px;padding:8px 14px;font-size:13px;color:var(--muted);cursor:pointer;width:100%;font-family:inherit">＋ Add Commitment</button>
       </div>
 
-      <button class="btn-primary" id="btn-review" onclick="submitReview()">提交检讨</button>
+      <button class="btn-primary" id="btn-review" onclick="submitReview()">Submit Review</button>
     </div>
   </div>
 
   <!-- 查看检讨 -->
   <div class="form-card" id="form-history">
-    <div class="form-title">📋 查看检讨</div>
-    <div class="form-subtitle">选择活动，查看历史检讨记录。</div>
+    <div class="form-title">📋 View Reviews</div>
+    <div class="form-subtitle">Select an activity to browse its past review records.</div>
     <div class="field">
-      <label>选择活动</label>
+      <label>Select Activity</label>
       <div class="activity-select-list" id="history-activity-list">
         <div class="loading-text">Loading activities…</div>
       </div>
@@ -476,8 +476,8 @@ function addPledge() {
   row.style.cssText = 'display:flex;gap:8px;margin-bottom:8px;align-items:flex-start';
   row.innerHTML = `
     <div style="background:var(--green);color:white;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;margin-top:11px">${idx+1}</div>
-    <textarea id="pledge-${idx}" placeholder="例：下次提前3天确认场地摆设…" style="flex:1;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:inherit;resize:vertical;min-height:60px" oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'"></textarea>
-    <button onclick="removePledge(${idx})" style="background:none;border:none;color:var(--muted);font-size:16px;cursor:pointer;padding:8px;margin-top:4px;flex-shrink:0" title="删除">✕</button>`;
+    <textarea id="pledge-${idx}" placeholder="e.g. Confirm venue setup 3 days in advance next time…" style="flex:1;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:inherit;resize:vertical;min-height:60px" oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'"></textarea>
+    <button onclick="removePledge(${idx})" style="background:none;border:none;color:var(--muted);font-size:16px;cursor:pointer;padding:8px;margin-top:4px;flex-shrink:0" title="Remove">✕</button>`;
   list.appendChild(row);
 }
 
@@ -487,9 +487,9 @@ function removePledge(idx) {
 }
 
 async function submitReview() {
-  if (!selectedReviewActivityId) { alert('请先选择活动。'); return; }
+  if (!selectedReviewActivityId) { alert('Please select an activity first.'); return; }
   const date = document.getElementById('rv-date').value;
-  if (!date) { alert('请选择检讨日期。'); return; }
+  if (!date) { alert('Please select a review date.'); return; }
 
   const pledges = [];
   document.querySelectorAll('#rv-pledge-list textarea').forEach(t => {
@@ -498,7 +498,7 @@ async function submitReview() {
   });
 
   const btn = document.getElementById('btn-review');
-  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>提交中…';
+  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>Submitting…';
 
   try {
     await db('activity_reviews', {
@@ -513,16 +513,16 @@ async function submitReview() {
         submitted_by: loggedUser
       })
     });
-    document.getElementById('successTitle').textContent = '检讨已提交！';
-    document.getElementById('successText').textContent = `活动检讨（${date}）已成功记录。`;
+    document.getElementById('successTitle').textContent = 'Review Submitted!';
+    document.getElementById('successText').textContent = `Activity review for ${date} has been recorded.`;
     document.getElementById('successBanner').classList.add('visible');
     document.getElementById('form-review').classList.remove('visible');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   } catch(e) {
     console.error(e);
-    alert('提交失败，请检查网络后重试。');
+    alert('Submission failed. Please check your connection and try again.');
   }
-  btn.disabled = false; btn.innerHTML = '提交检讨';
+  btn.disabled = false; btn.innerHTML = 'Submit Review';
 }
 
 function selectType(type) {
@@ -761,7 +761,7 @@ async function loadReviews(activityId, activityName) {
   try {
     const data = await db(`activity_reviews?activity_id=eq.${activityId}&order=review_date.desc`) || [];
     if (!data.length) {
-      box.innerHTML = `<div class="empty-text" style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:20px">「${escHtml(activityName)}」暂无检讨记录。</div>`;
+      box.innerHTML = `<div class="empty-text" style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:20px">No reviews found for "${escHtml(activityName)}".</div>`;
       return;
     }
     box.innerHTML = data.map(r => `
@@ -772,17 +772,17 @@ async function loadReviews(activityId, activityName) {
         </div>
         ${r.went_well ? `
         <div style="margin-bottom:12px">
-          <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:6px">✅ 做得好的地方</div>
+          <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:6px">✅ What Went Well</div>
           <div style="font-size:13px;line-height:1.6;white-space:pre-wrap">${escHtml(r.went_well)}</div>
         </div>` : ''}
         ${r.to_improve ? `
         <div style="margin-bottom:12px">
-          <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:6px">⚠️ 需要改进的地方</div>
+          <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:6px">⚠️ Areas to Improve</div>
           <div style="font-size:13px;line-height:1.6;white-space:pre-wrap">${escHtml(r.to_improve)}</div>
         </div>` : ''}
         ${r.pledges && r.pledges.length ? `
         <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:14px">
-          <div style="font-size:11px;font-weight:800;color:var(--green);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px">🔒 闭关保证收藏</div>
+          <div style="font-size:11px;font-weight:800;color:var(--green);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px">🔒 Commitments & Takeaways</div>
           ${r.pledges.map((p,i) => `
           <div style="display:flex;gap:10px;margin-bottom:8px;align-items:flex-start">
             <div style="background:var(--green);color:white;border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;margin-top:1px">${i+1}</div>
