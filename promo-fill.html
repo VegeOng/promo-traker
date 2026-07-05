@@ -122,6 +122,22 @@ textarea{resize:vertical;min-height:72px;line-height:1.5;}
         <input type="text" id="f-name" placeholder="e.g. Raya Bundle Deal, Merdeka Promo">
         <span class="err" id="e-name">Please enter activity name</span>
       </div>
+      <div class="field full" id="w-type">
+        <label>Promo Type <span class="req">*</span></label>
+        <select id="f-type" onchange="document.getElementById('f-type-other-wrap').style.display=this.value==='OTHER'?'block':'none'">
+          <option value="">Select promo type…</option>
+          <option value="PROMOTER">Promoter</option>
+          <option value="GE">GE (端架)</option>
+          <option value="ISLAND">Island (中岛)</option>
+          <option value="BLOCK">Block (集团陈列)</option>
+          <option value="SAMPLING">Sampling (试吃)</option>
+          <option value="OTHER">Other</option>
+        </select>
+        <span class="err" id="e-type">Please select promo type</span>
+        <div id="f-type-other-wrap" style="display:none;margin-top:8px;">
+          <input type="text" id="f-type-other" placeholder="Specify the promo type, e.g. Scan Sale Rebate">
+        </div>
+      </div>
       <div class="field" id="w-start">
         <label>Start Date <span class="req">*</span></label>
         <input type="date" id="f-start">
@@ -348,6 +364,7 @@ function validate(){
   const g=id=>document.getElementById(id).value;
   [['f-store','e-store','w-store'],
    ['f-name','e-name','w-name'],
+   ['f-type','e-type','w-type'],
    ['f-start','e-start','w-start'],
    ['f-discount','e-discount','w-discount'],
    ['f-manager','e-manager','w-manager']
@@ -391,8 +408,8 @@ async function submitForm(){
   const payload={
     date:start,
     region:'',
-    promo_type:'OTHER',
-    promo_type_other:'',
+    promo_type:g('f-type')||'OTHER',
+    promo_type_other:g('f-type')==='OTHER'?g('f-type-other').trim():'',
     store:g('f-store').trim(),
     manager:g('f-manager').trim(),
     activity_name:g('f-name').trim(),
@@ -439,7 +456,8 @@ function resetForm(){
   document.getElementById('success-title').textContent='Submitted successfully!';
   document.getElementById('edit-banner').style.display='none';
   editingId=null;
-  ['f-store','f-name','f-cost','f-discount'].forEach(id=>document.getElementById(id).value='');
+  ['f-store','f-name','f-cost','f-discount','f-type','f-type-other'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('f-type-other-wrap').style.display='none';
   supportRows=[];supportRowId=0;
   renderSupportRows();
   // 提交者名字保持锁定，HQ 清空
@@ -456,6 +474,9 @@ function editRecord(id){
 
   renderCustomerOptions(r.store||'');
   document.getElementById('f-name').value=r.activity_name||'';
+  document.getElementById('f-type').value=r.promo_type||'';
+  document.getElementById('f-type-other').value=r.promo_type_other||'';
+  document.getElementById('f-type-other-wrap').style.display=(r.promo_type||'')==='OTHER'?'block':'none';
   document.getElementById('f-cost').value=r.total_cost||r.other_cost||0;
   document.getElementById('f-discount').value=r.note||'';
   if (userRole !== 'member') document.getElementById('f-manager').value=r.manager||'';
