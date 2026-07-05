@@ -237,6 +237,13 @@
       <textarea id="n-notes" placeholder="Budget, objectives, special instructions..."></textarea>
     </div>
 
+    <div class="field">
+      <label style="color:var(--green);font-weight:800">🎯 Activity Goals</label>
+      <div style="font-size:11px;color:var(--muted);margin-bottom:8px">Set one or more targets — sales, samples, new customers, etc. Daily reports will track progress against them.</div>
+      <div id="n-goal-list" style="margin-bottom:8px"></div>
+      <button type="button" onclick="addGoalRow()" style="background:none;border:1.5px dashed var(--border);border-radius:8px;padding:8px 14px;font-size:13px;color:var(--muted);cursor:pointer;width:100%;font-family:inherit">＋ Add Goal</button>
+    </div>
+
     <button class="btn-primary" id="btn-new" onclick="submitNewActivity()">Create Activity</button>
   </div>
 
@@ -332,6 +339,11 @@
       <div class="profit-display" id="profit-display">
         <div class="pd-label">Profit / Loss</div>
         <div class="pd-val break" id="pd-val">RM 0</div>
+      </div>
+
+      <div class="field" id="r-goals-section" style="display:none">
+        <label style="color:var(--green);font-weight:800">🎯 Goal Progress</label>
+        <div id="r-goals-list"></div>
       </div>
 
       <div class="field">
@@ -534,13 +546,15 @@ function selectType(type) {
   document.getElementById('fn-type').classList.remove('has-error');
 }
 
+let reportActivities = [];
 async function loadActivities() {
   const list = document.getElementById('activity-select-list');
   list.innerHTML = '<div class="loading-text">Loading…</div>';
   try {
     let q = 'activities?select=*&order=created_at.desc';
-   
+
     const data = await db(q) || [];
+    reportActivities = data;
     if (!data.length) { list.innerHTML = '<div class="empty-text">No activities found. Create one first.</div>'; return; }
     const typeIcons = { Sampling:'🧪', Roadshow:'🚗', Exhibition:'🏟️', 'Food Fair':'🍱', 'Food Expo':'🏪', Other:'📌' };
     list.innerHTML = data.map(a => `
@@ -561,7 +575,68 @@ function selectActivity(id, name) {
   event.currentTarget.classList.add('selected');
   document.getElementById('report-form-body').style.display = 'block';
   document.getElementById('r-date').value = today;
+  renderGoalInputs(id);
   setTimeout(() => document.getElementById('report-form-body').scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
+}
+
+// ── Goal progress in Daily Report ──
+let currentGoals = [];
+
+async function renderGoalInputs(activityId) {
+  const section = document.getElementById('r-goals-section');
+  const list = document.getElementById('r-goals-list');
+  const activity = reportActivities.find(a => a.activity_id === activityId);
+  currentGoals = (activity && activity.goals) || [];
+  if (!currentGoals.length) { section.style.display = 'none'; list.innerHTML = ''; return; }
+
+  section.style.display = 'block';
+  list.innerHTML = '<div class="loading-text">Loading progress…</div>';
+
+  // Aggregate progress from past reports
+  let doneMap = {};
+  try {
+    const reports = await db(`activity_reports?activity_id=eq.${activityId}&select=revenue,goal_progress`) || [];
+    reports.forEach(r => {
+      currentGoals.forEach((g, i) => {
+        if (g.type === 'SALES') {
+          doneMap[i] = (doneMap[i] || 0) + (parseFloat(r.revenue) || 0);
+        } else if (r.goal_progress && r.goal_progress[i] != null) {
+          doneMap[i] = (doneMap[i] || 0) + (parseFloat(r.goal_progress[i]) || 0);
+        }
+      });
+    });
+  } catch(e) { console.error(e); }
+
+  list.innerHTML = currentGoals.map((g, i) => {
+    const done = doneMap[i] || 0;
+    const pct = Math.min(100, Math.round(done / g.target * 100));
+    const isSales = g.type === 'SALES';
+    return `
+    <div style="background:#f9fafb;border:1px solid var(--border);border-radius:8px;padding:12px 14px;margin-bottom:8px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+        <span style="font-size:13px;font-weight:700">${escHtml(g.label)}</span>
+        <span style="font-size:12px;color:${pct>=100?'var(--green)':'var(--muted)'};font-weight:700">${done.toLocaleString('en-MY')} / ${Number(g.target).toLocaleString('en-MY')} (${pct}%)</span>
+      </div>
+      <div style="height:8px;background:#e5e7eb;border-radius:99px;overflow:hidden;margin-bottom:${isSales?'0':'10px'}">
+        <div style="height:100%;width:${pct}%;background:${pct>=100?'var(--green)':'#86efac'};border-radius:99px"></div>
+      </div>
+      ${isSales
+        ? '<div style="font-size:11px;color:var(--muted);margin-top:6px">Auto-tracked from Revenue above.</div>'
+        : `<input type="number" id="goal-input-${i}" placeholder="Today's ${escHtml(g.label)}" min="0" step="any" style="width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:inherit">`}
+    </div>`;
+  }).join('');
+}
+
+function collectGoalProgress() {
+  const progress = {};
+  let has = false;
+  currentGoals.forEach((g, i) => {
+    if (g.type === 'SALES') return;
+    const el = document.getElementById('goal-input-' + i);
+    const v = parseFloat(el?.value);
+    if (!isNaN(v) && v > 0) { progress[i] = v; has = true; }
+  });
+  return has ? progress : null;
 }
 
 function calcProfit() {
@@ -636,6 +711,40 @@ async function uploadPhotos() {
   return urls;
 }
 
+// ── Activity Goals ──
+const GOAL_TYPES = { SALES:'Sales (RM)', SAMPLES:'Samples Given', CUSTOMERS:'New Customers', ORDERS:'Orders', OTHER:'Other' };
+let goalRowCount = 0;
+
+function addGoalRow() {
+  const idx = goalRowCount++;
+  const row = document.createElement('div');
+  row.id = 'goal-row-' + idx;
+  row.style.cssText = 'display:flex;gap:8px;margin-bottom:8px;align-items:center';
+  row.innerHTML = `
+    <select id="goal-type-${idx}" onchange="document.getElementById('goal-other-${idx}').style.display=this.value==='OTHER'?'block':'none'" style="flex:1;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:inherit;background:white">
+      ${Object.entries(GOAL_TYPES).map(([k,v])=>`<option value="${k}">${v}</option>`).join('')}
+    </select>
+    <input type="text" id="goal-other-${idx}" placeholder="Goal name" style="display:none;flex:1;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:inherit">
+    <input type="number" id="goal-target-${idx}" placeholder="Target" min="0" step="any" style="width:100px;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:inherit">
+    <button onclick="document.getElementById('goal-row-${idx}').remove()" style="background:none;border:none;color:var(--muted);font-size:16px;cursor:pointer;padding:6px;flex-shrink:0" title="Remove">✕</button>`;
+  document.getElementById('n-goal-list').appendChild(row);
+}
+
+function collectGoals() {
+  const goals = [];
+  document.querySelectorAll('#n-goal-list > div').forEach(row => {
+    const idx = row.id.replace('goal-row-', '');
+    const type = document.getElementById('goal-type-' + idx)?.value;
+    const target = parseFloat(document.getElementById('goal-target-' + idx)?.value);
+    if (!type || !target || target <= 0) return;
+    const label = type === 'OTHER'
+      ? (document.getElementById('goal-other-' + idx)?.value.trim() || 'Other')
+      : GOAL_TYPES[type];
+    goals.push({ type, label, target });
+  });
+  return goals;
+}
+
 async function submitNewActivity() {
   const name = document.getElementById('n-name').value.trim();
   const type = document.getElementById('n-type').value;
@@ -658,6 +767,7 @@ async function submitNewActivity() {
         start_date: document.getElementById('n-start').value || null,
         end_date: document.getElementById('n-end').value || null,
         notes: document.getElementById('n-notes').value.trim() || null,
+        goals: (g => g.length ? g : null)(collectGoals()),
         created_by: loggedUser,
         status: 'active'
       })
@@ -691,6 +801,7 @@ async function submitReport() {
         revenue: parseFloat(document.getElementById('r-revenue').value) || 0,
         cost: parseFloat(document.getElementById('r-cost').value) || 0,
         notes: document.getElementById('r-notes').value.trim() || null,
+        goal_progress: collectGoalProgress(),
         photo_urls: photoUrls
       })
     });
@@ -730,6 +841,11 @@ function resetAll() {
   selectedActivityId = null;
   photoFiles = [null, null, null];
   document.getElementById('report-form-body').style.display = 'none';
+  document.getElementById('n-goal-list').innerHTML = '';
+  goalRowCount = 0;
+  currentGoals = [];
+  document.getElementById('r-goals-section').style.display = 'none';
+  document.getElementById('r-goals-list').innerHTML = '';
 }
 
 async function loadHistoryActivities() {
