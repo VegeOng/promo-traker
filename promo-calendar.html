@@ -293,7 +293,7 @@ const CAT_LABELS = {
 function catColor(t){ return CAT_COLORS[t] || CAT_COLORS.OTHER; }
 function catLabel(r){
   const t=(r.promo_type||'OTHER').toUpperCase();
-  if(t==='OTHER' && r.promo_type_other) return r.promo_type_other;
+  if(t==='OTHER') return r.promo_type_other || r.activity_name || 'Other';
   return CAT_LABELS[t] || t;
 }
 
