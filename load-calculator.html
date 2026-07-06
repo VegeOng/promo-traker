@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Load Calculator — MamaVege</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#fafafa;--white:#fff;
+  --green:#166534;--gd:#14532d;--gm:#15803d;--gl:#dcfce7;--gxl:#f0fdf4;
+  --red:#dc2626;--rl:#fee2e2;
+  --amber:#d97706;--al:#fef3c7;
+  --border:#e5e7eb;--bd:#d1d5db;
+  --muted:#6b7280;--ml:#9ca3af;
+  --text:#111827;--t2:#374151;--t3:#4b5563;
+  --r:13px;
+}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;-webkit-font-smoothing:antialiased}
+
+/* NAV */
+.mv-top{overflow:hidden}
+.mv-top-main{display:flex;justify-content:space-between;align-items:center;padding:12px 24px;background:var(--green)}
+.mv-top-left{display:flex;align-items:center;gap:12px}
+.mv-top-logo{height:34px;background:#fff;border-radius:8px;padding:3px 8px;display:flex;align-items:center;text-decoration:none}
+.mv-top-logo img{height:26px}
+.mv-top-sep{width:1px;height:24px;background:rgba(255,255,255,.2)}
+.mv-top-tool{color:#fff;font-size:14px;font-weight:700;letter-spacing:.3px}
+.mv-top-right{display:flex;align-items:center;gap:12px}
+.mv-top-back{color:rgba(255,255,255,.8);text-decoration:none;font-size:13px;font-weight:600}
+.mv-top-back:hover{color:#fff}
+.mv-top-sub{display:flex;justify-content:space-between;align-items:center;padding:5px 24px;background:#15532d;color:rgba(255,255,255,.6);font-size:11px}
+
+/* HERO */
+.hero{background:var(--green);padding:1.65rem 1.2rem 1.35rem;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;right:-50px;top:-50px;width:200px;height:200px;border-radius:50%;background:rgba(255,255,255,.05);pointer-events:none}
+.hero-tag{display:inline-flex;align-items:center;font-size:.67rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.15);border-radius:20px;padding:3px 10px;color:rgba(255,255,255,.85);margin-bottom:.6rem}
+.hero h1{font-family:'DM Serif Display',serif;font-size:1.55rem;color:#fff;line-height:1.15;font-style:italic}
+.hero p{font-size:.78rem;color:rgba(255,255,255,.6);margin-top:.3rem;line-height:1.55}
+
+main{padding:1.05rem 1.1rem 4rem;max-width:640px;margin:0 auto}
+
+/* CARD */
+.card{background:var(--white);border:1.5px solid var(--border);border-radius:var(--r);padding:1.1rem;margin-bottom:.8rem}
+.card-hd{font-size:.67rem;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);margin-bottom:.9rem;display:flex;align-items:center;justify-content:space-between}
+
+label{display:block;font-size:.72rem;font-weight:600;color:var(--t2);margin-bottom:3px}
+.req{color:var(--red)}
+
+input[type=number],input[type=text],select{
+  width:100%;padding:.55rem .7rem;border:1.5px solid var(--bd);border-radius:7px;
+  font-family:inherit;font-size:.85rem;color:var(--text);background:var(--white);
+  outline:none;transition:border-color .15s,box-shadow .15s;-moz-appearance:textfield
+}
+input::-webkit-outer-spin-button,input::-webkit-inner-spin-button{-webkit-appearance:none}
+input:focus,select:focus{border-color:var(--green);box-shadow:0 0 0 3px rgba(22,101,52,.09)}
+input::placeholder{color:var(--ml)}
+
+.pfx{position:relative}
+.pfx .sym{position:absolute;left:.68rem;top:50%;transform:translateY(-50%);font-size:.78rem;color:var(--ml);pointer-events:none;font-weight:500}
+.pfx input{padding-left:2rem}
+
+/* SKU ROWS */
+.sku-section-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:.65rem}
+.sku-section-hd span{font-size:.67rem;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--muted)}
+.add-sku-btn{font-size:.76rem;font-weight:700;color:var(--green);background:var(--gxl);border:1.5px solid var(--gl);border-radius:7px;padding:.3rem .65rem;cursor:pointer;font-family:inherit;transition:all .15s}
+.add-sku-btn:hover{background:var(--gl)}
+
+.sku-list{display:flex;flex-direction:column;gap:.6rem;margin-bottom:.5rem}
+.sku-row{background:#fafafa;border:1.5px solid var(--border);border-radius:10px;padding:.75rem .8rem;position:relative}
+.sku-row-top{display:grid;grid-template-columns:1fr 80px 70px 100px 90px 26px;gap:.5rem;align-items:end}
+.total-display{padding:.55rem .7rem;border:1.5px solid var(--gl);border-radius:7px;font-size:.82rem;font-weight:700;color:var(--green);background:var(--gxl);white-space:nowrap;min-width:0;overflow:hidden;text-overflow:ellipsis;}
+.sku-row-top label{font-size:.72rem}
+.sku-del{width:24px;height:24px;border-radius:5px;border:1.5px solid #fca5a5;background:var(--white);color:var(--red);font-size:.95rem;cursor:pointer;display:grid;place-items:center;align-self:end;transition:background .12s}
+.sku-del:hover{background:var(--rl)}
+
+.sku-bar{margin-top:.5rem;padding:.35rem .65rem;border-radius:6px;background:var(--gxl);border:1px solid var(--gl);font-size:.72rem;color:var(--gm);font-weight:600;display:none;align-items:center;gap:.55rem;flex-wrap:wrap}
+.sku-bar.warn{background:var(--rl);border-color:#fecaca;color:var(--red)}
+.sku-bar .sv{font-weight:700;font-size:.78rem}
+.sku-bar .sep{color:var(--ml)}
+
+/* LIVE TOTALS */
+.totals-card{background:var(--green);border-radius:var(--r);padding:1.15rem 1rem;margin:.9rem 0 .6rem;position:relative;overflow:hidden}
+.totals-card::after{content:'';position:absolute;right:-18px;bottom:-18px;width:100px;height:100px;border-radius:50%;background:rgba(255,255,255,.07);pointer-events:none}
+.tc-label{font-size:.62rem;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:rgba(255,255,255,.55);margin-bottom:.3rem}
+.tc-val{font-family:'DM Serif Display',serif;font-size:2rem;color:#fff;line-height:1;font-style:italic}
+.tc-sub-row{display:flex;gap:1.4rem;margin-top:.85rem;flex-wrap:wrap}
+.tc-sub{font-size:.72rem;color:rgba(255,255,255,.6)}
+.tc-sub b{display:block;font-size:.95rem;color:#fff;font-weight:700;margin-top:2px}
+
+/* SKU RESULT TABLE */
+.sku-result-tbl{background:var(--white);border:1.5px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:.8rem}
+.srt-hd{background:var(--gxl);padding:.55rem .95rem;font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--green)}
+.srtable{width:100%;border-collapse:collapse;font-size:.77rem}
+.srtable th{padding:.4rem .6rem;text-align:left;font-size:.63rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--green);border-bottom:1.5px solid var(--gl)}
+.srtable td{padding:.42rem .6rem;border-bottom:1px solid #f3f4f6;color:var(--t3)}
+.srtable tr:last-child td{border-bottom:none}
+.srtable td:first-child{color:var(--text);font-weight:600}
+
+/* WA */
+.wa-btn{display:flex;align-items:center;justify-content:center;gap:7px;padding:.65rem .5rem;border-radius:9px;border:none;font-family:inherit;font-size:.8rem;font-weight:700;cursor:pointer;text-decoration:none;transition:all .18s;width:100%;background:#25D366;color:#fff;margin-bottom:.6rem}
+.wa-btn:hover{background:#1ebe5d}
+
+.reset-btn{width:100%;padding:.58rem;background:transparent;color:var(--muted);border:1.5px solid var(--bd);border-radius:9px;font-family:inherit;font-size:.8rem;font-weight:500;cursor:pointer;transition:all .15s}
+.reset-btn:hover{border-color:var(--red);color:var(--red)}
+
+.loading-skus{font-size:.78rem;color:var(--ml);padding:.4rem 0;}
+</style>
+</head>
+<body>
+
+<div class="mv-top">
+  <div class="mv-top-main">
+    <div class="mv-top-left">
+      <a href="index.html" class="mv-top-logo"><img src="Mamavege_Logo.png" alt="MamaVege"></a>
+      <div class="mv-top-sep"></div>
+      <span class="mv-top-tool">🚚 Load Calculator</span>
+    </div>
+    <div class="mv-top-right">
+      <a href="index.html" class="mv-top-back">← Hub</a>
+    </div>
+  </div>
+  <div class="mv-top-sub">
+    <span class="mv-top-date"></span>
+    <span>MamaVege Management Hub</span>
+  </div>
+</div>
+<script>document.querySelectorAll('.mv-top-date').forEach(e=>e.textContent=new Date().toLocaleDateString('en-MY',{weekday:'short',year:'numeric',month:'short',day:'numeric'}));</script>
+
+<div class="hero">
+  <div class="hero-tag">🚚 Sales Tool</div>
+  <h1>Load Sell-Out Calculator</h1>
+  <p>Key in the stock you're bringing — instantly see total sales value if everything sells out.</p>
+</div>
+
+<main>
+
+  <!-- EVENT INFO -->
+  <div class="card">
+    <div class="card-hd" style="margin-bottom:.6rem">📋 Event / Trip Info <span style="font-weight:400;font-size:.75rem;text-transform:none;letter-spacing:0;color:var(--ml)">(optional)</span></div>
+    <div>
+      <label>Event / Location</label>
+      <input type="text" id="event-name" placeholder="e.g. Aeon Roadshow, Pasar Malam Kepong">
+    </div>
+  </div>
+
+  <!-- SKU LINES -->
+  <div class="card">
+    <div class="sku-section-hd">
+      <span>📦 Stock Loaded</span>
+    </div>
+    <div id="sku-loading" class="loading-skus">Loading SKUs…</div>
+    <div class="sku-list" id="sku-list"></div>
+    <button class="add-sku-btn" onclick="addSkuRow()" style="width:100%;margin-top:.5rem">＋ Add Product</button>
+  </div>
+
+  <!-- LIVE TOTALS -->
+  <div class="totals-card">
+    <div class="tc-label">💰 Total Sales if Sold Out</div>
+    <div class="tc-val" id="t-revenue">RM 0.00</div>
+    <div class="tc-sub-row">
+      <div class="tc-sub">Total Units<b id="t-units">0</b></div>
+      <div class="tc-sub">Total Cost<b id="t-cost">RM 0.00</b></div>
+      <div class="tc-sub">Gross Profit<b id="t-gp">RM 0.00</b></div>
+      <div class="tc-sub">GM %<b id="t-gm">—</b></div>
+    </div>
+  </div>
+
+  <!-- PER-SKU TABLE -->
+  <div class="sku-result-tbl" id="sku-tbl" style="display:none">
+    <div class="srt-hd">Per-Product Breakdown</div>
+    <table class="srtable">
+      <thead>
+        <tr><th>SKU</th><th>Qty</th><th>Units</th><th>Sales</th><th>GP</th></tr>
+      </thead>
+      <tbody id="sku-tbody"></tbody>
+    </table>
+  </div>
+
+  <a class="wa-btn" id="wa-link" href="#" target="_blank">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.127.558 4.122 1.532 5.859L0 24l6.335-1.506A11.942 11.942 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.794 9.794 0 01-5.012-1.374l-.36-.214-3.732.887.936-3.618-.235-.372A9.755 9.755 0 012.182 12C2.182 6.57 6.57 2.182 12 2.182S21.818 6.57 21.818 12 17.43 21.818 12 21.818z"/></svg>
+    Share via WhatsApp
+  </a>
+
+  <button class="reset-btn" onclick="location.reload()">↺ Reset</button>
+
+</main>
+
+<script>
+const SUPA_URL = 'https://wjhgezvrxlhpexocfsea.supabase.co';
+const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndqaGdlenZyeGxocGV4b2Nmc2VhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg1MDU4NzgsImV4cCI6MjA5NDA4MTg3OH0.jENcrgEDYDlSRUCqve-T6rxYRJfz-dnZQHnXpPLJ_RE';
+const H = { 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY };
+
+let skus = [];
+let rowCount = 0;
+
+const fmtRM  = n => 'RM ' + Number(n).toLocaleString('en-MY', { minimumFractionDigits:2, maximumFractionDigits:2 });
+const fmtPct = n => n.toFixed(1) + '%';
+
+async function loadSkus() {
+  try {
+    const res = await fetch(SUPA_URL + '/rest/v1/sample_skus?order=sort_order.asc,sku_name.asc', { headers: H });
+    skus = await res.json();
+    document.getElementById('sku-loading').style.display = 'none';
+    addSkuRow();
+  } catch(e) {
+    document.getElementById('sku-loading').textContent = 'Failed to load SKUs.';
+  }
+}
+
+function skuOptions(selectedName) {
+  return skus.map(s =>
+    `<option value="${s.sku_name}" data-cost="${s.cost_price||0}" data-upc="${s.units_per_carton||0}" ${s.sku_name===selectedName?'selected':''}>
+      ${s.sku_name}${s.units_per_carton ? ' ('+s.units_per_carton+' units/ctn)' : ''}
+    </option>`
+  ).join('');
+}
+
+function addSkuRow() {
+  rowCount++;
+  const id = 'r' + rowCount;
+  const div = document.createElement('div');
+  div.className = 'sku-row';
+  div.id = 'srow-' + id;
+  div.innerHTML = `
+    <div class="sku-row-top">
+      <div>
+        <label>SKU <span class="req">*</span></label>
+        <select id="${id}-sku" onchange="recalc()">
+          <option value="">— Select SKU —</option>
+          ${skuOptions('')}
+        </select>
+      </div>
+      <div>
+        <label>UOM</label>
+        <select id="${id}-uom" onchange="recalc()">
+          <option value="carton">Carton</option>
+          <option value="unit">Unit</option>
+        </select>
+      </div>
+      <div>
+        <label>Qty <span class="req">*</span></label>
+        <input type="number" id="${id}-qty" placeholder="0" min="1" step="1" oninput="recalc()">
+      </div>
+      <div>
+        <label>RM/unit <span class="req">*</span></label>
+        <div class="pfx"><span class="sym">RM</span>
+          <input type="number" id="${id}-price" placeholder="0.00" min="0" step="0.01" oninput="recalc()">
+        </div>
+      </div>
+      <div>
+        <label>Total</label>
+        <div class="total-display" id="${id}-total">—</div>
+      </div>
+      <button class="sku-del" onclick="document.getElementById('srow-${id}').remove();recalc()" title="Remove">×</button>
+    </div>`;
+  document.getElementById('sku-list').appendChild(div);
+}
+
+function getRowData(id) {
+  const sel = document.getElementById(id + '-sku');
+  if (!sel) return null;
+  const opt = sel.options[sel.selectedIndex];
+  if (!opt || !opt.value) return null;
+  const qty   = parseFloat(document.getElementById(id + '-qty').value) || 0;
+  const price = parseFloat(document.getElementById(id + '-price').value) || 0;
+  const uom   = document.getElementById(id + '-uom').value;
+  const upc   = parseInt(opt.dataset.upc) || 0;
+  const cost  = parseFloat(opt.dataset.cost) || 0;
+  const totalUnits = uom === 'carton' ? qty * upc : qty;
+  return {
+    id, name: opt.value, qty, price, uom, upc, cost,
+    totalUnits,
+    revenue: totalUnits * price,
+    totalCost: totalUnits * cost,
+    gp: totalUnits * (price - cost)
+  };
+}
+
+function recalc() {
+  const lines = [];
+  document.querySelectorAll('.sku-row').forEach(row => {
+    const id = row.id.replace('srow-', '');
+    const d = getRowData(id);
+    const totalEl = document.getElementById(id + '-total');
+    if (d && d.qty > 0 && d.price > 0) {
+      if (totalEl) totalEl.textContent = fmtRM(d.revenue);
+      lines.push(d);
+    } else {
+      if (totalEl) totalEl.textContent = '—';
+    }
+  });
+
+  const revenue = lines.reduce((s, l) => s + l.revenue, 0);
+  const cost    = lines.reduce((s, l) => s + l.totalCost, 0);
+  const units   = lines.reduce((s, l) => s + l.totalUnits, 0);
+  const gp      = revenue - cost;
+  const gm      = revenue > 0 ? gp / revenue * 100 : 0;
+
+  document.getElementById('t-revenue').textContent = fmtRM(revenue);
+  document.getElementById('t-units').textContent   = units.toLocaleString('en-MY');
+  document.getElementById('t-cost').textContent    = fmtRM(cost);
+  document.getElementById('t-gp').textContent      = fmtRM(gp);
+  document.getElementById('t-gm').textContent      = revenue > 0 ? fmtPct(gm) : '—';
+
+  // Per-SKU table
+  const tbl = document.getElementById('sku-tbl');
+  if (lines.length) {
+    tbl.style.display = 'block';
+    document.getElementById('sku-tbody').innerHTML = lines.map(l => `
+      <tr>
+        <td>${l.name}</td>
+        <td>${l.qty} ${l.uom === 'carton' ? 'ctn' : 'unit'}</td>
+        <td>${l.totalUnits.toLocaleString('en-MY')}</td>
+        <td>${fmtRM(l.revenue)}</td>
+        <td style="color:${l.gp >= 0 ? 'var(--green)' : 'var(--red)'};font-weight:700">${fmtRM(l.gp)}</td>
+      </tr>`).join('');
+  } else {
+    tbl.style.display = 'none';
+  }
+
+  // WhatsApp message
+  const event = document.getElementById('event-name').value.trim();
+  const waLines = lines.map(l =>
+    `• ${l.name} — ${l.qty} ${l.uom === 'carton' ? 'ctn' : 'unit'} (${l.totalUnits} units) = ${fmtRM(l.revenue)}`
+  ).join('\n');
+  const waMsg = [
+    '🚚 *MamaVege Load Calculator*',
+    event ? `📍 ${event}` : '',
+    '',
+    waLines,
+    '',
+    `💰 *Total if sold out: ${fmtRM(revenue)}*`,
+    `📦 Total units: ${units.toLocaleString('en-MY')}`,
+    `📈 Gross Profit: ${fmtRM(gp)} (${revenue > 0 ? fmtPct(gm) : '—'})`,
+    '',
+    '_Calculated via MamaVege Management Hub_'
+  ].filter(l => l !== '').join('\n');
+  document.getElementById('wa-link').href = 'https://wa.me/?text=' + encodeURIComponent(waMsg);
+}
+
+document.getElementById('event-name').addEventListener('input', recalc);
+loadSkus();
+</script>
+</body>
+</html>
