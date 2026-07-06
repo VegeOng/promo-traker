@@ -361,7 +361,10 @@ async function loadActivitiesDropdown() {
 }
 
 function updateEventLabel() {
-  document.getElementById('top-event').textContent = eventInfo.name || 'No event set — go to Setup';
+  const parts = [];
+  if (eventInfo.name) parts.push('📍 ' + eventInfo.name);
+  if (eventInfo.activity_name) parts.push('🎪 ' + eventInfo.activity_name);
+  document.getElementById('top-event').textContent = parts.join(' · ') || 'No event set — go to Setup';
 }
 
 // ── Products / bundles grid ──
@@ -715,9 +718,11 @@ function cancelBundleEdit() {
 }
 
 function saveEvent() {
+  const actSel = document.getElementById('su-activity');
   eventInfo = {
     name: document.getElementById('su-event').value.trim(),
-    activity_id: document.getElementById('su-activity').value || ''
+    activity_id: actSel.value || '',
+    activity_name: actSel.value ? actSel.options[actSel.selectedIndex].text : ''
   };
   localStorage.setItem('mv_pos_event', JSON.stringify(eventInfo));
   updateEventLabel();
