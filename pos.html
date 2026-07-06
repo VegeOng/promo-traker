@@ -206,7 +206,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
       <div id="su-ballowed" style="display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-top:4px"></div>
     </div>
     <div class="field"><label>Combo Price (RM)</label><input type="number" id="su-bprice" placeholder="0.00" min="0" step="0.01"></div>
-    <button class="mini-btn" style="width:100%" onclick="addBundle()">＋ Add Combo</button>
+    <button class="mini-btn" style="width:100%" id="bundle-form-btn" onclick="addBundle()">＋ Add Combo</button>
+    <button id="bundle-cancel-btn" style="display:none;width:100%;margin-top:6px;padding:8px;background:none;border:none;color:var(--muted);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit" onclick="cancelBundleEdit()">Cancel edit</button>
   </div>
 </div>
 
@@ -670,10 +671,47 @@ function renderSetup() {
   // bundles
   document.getElementById('su-bundles').innerHTML = bundles.map(b => `
     <div class="bundle-row">
-      <span class="bn">🎁 ${esc(b.name)}${b.items ? `<div style="font-size:11px;color:var(--muted);font-weight:400">${esc(b.items)}</div>` : ''}</span>
+      <span class="bn">🎁 ${esc(b.name)}${b.items ? `<div style="font-size:11px;color:var(--muted);font-weight:400">${esc(b.items)}</div>` : ''}${b.pick_count ? `<div style="font-size:11px;color:var(--amber);font-weight:600">Pick ${b.pick_count}${b.allowed_skus && b.allowed_skus.length ? ' · ' + b.allowed_skus.join(', ') : ''}</div>` : (b.allowed_skus && b.allowed_skus.length ? `<div style="font-size:11px;color:var(--amber);font-weight:600">${b.allowed_skus.join(', ')}</div>` : '')}</span>
       <span class="bp">${fmtRM(b.price)}</span>
+      <button style="font-size:12px;color:var(--green);background:var(--gxl);border:1.5px solid var(--gl);border-radius:7px;padding:5px 10px;cursor:pointer;font-weight:700;font-family:inherit" onclick="editBundle('${b.id}')">✏️</button>
       <button class="cdel" onclick="removeBundle('${b.id}')">✕</button>
     </div>`).join('') || '<div style="color:var(--ml);font-size:12px">No combos yet.</div>';
+  updateBundleFormMode();
+}
+
+// ── Bundle edit mode ──
+let editingBundleId = null;
+
+function updateBundleFormMode() {
+  const btn = document.getElementById('bundle-form-btn');
+  const cancel = document.getElementById('bundle-cancel-btn');
+  if (!btn) return;
+  btn.textContent = editingBundleId ? '✓ Update Combo' : '＋ Add Combo';
+  if (cancel) cancel.style.display = editingBundleId ? 'block' : 'none';
+}
+
+function editBundle(id) {
+  const b = bundles.find(x => x.id === id);
+  if (!b) return;
+  editingBundleId = id;
+  document.getElementById('su-bname').value = b.name || '';
+  document.getElementById('su-bitems').value = b.items || '';
+  document.getElementById('su-bcount').value = b.pick_count || '';
+  document.getElementById('su-bprice').value = b.price || '';
+  const allowed = b.allowed_skus || [];
+  document.querySelectorAll('.ballowed-cb').forEach(cb => { cb.checked = allowed.includes(cb.value); });
+  updateBundleFormMode();
+  document.getElementById('su-bname').scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+function cancelBundleEdit() {
+  editingBundleId = null;
+  document.getElementById('su-bname').value = '';
+  document.getElementById('su-bitems').value = '';
+  document.getElementById('su-bcount').value = '';
+  document.getElementById('su-bprice').value = '';
+  document.querySelectorAll('.ballowed-cb:checked').forEach(cb => cb.checked = false);
+  updateBundleFormMode();
 }
 
 function saveEvent() {
@@ -746,16 +784,21 @@ async function addBundle() {
   const pickCount = parseInt(document.getElementById('su-bcount').value) || null;
   const allowed = [...document.querySelectorAll('.ballowed-cb:checked')].map(cb => cb.value);
   if (!name || !price || price <= 0) { toast('Fill in combo name & price', true); return; }
+  const payload = { name, items: items || null, price, pick_count: pickCount, allowed_skus: allowed.length ? allowed : null, active: true };
   try {
-    const saved = await db('pos_bundles', { method: 'POST', body: JSON.stringify({ name, items: items || null, price, pick_count: pickCount, allowed_skus: allowed.length ? allowed : null, active: true }) });
-    bundles.push(saved[0]);
-    document.getElementById('su-bname').value = '';
-    document.getElementById('su-bcount').value = '';
-    document.querySelectorAll('.ballowed-cb:checked').forEach(cb => cb.checked = false);
-    document.getElementById('su-bitems').value = '';
-    document.getElementById('su-bprice').value = '';
+    if (editingBundleId) {
+      const saved = await db('pos_bundles?id=eq.' + editingBundleId, { method: 'PATCH', body: JSON.stringify(payload) });
+      const i = bundles.findIndex(b => b.id === editingBundleId);
+      if (i >= 0) bundles[i] = saved[0];
+      editingBundleId = null;
+      toast('✓ Combo updated');
+    } else {
+      const saved = await db('pos_bundles', { method: 'POST', body: JSON.stringify(payload) });
+      bundles.push(saved[0]);
+      toast('✓ Combo added');
+    }
+    cancelBundleEdit();
     renderSetup(); renderBundles();
-    toast('✓ Combo added');
   } catch(e) { toast('Failed — check pos_bundles table exists', true); }
 }
 
