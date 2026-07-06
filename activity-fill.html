@@ -320,8 +320,10 @@
     <div id="report-form-body" style="display:none">
       <div class="field">
         <label>Report Date <span class="req">*</span></label>
-        <input type="date" id="r-date">
+        <input type="date" id="r-date" onchange="prefillPosRevenue()">
       </div>
+
+      <div id="pos-rev-hint" style="display:none;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:8px 12px;font-size:12px;color:var(--green);font-weight:600;margin-bottom:10px"></div>
 
       <div class="amount-row" style="margin-bottom:16px">
         <div class="amount-card">
@@ -577,7 +579,32 @@ function selectActivity(id, name) {
   document.getElementById('report-form-body').style.display = 'block';
   document.getElementById('r-date').value = today;
   renderGoalInputs(id);
+  prefillPosRevenue();
   setTimeout(() => document.getElementById('report-form-body').scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
+}
+
+// ── POS 联动：Revenue 自动带出当天 POS 销售总额 ──
+async function prefillPosRevenue() {
+  const hint = document.getElementById('pos-rev-hint');
+  if (hint) hint.style.display = 'none';
+  if (!selectedActivityId) return;
+  const date = document.getElementById('r-date').value;
+  if (!date) return;
+  try {
+    // POS created_at 是 UTC，马来西亚当天 = UTC 当天-8小时起
+    const start = new Date(date + 'T00:00:00+08:00').toISOString();
+    const end   = new Date(date + 'T23:59:59+08:00').toISOString();
+    const sales = await db(`pos_sales?activity_id=eq.${selectedActivityId}&created_at=gte.${start}&created_at=lte.${end}&select=total`) || [];
+    if (!sales.length) return;
+    const total = sales.reduce((s, x) => s + parseFloat(x.total || 0), 0);
+    const revEl = document.getElementById('r-revenue');
+    revEl.value = total.toFixed(2);
+    calcProfit();
+    if (hint) {
+      hint.textContent = `⚡ Auto-filled from Event POS: ${sales.length} sale(s), RM ${total.toFixed(2)}`;
+      hint.style.display = 'block';
+    }
+  } catch(e) { console.error(e); }
 }
 
 // ── Goal progress in Daily Report ──
