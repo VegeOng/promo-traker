@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+<title>Event POS — MamaVege</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#fafafa;--white:#fff;
+  --green:#166534;--gd:#14532d;--gm:#15803d;--gl:#dcfce7;--gxl:#f0fdf4;
+  --red:#dc2626;--rl:#fee2e2;
+  --amber:#d97706;--al:#fef3c7;
+  --blue:#2563eb;--bl:#dbeafe;
+  --border:#e5e7eb;--bd:#d1d5db;
+  --muted:#6b7280;--ml:#9ca3af;
+  --text:#111827;--t2:#374151;
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;-webkit-font-smoothing:antialiased;padding-bottom:170px}
+
+.top{background:var(--green);padding:10px 14px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:50}
+.top-title{color:#fff;font-size:15px;font-weight:800}
+.top-event{color:rgba(255,255,255,.7);font-size:11px;margin-top:1px}
+.top-right{display:flex;gap:8px}
+.top-btn{background:rgba(255,255,255,.14);border:none;color:#fff;padding:7px 12px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit}
+
+/* Tabs */
+.tabs{display:flex;background:var(--white);border-bottom:1.5px solid var(--border);position:sticky;top:44px;z-index:49}
+.tab{flex:1;padding:11px 4px;text-align:center;font-size:13px;font-weight:700;color:var(--muted);cursor:pointer;border-bottom:2.5px solid transparent}
+.tab.active{color:var(--green);border-bottom-color:var(--green)}
+
+.page{display:none;padding:12px}
+.page.active{display:block}
+
+/* SELL: product grid */
+.grid-label{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--ml);margin:10px 2px 7px}
+.pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(105px,1fr));gap:8px}
+.pbtn{background:var(--white);border:1.5px solid var(--border);border-radius:12px;padding:12px 8px;text-align:center;cursor:pointer;transition:transform .08s;user-select:none;-webkit-user-select:none}
+.pbtn:active{transform:scale(.95);background:var(--gxl);border-color:var(--green)}
+.pbtn .pname{font-size:12px;font-weight:700;line-height:1.25;margin-bottom:4px;word-break:break-word}
+.pbtn .pprice{font-size:12px;font-weight:800;color:var(--green)}
+.pbtn.bundle{background:var(--al);border-color:#fde68a}
+.pbtn.bundle .pprice{color:var(--amber)}
+.pbtn.noprice .pprice{color:var(--red);font-size:10px}
+
+/* Cart bar (fixed bottom) */
+.cartbar{position:fixed;left:0;right:0;bottom:0;background:var(--white);border-top:2px solid var(--green);box-shadow:0 -4px 20px rgba(0,0,0,.08);z-index:60;max-height:65vh;display:flex;flex-direction:column}
+.cart-head{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;cursor:pointer}
+.cart-count{font-size:13px;font-weight:800}
+.cart-count .n{display:inline-block;background:var(--green);color:#fff;border-radius:20px;padding:1px 9px;margin-right:6px;font-size:12px}
+.cart-total{font-size:19px;font-weight:900;color:var(--green)}
+.cart-body{overflow-y:auto;padding:0 14px;display:none}
+.cartbar.open .cart-body{display:block}
+.citem{display:flex;align-items:center;gap:8px;padding:8px 0;border-top:1px solid #f3f4f6}
+.citem .cname{flex:1;font-size:13px;font-weight:600;line-height:1.3}
+.citem .cname .cbundle{font-size:10px;color:var(--amber);font-weight:700}
+.cqty{display:flex;align-items:center;gap:6px}
+.cqty button{width:28px;height:28px;border-radius:7px;border:1.5px solid var(--bd);background:var(--white);font-size:15px;font-weight:700;cursor:pointer;color:var(--t2)}
+.cqty span{min-width:22px;text-align:center;font-size:14px;font-weight:800}
+.cprice{width:70px;text-align:right;font-size:13px;font-weight:700}
+.cprice input{width:100%;border:1px dashed var(--bd);border-radius:6px;padding:4px;text-align:right;font-size:13px;font-weight:700;font-family:inherit;background:transparent}
+.cdel{width:26px;height:26px;border:none;background:none;color:var(--red);font-size:15px;cursor:pointer}
+
+.pay-row{padding:10px 14px;border-top:1.5px solid var(--border)}
+.pay-label{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.07em;color:var(--ml);margin-bottom:6px}
+.pay-btns{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:9px}
+.paybtn{padding:9px 2px;border:1.5px solid var(--border);border-radius:9px;background:var(--white);font-size:12px;font-weight:700;color:var(--t2);cursor:pointer;text-align:center;font-family:inherit}
+.paybtn.active{background:var(--gxl);border-color:var(--green);color:var(--green)}
+.checkout-btn{width:100%;padding:13px;background:var(--green);color:#fff;border:none;border-radius:11px;font-size:16px;font-weight:800;cursor:pointer;font-family:inherit}
+.checkout-btn:disabled{background:var(--ml)}
+.clear-btn{width:100%;padding:8px;background:none;border:none;color:var(--red);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;margin-top:4px}
+
+/* STATS */
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+.stat-card{background:var(--white);border:1.5px solid var(--border);border-radius:12px;padding:13px}
+.stat-card .sl{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--ml);margin-bottom:4px}
+.stat-card .sv{font-size:20px;font-weight:900;color:var(--green)}
+.stat-card .ss{font-size:11px;color:var(--muted);margin-top:2px}
+.tbl-card{background:var(--white);border:1.5px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:12px}
+.tbl-hd{background:var(--gxl);padding:9px 13px;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--green)}
+.trow{display:flex;justify-content:space-between;padding:9px 13px;border-top:1px solid #f3f4f6;font-size:13px}
+.trow .tn{font-weight:600}
+.trow .tv{font-weight:800;color:var(--green)}
+.sale-row{padding:9px 13px;border-top:1px solid #f3f4f6}
+.sale-row .sr1{display:flex;justify-content:space-between;font-size:13px;font-weight:700}
+.sale-row .sr2{font-size:11px;color:var(--muted);margin-top:2px}
+.void-btn{font-size:10px;color:var(--red);background:none;border:1px solid #fca5a5;border-radius:6px;padding:2px 8px;cursor:pointer;margin-left:8px}
+
+/* SETUP */
+.setup-card{background:var(--white);border:1.5px solid var(--border);border-radius:12px;padding:14px;margin-bottom:12px}
+.setup-card h3{font-size:13px;font-weight:800;margin-bottom:10px;color:var(--green)}
+.field{margin-bottom:10px}
+.field label{display:block;font-size:11px;font-weight:700;color:var(--t2);margin-bottom:4px}
+.field input,.field select{width:100%;padding:10px 12px;border:1.5px solid var(--bd);border-radius:9px;font-size:14px;font-family:inherit;background:var(--white)}
+.price-row{display:flex;align-items:center;gap:8px;padding:7px 0;border-top:1px solid #f3f4f6}
+.price-row .prname{flex:1;font-size:13px;font-weight:600}
+.price-row input{width:90px;padding:8px;border:1.5px solid var(--bd);border-radius:8px;text-align:right;font-size:14px;font-weight:700;font-family:inherit}
+.bundle-row{display:flex;align-items:center;gap:8px;padding:8px 0;border-top:1px solid #f3f4f6}
+.bundle-row .bn{flex:1;font-size:13px;font-weight:600}
+.bundle-row .bp{font-size:13px;font-weight:800;color:var(--amber)}
+.mini-btn{padding:8px 14px;background:var(--gxl);border:1.5px solid var(--gl);border-radius:9px;font-size:13px;font-weight:700;color:var(--green);cursor:pointer;font-family:inherit}
+.save-btn{width:100%;padding:12px;background:var(--green);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:800;cursor:pointer;font-family:inherit;margin-top:6px}
+
+/* toast */
+.toast{position:fixed;top:100px;left:50%;transform:translateX(-50%);background:var(--green);color:#fff;padding:12px 22px;border-radius:12px;font-size:14px;font-weight:800;z-index:200;display:none;box-shadow:0 8px 24px rgba(0,0,0,.2)}
+.toast.err{background:var(--red)}
+.offline-badge{position:fixed;top:52px;right:10px;background:var(--al);color:var(--amber);border:1px solid #fde68a;font-size:10px;font-weight:800;padding:3px 9px;border-radius:20px;z-index:70;display:none}
+
+/* scanner */
+.scan-overlay{position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:300;display:none;flex-direction:column;align-items:center;justify-content:center}
+.scan-overlay video{width:92%;max-width:480px;border-radius:14px}
+.scan-close{margin-top:18px;padding:10px 26px;background:#fff;border:none;border-radius:10px;font-size:14px;font-weight:800;cursor:pointer;font-family:inherit}
+.scan-hint{color:rgba(255,255,255,.7);font-size:13px;margin-bottom:12px}
+</style>
+</head>
+<body>
+
+<div class="top">
+  <div>
+    <div class="top-title">🧾 Event POS</div>
+    <div class="top-event" id="top-event">No event set — go to Setup</div>
+  </div>
+  <div class="top-right">
+    <button class="top-btn" onclick="openScanner()">📷 Scan</button>
+    <a class="top-btn" href="index.html" style="text-decoration:none">← Hub</a>
+  </div>
+</div>
+
+<div class="offline-badge" id="offline-badge">⏳ <span id="offline-n">0</span> pending sync</div>
+
+<div class="tabs">
+  <div class="tab active" id="tab-sell" onclick="showPage('sell')">🛒 Sell</div>
+  <div class="tab" id="tab-stats" onclick="showPage('stats')">📊 Today</div>
+  <div class="tab" id="tab-setup" onclick="showPage('setup')">⚙️ Setup</div>
+</div>
+
+<!-- SELL -->
+<div class="page active" id="page-sell">
+  <div class="grid-label" id="bundle-label" style="display:none">🎁 Combo Deals</div>
+  <div class="pgrid" id="bundle-grid"></div>
+  <div class="grid-label">📦 Products</div>
+  <div class="pgrid" id="product-grid"><div style="grid-column:1/-1;color:var(--ml);font-size:13px;padding:16px;text-align:center">Loading products…</div></div>
+</div>
+
+<!-- STATS -->
+<div class="page" id="page-stats">
+  <div class="stat-grid">
+    <div class="stat-card"><div class="sl">Today's Sales</div><div class="sv" id="st-revenue">RM 0</div><div class="ss" id="st-orders">0 orders</div></div>
+    <div class="stat-card"><div class="sl">Avg / Order</div><div class="sv" id="st-avg">RM 0</div><div class="ss" id="st-units">0 units sold</div></div>
+  </div>
+  <div class="tbl-card">
+    <div class="tbl-hd">💳 By Payment Method</div>
+    <div id="st-pay"></div>
+  </div>
+  <div class="tbl-card">
+    <div class="tbl-hd">📦 By Product</div>
+    <div id="st-products"></div>
+  </div>
+  <div class="tbl-card">
+    <div class="tbl-hd">🧾 Recent Sales</div>
+    <div id="st-sales"></div>
+  </div>
+</div>
+
+<!-- SETUP -->
+<div class="page" id="page-setup">
+  <div class="setup-card">
+    <h3>📍 Event</h3>
+    <div class="field">
+      <label>Event Name</label>
+      <input type="text" id="su-event" placeholder="e.g. Aeon BM Roadshow Day 1">
+    </div>
+    <div class="field">
+      <label>Link to Activity (optional)</label>
+      <select id="su-activity"><option value="">— None —</option></select>
+    </div>
+    <button class="save-btn" onclick="saveEvent()">Save Event</button>
+  </div>
+
+  <div class="setup-card">
+    <h3>💲 Product Prices (RM/unit for this event)</h3>
+    <div style="font-size:11px;color:var(--muted);margin-bottom:6px">Products without a price won't show on the Sell screen.</div>
+    <div id="su-prices"><div style="color:var(--ml);font-size:13px;padding:10px 0">Loading…</div></div>
+    <button class="save-btn" onclick="savePrices()">Save Prices</button>
+  </div>
+
+  <div class="setup-card">
+    <h3>🎁 Combo Deals</h3>
+    <div id="su-bundles"></div>
+    <div class="field" style="margin-top:10px"><label>Combo Name</label><input type="text" id="su-bname" placeholder="e.g. Any 3 packs"></div>
+    <div class="field"><label>Description (what's inside)</label><input type="text" id="su-bitems" placeholder="e.g. Kampua x2 + TomYam x1"></div>
+    <div class="field"><label>Combo Price (RM)</label><input type="number" id="su-bprice" placeholder="0.00" min="0" step="0.01"></div>
+    <button class="mini-btn" style="width:100%" onclick="addBundle()">＋ Add Combo</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<div class="scan-overlay" id="scan-overlay">
+  <div class="scan-hint">Point camera at product barcode</div>
+  <video id="scan-video" playsinline></video>
+  <button class="scan-close" onclick="closeScanner()">Close</button>
+</div>
+
+<!-- CART BAR -->
+<div class="cartbar" id="cartbar">
+  <div class="cart-head" onclick="toggleCart()">
+    <div class="cart-count"><span class="n" id="cart-n">0</span>Cart <span id="cart-arrow">▲</span></div>
+    <div class="cart-total" id="cart-total">RM 0.00</div>
+  </div>
+  <div class="cart-body" id="cart-body"></div>
+  <div class="pay-row">
+    <div class="pay-label">Payment</div>
+    <div class="pay-btns">
+      <div class="paybtn active" data-pay="Cash" onclick="setPay('Cash',this)">💵 Cash</div>
+      <div class="paybtn" data-pay="TNG" onclick="setPay('TNG',this)">📱 TNG</div>
+      <div class="paybtn" data-pay="DuitNow" onclick="setPay('DuitNow',this)">🏦 DuitNow</div>
+      <div class="paybtn" data-pay="Other" onclick="setPay('Other',this)">Other</div>
+    </div>
+    <button class="checkout-btn" id="checkout-btn" onclick="checkout()" disabled>✓ Complete Sale — RM 0.00</button>
+    <button class="clear-btn" onclick="clearCart()">Clear cart</button>
+  </div>
+</div>
+
+<script>
+const SUPA_URL = 'https://wjhgezvrxlhpexocfsea.supabase.co';
+const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndqaGdlenZyeGxocGV4b2Nmc2VhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg1MDU4NzgsImV4cCI6MjA5NDA4MTg3OH0.jENcrgEDYDlSRUCqve-T6rxYRJfz-dnZQHnXpPLJ_RE';
+const H = { 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY, 'Content-Type': 'application/json' };
+
+function lsGet(key){const raw=localStorage.getItem(key);if(!raw)return null;try{const i=JSON.parse(raw);if(Date.now()>i.expiry){localStorage.removeItem(key);return null;}return i.value;}catch{return null;}}
+const loggedUser = lsGet('userName') || 'Unknown';
+
+const fmtRM = n => 'RM ' + Number(n).toLocaleString('en-MY',{minimumFractionDigits:2,maximumFractionDigits:2});
+
+let skus = [];
+let bundles = [];
+let prices = JSON.parse(localStorage.getItem('mv_pos_prices') || '{}');
+let eventInfo = JSON.parse(localStorage.getItem('mv_pos_event') || '{"name":"","activity_id":""}');
+let cart = [];
+let payMethod = 'Cash';
+
+async function db(path, opts = {}) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 15000);
+  try {
+    const r = await fetch(SUPA_URL + '/rest/v1/' + path, { headers: { ...H, 'Prefer': 'return=representation' }, signal: controller.signal, ...opts });
+    const text = await r.text();
+    if (!r.ok) throw new Error(text || r.status);
+    return text ? JSON.parse(text) : null;
+  } finally { clearTimeout(timer); }
+}
+
+function toast(msg, isErr) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast' + (isErr ? ' err' : '');
+  t.style.display = 'block';
+  setTimeout(() => t.style.display = 'none', 1800);
+}
+
+// ── Pages ──
+function showPage(p) {
+  ['sell','stats','setup'].forEach(x => {
+    document.getElementById('page-' + x).classList.toggle('active', x === p);
+    document.getElementById('tab-' + x).classList.toggle('active', x === p);
+  });
+  document.getElementById('cartbar').style.display = p === 'sell' ? 'flex' : 'none';
+  if (p === 'stats') loadStats();
+  if (p === 'setup') renderSetup();
+}
+
+// ── Load data ──
+async function init() {
+  updateEventLabel();
+  try {
+    const [skuData, bundleData] = await Promise.all([
+      db('sample_skus?order=sort_order.asc,sku_name.asc'),
+      db('pos_bundles?active=eq.true&order=created_at.asc').catch(() => [])
+    ]);
+    skus = skuData || [];
+    bundles = bundleData || [];
+    renderProducts();
+    renderBundles();
+    renderSetup();
+  } catch(e) {
+    document.getElementById('product-grid').innerHTML = '<div style="grid-column:1/-1;color:var(--red);font-size:13px;padding:16px;text-align:center">Failed to load. Check connection & reload.</div>';
+  }
+  syncOffline();
+  loadActivitiesDropdown();
+}
+
+async function loadActivitiesDropdown() {
+  try {
+    const acts = await db('activities?select=activity_id,name&order=created_at.desc&limit=30');
+    const sel = document.getElementById('su-activity');
+    sel.innerHTML = '<option value="">— None —</option>' + (acts||[]).map(a =>
+      `<option value="${a.activity_id}"${a.activity_id===eventInfo.activity_id?' selected':''}>${a.name}</option>`).join('');
+  } catch(e) {}
+}
+
+function updateEventLabel() {
+  document.getElementById('top-event').textContent = eventInfo.name || 'No event set — go to Setup';
+}
+
+// ── Products / bundles grid ──
+function renderProducts() {
+  const grid = document.getElementById('product-grid');
+  const priced = skus.filter(s => prices[s.sku_name] > 0);
+  if (!priced.length) {
+    grid.innerHTML = '<div style="grid-column:1/-1;color:var(--ml);font-size:13px;padding:16px;text-align:center">No prices set yet.<br>Go to ⚙️ Setup and set prices first.</div>';
+    return;
+  }
+  grid.innerHTML = priced.map(s => `
+    <div class="pbtn" onclick="addToCart('${escq(s.sku_name)}')">
+      <div class="pname">${esc(s.sku_name)}</div>
+      <div class="pprice">${fmtRM(prices[s.sku_name])}</div>
+    </div>`).join('');
+}
+
+function renderBundles() {
+  const grid = document.getElementById('bundle-grid');
+  const label = document.getElementById('bundle-label');
+  if (!bundles.length) { label.style.display='none'; grid.innerHTML=''; return; }
+  label.style.display = 'block';
+  grid.innerHTML = bundles.map(b => `
+    <div class="pbtn bundle" onclick="addBundleToCart('${b.id}')">
+      <div class="pname">🎁 ${esc(b.name)}</div>
+      <div class="pprice">${fmtRM(b.price)}</div>
+    </div>`).join('');
+}
+
+// ── Cart ──
+function addToCart(name) {
+  const existing = cart.find(c => c.name === name && !c.bundle);
+  if (existing) existing.qty++;
+  else cart.push({ name, qty: 1, price: prices[name] || 0, bundle: false });
+  renderCart();
+  if (navigator.vibrate) navigator.vibrate(30);
+}
+
+function addBundleToCart(id) {
+  const b = bundles.find(x => x.id === id);
+  if (!b) return;
+  const existing = cart.find(c => c.bundleId === id);
+  if (existing) existing.qty++;
+  else cart.push({ name: b.name, qty: 1, price: parseFloat(b.price), bundle: true, bundleId: id, items: b.items });
+  renderCart();
+  if (navigator.vibrate) navigator.vibrate(30);
+}
+
+function changeQty(i, d) {
+  cart[i].qty += d;
+  if (cart[i].qty <= 0) cart.splice(i, 1);
+  renderCart();
+}
+function delItem(i) { cart.splice(i, 1); renderCart(); }
+function setLinePrice(i, v) { cart[i].price = parseFloat(v) || 0; renderCart(false); }
+function clearCart() { cart = []; renderCart(); }
+
+function cartTotal() { return cart.reduce((s, c) => s + c.qty * c.price, 0); }
+
+function renderCart(rebuild = true) {
+  const n = cart.reduce((s, c) => s + c.qty, 0);
+  const total = cartTotal();
+  document.getElementById('cart-n').textContent = n;
+  document.getElementById('cart-total').textContent = fmtRM(total);
+  document.getElementById('checkout-btn').textContent = '✓ Complete Sale — ' + fmtRM(total);
+  document.getElementById('checkout-btn').disabled = !cart.length;
+  if (!rebuild) return;
+  document.getElementById('cart-body').innerHTML = cart.map((c, i) => `
+    <div class="citem">
+      <div class="cname">${c.bundle ? '🎁 ' : ''}${esc(c.name)}${c.bundle && c.items ? `<div class="cbundle">${esc(c.items)}</div>` : ''}</div>
+      <div class="cqty">
+        <button onclick="changeQty(${i},-1)">−</button><span>${c.qty}</span><button onclick="changeQty(${i},1)">＋</button>
+      </div>
+      <div class="cprice"><input type="number" value="${c.price}" step="0.01" min="0" onchange="setLinePrice(${i},this.value)"></div>
+      <button class="cdel" onclick="delItem(${i})">✕</button>
+    </div>`).join('');
+}
+
+function toggleCart() {
+  const bar = document.getElementById('cartbar');
+  bar.classList.toggle('open');
+  document.getElementById('cart-arrow').textContent = bar.classList.contains('open') ? '▼' : '▲';
+}
+
+function setPay(p, el) {
+  payMethod = p;
+  document.querySelectorAll('.paybtn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+}
+
+// ── Checkout (with offline queue) ──
+async function checkout() {
+  if (!cart.length) return;
+  const sale = {
+    event_name: eventInfo.name || null,
+    activity_id: eventInfo.activity_id || null,
+    items: cart.map(c => ({ name: c.name, qty: c.qty, price: c.price, bundle: c.bundle, items: c.items || null })),
+    total: cartTotal(),
+    payment_method: payMethod,
+    sold_by: loggedUser
+  };
+  const btn = document.getElementById('checkout-btn');
+  btn.disabled = true; btn.textContent = 'Saving…';
+  try {
+    await db('pos_sales', { method: 'POST', body: JSON.stringify(sale) });
+    toast('✓ Sale recorded — ' + fmtRM(sale.total));
+  } catch(e) {
+    // offline queue
+    const q = JSON.parse(localStorage.getItem('mv_pos_queue') || '[]');
+    q.push(sale);
+    localStorage.setItem('mv_pos_queue', JSON.stringify(q));
+    updateOfflineBadge();
+    toast('📥 Saved offline — will sync later');
+  }
+  cart = [];
+  renderCart();
+  document.getElementById('cartbar').classList.remove('open');
+  document.getElementById('cart-arrow').textContent = '▲';
+  btn.disabled = false;
+}
+
+function updateOfflineBadge() {
+  const q = JSON.parse(localStorage.getItem('mv_pos_queue') || '[]');
+  const badge = document.getElementById('offline-badge');
+  badge.style.display = q.length ? 'block' : 'none';
+  document.getElementById('offline-n').textContent = q.length;
+}
+
+async function syncOffline() {
+  const q = JSON.parse(localStorage.getItem('mv_pos_queue') || '[]');
+  updateOfflineBadge();
+  if (!q.length) return;
+  const remaining = [];
+  for (const sale of q) {
+    try { await db('pos_sales', { method: 'POST', body: JSON.stringify(sale) }); }
+    catch(e) { remaining.push(sale); }
+  }
+  localStorage.setItem('mv_pos_queue', JSON.stringify(remaining));
+  updateOfflineBadge();
+  if (q.length > remaining.length) toast(`✓ Synced ${q.length - remaining.length} offline sale(s)`);
+}
+setInterval(syncOffline, 60000);
+
+// ── Stats ──
+async function loadStats() {
+  const today = new Date();
+  const y = today.getFullYear(), m = String(today.getMonth()+1).padStart(2,'0'), d = String(today.getDate()).padStart(2,'0');
+  const start = `${y}-${m}-${d}T00:00:00`;
+  try {
+    let q = `pos_sales?created_at=gte.${start}&order=created_at.desc`;
+    if (eventInfo.name) q += `&event_name=eq.${encodeURIComponent(eventInfo.name)}`;
+    const sales = await db(q) || [];
+    const revenue = sales.reduce((s, x) => s + parseFloat(x.total || 0), 0);
+    const units = sales.reduce((s, x) => s + (x.items || []).reduce((a, i) => a + i.qty, 0), 0);
+    document.getElementById('st-revenue').textContent = fmtRM(revenue);
+    document.getElementById('st-orders').textContent = sales.length + ' orders';
+    document.getElementById('st-avg').textContent = sales.length ? fmtRM(revenue / sales.length) : 'RM 0';
+    document.getElementById('st-units').textContent = units + ' units sold';
+
+    // by payment
+    const byPay = {};
+    sales.forEach(s => { byPay[s.payment_method || '?'] = (byPay[s.payment_method || '?'] || 0) + parseFloat(s.total || 0); });
+    document.getElementById('st-pay').innerHTML = Object.entries(byPay).map(([k, v]) =>
+      `<div class="trow"><span class="tn">${esc(k)}</span><span class="tv">${fmtRM(v)}</span></div>`).join('') || '<div class="trow"><span class="tn" style="color:var(--ml)">No sales yet</span></div>';
+
+    // by product
+    const byProd = {};
+    sales.forEach(s => (s.items || []).forEach(i => {
+      const key = (i.bundle ? '🎁 ' : '') + i.name;
+      if (!byProd[key]) byProd[key] = { qty: 0, amt: 0 };
+      byProd[key].qty += i.qty;
+      byProd[key].amt += i.qty * i.price;
+    }));
+    document.getElementById('st-products').innerHTML = Object.entries(byProd).sort((a,b) => b[1].amt - a[1].amt).map(([k, v]) =>
+      `<div class="trow"><span class="tn">${esc(k)} × ${v.qty}</span><span class="tv">${fmtRM(v.amt)}</span></div>`).join('') || '<div class="trow"><span class="tn" style="color:var(--ml)">No sales yet</span></div>';
+
+    // recent
+    document.getElementById('st-sales').innerHTML = sales.slice(0, 20).map(s => `
+      <div class="sale-row">
+        <div class="sr1"><span>${new Date(s.created_at).toLocaleTimeString('en-MY',{hour:'2-digit',minute:'2-digit'})} · ${esc(s.payment_method||'')}</span>
+        <span>${fmtRM(s.total)}<button class="void-btn" onclick="voidSale('${s.id}')">void</button></span></div>
+        <div class="sr2">${(s.items||[]).map(i => `${i.name}×${i.qty}`).join(', ')}</div>
+      </div>`).join('') || '<div class="trow"><span class="tn" style="color:var(--ml)">No sales yet</span></div>';
+  } catch(e) {
+    document.getElementById('st-pay').innerHTML = '<div class="trow"><span class="tn" style="color:var(--red)">Failed to load</span></div>';
+  }
+}
+
+async function voidSale(id) {
+  if (!confirm('Void this sale? It will be removed from today\'s total.')) return;
+  try {
+    await db('pos_sales?id=eq.' + id, { method: 'DELETE' });
+    toast('Sale voided');
+    loadStats();
+  } catch(e) { toast('Failed to void', true); }
+}
+
+// ── Setup ──
+function renderSetup() {
+  document.getElementById('su-event').value = eventInfo.name || '';
+  // prices
+  document.getElementById('su-prices').innerHTML = skus.map(s => `
+    <div class="price-row">
+      <span class="prname">${esc(s.sku_name)}</span>
+      <input type="number" id="price-${cssId(s.sku_name)}" value="${prices[s.sku_name] || ''}" placeholder="—" min="0" step="0.01">
+    </div>`).join('') || '<div style="color:var(--ml);font-size:13px;padding:10px 0">No SKUs found.</div>';
+  // bundles
+  document.getElementById('su-bundles').innerHTML = bundles.map(b => `
+    <div class="bundle-row">
+      <span class="bn">🎁 ${esc(b.name)}${b.items ? `<div style="font-size:11px;color:var(--muted);font-weight:400">${esc(b.items)}</div>` : ''}</span>
+      <span class="bp">${fmtRM(b.price)}</span>
+      <button class="cdel" onclick="removeBundle('${b.id}')">✕</button>
+    </div>`).join('') || '<div style="color:var(--ml);font-size:12px">No combos yet.</div>';
+}
+
+function saveEvent() {
+  eventInfo = {
+    name: document.getElementById('su-event').value.trim(),
+    activity_id: document.getElementById('su-activity').value || ''
+  };
+  localStorage.setItem('mv_pos_event', JSON.stringify(eventInfo));
+  updateEventLabel();
+  toast('✓ Event saved');
+}
+
+function savePrices() {
+  skus.forEach(s => {
+    const el = document.getElementById('price-' + cssId(s.sku_name));
+    if (!el) return;
+    const v = parseFloat(el.value);
+    if (v > 0) prices[s.sku_name] = v;
+    else delete prices[s.sku_name];
+  });
+  localStorage.setItem('mv_pos_prices', JSON.stringify(prices));
+  renderProducts();
+  toast('✓ Prices saved');
+}
+
+async function addBundle() {
+  const name = document.getElementById('su-bname').value.trim();
+  const items = document.getElementById('su-bitems').value.trim();
+  const price = parseFloat(document.getElementById('su-bprice').value);
+  if (!name || !price || price <= 0) { toast('Fill in combo name & price', true); return; }
+  try {
+    const saved = await db('pos_bundles', { method: 'POST', body: JSON.stringify({ name, items: items || null, price, active: true }) });
+    bundles.push(saved[0]);
+    document.getElementById('su-bname').value = '';
+    document.getElementById('su-bitems').value = '';
+    document.getElementById('su-bprice').value = '';
+    renderSetup(); renderBundles();
+    toast('✓ Combo added');
+  } catch(e) { toast('Failed — check pos_bundles table exists', true); }
+}
+
+async function removeBundle(id) {
+  if (!confirm('Remove this combo?')) return;
+  try {
+    await db('pos_bundles?id=eq.' + id, { method: 'PATCH', body: JSON.stringify({ active: false }) });
+    bundles = bundles.filter(b => b.id !== id);
+    renderSetup(); renderBundles();
+  } catch(e) { toast('Failed to remove', true); }
+}
+
+// ── Barcode scanner ──
+let scanStream = null, scanTimer = null;
+async function openScanner() {
+  if (!('BarcodeDetector' in window)) { toast('Scanner not supported on this browser — use product buttons', true); return; }
+  const overlay = document.getElementById('scan-overlay');
+  const video = document.getElementById('scan-video');
+  try {
+    scanStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+    video.srcObject = scanStream;
+    await video.play();
+    overlay.style.display = 'flex';
+    const detector = new BarcodeDetector();
+    scanTimer = setInterval(async () => {
+      try {
+        const codes = await detector.detect(video);
+        if (codes.length) {
+          const code = codes[0].rawValue;
+          const sku = skus.find(s => (s.barcode || '') === code);
+          if (sku) {
+            if (prices[sku.sku_name] > 0) {
+              addToCart(sku.sku_name);
+              toast('✓ ' + sku.sku_name);
+            } else {
+              toast(sku.sku_name + ' — no price set', true);
+            }
+            closeScanner();
+          }
+        }
+      } catch(e) {}
+    }, 300);
+  } catch(e) { toast('Camera access denied', true); }
+}
+
+function closeScanner() {
+  document.getElementById('scan-overlay').style.display = 'none';
+  if (scanTimer) clearInterval(scanTimer);
+  if (scanStream) { scanStream.getTracks().forEach(t => t.stop()); scanStream = null; }
+}
+
+function esc(s) { return String(s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function escq(s) { return String(s||'').replace(/'/g, "\\'").replace(/"/g, '&quot;'); }
+function cssId(s) { return String(s||'').replace(/[^a-zA-Z0-9]/g, '_'); }
+
+init();
+</script>
+</body>
+</html>
