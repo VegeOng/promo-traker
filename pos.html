@@ -201,6 +201,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
     <div class="field" style="margin-top:10px"><label>Combo Name</label><input type="text" id="su-bname" placeholder="e.g. Any 3 packs"></div>
     <div class="field"><label>Description (what's inside)</label><input type="text" id="su-bitems" placeholder="e.g. Kampua x2 + TomYam x1"></div>
     <div class="field"><label>Items to Pick (customer chooses how many products)</label><input type="number" id="su-bcount" placeholder="e.g. 3" min="1" step="1"></div>
+    <div class="field">
+      <label>Products in this Combo (tick which products can be chosen — none ticked = all)</label>
+      <div id="su-ballowed" style="display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-top:4px"></div>
+    </div>
     <div class="field"><label>Combo Price (RM)</label><input type="number" id="su-bprice" placeholder="0.00" min="0" step="0.01"></div>
     <button class="mini-btn" style="width:100%" onclick="addBundle()">＋ Add Combo</button>
   </div>
@@ -428,7 +432,9 @@ function renderPicker() {
   document.getElementById('picker-sub').textContent = need
     ? `Pick ${need} item${need > 1 ? 's' : ''} — selected ${n}/${need}`
     : `Pick the products inside — selected ${n}`;
-  const priced = skus.filter(s => prices[s.sku_name] > 0);
+  let priced = skus.filter(s => prices[s.sku_name] > 0);
+  const allowed = pickerBundle.allowed_skus;
+  if (allowed && allowed.length) priced = priced.filter(s => allowed.includes(s.sku_name));
   document.getElementById('picker-list').innerHTML = priced.map(s => {
     const q = pickerSel[s.sku_name] || 0;
     return `
@@ -649,6 +655,12 @@ function renderSetup() {
       <span class="prname">${esc(s.sku_name)}</span>
       <input type="number" id="price-${cssId(s.sku_name)}" value="${prices[s.sku_name] || ''}" placeholder="—" min="0" step="0.01">
     </div>`).join('') || '<div style="color:var(--ml);font-size:13px;padding:10px 0">No SKUs found.</div>';
+  // combo allowed-products checkboxes
+  document.getElementById('su-ballowed').innerHTML = skus.map(s => `
+    <label style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;padding:6px 8px;border:1.5px solid var(--border);border-radius:8px;cursor:pointer">
+      <input type="checkbox" class="ballowed-cb" value="${escq(s.sku_name)}" style="width:15px;height:15px;accent-color:var(--green)">
+      <span>${esc(s.sku_name)}</span>
+    </label>`).join('');
   // stock
   document.getElementById('su-stock').innerHTML = skus.map(s => `
     <div class="price-row">
@@ -732,12 +744,14 @@ async function addBundle() {
   const items = document.getElementById('su-bitems').value.trim();
   const price = parseFloat(document.getElementById('su-bprice').value);
   const pickCount = parseInt(document.getElementById('su-bcount').value) || null;
+  const allowed = [...document.querySelectorAll('.ballowed-cb:checked')].map(cb => cb.value);
   if (!name || !price || price <= 0) { toast('Fill in combo name & price', true); return; }
   try {
-    const saved = await db('pos_bundles', { method: 'POST', body: JSON.stringify({ name, items: items || null, price, pick_count: pickCount, active: true }) });
+    const saved = await db('pos_bundles', { method: 'POST', body: JSON.stringify({ name, items: items || null, price, pick_count: pickCount, allowed_skus: allowed.length ? allowed : null, active: true }) });
     bundles.push(saved[0]);
     document.getElementById('su-bname').value = '';
     document.getElementById('su-bcount').value = '';
+    document.querySelectorAll('.ballowed-cb:checked').forEach(cb => cb.checked = false);
     document.getElementById('su-bitems').value = '';
     document.getElementById('su-bprice').value = '';
     renderSetup(); renderBundles();
