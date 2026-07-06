@@ -242,7 +242,7 @@ input::placeholder{color:var(--ml)}
         <div class="sc-val" id="r-gp">—</div>
         <div class="sc-sub" id="r-gm">—</div>
       </div>
-      <div class="sum-card blue">
+      <div class="sum-card blue" id="np-card">
         <div class="sc-label">Net Profit</div>
         <div class="sc-val" id="r-np">—</div>
         <div class="sc-sub" id="r-nm">—</div>
@@ -527,7 +527,7 @@ function calculate() {
   document.getElementById('r-rev-sub').textContent = lines.length + ' SKU line' + (lines.length > 1 ? 's' : '') + (customer ? ' · ' + customer : '');
 
   // Colour net profit card
-  const npCard = document.querySelector('.sum-card.blue');
+  const npCard = document.getElementById('np-card');
   npCard.className = 'sum-card full ' + (netProfit >= 0 ? 'green' : 'red');
 
   // P&L rows
