@@ -138,7 +138,7 @@ async function generateBrief(data) {
 
   // 日报
   const submitted = reports.map(r => (r.name || '').toUpperCase());
-  const notSubmitted = ['VEGE','CAROL','CHRIS','RAYMOND'].filter(n => !submitted.includes(n));
+  const notSubmitted = ['CAROL','CHRIS','RAYMOND'].filter(n => !submitted.includes(n));
 
   // 逾期任务
   const overdue = tasks.filter(t => t.due_date && new Date(t.due_date) < new Date(today));
