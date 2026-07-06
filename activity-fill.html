@@ -541,7 +541,8 @@ function selectType(type) {
   selectedType = type;
   document.getElementById('n-type').value = type;
   document.querySelectorAll('.type-btn').forEach(b => {
-    b.classList.toggle('active', b.textContent.trim() === type);
+    const label = b.childNodes[b.childNodes.length - 1].textContent.trim();
+    b.classList.toggle('active', label === type);
   });
   document.getElementById('fn-type').classList.remove('has-error');
 }
