@@ -279,6 +279,8 @@ async function init() {
     ]);
     skus = skuData || [];
     bundles = bundleData || [];
+    // Cloud prices (sell_price on sample_skus) — shared across all devices
+    skus.forEach(s => { if (s.sell_price > 0) prices[s.sku_name] = parseFloat(s.sell_price); });
     renderProducts();
     renderBundles();
     renderSetup();
@@ -525,17 +527,27 @@ function saveEvent() {
   toast('✓ Event saved');
 }
 
-function savePrices() {
+async function savePrices() {
+  const updates = [];
   skus.forEach(s => {
     const el = document.getElementById('price-' + cssId(s.sku_name));
     if (!el) return;
     const v = parseFloat(el.value);
     if (v > 0) prices[s.sku_name] = v;
     else delete prices[s.sku_name];
+    updates.push({ id: s.id, sell_price: v > 0 ? v : null });
   });
   localStorage.setItem('mv_pos_prices', JSON.stringify(prices));
   renderProducts();
-  toast('✓ Prices saved');
+  // Sync to cloud so all devices share the same prices
+  try {
+    await Promise.all(updates.map(u =>
+      db('sample_skus?id=eq.' + u.id, { method: 'PATCH', body: JSON.stringify({ sell_price: u.sell_price }) })
+    ));
+    toast('✓ Prices saved & synced');
+  } catch(e) {
+    toast('Saved locally — cloud sync failed', true);
+  }
 }
 
 async function addBundle() {
