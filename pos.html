@@ -200,12 +200,30 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
     <div id="su-bundles"></div>
     <div class="field" style="margin-top:10px"><label>Combo Name</label><input type="text" id="su-bname" placeholder="e.g. Any 3 packs"></div>
     <div class="field"><label>Description (what's inside)</label><input type="text" id="su-bitems" placeholder="e.g. Kampua x2 + TomYam x1"></div>
+    <div class="field"><label>Items to Pick (customer chooses how many products)</label><input type="number" id="su-bcount" placeholder="e.g. 3" min="1" step="1"></div>
     <div class="field"><label>Combo Price (RM)</label><input type="number" id="su-bprice" placeholder="0.00" min="0" step="0.01"></div>
     <button class="mini-btn" style="width:100%" onclick="addBundle()">＋ Add Combo</button>
   </div>
 </div>
 
 <div class="toast" id="toast"></div>
+
+<!-- BUNDLE PICKER -->
+<div class="scan-overlay" id="picker-overlay" style="background:rgba(0,0,0,.55);align-items:flex-end">
+  <div style="background:var(--white);border-radius:18px 18px 0 0;width:100%;max-width:640px;max-height:80vh;display:flex;flex-direction:column">
+    <div style="padding:14px 16px 8px;display:flex;justify-content:space-between;align-items:center">
+      <div>
+        <div style="font-size:15px;font-weight:800" id="picker-title">🎁 Combo</div>
+        <div style="font-size:12px;color:var(--muted)" id="picker-sub"></div>
+      </div>
+      <button onclick="closePicker()" style="background:none;border:none;font-size:20px;color:var(--muted);cursor:pointer">✕</button>
+    </div>
+    <div style="overflow-y:auto;padding:4px 16px" id="picker-list"></div>
+    <div style="padding:12px 16px;border-top:1.5px solid var(--border)">
+      <button class="checkout-btn" id="picker-confirm" onclick="confirmPicker()" disabled>Add to Cart</button>
+    </div>
+  </div>
+</div>
 
 <div class="scan-overlay" id="scan-overlay">
   <div class="scan-hint">Point camera at product barcode</div>
@@ -317,6 +335,7 @@ async function loadStock() {
     (stockRows || []).forEach(r => { stockMap[r.sku_name] = parseFloat(r.loaded_qty) || 0; });
     (saleRows || []).forEach(s => (s.items || []).forEach(i => {
       if (!i.bundle) soldMap[i.name] = (soldMap[i.name] || 0) + (i.qty || 0);
+      else (i.contents || []).forEach(x => { soldMap[x.name] = (soldMap[x.name] || 0) + (x.qty || 0) * (i.qty || 1); });
     }));
   } catch(e) {}
   renderProducts();
@@ -387,14 +406,68 @@ function addToCart(name) {
   if (navigator.vibrate) navigator.vibrate(30);
 }
 
+// ── Bundle picker: choose which products are inside the combo ──
+let pickerBundle = null;
+let pickerSel = {}; // sku_name -> qty
+
 function addBundleToCart(id) {
   const b = bundles.find(x => x.id === id);
   if (!b) return;
-  const existing = cart.find(c => c.bundleId === id);
-  if (existing) existing.qty++;
-  else cart.push({ name: b.name, qty: 1, price: parseFloat(b.price), bundle: true, bundleId: id, items: b.items });
+  pickerBundle = b;
+  pickerSel = {};
+  document.getElementById('picker-title').textContent = '🎁 ' + b.name + ' — ' + fmtRM(b.price);
+  renderPicker();
+  document.getElementById('picker-overlay').style.display = 'flex';
+}
+
+function pickerCount() { return Object.values(pickerSel).reduce((a, v) => a + v, 0); }
+
+function renderPicker() {
+  const need = pickerBundle.pick_count || null;
+  const n = pickerCount();
+  document.getElementById('picker-sub').textContent = need
+    ? `Pick ${need} item${need > 1 ? 's' : ''} — selected ${n}/${need}`
+    : `Pick the products inside — selected ${n}`;
+  const priced = skus.filter(s => prices[s.sku_name] > 0);
+  document.getElementById('picker-list').innerHTML = priced.map(s => {
+    const q = pickerSel[s.sku_name] || 0;
+    return `
+    <div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-top:1px solid #f3f4f6">
+      <span style="flex:1;font-size:14px;font-weight:600">${esc(s.sku_name)}</span>
+      <div class="cqty">
+        <button onclick="pickerChange('${escq(s.sku_name)}',-1)">−</button>
+        <span>${q}</span>
+        <button onclick="pickerChange('${escq(s.sku_name)}',1)">＋</button>
+      </div>
+    </div>`;
+  }).join('');
+  const btn = document.getElementById('picker-confirm');
+  const ok = need ? n === need : n > 0;
+  btn.disabled = !ok;
+  btn.textContent = ok ? `✓ Add to Cart — ${fmtRM(pickerBundle.price)}` : (need ? `Select ${need - n} more` : 'Select items');
+}
+
+function pickerChange(name, d) {
+  const need = pickerBundle.pick_count || null;
+  const cur = pickerSel[name] || 0;
+  if (d > 0 && need && pickerCount() >= need) return;
+  const v = cur + d;
+  if (v <= 0) delete pickerSel[name]; else pickerSel[name] = v;
+  renderPicker();
+}
+
+function confirmPicker() {
+  const contents = Object.entries(pickerSel).map(([name, qty]) => ({ name, qty }));
+  const desc = contents.map(c => `${c.name}×${c.qty}`).join(' + ');
+  cart.push({ name: pickerBundle.name, qty: 1, price: parseFloat(pickerBundle.price), bundle: true, bundleId: pickerBundle.id, items: desc, contents });
+  closePicker();
   renderCart();
   if (navigator.vibrate) navigator.vibrate(30);
+}
+
+function closePicker() {
+  document.getElementById('picker-overlay').style.display = 'none';
+  pickerBundle = null; pickerSel = {};
 }
 
 function changeQty(i, d) {
@@ -446,7 +519,7 @@ async function checkout() {
   const sale = {
     event_name: eventInfo.name || null,
     activity_id: eventInfo.activity_id || null,
-    items: cart.map(c => ({ name: c.name, qty: c.qty, price: c.price, bundle: c.bundle, items: c.items || null })),
+    items: cart.map(c => ({ name: c.name, qty: c.qty, price: c.price, bundle: c.bundle, items: c.items || null, contents: c.contents || null })),
     total: cartTotal(),
     payment_method: payMethod,
     sold_by: loggedUser
@@ -465,7 +538,10 @@ async function checkout() {
     toast('📥 Saved offline — will sync later');
   }
   // Update local sold counts so stock badges deduct immediately
-  cart.forEach(c => { if (!c.bundle) soldMap[c.name] = (soldMap[c.name] || 0) + c.qty; });
+  cart.forEach(c => {
+    if (!c.bundle) soldMap[c.name] = (soldMap[c.name] || 0) + c.qty;
+    else (c.contents || []).forEach(x => { soldMap[x.name] = (soldMap[x.name] || 0) + x.qty * c.qty; });
+  });
   cart = [];
   renderCart();
   document.getElementById('cartbar').classList.remove('open');
@@ -655,11 +731,13 @@ async function addBundle() {
   const name = document.getElementById('su-bname').value.trim();
   const items = document.getElementById('su-bitems').value.trim();
   const price = parseFloat(document.getElementById('su-bprice').value);
+  const pickCount = parseInt(document.getElementById('su-bcount').value) || null;
   if (!name || !price || price <= 0) { toast('Fill in combo name & price', true); return; }
   try {
-    const saved = await db('pos_bundles', { method: 'POST', body: JSON.stringify({ name, items: items || null, price, active: true }) });
+    const saved = await db('pos_bundles', { method: 'POST', body: JSON.stringify({ name, items: items || null, price, pick_count: pickCount, active: true }) });
     bundles.push(saved[0]);
     document.getElementById('su-bname').value = '';
+    document.getElementById('su-bcount').value = '';
     document.getElementById('su-bitems').value = '';
     document.getElementById('su-bprice').value = '';
     renderSetup(); renderBundles();
