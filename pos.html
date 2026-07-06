@@ -156,6 +156,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
     <div class="tbl-hd">📦 By Product</div>
     <div id="st-products"></div>
   </div>
+  <div class="tbl-card" id="st-stock-card" style="display:none">
+    <div class="tbl-hd">📦 Stock Check (this event)</div>
+    <div id="st-stock"></div>
+  </div>
   <div class="tbl-card">
     <div class="tbl-hd">🧾 Recent Sales</div>
     <div id="st-sales"></div>
@@ -182,6 +186,13 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
     <div style="font-size:11px;color:var(--muted);margin-bottom:6px">Products without a price won't show on the Sell screen.</div>
     <div id="su-prices"><div style="color:var(--ml);font-size:13px;padding:10px 0">Loading…</div></div>
     <button class="save-btn" onclick="savePrices()">Save Prices</button>
+  </div>
+
+  <div class="setup-card">
+    <h3>📦 Stock Loaded (units for this event)</h3>
+    <div style="font-size:11px;color:var(--muted);margin-bottom:6px">Set how many units you brought. Leave blank to skip stock tracking for that product. Requires Event Name saved first.</div>
+    <div id="su-stock"><div style="color:var(--ml);font-size:13px;padding:10px 0">Loading…</div></div>
+    <button class="save-btn" onclick="saveStock()">Save Stock</button>
   </div>
 
   <div class="setup-card">
@@ -238,6 +249,8 @@ let prices = JSON.parse(localStorage.getItem('mv_pos_prices') || '{}');
 let eventInfo = JSON.parse(localStorage.getItem('mv_pos_event') || '{"name":"","activity_id":""}');
 let cart = [];
 let payMethod = 'Cash';
+let stockMap = {};  // sku_name -> loaded qty (for this event)
+let soldMap = {};   // sku_name -> sold qty (from pos_sales for this event)
 
 async function db(path, opts = {}) {
   const controller = new AbortController();
@@ -289,6 +302,29 @@ async function init() {
   }
   syncOffline();
   loadActivitiesDropdown();
+  loadStock();
+}
+
+// ── Stock (loaded − sold, computed live so multi-device stays consistent) ──
+async function loadStock() {
+  stockMap = {}; soldMap = {};
+  if (!eventInfo.name) { renderProducts(); return; }
+  try {
+    const [stockRows, saleRows] = await Promise.all([
+      db(`pos_stock?event_name=eq.${encodeURIComponent(eventInfo.name)}`).catch(() => []),
+      db(`pos_sales?event_name=eq.${encodeURIComponent(eventInfo.name)}&select=items`).catch(() => [])
+    ]);
+    (stockRows || []).forEach(r => { stockMap[r.sku_name] = parseFloat(r.loaded_qty) || 0; });
+    (saleRows || []).forEach(s => (s.items || []).forEach(i => {
+      if (!i.bundle) soldMap[i.name] = (soldMap[i.name] || 0) + (i.qty || 0);
+    }));
+  } catch(e) {}
+  renderProducts();
+}
+
+function remainingOf(name) {
+  if (!(name in stockMap)) return null; // stock not tracked for this SKU
+  return stockMap[name] - (soldMap[name] || 0);
 }
 
 async function loadActivitiesDropdown() {
@@ -312,11 +348,22 @@ function renderProducts() {
     grid.innerHTML = '<div style="grid-column:1/-1;color:var(--ml);font-size:13px;padding:16px;text-align:center">No prices set yet.<br>Go to ⚙️ Setup and set prices first.</div>';
     return;
   }
-  grid.innerHTML = priced.map(s => `
-    <div class="pbtn" onclick="addToCart('${escq(s.sku_name)}')">
+  grid.innerHTML = priced.map(s => {
+    const rem = remainingOf(s.sku_name);
+    const inCart = cart.filter(c => !c.bundle && c.name === s.sku_name).reduce((a, c) => a + c.qty, 0);
+    const left = rem === null ? null : rem - inCart;
+    let badge = '';
+    if (left !== null) {
+      const color = left <= 0 ? 'var(--red)' : left <= 5 ? 'var(--amber)' : 'var(--muted)';
+      badge = `<div style="font-size:10px;font-weight:800;color:${color};margin-top:3px">${left <= 0 ? '⚠️ Sold out' : 'Left: ' + left}</div>`;
+    }
+    return `
+    <div class="pbtn${left !== null && left <= 0 ? '' : ''}" style="${left !== null && left <= 0 ? 'opacity:.55;' : ''}" onclick="addToCart('${escq(s.sku_name)}')">
       <div class="pname">${esc(s.sku_name)}</div>
       <div class="pprice">${fmtRM(prices[s.sku_name])}</div>
-    </div>`).join('');
+      ${badge}
+    </div>`;
+  }).join('');
 }
 
 function renderBundles() {
@@ -369,6 +416,7 @@ function renderCart(rebuild = true) {
   document.getElementById('checkout-btn').textContent = '✓ Complete Sale — ' + fmtRM(total);
   document.getElementById('checkout-btn').disabled = !cart.length;
   if (!rebuild) return;
+  renderProducts();
   document.getElementById('cart-body').innerHTML = cart.map((c, i) => `
     <div class="citem">
       <div class="cname">${c.bundle ? '🎁 ' : ''}${esc(c.name)}${c.bundle && c.items ? `<div class="cbundle">${esc(c.items)}</div>` : ''}</div>
@@ -416,6 +464,8 @@ async function checkout() {
     updateOfflineBadge();
     toast('📥 Saved offline — will sync later');
   }
+  // Update local sold counts so stock badges deduct immediately
+  cart.forEach(c => { if (!c.bundle) soldMap[c.name] = (soldMap[c.name] || 0) + c.qty; });
   cart = [];
   renderCart();
   document.getElementById('cartbar').classList.remove('open');
@@ -478,6 +528,21 @@ async function loadStats() {
     document.getElementById('st-products').innerHTML = Object.entries(byProd).sort((a,b) => b[1].amt - a[1].amt).map(([k, v]) =>
       `<div class="trow"><span class="tn">${esc(k)} × ${v.qty}</span><span class="tv">${fmtRM(v.amt)}</span></div>`).join('') || '<div class="trow"><span class="tn" style="color:var(--ml)">No sales yet</span></div>';
 
+    // stock reconciliation (event totals, not just today)
+    await loadStock();
+    const trackedSkus = Object.keys(stockMap);
+    const stockCard = document.getElementById('st-stock-card');
+    if (trackedSkus.length) {
+      stockCard.style.display = 'block';
+      document.getElementById('st-stock').innerHTML = trackedSkus.map(name => {
+        const loaded = stockMap[name], sold = soldMap[name] || 0, left = loaded - sold;
+        const color = left <= 0 ? 'var(--red)' : left <= 5 ? 'var(--amber)' : 'var(--green)';
+        return `<div class="trow"><span class="tn">${esc(name)}</span><span style="font-size:12px;color:var(--muted)">Loaded ${loaded} · Sold ${sold} · <b style="color:${color}">Left ${left}</b></span></div>`;
+      }).join('');
+    } else {
+      stockCard.style.display = 'none';
+    }
+
     // recent
     document.getElementById('st-sales').innerHTML = sales.slice(0, 20).map(s => `
       <div class="sale-row">
@@ -508,6 +573,12 @@ function renderSetup() {
       <span class="prname">${esc(s.sku_name)}</span>
       <input type="number" id="price-${cssId(s.sku_name)}" value="${prices[s.sku_name] || ''}" placeholder="—" min="0" step="0.01">
     </div>`).join('') || '<div style="color:var(--ml);font-size:13px;padding:10px 0">No SKUs found.</div>';
+  // stock
+  document.getElementById('su-stock').innerHTML = skus.map(s => `
+    <div class="price-row">
+      <span class="prname">${esc(s.sku_name)}</span>
+      <input type="number" id="stock-${cssId(s.sku_name)}" value="${stockMap[s.sku_name] ?? ''}" placeholder="—" min="0" step="1">
+    </div>`).join('') || '<div style="color:var(--ml);font-size:13px;padding:10px 0">No SKUs found.</div>';
   // bundles
   document.getElementById('su-bundles').innerHTML = bundles.map(b => `
     <div class="bundle-row">
@@ -524,6 +595,7 @@ function saveEvent() {
   };
   localStorage.setItem('mv_pos_event', JSON.stringify(eventInfo));
   updateEventLabel();
+  loadStock().then(renderSetup);
   toast('✓ Event saved');
 }
 
@@ -547,6 +619,35 @@ async function savePrices() {
     toast('✓ Prices saved & synced');
   } catch(e) {
     toast('Saved locally — cloud sync failed', true);
+  }
+}
+
+async function saveStock() {
+  if (!eventInfo.name) { toast('Save Event Name first', true); return; }
+  const rows = [];
+  skus.forEach(s => {
+    const el = document.getElementById('stock-' + cssId(s.sku_name));
+    if (!el) return;
+    const v = parseFloat(el.value);
+    if (!isNaN(v) && el.value !== '') {
+      rows.push({ event_name: eventInfo.name, sku_name: s.sku_name, loaded_qty: v });
+      stockMap[s.sku_name] = v;
+    } else {
+      delete stockMap[s.sku_name];
+    }
+  });
+  try {
+    if (rows.length) {
+      await fetch(SUPA_URL + '/rest/v1/pos_stock?on_conflict=event_name,sku_name', {
+        method: 'POST',
+        headers: { ...H, 'Prefer': 'resolution=merge-duplicates' },
+        body: JSON.stringify(rows)
+      }).then(r => { if (!r.ok) throw new Error(r.status); });
+    }
+    renderProducts();
+    toast('✓ Stock saved & synced');
+  } catch(e) {
+    toast('Failed — check pos_stock table exists', true);
   }
 }
 
