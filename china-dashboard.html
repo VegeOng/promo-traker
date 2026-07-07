@@ -549,6 +549,18 @@ async function loadWechatLive(){
     });
     const days = Object.keys(daily).sort().reverse();
 
+    // SKU 销量汇总（来自订单商品明细）
+    const skuMap = {}; // title -> { qty, revenue }
+    valid.forEach(o=>{
+      (o.products||[]).forEach(p=>{
+        const t = p.title || '未知商品';
+        if(!skuMap[t]) skuMap[t] = { qty:0, revenue:0 };
+        skuMap[t].qty += Number(p.sku_cnt)||0;
+        skuMap[t].revenue += (Number(p.price)||0) * (Number(p.sku_cnt)||0);
+      });
+    });
+    const skus = Object.entries(skuMap).sort((a,b)=>b[1].qty-a[1].qty);
+
     // 省份分布
     const provMap = {};
     valid.forEach(o=>{ if(o.province) provMap[o.province] = (provMap[o.province]||0)+1; });
@@ -561,10 +573,17 @@ async function loadWechatLive(){
         <div><span style="font-size:11px;color:#9ca3af;font-weight:700;text-transform:uppercase">有效订单</span><div style="font-size:22px;font-weight:800;color:var(--text)">${valid.length} 单</div></div>
         <div style="flex:1;min-width:200px"><span style="font-size:11px;color:#9ca3af;font-weight:700;text-transform:uppercase">收货省份 TOP5</span><div style="font-size:13px;color:var(--text);margin-top:4px">${topProv}</div></div>
       </div>
-      <div style="overflow-x:auto"><table>
-        <thead><tr><th>日期</th><th class="num">订单数</th><th class="num">实付 (RMB)</th></tr></thead>
-        <tbody>${days.map(d=>`<tr><td>${d}</td><td class="num">${daily[d].orders}</td><td class="num">${fmtRMB(daily[d].revenue)}</td></tr>`).join('')}</tbody>
-      </table></div>`;
+      <div style="display:grid;grid-template-columns:1fr 1.4fr;gap:16px" class="wx-grid">
+        <div style="overflow-x:auto"><table>
+          <thead><tr><th>日期</th><th class="num">订单数</th><th class="num">实付 (RMB)</th></tr></thead>
+          <tbody>${days.map(d=>`<tr><td>${d}</td><td class="num">${daily[d].orders}</td><td class="num">${fmtRMB(daily[d].revenue)}</td></tr>`).join('')}</tbody>
+        </table></div>
+        <div style="overflow-x:auto"><table>
+          <thead><tr><th>SKU（商品）</th><th class="num">销量</th><th class="num">销售额 (RMB)</th></tr></thead>
+          <tbody>${skus.length ? skus.map(([t,d])=>`<tr><td style="max-width:320px">${escHtml(t)}</td><td class="num">${d.qty}</td><td class="num">${fmtRMB(d.revenue)}</td></tr>`).join('') : '<tr><td colspan="3" style="text-align:center;color:#9ca3af">暂无商品明细</td></tr>'}</tbody>
+        </table></div>
+      </div>
+      <style>@media(max-width:900px){.wx-grid{grid-template-columns:1fr !important}}</style>`;
   }catch(e){
     console.error('wechat live error:', e);
     box.innerHTML = `<span style="color:var(--red)">微信数据加载失败：${escHtml(e.message)}</span>`;
