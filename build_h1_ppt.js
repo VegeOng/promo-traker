@@ -6,7 +6,8 @@ const sharp = require("sharp");
 const {
   FaLeaf, FaTrophy, FaPercentage, FaBalanceScale, FaMoneyBillWave,
   FaBullseye, FaBoxes, FaCheckCircle, FaCalculator, FaUsers,
-  FaStore, FaChartLine, FaHandHoldingUsd, FaWarehouse, FaFlagCheckered
+  FaStore, FaChartLine, FaHandHoldingUsd, FaWarehouse, FaFlagCheckered,
+  FaPepperHot, FaGift, FaStar, FaFire
 } = require("react-icons/fa");
 
 // ---------- palette ----------
@@ -63,6 +64,10 @@ async function iconPng(Icon, colorHex, size = 256) {
     chart:      [FaChartLine, GREEN],
     flag:       [FaFlagCheckered, MOSS],
     leafGreen:  [FaLeaf, GREEN],
+    pepper:     [FaPepperHot, RED],
+    gift:       [FaGift, GREEN],
+    star:       [FaStar, GOLD],
+    fire:       [FaFire, "D46A28"],
   };
   for (const [k, [I, c]] of Object.entries(defs)) ic[k] = await iconPng(I, c);
 
@@ -328,6 +333,43 @@ async function iconPng(Icon, colorHex, size = 256) {
       { text: "全年基本打平", options: { bold: true, color: GREEN, fontSize: 19 } },
     ], { x: 1.6, y: 3.8, w: 6.8, h: 1.05, align: "center", valign: "middle", fontFace: FONT, margin: 0 });
     s.addText("不靠奇迹，不靠翻倍 —— 只要把 5 月重复六次。", { x: 0.5, y: 5.05, w: 9, h: 0.4, align: "center", fontSize: 13, italic: true, color: MUTED, fontFace: FONT, margin: 0 });
+  }
+
+  // ============ S9b H2 战略与机会 ============
+  {
+    const s = pres.addSlide();
+    s.background = { color: WHITE };
+    title(s, "怎么做到？下半年我们手上的四张牌");
+    const cards = [
+      { icon: ic.pepper, tag: "9-10 月主推", tagC: RED, h: "新品「麻辣面」", t: "干拌 + 汤两个口味，8 月中到货，9 月起全面招商铺市 —— 下半年最大的新增长点" },
+      { icon: ic.star, tag: "10/10-19", tagC: GOLD, h: "素食节大促", t: "全年最大的素食消费节点，槟城与北马是主战场，9 月起备货布局 —— 冲全年最高峰" },
+      { icon: ic.gift, tag: "11-12 月", tagC: GREEN, h: "KPM + 保温盒", t: "买 KPM 送保温盒的年末组合拳 —— 拉动销量的同时，帮公司加快库存周转" },
+      { icon: ic.fire, tag: "7 月起每月 2 场+", tagC: "D46A28", h: "酸民挑战赛巡回", t: "两分钟吃面赢现金，观众自发拍视频帮我们传播，还能带动现场开单" },
+    ];
+    cards.forEach((c, i) => {
+      const x = 0.5 + (i % 2) * 4.65, y = 1.2 + Math.floor(i / 2) * 1.62;
+      s.addShape(pres.shapes.ROUNDED_RECTANGLE, { x, y, w: 4.35, h: 1.47, rectRadius: 0.08, fill: { color: TINT }, shadow: shadow() });
+      s.addShape(pres.shapes.OVAL, { x: x + 0.22, y: y + 0.2, w: 0.52, h: 0.52, fill: { color: WHITE } });
+      s.addImage({ data: c.icon, x: x + 0.35, y: y + 0.33, w: 0.26, h: 0.26 });
+      s.addText([
+        { text: c.h + "  ", options: { fontSize: 15, bold: true, color: INK } },
+        { text: c.tag, options: { fontSize: 10.5, bold: true, color: c.tagC } },
+      ], { x: x + 0.9, y: y + 0.14, w: 3.35, h: 0.38, fontFace: FONT, margin: 0 });
+      s.addText(c.t, { x: x + 0.9, y: y + 0.55, w: 3.28, h: 0.85, fontSize: 10.5, color: "4A554C", fontFace: FONT, margin: 0 });
+    });
+    // timeline
+    const phases = [
+      { h: "7-8 月 · 备弹药", t: "招商包、物料、保温盒采购到位" },
+      { h: "9-10 月 · 总攻", t: "素食节 × 麻辣面，冲全年最高峰" },
+      { h: "11-12 月 · 收官", t: "KPM+保温盒，备战 CNY 2027" },
+    ];
+    phases.forEach((p, i) => {
+      const x = 0.5 + i * 3.15;
+      s.addShape(pres.shapes.ROUNDED_RECTANGLE, { x, y: 4.55, w: 2.85, h: 0.78, rectRadius: 0.08, fill: { color: i === 1 ? DARK : "F5F6F4" } });
+      s.addText(p.h, { x: x + 0.18, y: 4.63, w: 2.55, h: 0.3, fontSize: 12, bold: true, color: i === 1 ? WHITE : INK, fontFace: FONT, margin: 0 });
+      s.addText(p.t, { x: x + 0.18, y: 4.93, w: 2.55, h: 0.3, fontSize: 9.5, color: i === 1 ? MOSS : MUTED, fontFace: FONT, margin: 0 });
+      if (i < 2) s.addText("→", { x: x + 2.8, y: 4.7, w: 0.4, h: 0.45, fontSize: 16, bold: true, color: MUTED, align: "center", fontFace: FONT, margin: 0 });
+    });
   }
 
   // ============ S10 部门责任 ============
