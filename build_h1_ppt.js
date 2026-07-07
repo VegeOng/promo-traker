@@ -136,6 +136,42 @@ async function iconPng(Icon, colorHex, size = 256) {
     s.addText("离盈利最近的两个月：4 月与 5 月 —— 这就是方向。", { x: 4.2, y: 5.05, w: 5.3, h: 0.4, fontSize: 12, italic: true, color: GREEN, fontFace: FONT, margin: 0 });
   }
 
+  // ============ S3b 三大业务板块 ============
+  {
+    const s = pres.addSlide();
+    s.background = { color: WHITE };
+    title(s, "钱从哪里来：三大业务板块（1-6 月）");
+    const segs = [
+      { label: "马来西亚线下（MT + GT）", big: "RM 2,163,152", note: "约占 72% —— 基本盘", color: GREEN },
+      { label: "线上电商（Shopee / TikTok / Lazada / 自建）", big: "RM 741,416", note: "约占 25% —— 第二增长引擎", color: "6B8F3C" },
+      { label: "国际业务（IB）", big: "RM 101,768", note: "约占 3% —— 4 月刚起步", color: GOLD },
+    ];
+    segs.forEach((g, i) => {
+      const y = 1.25 + i * 1.32;
+      s.addShape(pres.shapes.ROUNDED_RECTANGLE, { x: 0.5, y, w: 4.3, h: 1.12, rectRadius: 0.08, fill: { color: TINT }, shadow: shadow() });
+      s.addText(g.label, { x: 0.75, y: y + 0.12, w: 3.9, h: 0.35, fontSize: 11.5, color: MUTED, fontFace: FONT, margin: 0 });
+      s.addText([
+        { text: g.big + "  ", options: { fontSize: 20, bold: true, color: g.color } },
+        { text: g.note, options: { fontSize: 10.5, color: "4A554C" } },
+      ], { x: 0.75, y: y + 0.47, w: 3.9, h: 0.55, fontFace: FONT, margin: 0 });
+    });
+    s.addText("各板块月度销售（RM）", { x: 5.2, y: 1.2, w: 4.3, h: 0.35, fontSize: 13, bold: true, color: INK, fontFace: FONT, margin: 0 });
+    s.addChart(pres.charts.BAR, [
+      { name: "马来西亚线下", labels: ["1月","2月","3月","4月","5月","6月"], values: [363652, 331699, 364496, 353928, 453608, 295770] },
+      { name: "线上电商", labels: ["1月","2月","3月","4月","5月","6月"], values: [120068, 156992, 176840, 77078, 94569, 115868] },
+      { name: "国际业务", labels: ["1月","2月","3月","4月","5月","6月"], values: [0, 0, 1558, 77082, 11157, 11971] },
+    ], {
+      x: 5.2, y: 1.55, w: 4.3, h: 3.35, barDir: "col", barGrouping: "stacked",
+      chartColors: [GREEN, "8FBF4D", GOLD],
+      chartArea: { fill: { color: "FFFFFF" } },
+      catAxisLabelColor: MUTED, valAxisLabelColor: MUTED,
+      catAxisLabelFontFace: FONT, valAxisLabelFontFace: FONT,
+      valGridLine: { color: "E4EAE2", size: 0.5 }, catGridLine: { style: "none" },
+      showValue: false, showLegend: true, legendPos: "b", legendColor: "4A554C", legendFontFace: FONT, legendFontSize: 10,
+    });
+    s.addText("口径说明：以上为渠道运营数据（线下按 PO、线上按平台成交、国际按 IB 订单），与财务报表口径存在差异。", { x: 0.5, y: 5.12, w: 9, h: 0.4, fontSize: 10, italic: true, color: MUTED, fontFace: FONT, margin: 0 });
+  }
+
   // ============ S4 三个原因 ============
   {
     const s = pres.addSlide();
