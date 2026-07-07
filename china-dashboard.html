@@ -540,35 +540,35 @@ const WX_STATUS_LABEL = { 10:'未付款', 20:'待发货', 21:'部分发货', 30:
 let wxOrders = [];   // 全部有效订单（已排除取消/未付款），带 GMT+8 日期
 let wxMode = '14d';
 
-// 微信商品 → 内部 SKU 映射（依据规格属性/标题解析，vege 确认的对照规则）
-// 返回 [{name: 内部产品名, unitsPerItem: 每件包含的袋/杯数}]
+// 微信商品 → 内部 SKU 映射（按规格分开：3袋/6袋/32袋、3杯/6杯、混合装各自独立一行）
+// 返回 {name: SKU显示名, units: 每件总袋/杯数}
 function mapWxSku(p){
   const s = `${p.title||''} ${p.spec||''}`;
   const packMatch = s.match(/[x×]\s*(\d+)\s*袋/) || s.match(/(\d+)\s*袋/) || s.match(/[（(]\s*(\d+)\s*[x×]/);
 
-  // 混合装：香椿摇摇面 + 青柠摇摇面
+  // 混合装：香椿摇摇面 + 青柠摇摇面（独立SKU）
   if(/香椿摇摇面/.test(s) && /青柠(辣椒)?摇摇面/.test(s)){
-    return [{name:'香椿杯面', unitsPerItem:3}, {name:'青柠杯面', unitsPerItem:3}];
+    return { name:'混合装（香椿杯面3+青柠杯面3）', units:6 };
   }
   // 摇摇面 = 杯面
   if(/香椿摇摇面/.test(s)){
     const n = /6\s*[x×]/.test(s) ? 6 : 3;
-    return [{name:'香椿杯面', unitsPerItem:n}];
+    return { name:`香椿杯面 ${n}杯装`, units:n };
   }
   if(/青柠(辣椒)?摇摇面/.test(s)){
     const n = /6\s*[x×]/.test(s) ? 6 : 3;
-    return [{name:'青柠杯面', unitsPerItem:n}];
+    return { name:`青柠杯面 ${n}杯装`, units:n };
   }
   // 干盘面：青柠辣椒 vs 香椿（默认香椿）
   const packs = packMatch ? parseInt(packMatch[1]) : 3;
   if(/青柠(辣椒)?干盘面|泰式青柠/.test(s)){
-    return [{name:'青柠干盘面', unitsPerItem:packs}];
+    return { name:`青柠干盘面 ${packs}袋装`, units:packs };
   }
   if(/香椿干盘面|干盘面|干拌面/.test(s)){
-    return [{name:'香椿干盘面', unitsPerItem:packs}];
+    return { name:`香椿干盘面 ${packs}袋装`, units:packs };
   }
   // 兜底：未识别的商品，保留原标题（不换算）
-  return [{name:(p.title||'未知商品').slice(0,20), unitsPerItem:1}];
+  return { name:(p.title||'未知商品').slice(0,20), units:1 };
 }
 
 function setWxMode(mode){
@@ -651,23 +651,20 @@ function renderWechatLive(){
   });
   const days = Object.keys(daily).sort().reverse();
 
-  // SKU 销量汇总 → 换算成内部产品名 + 实际袋/杯数
-  // 规则（vege 确认）：摇摇面=杯面；干盘面 3/6/32袋装；杯面 3/6杯装；混合装=香椿杯面3+青柠杯面3
-  const skuMap = {}; // 内部产品名 -> { qty(袋/杯), revenue }
+  // SKU 销量汇总 → 按规格分开统计（3袋/6袋/32袋、3杯/6杯、混合装各一行）
+  const skuMap = {}; // SKU显示名 -> { items(出单件数), units(袋/杯总数), revenue }
   valid.forEach(o=>{
     (o.products||[]).forEach(p=>{
       const cnt = Number(p.sku_cnt)||0;
       const rev = (Number(p.price)||0) * cnt;
-      const units = mapWxSku(p); // [{name, unitsPerItem}]
-      const totalUnits = units.reduce((s,u)=>s+u.unitsPerItem,0) || 1;
-      units.forEach(u=>{
-        if(!skuMap[u.name]) skuMap[u.name] = { qty:0, revenue:0 };
-        skuMap[u.name].qty += u.unitsPerItem * cnt;
-        skuMap[u.name].revenue += rev * (u.unitsPerItem / totalUnits); // 金额按袋数比例分摊
-      });
+      const sku = mapWxSku(p); // {name, units}
+      if(!skuMap[sku.name]) skuMap[sku.name] = { items:0, units:0, revenue:0 };
+      skuMap[sku.name].items += cnt;
+      skuMap[sku.name].units += sku.units * cnt;
+      skuMap[sku.name].revenue += rev;
     });
   });
-  const skus = Object.entries(skuMap).sort((a,b)=>b[1].qty-a[1].qty);
+  const skus = Object.entries(skuMap).sort((a,b)=>b[1].revenue-a[1].revenue);
 
   // 省份排行（列表形式，含占比）
   const provMap = {};
@@ -691,8 +688,8 @@ function renderWechatLive(){
         <tbody>${days.map(d=>`<tr><td>${d}</td><td class="num">${daily[d].orders}</td><td class="num">${fmtRMB(daily[d].revenue)}</td></tr>`).join('')}</tbody>
       </table></div>
       <div style="overflow-x:auto"><table>
-        <thead><tr><th>产品（内部SKU）</th><th class="num">袋/杯数</th><th class="num">销售额 (RMB)</th></tr></thead>
-        <tbody>${skus.length ? skus.map(([t,d])=>`<tr><td style="max-width:320px">${escHtml(t)}</td><td class="num">${d.qty}</td><td class="num">${fmtRMB(d.revenue)}</td></tr>`).join('') : '<tr><td colspan="3" style="text-align:center;color:#9ca3af">暂无商品明细</td></tr>'}</tbody>
+        <thead><tr><th>产品（内部SKU）</th><th class="num">出单数</th><th class="num">袋/杯数</th><th class="num">销售额 (RMB)</th></tr></thead>
+        <tbody>${skus.length ? skus.map(([t,d])=>`<tr><td style="max-width:320px">${escHtml(t)}</td><td class="num">${d.items}</td><td class="num">${d.units}</td><td class="num">${fmtRMB(d.revenue)}</td></tr>`).join('') : '<tr><td colspan="4" style="text-align:center;color:#9ca3af">暂无商品明细</td></tr>'}</tbody>
       </table></div>
       <div>
         <div style="font-size:11px;color:#9ca3af;font-weight:700;text-transform:uppercase;padding:8px 0;border-bottom:1px solid var(--border)">收货省份排行</div>
