@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MamaVege | Finance Hub 财务板块</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --green:#166534; --green-light:#dcfce7; --red:#dc2626; --red-light:#fee2e2;
+    --amber:#d97706; --amber-light:#fef3c7; --blue:#2563eb; --blue-light:#dbeafe;
+    --text:#1a1a1a; --muted:#6b7280; --border:#e5e7eb; --card:#ffffff; --bg:#f4f6f3;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+
+  /* Unified header */
+  .mv-top{overflow:hidden}
+  .mv-top-main{display:flex;justify-content:space-between;align-items:center;padding:12px 24px;background:#166534}
+  .mv-top-left{display:flex;align-items:center;gap:12px}
+  .mv-top-logo{height:34px;background:#fff;border-radius:8px;padding:3px 8px;display:flex;align-items:center;text-decoration:none}
+  .mv-top-logo img{height:26px}
+  .mv-top-sep{width:1px;height:24px;background:rgba(255,255,255,.2)}
+  .mv-top-tool{color:#fff;font-size:14px;font-weight:700;letter-spacing:.3px}
+  .mv-top-right{display:flex;align-items:center;gap:12px}
+  .mv-top-btn{background:rgba(255,255,255,.12);border:none;color:rgba(255,255,255,.8);padding:5px 14px;border-radius:6px;font-size:12px;cursor:pointer;font-family:inherit}
+  .mv-top-btn:hover{background:rgba(255,255,255,.2);color:#fff}
+  .mv-top-sub{display:flex;justify-content:space-between;align-items:center;padding:5px 24px;background:#15532d;color:rgba(255,255,255,.6);font-size:11px}
+
+  .wrap{max-width:1100px;margin:0 auto;padding:1.5rem 1.5rem 3rem;}
+  .page-title{font-family:'DM Serif Display',serif;font-size:1.6rem;color:var(--green);margin-bottom:4px;}
+  .page-sub{font-size:13px;color:var(--muted);margin-bottom:24px;}
+
+  .sec-title{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#9ca3af;margin:28px 0 12px;display:flex;align-items:center;gap:10px;}
+  .sec-title::after{content:'';flex:1;height:1px;background:var(--border);}
+  .sec-title:first-child{margin-top:0;}
+
+  .tools-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:14px;}
+  .tool{
+    background:var(--card);border:1px solid var(--border);border-radius:14px;
+    padding:22px 16px 16px;text-decoration:none;color:inherit;
+    display:flex;flex-direction:column;align-items:center;gap:10px;
+    text-align:center;transition:all .18s;
+    box-shadow:0 1px 3px rgba(0,0,0,.04);position:relative;
+  }
+  .tool::after{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:14px 14px 0 0;background:var(--green);}
+  .tool:hover{transform:translateY(-2px);box-shadow:0 4px 14px rgba(0,0,0,.08);}
+  .tool.off{opacity:.45;pointer-events:none;}
+  .tool-icon{font-size:30px;line-height:1;}
+  .tool-name{font-size:13px;font-weight:700;color:#111827;line-height:1.35;}
+  .tbadge{font-size:9px;font-weight:700;padding:2px 7px;border-radius:20px;background:#f0fdf4;color:var(--green);border:1px solid #bbf7d0;}
+  .tbadge.soon{background:#f3f4f6;color:#9ca3af;border-color:#e5e7eb;}
+  .lock-note{margin-top:32px;font-size:11px;color:#9ca3af;display:flex;align-items:center;gap:6px;}
+</style>
+</head>
+<body>
+
+<div class="mv-top">
+  <div class="mv-top-main">
+    <div class="mv-top-left">
+      <a href="finance-hub.html" class="mv-top-logo"><img src="../Mamavege_Logo.png" alt="MamaVege"></a>
+      <div class="mv-top-sep"></div>
+      <span class="mv-top-tool">💰 Finance Hub 财务板块</span>
+    </div>
+    <div class="mv-top-right">
+      <span id="top-user" style="color:rgba(255,255,255,.85);font-size:13px;font-weight:600"></span>
+      <button class="mv-top-btn" onclick="MVAuth.logout()">登出</button>
+    </div>
+  </div>
+  <div class="mv-top-sub">
+    <span class="mv-top-date"></span>
+    <span>MamaVege Management · 妈子素 财务监督系统</span>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="page-title">财务工作台</div>
+  <div class="page-sub">欢迎，<span id="welcome-name"></span>！这里是管理层财务板块入口，数据受数据库级权限保护，仅限授权人员访问。</div>
+
+  <div class="sec-title">财务监督</div>
+  <div class="tools-grid">
+    <a class="tool" href="finance-dashboard.html">
+      <div class="tool-icon">🚦</div>
+      <div class="tool-name">月度财务监督</div>
+      <span class="tbadge">LIVE</span>
+    </a>
+  </div>
+
+  <div class="sec-title">管理层板块（规划中）</div>
+  <div class="tools-grid">
+    <div class="tool off">
+      <div class="tool-icon">🛒</div>
+      <div class="tool-name">Purchasing 采购</div>
+      <span class="tbadge soon">下一步</span>
+    </div>
+    <div class="tool off">
+      <div class="tool-icon">👥</div>
+      <div class="tool-name">HR 人事</div>
+      <span class="tbadge soon">外部系统串联</span>
+    </div>
+    <div class="tool off">
+      <div class="tool-icon">🏭</div>
+      <div class="tool-name">Production 生产</div>
+      <span class="tbadge soon">外部系统串联</span>
+    </div>
+  </div>
+
+  <div class="lock-note">🔐 本板块使用 Supabase Auth + 数据库 RLS 权限，与销售端登录体系相互独立。</div>
+</div>
+
+<script src="../supabase.min.js"></script>
+<script src="../js/auth/auth.js"></script>
+<script>
+document.querySelectorAll('.mv-top-date').forEach(e=>e.textContent=new Date().toLocaleDateString('zh-CN',{weekday:'short',year:'numeric',month:'short',day:'numeric'}));
+
+MVAuth.init({ module:'finance', minRole:'viewer', base:'../', title:'Finance Hub', moduleName:'财务 Finance' }).then(ctx => {
+  document.getElementById('top-user').textContent = ctx.email;
+  document.getElementById('welcome-name').textContent = ctx.email.split('@')[0];
+});
+</script>
+</body>
+</html>
