@@ -118,8 +118,61 @@ async function sendWeeklyReport(rows, myt) {
   const chanOther = cur.chan['博主/经销/线下'] || 0;
   const totalPct = cur.rev > 0 ? ((chanEcom / cur.rev) * 100).toFixed(0) : 0;
 
-  const msg = `🇨🇳 *中国市场周报*\n📅 ${wStart} ~ ${wEnd}\n\n${freshnessWarn}📊 *本周业绩*：¥${fmt(cur.rev)}\n环比上周 ${pctStr(cur.rev, prev.rev)}（上周 ¥${fmt(prev.rev)}）\n\n📈 *渠道分布*\n- 电商平台（抖店+微信小店）：¥${fmt(chanEcom)}（${totalPct}%）\n- 博主/经销/线下：¥${fmt(chanOther)}（${100 - parseInt(totalPct)}%）\n\n📦 *产品销量*\n${prodLines}\n\n🏆 *TOP 贡献*\n${topLines}\n\n—— 龙龙 🇨🇳 中国运营总监`;
+  // 微信小店实时数据（API 直连，用于核对 Sheet 手填数字）
+  const wxSection = await buildWechatSection(weekStart, weekEnd);
+
+  const msg = `🇨🇳 *中国市场周报*\n📅 ${wStart} ~ ${wEnd}\n\n${freshnessWarn}📊 *本周业绩*：¥${fmt(cur.rev)}\n环比上周 ${pctStr(cur.rev, prev.rev)}（上周 ¥${fmt(prev.rev)}）\n\n📈 *渠道分布*\n- 电商平台（抖店+微信小店）：¥${fmt(chanEcom)}（${totalPct}%）\n- 博主/经销/线下：¥${fmt(chanOther)}（${100 - parseInt(totalPct)}%）\n\n📦 *产品销量*\n${prodLines}\n\n🏆 *TOP 贡献*\n${topLines}\n${wxSection}\n—— 龙龙 🇨🇳 中国运营总监`;
   await sendTelegram(msg);
+}
+
+// ── 微信小店实时数据段落 ──
+async function buildWechatSection(weekStart, weekEnd) {
+  try {
+    const appid = process.env.WECHAT_APPID, secret = process.env.WECHAT_APPSECRET;
+    if (!appid || !secret) return '';
+    const tr = await fetch(`https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=${appid}&secret=${secret}`);
+    const tj = await tr.json();
+    if (!tj.access_token) return `\n📱 *微信小店(实时API)*：获取失败（${tj.errmsg || 'token error'}）\n`;
+    const token = tj.access_token;
+
+    const startTime = Math.floor(weekStart.getTime() / 1000) - 8 * 3600; // MYT/北京时间周一 00:00
+    const endTime = Math.floor(weekEnd.getTime() / 1000) - 8 * 3600 + 86400; // 周日 24:00
+
+    const ids = [];
+    let nextKey;
+    for (let i = 0; i < 20; i++) {
+      const body = { page_size: 100, create_time_range: { start_time: startTime, end_time: endTime } };
+      if (nextKey) body.next_key = nextKey;
+      const r = await fetch(`https://api.weixin.qq.com/channels/ec/order/list/get?access_token=${token}`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
+      });
+      const j = await r.json();
+      if (j.errcode !== 0) return `\n📱 *微信小店(实时API)*：订单拉取失败（${j.errmsg}）\n`;
+      ids.push(...(j.order_id_list || []));
+      if (!j.has_more) break;
+      nextKey = j.next_key;
+    }
+
+    const VALID = new Set([20, 21, 30, 100]);
+    let rev = 0, cnt = 0;
+    for (let i = 0; i < ids.length; i += 10) {
+      const batch = await Promise.all(ids.slice(i, i + 10).map(async id => {
+        const r = await fetch(`https://api.weixin.qq.com/channels/ec/order/get?access_token=${token}`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ order_id: id }),
+        });
+        const j = await r.json();
+        return j.errcode === 0 ? j.order : null;
+      }));
+      batch.filter(Boolean).forEach(o => {
+        if (!VALID.has(o.status)) return;
+        rev += (o.order_detail?.price_info?.order_price || 0) / 100;
+        cnt += 1;
+      });
+    }
+    return `\n📱 *微信小店(实时API核对)*\n本周实付 ¥${rev.toFixed(2)}，共 ${cnt} 单（自动从微信官方接口拉取，可与 Sheet 手填数核对）\n`;
+  } catch (e) {
+    return `\n📱 *微信小店(实时API)*：拉取异常（${e.message}）\n`;
+  }
 }
 
 // ── 月报 ──
