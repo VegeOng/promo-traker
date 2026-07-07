@@ -153,12 +153,21 @@
           <button class="ds-tab active" data-wxmode="14d" onclick="setWxMode('14d')">⚡ 近14天</button>
           <button class="ds-tab" data-wxmode="month" onclick="setWxMode('month')">📅 按月</button>
           <button class="ds-tab" data-wxmode="year" onclick="setWxMode('year')">🗓 按年</button>
+          <button class="ds-tab" data-wxmode="range" onclick="setWxMode('range')">🔧 自定义范围</button>
         </div>
         <div class="ds-controls" id="wx-controls-month" style="display:none">
           <select id="wx-month-select" onchange="renderWechatLive()"></select>
         </div>
         <div class="ds-controls" id="wx-controls-year" style="display:none">
           <select id="wx-year-select" onchange="renderWechatLive()"></select>
+        </div>
+        <div class="ds-controls" id="wx-controls-range" style="display:none">
+          <input type="date" id="wx-range-start" onchange="renderWechatLive()">
+          <span style="color:var(--muted)">→</span>
+          <input type="date" id="wx-range-end" onchange="renderWechatLive()">
+        </div>
+        <div class="ds-controls">
+          <select id="wx-sku-select" onchange="renderWechatLive()"><option value="all">全部 SKU</option></select>
         </div>
       </div>
       <div id="wechat-live" style="font-size:13px;color:var(--muted)">加载中…</div>
@@ -576,6 +585,16 @@ function setWxMode(mode){
   document.querySelectorAll('[data-wxmode]').forEach(b=>b.classList.toggle('active', b.dataset.wxmode===mode));
   document.getElementById('wx-controls-month').style.display = mode==='month' ? 'flex' : 'none';
   document.getElementById('wx-controls-year').style.display = mode==='year' ? 'flex' : 'none';
+  document.getElementById('wx-controls-range').style.display = mode==='range' ? 'flex' : 'none';
+  if(mode==='range'){
+    const startEl = document.getElementById('wx-range-start');
+    const endEl = document.getElementById('wx-range-end');
+    if(!startEl.value || !endEl.value){
+      const now = new Date();
+      if(!startEl.value) startEl.value = fmtDateInput(new Date(now.getFullYear(), now.getMonth(), 1));
+      if(!endEl.value) endEl.value = fmtDateInput(now);
+    }
+  }
   renderWechatLive();
 }
 
@@ -611,6 +630,13 @@ async function loadWechatLive(){
     document.getElementById('wx-year-select').innerHTML = years.map(y=>`<option value="${y}">${y}年</option>`).join('');
     document.getElementById('wx-year-select').value = String(now.getFullYear());
 
+    // 填充 SKU 下拉（从全部订单里解析出现过的 SKU）
+    const skuSet = new Set();
+    wxOrders.forEach(o=>(o.products||[]).forEach(p=>skuSet.add(mapWxSku(p).name)));
+    const skuSel = document.getElementById('wx-sku-select');
+    skuSel.innerHTML = '<option value="all">全部 SKU</option>' +
+      Array.from(skuSet).sort().map(s=>`<option value="${escHtml(s)}">${escHtml(s)}</option>`).join('');
+
     renderWechatLive();
   }catch(e){
     console.error('wechat live error:', e);
@@ -632,10 +658,27 @@ function renderWechatLive(){
     const y = document.getElementById('wx-year-select').value;
     valid = wxOrders.filter(o=>o.y===y);
     periodLabel = `${y}年实付`;
+  } else if(wxMode==='range'){
+    const start = document.getElementById('wx-range-start').value;
+    const end = document.getElementById('wx-range-end').value;
+    valid = wxOrders.filter(o=>(!start || o.ymd>=start) && (!end || o.ymd<=end));
+    periodLabel = `${start||'…'} ~ ${end||'…'} 实付`;
   } else {
     const since = new Date(Date.now() - 14*86400000 + 8*3600*1000).toISOString().split('T')[0];
     valid = wxOrders.filter(o=>o.ymd>=since);
     periodLabel = '近14天实付';
+  }
+
+  // SKU 筛选：只看包含所选 SKU 的订单，金额/件数只算该 SKU 部分
+  const skuFilter = document.getElementById('wx-sku-select').value;
+  if(skuFilter !== 'all'){
+    valid = valid.map(o=>{
+      const hits = (o.products||[]).filter(p=>mapWxSku(p).name===skuFilter);
+      if(!hits.length) return null;
+      const skuRev = hits.reduce((s,p)=>s+(Number(p.price)||0)*(Number(p.sku_cnt)||0),0);
+      return { ...o, products: hits, revenue: skuRev };
+    }).filter(Boolean);
+    periodLabel += `（${skuFilter}）`;
   }
 
   if(!valid.length){ box.innerHTML = '该期间暂无同步数据（同步从 2026年7月 开始，每日 06:30 自动同步）'; return; }
