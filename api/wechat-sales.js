@@ -66,24 +66,27 @@ async function getAccessToken() {
 
 async function fetchOrders(token, days) {
   const now = Math.floor(Date.now() / 1000);
-  const startTime = now - days * 86400;
 
-  // 1. 拉订单 ID 列表（分页）
+  // 1. 拉订单 ID 列表（微信限制单次查询范围 ≤7 天，按 7 天分段；每段内分页）
   const ids = [];
-  let nextKey = undefined;
-  for (let i = 0; i < 20; i++) { // 最多20页防死循环
-    const body = { page_size: 100, create_time_range: { start_time: startTime, end_time: now } };
-    if (nextKey) body.next_key = nextKey;
-    const r = await fetch(`https://api.weixin.qq.com/channels/ec/order/list/get?access_token=${token}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
-    });
-    const json = await r.json();
-    if (json.errcode !== 0) throw new Error(`订单列表失败: ${json.errmsg}`);
-    ids.push(...(json.order_id_list || []));
-    if (!json.has_more) break;
-    nextKey = json.next_key;
+  const SPAN = 7 * 86400;
+  for (let end = now; end > now - days * 86400; end -= SPAN) {
+    const start = Math.max(end - SPAN, now - days * 86400);
+    let nextKey = undefined;
+    for (let i = 0; i < 20; i++) { // 最多20页防死循环
+      const body = { page_size: 100, create_time_range: { start_time: start, end_time: end } };
+      if (nextKey) body.next_key = nextKey;
+      const r = await fetch(`https://api.weixin.qq.com/channels/ec/order/list/get?access_token=${token}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      const json = await r.json();
+      if (json.errcode !== 0) throw new Error(`订单列表失败: ${json.errmsg}`);
+      ids.push(...(json.order_id_list || []));
+      if (!json.has_more) break;
+      nextKey = json.next_key;
+    }
   }
 
   // 2. 拉订单详情（并发，分批防限流）

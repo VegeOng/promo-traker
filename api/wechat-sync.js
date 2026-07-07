@@ -27,6 +27,8 @@ module.exports = async function handler(req, res) {
       revenue: (o.order_detail?.price_info?.order_price || 0) / 100,
       products: (o.order_detail?.product_infos || []).map(p => ({
         title: p.title, sku_cnt: p.sku_cnt, price: (p.sale_price || 0) / 100,
+        sku_code: p.sku_code || '',
+        spec: (p.sku_attrs || []).map(a => `${a.attr_key}=${a.attr_value}`).join(' | '),
       })),
       province: o.order_detail?.delivery_info?.address_info?.province_name || null,
       synced_at: new Date().toISOString(),
