@@ -147,7 +147,20 @@
     </div>
 
     <div class="card" style="margin-bottom:16px">
-      <div class="card-title">📱 微信小店 · 官方API实时同步 <span style="color:var(--muted);font-weight:500">（每日 06:30 自动同步，与 Sheet 手填数据独立）</span></div>
+      <div class="card-title" style="flex-wrap:wrap">📱 微信小店 · 官方API实时同步 <span style="color:var(--muted);font-weight:500">（每日 06:30 自动同步，与 Sheet 手填数据独立）</span></div>
+      <div class="date-selector" style="margin-bottom:12px">
+        <div class="ds-tabs">
+          <button class="ds-tab active" data-wxmode="14d" onclick="setWxMode('14d')">⚡ 近14天</button>
+          <button class="ds-tab" data-wxmode="month" onclick="setWxMode('month')">📅 按月</button>
+          <button class="ds-tab" data-wxmode="year" onclick="setWxMode('year')">🗓 按年</button>
+        </div>
+        <div class="ds-controls" id="wx-controls-month" style="display:none">
+          <select id="wx-month-select" onchange="renderWechatLive()"></select>
+        </div>
+        <div class="ds-controls" id="wx-controls-year" style="display:none">
+          <select id="wx-year-select" onchange="renderWechatLive()"></select>
+        </div>
+      </div>
       <div id="wechat-live" style="font-size:13px;color:var(--muted)">加载中…</div>
     </div>
 
@@ -524,70 +537,132 @@ const SUPABASE_URL = 'https://wjhgezvrxlhpexocfsea.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndqaGdlenZyeGxocGV4b2Nmc2VhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg1MDU4NzgsImV4cCI6MjA5NDA4MTg3OH0.jENcrgEDYDlSRUCqve-T6rxYRJfz-dnZQHnXpPLJ_RE';
 const WX_STATUS_LABEL = { 10:'未付款', 20:'待发货', 21:'部分发货', 30:'待收货', 100:'已完成', 200:'售后', 250:'已取消' };
 
+let wxOrders = [];   // 全部有效订单（已排除取消/未付款），带 GMT+8 日期
+let wxMode = '14d';
+
+function setWxMode(mode){
+  wxMode = mode;
+  document.querySelectorAll('[data-wxmode]').forEach(b=>b.classList.toggle('active', b.dataset.wxmode===mode));
+  document.getElementById('wx-controls-month').style.display = mode==='month' ? 'flex' : 'none';
+  document.getElementById('wx-controls-year').style.display = mode==='year' ? 'flex' : 'none';
+  renderWechatLive();
+}
+
 async function loadWechatLive(){
   const box = document.getElementById('wechat-live');
   try{
-    const since = new Date(Date.now() - 14*86400000).toISOString();
-    const r = await fetch(`${SUPABASE_URL}/rest/v1/wechat_orders?select=order_id,pay_time,status,revenue,products,province&pay_time=gte.${since}&order=pay_time.desc`, {
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/wechat_orders?select=order_id,pay_time,status,revenue,products,province&order=pay_time.desc&limit=5000`, {
       headers:{ 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
     });
     if(!r.ok) throw new Error('HTTP '+r.status);
     const orders = await r.json();
-    if(!orders.length){ box.innerHTML = '近14天暂无同步数据（每日 06:30 自动同步一次）'; return; }
 
-    // 排除已取消(250)/未付款(10)，按日（GMT+8）汇总
-    const valid = orders.filter(o=>o.status!==250 && o.status!==10);
-    const daily = {};
-    let total = 0;
-    valid.forEach(o=>{
+    // 排除已取消(250)/未付款(10)，预先算好 GMT+8 日期
+    wxOrders = orders.filter(o=>o.status!==250 && o.status!==10).map(o=>{
       const d = new Date(new Date(o.pay_time).getTime() + 8*3600*1000);
-      const day = d.toISOString().split('T')[0];
-      if(!daily[day]) daily[day] = { revenue:0, orders:0 };
-      daily[day].revenue += Number(o.revenue)||0;
-      daily[day].orders += 1;
-      total += Number(o.revenue)||0;
+      const ymd = d.toISOString().split('T')[0];
+      return { ...o, ymd, ym: ymd.slice(0,7), y: ymd.slice(0,4) };
     });
-    const days = Object.keys(daily).sort().reverse();
 
-    // SKU 销量汇总（来自订单商品明细）
-    const skuMap = {}; // title -> { qty, revenue }
-    valid.forEach(o=>{
-      (o.products||[]).forEach(p=>{
-        const t = p.title || '未知商品';
-        if(!skuMap[t]) skuMap[t] = { qty:0, revenue:0 };
-        skuMap[t].qty += Number(p.sku_cnt)||0;
-        skuMap[t].revenue += (Number(p.price)||0) * (Number(p.sku_cnt)||0);
-      });
-    });
-    const skus = Object.entries(skuMap).sort((a,b)=>b[1].qty-a[1].qty);
+    // 填充月份/年份下拉（按数据实际出现过的 + 当前月/年）
+    const now = new Date();
+    const curYM = monthKey(now.getFullYear(), now.getMonth()+1);
+    const ymSet = new Set(wxOrders.map(o=>o.ym)); ymSet.add(curYM);
+    const yms = Array.from(ymSet).sort().reverse();
+    document.getElementById('wx-month-select').innerHTML = yms.map(ym=>{
+      const [y,m] = ym.split('-');
+      return `<option value="${ym}">${y}年 ${mNamesZh[parseInt(m)-1]}</option>`;
+    }).join('');
+    document.getElementById('wx-month-select').value = curYM;
 
-    // 省份分布
-    const provMap = {};
-    valid.forEach(o=>{ if(o.province) provMap[o.province] = (provMap[o.province]||0)+1; });
-    const topProv = Object.entries(provMap).sort((a,b)=>b[1]-a[1]).slice(0,5)
-      .map(([p,c])=>`${escHtml(p)} ×${c}`).join(' · ') || '—';
+    const ySet = new Set(wxOrders.map(o=>o.y)); ySet.add(String(now.getFullYear()));
+    const years = Array.from(ySet).sort().reverse();
+    document.getElementById('wx-year-select').innerHTML = years.map(y=>`<option value="${y}">${y}年</option>`).join('');
+    document.getElementById('wx-year-select').value = String(now.getFullYear());
 
-    box.innerHTML = `
-      <div style="display:flex;gap:24px;flex-wrap:wrap;margin-bottom:12px">
-        <div><span style="font-size:11px;color:#9ca3af;font-weight:700;text-transform:uppercase">近14天实付</span><div style="font-size:22px;font-weight:800;color:var(--blue)">${fmtRMB(total)}</div></div>
-        <div><span style="font-size:11px;color:#9ca3af;font-weight:700;text-transform:uppercase">有效订单</span><div style="font-size:22px;font-weight:800;color:var(--text)">${valid.length} 单</div></div>
-        <div style="flex:1;min-width:200px"><span style="font-size:11px;color:#9ca3af;font-weight:700;text-transform:uppercase">收货省份 TOP5</span><div style="font-size:13px;color:var(--text);margin-top:4px">${topProv}</div></div>
-      </div>
-      <div style="display:grid;grid-template-columns:1fr 1.4fr;gap:16px" class="wx-grid">
-        <div style="overflow-x:auto"><table>
-          <thead><tr><th>日期</th><th class="num">订单数</th><th class="num">实付 (RMB)</th></tr></thead>
-          <tbody>${days.map(d=>`<tr><td>${d}</td><td class="num">${daily[d].orders}</td><td class="num">${fmtRMB(daily[d].revenue)}</td></tr>`).join('')}</tbody>
-        </table></div>
-        <div style="overflow-x:auto"><table>
-          <thead><tr><th>SKU（商品）</th><th class="num">销量</th><th class="num">销售额 (RMB)</th></tr></thead>
-          <tbody>${skus.length ? skus.map(([t,d])=>`<tr><td style="max-width:320px">${escHtml(t)}</td><td class="num">${d.qty}</td><td class="num">${fmtRMB(d.revenue)}</td></tr>`).join('') : '<tr><td colspan="3" style="text-align:center;color:#9ca3af">暂无商品明细</td></tr>'}</tbody>
-        </table></div>
-      </div>
-      <style>@media(max-width:900px){.wx-grid{grid-template-columns:1fr !important}}</style>`;
+    renderWechatLive();
   }catch(e){
     console.error('wechat live error:', e);
     box.innerHTML = `<span style="color:var(--red)">微信数据加载失败：${escHtml(e.message)}</span>`;
   }
+}
+
+function renderWechatLive(){
+  const box = document.getElementById('wechat-live');
+
+  // 按当前模式过滤
+  let valid, periodLabel;
+  if(wxMode==='month'){
+    const ym = document.getElementById('wx-month-select').value;
+    const [y,m] = ym.split('-');
+    valid = wxOrders.filter(o=>o.ym===ym);
+    periodLabel = `${y}年${mNamesZh[parseInt(m)-1]}实付`;
+  } else if(wxMode==='year'){
+    const y = document.getElementById('wx-year-select').value;
+    valid = wxOrders.filter(o=>o.y===y);
+    periodLabel = `${y}年实付`;
+  } else {
+    const since = new Date(Date.now() - 14*86400000 + 8*3600*1000).toISOString().split('T')[0];
+    valid = wxOrders.filter(o=>o.ymd>=since);
+    periodLabel = '近14天实付';
+  }
+
+  if(!valid.length){ box.innerHTML = '该期间暂无同步数据（同步从 2026年7月 开始，每日 06:30 自动同步）'; return; }
+
+  // 按日汇总
+  const daily = {};
+  let total = 0;
+  valid.forEach(o=>{
+    if(!daily[o.ymd]) daily[o.ymd] = { revenue:0, orders:0 };
+    daily[o.ymd].revenue += Number(o.revenue)||0;
+    daily[o.ymd].orders += 1;
+    total += Number(o.revenue)||0;
+  });
+  const days = Object.keys(daily).sort().reverse();
+
+  // SKU 销量汇总
+  const skuMap = {};
+  valid.forEach(o=>{
+    (o.products||[]).forEach(p=>{
+      const t = p.title || '未知商品';
+      if(!skuMap[t]) skuMap[t] = { qty:0, revenue:0 };
+      skuMap[t].qty += Number(p.sku_cnt)||0;
+      skuMap[t].revenue += (Number(p.price)||0) * (Number(p.sku_cnt)||0);
+    });
+  });
+  const skus = Object.entries(skuMap).sort((a,b)=>b[1].qty-a[1].qty);
+
+  // 省份排行（列表形式，含占比）
+  const provMap = {};
+  valid.forEach(o=>{ if(o.province) provMap[o.province] = (provMap[o.province]||0)+1; });
+  const provs = Object.entries(provMap).sort((a,b)=>b[1]-a[1]).slice(0,8);
+  const provTotal = valid.length || 1;
+  const provRows = provs.length ? provs.map(([p,c],i)=>`
+    <div class="legend-row">
+      <span><span class="rank" style="display:inline-block;width:22px">${i+1}</span>${escHtml(p)}</span>
+      <span style="font-weight:700">${c} 单 <span style="color:#9ca3af;font-weight:400">(${(c/provTotal*100).toFixed(0)}%)</span></span>
+    </div>`).join('') : '<div style="color:#9ca3af">—</div>';
+
+  box.innerHTML = `
+    <div style="display:flex;gap:24px;flex-wrap:wrap;margin-bottom:12px">
+      <div><span style="font-size:11px;color:#9ca3af;font-weight:700;text-transform:uppercase">${escHtml(periodLabel)}</span><div style="font-size:22px;font-weight:800;color:var(--blue)">${fmtRMB(total)}</div></div>
+      <div><span style="font-size:11px;color:#9ca3af;font-weight:700;text-transform:uppercase">有效订单</span><div style="font-size:22px;font-weight:800;color:var(--text)">${valid.length} 单</div></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1.4fr 1fr;gap:16px" class="wx-grid">
+      <div style="overflow-x:auto"><table>
+        <thead><tr><th>日期</th><th class="num">订单数</th><th class="num">实付 (RMB)</th></tr></thead>
+        <tbody>${days.map(d=>`<tr><td>${d}</td><td class="num">${daily[d].orders}</td><td class="num">${fmtRMB(daily[d].revenue)}</td></tr>`).join('')}</tbody>
+      </table></div>
+      <div style="overflow-x:auto"><table>
+        <thead><tr><th>SKU（商品）</th><th class="num">销量</th><th class="num">销售额 (RMB)</th></tr></thead>
+        <tbody>${skus.length ? skus.map(([t,d])=>`<tr><td style="max-width:320px">${escHtml(t)}</td><td class="num">${d.qty}</td><td class="num">${fmtRMB(d.revenue)}</td></tr>`).join('') : '<tr><td colspan="3" style="text-align:center;color:#9ca3af">暂无商品明细</td></tr>'}</tbody>
+      </table></div>
+      <div>
+        <div style="font-size:11px;color:#9ca3af;font-weight:700;text-transform:uppercase;padding:8px 0;border-bottom:1px solid var(--border)">收货省份排行</div>
+        ${provRows}
+      </div>
+    </div>
+    <style>@media(max-width:900px){.wx-grid{grid-template-columns:1fr !important}}</style>`;
 }
 loadWechatLive();
 </script>
