@@ -685,7 +685,7 @@ function renderWechatLive(){
     <div style="display:grid;grid-template-columns:1fr 1.4fr 1fr;gap:16px" class="wx-grid">
       <div style="overflow-x:auto"><table>
         <thead><tr><th>日期</th><th class="num">订单数</th><th class="num">实付 (RMB)</th></tr></thead>
-        <tbody>${days.map(d=>`<tr><td>${d}</td><td class="num">${daily[d].orders}</td><td class="num">${fmtRMB(daily[d].revenue)}</td></tr>`).join('')}</tbody>
+        <tbody>${days.map(d=>`<tr><td>${d}</td><td class="num">${daily[d].orders}</td><td class="num">${Number(daily[d].revenue).toLocaleString('zh-CN',{maximumFractionDigits:0})}</td></tr>`).join('')}</tbody>
       </table></div>
       <div style="overflow-x:auto"><table>
         <thead><tr><th>产品（内部SKU）</th><th class="num">出单数</th><th class="num">袋/杯数</th><th class="num">销售额 (RMB)</th></tr></thead>
