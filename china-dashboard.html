@@ -720,27 +720,32 @@ function renderWechatLive(){
       <span style="font-weight:700">${c} 单 <span style="color:#9ca3af;font-weight:400">(${(c/provTotal*100).toFixed(0)}%)</span></span>
     </div>`).join('') : '<div style="color:#9ca3af">—</div>';
 
-  // 成交来源排行（达人带货 vs 自然流量，含佣金与ROI）
-  const srcMap = {}; // source_name -> { orders, revenue, commission }
+  // 成交来源排行（达人带货 vs 自然流量，含各来源出货 SKU 明细）
+  const srcMap = {}; // source_name -> { orders, revenue, commission, skus:{名->件数} }
   let totalCommission = 0;
   valid.forEach(o=>{
     const name = o.source_name || '自然流量';
-    if(!srcMap[name]) srcMap[name] = { orders:0, revenue:0, commission:0 };
+    if(!srcMap[name]) srcMap[name] = { orders:0, revenue:0, commission:0, skus:{} };
     srcMap[name].orders += 1;
     srcMap[name].revenue += Number(o.revenue)||0;
     srcMap[name].commission += Number(o.commission)||0;
     totalCommission += Number(o.commission)||0;
+    (o.products||[]).forEach(p=>{
+      const skuName = mapWxSku(p).name;
+      srcMap[name].skus[skuName] = (srcMap[name].skus[skuName]||0) + (Number(p.sku_cnt)||0);
+    });
   });
   const srcs = Object.entries(srcMap).sort((a,b)=>b[1].revenue-a[1].revenue);
-  const srcRows = srcs.map(([name,d],i)=>{
+  const srcRows = srcs.map(([name,d])=>{
     const isNatural = name==='自然流量';
-    const roi = d.commission>0 ? (d.revenue/d.commission).toFixed(1) : null;
+    const skuStr = Object.entries(d.skus).sort((a,b)=>b[1]-a[1])
+      .map(([s,c])=>`${escHtml(s)} ×${c}`).join('<br>') || '—';
     return `<tr>
-      <td>${isNatural ? '🌱' : '🤝'} <strong>${escHtml(name)}</strong></td>
+      <td style="white-space:nowrap">${isNatural ? '🌱' : '🤝'} <strong>${escHtml(name)}</strong></td>
       <td class="num">${d.orders}</td>
       <td class="num">${Number(d.revenue).toLocaleString('zh-CN',{maximumFractionDigits:0})}</td>
       <td class="num">${d.commission>0 ? d.commission.toFixed(2) : '—'}</td>
-      <td class="num">${roi ? roi+'x' : '—'}</td>
+      <td style="font-size:12px;line-height:1.7">${skuStr}</td>
     </tr>`;
   }).join('');
 
@@ -766,7 +771,7 @@ function renderWechatLive(){
     <div style="margin-top:16px">
       <div style="font-size:11px;color:#9ca3af;font-weight:700;text-transform:uppercase;padding:8px 0;border-bottom:1px solid var(--border)">成交来源排行（🌱自然流量 / 🤝达人带货）· 期间佣金合计 ¥${totalCommission.toFixed(2)}</div>
       <div style="overflow-x:auto"><table>
-        <thead><tr><th>来源</th><th class="num">订单数</th><th class="num">销售额 (RMB)</th><th class="num">佣金 (RMB)</th><th class="num">ROI</th></tr></thead>
+        <thead><tr><th>来源</th><th class="num">订单数</th><th class="num">销售额 (RMB)</th><th class="num">佣金 (RMB)</th><th>出货 SKU</th></tr></thead>
         <tbody>${srcRows || '<tr><td colspan="5" style="text-align:center;color:#9ca3af">暂无来源数据（需先补跑同步）</td></tr>'}</tbody>
       </table></div>
     </div>
