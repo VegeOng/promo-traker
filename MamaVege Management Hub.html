@@ -96,46 +96,9 @@ body{background:var(--bg);color:var(--t1);font-family:var(--font);min-height:100
 
 <div class="main">
   <div class="hero">
-    <div class="hero-greeting">Welcome back</div>
-    <div class="hero-title">Your <span>Sales Command</span> Centre</div>
-    <div class="hero-sub">All tools in one place — track promotions, monitor ROI, and manage your team across all regions.</div>
-  </div>
-
-  <div class="stats-row">
-    <div class="stat"><div class="stat-label">This Month Sales</div><div class="stat-val" id="s-month">RM 257.3K</div><div class="stat-sub" id="s-month-sub">May 2026</div></div>
-    <div class="stat"><div class="stat-label">This Year Sales</div><div class="stat-val" id="s-year">RM 1.68M</div><div class="stat-sub">2026 cumulative</div></div>
-    <div class="stat"><div class="stat-label">2026 Target</div><div class="stat-val">RM 6M</div><div class="stat-sub">annual target</div></div>
-    <div class="stat"><div class="stat-label">Gap to Target</div><div class="stat-val" id="s-gap" style="color:var(--red)">RM 4.32M</div><div class="stat-sub" id="s-gap-sub">28% achieved</div></div>
-  </div>
-
-  <div class="sec">
-    <div class="sec-header"><span class="sec-title">Promotion Management</span><div class="sec-line"></div><span class="sec-tag">4 live</span></div>
-    <div class="grid3">
-      <a class="tool live" href="file:///promo-fill.html" style="--tc:var(--green2)">
-        <div class="tool-top"><div class="tool-icon" style="background:var(--green-bg)">✏️</div><span class="tbadge tb-live">LIVE</span></div>
-        <div class="tool-name">Daily Promo Fill</div>
-        <div class="tool-desc">For store managers — submit daily promo data including sales, costs, and activity updates.</div>
-        <div class="tool-foot"><span class="tool-meta">GE · ISLAND · BLOCK · SAMPLING · PROMOTER</span><span class="tool-arr">→</span></div>
-      </a>
-      <a class="tool live" href="file:///promo-hq.html" style="--tc:var(--green)">
-        <div class="tool-top"><div class="tool-icon" style="background:var(--green-bg)">📊</div><span class="tbadge tb-live">LIVE</span></div>
-        <div class="tool-name">Promo HQ Dashboard</div>
-        <div class="tool-desc">HQ view — all regions, ROI analysis, store rankings, cost breakdown and performance alerts.</div>
-        <div class="tool-foot"><span class="tool-meta">Northern · Central · Southern · East</span><span class="tool-arr">→</span></div>
-      </a>
-      <a class="tool live" href="file:///sales-dashboard.html" style="--tc:var(--red)">
-        <div class="tool-top"><div class="tool-icon" style="background:var(--red-bg)">📈</div><span class="tbadge tb-live">LIVE</span></div>
-        <div class="tool-name">Sales Dashboard</div>
-        <div class="tool-desc">Full sales overview — salesperson rankings, customer analysis, product performance and trend charts, synced live from Google Sheet.</div>
-        <div class="tool-foot"><span class="tool-meta">Salesperson · Customer · Product · Trend</span><span class="tool-arr">→</span></div>
-      </a>
-      <a class="tool live" href="file:///roi-calculator.html" style="--tc:var(--green)">
-        <div class="tool-top"><div class="tool-icon" style="background:var(--green-bg)">💰</div><span class="tbadge tb-live">LIVE</span></div>
-        <div class="tool-name">Break-even Calculator</div>
-        <div class="tool-desc">Calculate how many units to sell and what revenue target is needed to recover your investment costs.</div>
-        <div class="tool-foot"><span class="tool-meta">Listing fee · DC Rebate · Island Display</span><span class="tool-arr">→</span></div>
-      </a>
-    </div>
+    <div class="hero-greeting">Management Hub</div>
+    <div class="hero-title">妈子素 <span>管理层</span> 工作台</div>
+    <div class="hero-sub">管理层专属工具 — 财务监督、AP付款、团队数据，仅限授权人员访问。</div>
   </div>
 
   <div class="sec">
@@ -206,67 +169,14 @@ body{background:var(--bg);color:var(--t1);font-family:var(--font);min-height:100
 </div>
 
 <div class="footer">
-  <div class="footer-l">© 2026 MamaVege Sales Team · All regions</div>
+  <div class="footer-l">© 2026 MamaVege · 妈子素 管理层平台</div>
   <div class="footer-r" id="footer-r">Loaded at 11:08 pm</div>
 </div>
 
 <script>
-const API_URL = 'https://script.google.com/macros/s/AKfycbyRVwC3_FujVNOb1nNoffqL1UeFqrAVmgvV6BEEGFjn6_vq7eUF5rBbhqAm85ydsgL2/exec';
-const TARGET_2026 = 6000000;
 const now = new Date();
-
 document.getElementById('date-txt').textContent = now.toLocaleDateString('en-MY',{weekday:'short',year:'numeric',month:'short',day:'numeric'});
 document.getElementById('footer-r').textContent = 'Loaded at ' + now.toLocaleTimeString('en-MY',{hour:'2-digit',minute:'2-digit'});
-
-function fmtRM(n) {
-  if (n >= 1000000) return 'RM ' + (n/1000000).toFixed(2) + 'M';
-  if (n >= 1000) return 'RM ' + (n/1000).toFixed(1) + 'K';
-  return 'RM ' + n.toFixed(2);
-}
-
-function getTotal(r) {
-  for (const k of Object.keys(r)) {
-    if (k.toUpperCase().indexOf('TOTAL') !== -1 && k.toUpperCase().indexOf('RM') !== -1) {
-      const v = parseFloat(r[k]);
-      if (!isNaN(v) && v > 0) return v;
-    }
-  }
-  return 0;
-}
-
-async function loadStats() {
-  try {
-    const res = await fetch(API_URL);
-    const json = await res.json();
-    const data = json.data || [];
-    const curYear = now.getFullYear();
-    const curMonth = now.getMonth() + 1;
-
-    const yearData = data.filter(r => {
-      const d = new Date(r['PO DATE']);
-      return !isNaN(d) && d.getFullYear() === curYear;
-    });
-    const monthData = yearData.filter(r => {
-      const d = new Date(r['PO DATE']);
-      return d.getMonth() + 1 === curMonth;
-    });
-
-    const yearTotal = yearData.reduce((s,r) => s + getTotal(r), 0);
-    const monthTotal = monthData.reduce((s,r) => s + getTotal(r), 0);
-    const gap = TARGET_2026 - yearTotal;
-    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-
-    document.getElementById('s-month').textContent = fmtRM(monthTotal);
-    document.getElementById('s-month-sub').textContent = months[curMonth-1] + ' ' + curYear;
-    document.getElementById('s-year').textContent = fmtRM(yearTotal);
-    document.getElementById('s-gap').textContent = gap > 0 ? fmtRM(gap) : '🎉 Achieved!';
-    document.getElementById('s-gap').style.color = gap > 0 ? 'var(--red)' : 'var(--green)';
-    document.getElementById('s-gap-sub').textContent = gap > 0 ? Math.round(yearTotal/TARGET_2026*100) + '% achieved' : 'Target met!';
-  } catch(e) {
-    console.error('Stats error:', e);
-  }
-}
-loadStats();
 </script>
 
 
