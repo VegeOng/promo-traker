@@ -24,3 +24,9 @@ create policy "wechat_orders_insert" on wechat_orders for insert with check (tru
 
 drop policy if exists "wechat_orders_update" on wechat_orders;
 create policy "wechat_orders_update" on wechat_orders for update using (true);
+
+-- v2：成交来源字段（2026-07 新增）
+alter table wechat_orders
+  add column if not exists source_name text default '自然流量',  -- 带货账号昵称，无则为自然流量
+  add column if not exists commission numeric(10,2) default 0,   -- 该订单佣金总额（元）
+  add column if not exists source jsonb default '[]';            -- 来源明细 [{nickname, account_type, sale_channel, sku_id}]

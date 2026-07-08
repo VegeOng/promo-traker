@@ -18,21 +18,33 @@ module.exports = async function handler(req, res) {
     const orders = await fetchOrders(token, 3); // 最近3天
     if (orders.length === 0) return res.status(200).json({ message: '近3天无订单' });
 
-    const records = orders.map(o => ({
-      order_id: o.order_id,
-      pay_time: o.order_detail?.pay_info?.pay_time
-        ? new Date(o.order_detail.pay_info.pay_time * 1000).toISOString()
-        : new Date(o.create_time * 1000).toISOString(),
-      status: o.status,
-      revenue: (o.order_detail?.price_info?.order_price || 0) / 100,
-      products: (o.order_detail?.product_infos || []).map(p => ({
-        title: p.title, sku_cnt: p.sku_cnt, price: (p.sale_price || 0) / 100,
-        sku_code: p.sku_code || '',
-        spec: (p.sku_attrs || []).map(a => `${a.attr_key}=${a.attr_value}`).join(' | '),
-      })),
-      province: o.order_detail?.delivery_info?.address_info?.province_name || null,
-      synced_at: new Date().toISOString(),
-    }));
+    const records = orders.map(o => {
+      const d = o.order_detail || {};
+      const sources = (d.source_infos || []).map(s => ({
+        nickname: s.account_nickname || '', account_type: s.account_type,
+        sale_channel: s.sale_channel, sku_id: s.sku_id,
+      }));
+      const commission = (d.commission_infos || []).reduce((s, c) => s + (c.amount || 0), 0) / 100;
+      const sourceName = sources.find(s => s.nickname)?.nickname || '自然流量';
+      return {
+        order_id: o.order_id,
+        pay_time: d.pay_info?.pay_time
+          ? new Date(d.pay_info.pay_time * 1000).toISOString()
+          : new Date(o.create_time * 1000).toISOString(),
+        status: o.status,
+        revenue: (d.price_info?.order_price || 0) / 100,
+        products: (d.product_infos || []).map(p => ({
+          title: p.title, sku_cnt: p.sku_cnt, price: (p.sale_price || 0) / 100,
+          sku_code: p.sku_code || '',
+          spec: (p.sku_attrs || []).map(a => `${a.attr_key}=${a.attr_value}`).join(' | '),
+        })),
+        province: d.delivery_info?.address_info?.province_name || null,
+        source_name: sourceName,
+        commission,
+        source: sources,
+        synced_at: new Date().toISOString(),
+      };
+    });
 
     const r = await fetch(`${SUPABASE_URL}/rest/v1/wechat_orders?on_conflict=order_id`, {
       method: 'POST',

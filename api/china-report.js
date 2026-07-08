@@ -154,7 +154,8 @@ async function buildWechatSection(weekStart, weekEnd) {
     }
 
     const VALID = new Set([20, 21, 30, 100]);
-    let rev = 0, cnt = 0;
+    let rev = 0, cnt = 0, commission = 0;
+    const srcMap = {}; // 来源 -> { orders, revenue, commission }
     for (let i = 0; i < ids.length; i += 10) {
       const batch = await Promise.all(ids.slice(i, i + 10).map(async id => {
         const r = await fetch(`https://api.weixin.qq.com/channels/ec/order/get?access_token=${token}`, {
@@ -165,11 +166,23 @@ async function buildWechatSection(weekStart, weekEnd) {
       }));
       batch.filter(Boolean).forEach(o => {
         if (!VALID.has(o.status)) return;
-        rev += (o.order_detail?.price_info?.order_price || 0) / 100;
-        cnt += 1;
+        const d = o.order_detail || {};
+        const orderRev = (d.price_info?.order_price || 0) / 100;
+        const orderComm = (d.commission_infos || []).reduce((s, c) => s + (c.amount || 0), 0) / 100;
+        const srcName = (d.source_infos || []).find(s => s.account_nickname)?.account_nickname || '自然流量';
+        rev += orderRev; cnt += 1; commission += orderComm;
+        if (!srcMap[srcName]) srcMap[srcName] = { orders: 0, revenue: 0, commission: 0 };
+        srcMap[srcName].orders += 1;
+        srcMap[srcName].revenue += orderRev;
+        srcMap[srcName].commission += orderComm;
       });
     }
-    return `\n📱 *微信小店(实时API核对)*\n本周实付 ¥${rev.toFixed(2)}，共 ${cnt} 单（自动从微信官方接口拉取，可与 Sheet 手填数核对）\n`;
+    const srcLines = Object.entries(srcMap).sort((a, b) => b[1].revenue - a[1].revenue).slice(0, 6)
+      .map(([n, d]) => {
+        const roi = d.commission > 0 ? `，ROI ${(d.revenue / d.commission).toFixed(1)}x` : '';
+        return `- ${n === '自然流量' ? '🌱' : '🤝'} ${n}：${d.orders}单 ¥${d.revenue.toFixed(2)}${d.commission > 0 ? `（佣金 ¥${d.commission.toFixed(2)}${roi}）` : ''}`;
+      }).join('\n');
+    return `\n📱 *微信小店(实时API核对)*\n本周实付 ¥${rev.toFixed(2)}，共 ${cnt} 单，佣金支出 ¥${commission.toFixed(2)}\n\n*成交来源：*\n${srcLines || '- 暂无'}\n`;
   } catch (e) {
     return `\n📱 *微信小店(实时API)*：拉取异常（${e.message}）\n`;
   }
