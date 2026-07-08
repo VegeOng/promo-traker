@@ -171,12 +171,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   <div class="setup-card">
     <h3>📍 Event</h3>
     <div class="field">
-      <label>Event Name</label>
-      <input type="text" id="su-event" placeholder="e.g. Aeon BM Roadshow Day 1">
-    </div>
-    <div class="field">
-      <label>Link to Activity (optional)</label>
-      <select id="su-activity"><option value="">— None —</option></select>
+      <label>Activity <span style="color:var(--red)">*</span></label>
+      <select id="su-activity"><option value="">— Select Activity —</option></select>
     </div>
     <button class="save-btn" onclick="saveEvent()">Save Event</button>
   </div>
@@ -190,7 +186,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 
   <div class="setup-card">
     <h3>📦 Stock Loaded (units for this event)</h3>
-    <div style="font-size:11px;color:var(--muted);margin-bottom:6px">Set how many units you brought. Leave blank to skip stock tracking for that product. Requires Event Name saved first.</div>
+    <div style="font-size:11px;color:var(--muted);margin-bottom:6px">Set how many units you brought. Leave blank to skip stock tracking for that product. Requires Activity saved first.</div>
     <div id="su-stock"><div style="color:var(--ml);font-size:13px;padding:10px 0">Loading…</div></div>
     <button class="save-btn" onclick="saveStock()">Save Stock</button>
   </div>
@@ -359,13 +355,6 @@ async function loadActivitiesDropdown() {
     const sel = document.getElementById('su-activity');
     sel.innerHTML = '<option value="">— None —</option>' + (acts||[]).map(a =>
       `<option value="${a.activity_id}" data-name="${esc(a.name)}"${a.activity_id===eventInfo.activity_id?' selected':''}>${a.name}</option>`).join('');
-    sel.onchange = function() {
-      const opt = sel.options[sel.selectedIndex];
-      if (opt && opt.value) {
-        const evInput = document.getElementById('su-event');
-        if (!evInput.value) evInput.value = opt.dataset.name || opt.text;
-      }
-    };
   } catch(e) {}
 }
 
@@ -661,7 +650,6 @@ async function voidSale(id) {
 
 // ── Setup ──
 function renderSetup() {
-  document.getElementById('su-event').value = eventInfo.name || '';
   // prices
   document.getElementById('su-prices').innerHTML = skus.map(s => `
     <div class="price-row">
@@ -728,15 +716,18 @@ function cancelBundleEdit() {
 
 function saveEvent() {
   const actSel = document.getElementById('su-activity');
+  if (!actSel.value) { toast('Please select an Activity', true); return; }
+  const actName = actSel.options[actSel.selectedIndex].text;
   eventInfo = {
-    name: document.getElementById('su-event').value.trim(),
-    activity_id: actSel.value || '',
-    activity_name: actSel.value ? actSel.options[actSel.selectedIndex].text : ''
+    name: actName,
+    activity_id: actSel.value,
+    activity_name: actName
   };
   localStorage.setItem('mv_pos_event', JSON.stringify(eventInfo));
   updateEventLabel();
   loadStock().then(renderSetup);
   toast('✓ Event saved');
+  showPage('sell');
 }
 
 async function savePrices() {
@@ -763,7 +754,7 @@ async function savePrices() {
 }
 
 async function saveStock() {
-  if (!eventInfo.name) { toast('Save Event Name first', true); return; }
+  if (!eventInfo.name) { toast('Please save Activity first', true); return; }
   const rows = [];
   skus.forEach(s => {
     const el = document.getElementById('stock-' + cssId(s.sku_name));
