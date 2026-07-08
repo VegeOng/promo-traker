@@ -246,7 +246,9 @@
   const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndqaGdlenZyeGxocGV4b2Nmc2VhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg1MDU4NzgsImV4cCI6MjA5NDA4MTg3OH0.jENcrgEDYDlSRUCqve-T6rxYRJfz-dnZQHnXpPLJ_RE';
   const supa = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
   const SALES_API = 'https://script.google.com/macros/s/AKfycbwxt23ZB0od7EeBSNvjurKTbkDcM7HLgrWhuoqHc3meKWmhbB0XQzfOdB-X2Pj5O_MY/exec';
-  const PRODUCTS = ['KPM','CLM','SHCR','SHTY','SHSS','SPM - BBQ','BBQ (BAG)','SPM - MALA','MALA (BAG)','MRBR','TYSN','TYSP','TMSP','SMTS','SMCL','SPTS','SPCL','CMBR','KETUPAT'];
+  let PRODUCTS = ['KPM','CLM','SHCR','SHTY','SHSS','SPM - BBQ','BBQ (BAG)','SPM - MALA','MALA (BAG)','MRBR','TYSN','TYSP','TMSP','SMTS','SMCL','SPTS','SPCL','SPGT','GTSN','CMBR','Sweet Potato','KETUPAT'];
+  const NON_PRODUCT_COLS = new Set(['COMPANY','OUTLET','SALES PERSON','TYPE','YEAR','MONTH','WEEK','PO DATE','PO NUMBER','INVOICE DATE','INVOICE NUMBER','TOTAL (RM)','IB (RM)','IB (USD)','Unfullfill (RM)']);
+  function detectProducts(rows){ if(!rows||!rows.length) return; const cols=Object.keys(rows[rows.length-1]).filter(k=>!NON_PRODUCT_COLS.has(k)); if(cols.length) PRODUCTS=cols; }
 
   function lsGet(k) {
     const raw = localStorage.getItem(k); if (!raw) return null;
@@ -462,6 +464,7 @@
 
       kpiTarget = memberRes.data?.monthly_kpi || 0;
       const userNameUpper = userName.trim().toUpperCase();
+      detectProducts(salesRes);
       allMyData = salesRes.filter(r=>(r['SALES PERSON']||'').trim().toUpperCase()===userNameUpper);
 
       // Populate year dropdown

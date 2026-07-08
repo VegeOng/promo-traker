@@ -481,7 +481,9 @@
   const H = { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' };
 
   const SALES_API = 'https://script.google.com/macros/s/AKfycbwxt23ZB0od7EeBSNvjurKTbkDcM7HLgrWhuoqHc3meKWmhbB0XQzfOdB-X2Pj5O_MY/exec';
-  const PRODUCTS = ['KPM','CLM','SHCR','SHTY','SHSS','SPM - BBQ','BBQ (BAG)','SPM - MALA','MALA (BAG)','MRBR','TYSN','TYSP','TMSP','SMTS','SMCL','SPTS','SPCL','CMBR','KETUPAT'];
+  let PRODUCTS = ['KPM','CLM','SHCR','SHTY','SHSS','SPM - BBQ','BBQ (BAG)','SPM - MALA','MALA (BAG)','MRBR','TYSN','TYSP','TMSP','SMTS','SMCL','SPTS','SPCL','SPGT','GTSN','CMBR','Sweet Potato','KETUPAT'];
+  const NON_PRODUCT_COLS = new Set(['COMPANY','OUTLET','SALES PERSON','TYPE','YEAR','MONTH','WEEK','PO DATE','PO NUMBER','INVOICE DATE','INVOICE NUMBER','TOTAL (RM)','IB (RM)','IB (USD)','Unfullfill (RM)']);
+  function detectProducts(rows){ if(!rows||!rows.length) return; const cols=Object.keys(rows[rows.length-1]).filter(k=>!NON_PRODUCT_COLS.has(k)); if(cols.length) PRODUCTS=cols; }
 
   // ===== localStorage 7-day expiry =====
   function lsGet(key) {
@@ -944,6 +946,7 @@
       ]);
 
       const kpiTarget = memberRes.data?.monthly_kpi || 0;
+      detectProducts(salesRes);
       const myAll = salesRes.filter(r => (r['SALES PERSON'] || '').trim() === userName.trim());
       const yearData = myAll.filter(r => parseInt(r['YEAR']) === thisY);
       const monthData = yearData.filter(r => parseInt(r['MONTH']) === thisM);
