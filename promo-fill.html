@@ -539,6 +539,8 @@ loadRecords();
 (async function(){
   const editId = new URLSearchParams(location.search).get('edit');
   if(!editId) return;
+  // Wait for customers to load first so dropdown is populated
+  await loadCustomers();
   const {data} = await sb.from('promotions').select('*').eq('id', editId).single();
   if(!data) return;
   recentRecords = [data];
