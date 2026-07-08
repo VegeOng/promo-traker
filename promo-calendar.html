@@ -118,6 +118,19 @@ body{background:var(--bg);color:var(--t1);font-family:var(--font);min-height:100
 .status-ok{background:var(--green-bg);color:var(--green);}
 .cs-days{font-family:var(--mono);font-weight:700;}
 
+/* Detail modal */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:100;display:flex;align-items:center;justify-content:center;padding:16px;}
+.modal-box{background:#fff;border-radius:var(--r2);padding:24px;max-width:440px;width:100%;box-shadow:0 8px 32px rgba(0,0,0,.18);}
+.modal-box h3{font-size:16px;font-weight:800;margin-bottom:16px;color:var(--t1);}
+.modal-row{display:flex;gap:8px;margin-bottom:10px;font-size:13px;}
+.modal-row .lbl{flex:0 0 110px;font-weight:700;color:var(--t2);}
+.modal-row .val{color:var(--t1);word-break:break-word;}
+.modal-actions{display:flex;gap:10px;margin-top:18px;}
+.modal-edit-btn{flex:1;padding:11px;background:var(--green);color:#fff;border:none;border-radius:var(--r);font-size:14px;font-weight:700;font-family:var(--font);cursor:pointer;}
+.modal-edit-btn:hover{background:#14532d;}
+.modal-close-btn{flex:0 0 90px;padding:11px;background:var(--s2);border:1.5px solid var(--b1);border-radius:var(--r);font-size:14px;font-weight:600;font-family:var(--font);cursor:pointer;color:var(--t2);}
+.modal-close-btn:hover{background:var(--b1);}
+
 /* Timeline no-promo rows */
 .tl-row.no-promo{background:#fef2f2;}
 .tl-row.no-promo .tl-track{display:flex;align-items:center;padding-left:10px;}
@@ -251,6 +264,18 @@ body{background:var(--bg);color:var(--t1);font-family:var(--font);min-height:100
     </div>
   </div>
 
+</div>
+
+<!-- Detail Modal -->
+<div id="detail-modal" style="display:none;" class="modal-overlay" onclick="if(event.target===this)closeModal()">
+  <div class="modal-box">
+    <h3 id="modal-title">Promo Details</h3>
+    <div id="modal-body"></div>
+    <div class="modal-actions">
+      <button class="modal-edit-btn" onclick="editPromo()">✏️ Edit</button>
+      <button class="modal-close-btn" onclick="closeModal()">Close</button>
+    </div>
+  </div>
 </div>
 
 <script src="/supabase.min.js"></script>
@@ -563,7 +588,7 @@ function renderTimeline(data){
     const leftPct=((startDay-1)/daysInMonth*100);
     const widthPct=(span/daysInMonth*100);
     const title=`${escHtml(r.store)} — ${catLabel(r)} — ${escHtml(r.activity_name||'')} (${fmtDate(r._start)} → ${fmtDate(r._end)})`;
-    html+=`<div class="tl-bar" title="${title}" style="left:${leftPct}%;width:${widthPct}%;background:${catColor((r.promo_type||'OTHER').toUpperCase())}">${escHtml(catLabel(r))}</div>`;
+    html+=`<div class="tl-bar" title="${title}" onclick="openDetail('${r.id}')" style="left:${leftPct}%;width:${widthPct}%;background:${catColor((r.promo_type||'OTHER').toUpperCase())};cursor:pointer;">${escHtml(catLabel(r))}</div>`;
     html+='</div>';
     html+='</div>';
   });
@@ -641,7 +666,7 @@ function renderTimelineProportional(data, label){
     const leftPct=(startOffset/totalDays*100);
     const widthPct=(span/totalDays*100);
     const title=`${escHtml(r.store)} — ${catLabel(r)} — ${escHtml(r.activity_name||'')} (${fmtDate(r._start)} → ${fmtDate(r._end)})`;
-    html+=`<div class="tl-bar" title="${title}" style="left:${leftPct}%;width:${widthPct}%;background:${catColor((r.promo_type||'OTHER').toUpperCase())}">${escHtml(catLabel(r))}</div>`;
+    html+=`<div class="tl-bar" title="${title}" onclick="openDetail('${r.id}')" style="left:${leftPct}%;width:${widthPct}%;background:${catColor((r.promo_type||'OTHER').toUpperCase())};cursor:pointer;">${escHtml(catLabel(r))}</div>`;
     html+='</div>';
     html+='</div>';
   });
@@ -679,7 +704,7 @@ function renderCalendar(data){
       inner=dayPromos.map(r=>{
         const cat=(r.promo_type||'OTHER').toUpperCase();
         const title=`${escHtml(r.store)} — ${catLabel(r)} — ${escHtml(r.activity_name||'')}`;
-        return `<div class="agenda-task" title="${title}">
+        return `<div class="agenda-task" title="${title}" onclick="openDetail('${r.id}')" style="cursor:pointer;">
           <span class="agenda-task-cat" style="background:${catColor(cat)}">${escHtml(catLabel(r))}</span>
           <span class="agenda-task-desc">${escHtml(r.store)}${r.activity_name?' — '+escHtml(r.activity_name):''}</span>
           <span class="agenda-task-meta">${escHtml(r.region||'')}</span>
@@ -714,7 +739,7 @@ function renderTable(data){
   empty.style.display='none';
   tbody.innerHTML=inMonth.map(r=>{
     const cat=(r.promo_type||'OTHER').toUpperCase();
-    return `<tr>
+    return `<tr onclick="openDetail('${r.id}')" style="cursor:pointer;">
       <td>${fmtDate(r._start)}</td>
       <td>${fmtDate(r._end)}</td>
       <td>${escHtml(r.duration||'—')}</td>
@@ -800,6 +825,38 @@ function renderCustomerStatus(){
       <td>${d.lastPromo?escHtml(d.lastPromo.activity_name||'—'):'—'}</td>
     </tr>`;
   }).join('');
+}
+
+// ── Detail modal ──────────────────────────────────────────
+let _detailRecord = null;
+function openDetail(id){
+  const r = allPromos.find(p=>p.id===id);
+  if(!r) return;
+  _detailRecord = r;
+  document.getElementById('modal-title').textContent = r.store || 'Promo Details';
+  const rows = [
+    ['Store', r.store],
+    ['Region', r.region],
+    ['Type', catLabel(r)],
+    ['Activity', r.activity_name],
+    ['Start', fmtDate(r._start)],
+    ['End', fmtDate(r._end)],
+    ['Duration', r.duration],
+    ['Promoter', r.manager],
+  ];
+  document.getElementById('modal-body').innerHTML = rows
+    .filter(([,v])=>v)
+    .map(([l,v])=>`<div class="modal-row"><span class="lbl">${l}</span><span class="val">${escHtml(v)}</span></div>`)
+    .join('');
+  document.getElementById('detail-modal').style.display = 'flex';
+}
+function closeModal(){
+  document.getElementById('detail-modal').style.display = 'none';
+  _detailRecord = null;
+}
+function editPromo(){
+  if(!_detailRecord) return;
+  location.href = 'promo-fill.html?edit=' + _detailRecord.id;
 }
 
 loadData();

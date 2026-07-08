@@ -534,6 +534,16 @@ async function loadRecords(){
   }).join('');
 }
 loadRecords();
+
+// ── Auto-edit from URL param (?edit=ID) ──────────────────
+(async function(){
+  const editId = new URLSearchParams(location.search).get('edit');
+  if(!editId) return;
+  const {data} = await sb.from('promotions').select('*').eq('id', editId).single();
+  if(!data) return;
+  recentRecords = [data];
+  editRecord(data.id);
+})();
 </script>
 </body>
 </html>
