@@ -732,7 +732,7 @@ function renderWechatLive(){
       </table></div>
       <div style="overflow-x:auto"><table>
         <thead><tr><th>产品（内部SKU）</th><th class="num">出单数</th><th class="num">袋/杯数</th><th class="num">销售额 (RMB)</th></tr></thead>
-        <tbody>${skus.length ? skus.map(([t,d])=>`<tr><td style="max-width:320px">${escHtml(t)}</td><td class="num">${d.items}</td><td class="num">${d.units}</td><td class="num">${fmtRMB(d.revenue)}</td></tr>`).join('') : '<tr><td colspan="4" style="text-align:center;color:#9ca3af">暂无商品明细</td></tr>'}</tbody>
+        <tbody>${skus.length ? skus.map(([t,d])=>`<tr><td style="max-width:320px">${escHtml(t)}</td><td class="num">${d.items}</td><td class="num">${d.units}</td><td class="num">${Number(d.revenue).toLocaleString('zh-CN',{maximumFractionDigits:0})}</td></tr>`).join('') : '<tr><td colspan="4" style="text-align:center;color:#9ca3af">暂无商品明细</td></tr>'}</tbody>
       </table></div>
       <div>
         <div style="font-size:11px;color:#9ca3af;font-weight:700;text-transform:uppercase;padding:8px 0;border-bottom:1px solid var(--border)">收货省份排行</div>
