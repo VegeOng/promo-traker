@@ -830,7 +830,7 @@ function renderCustomerStatus(){
 // ── Detail modal ──────────────────────────────────────────
 let _detailRecord = null;
 function openDetail(id){
-  const r = allPromos.find(p=>p.id===id);
+  const r = allPromos.find(p=>String(p.id)===String(id));
   if(!r) return;
   _detailRecord = r;
   document.getElementById('modal-title').textContent = r.store || 'Promo Details';
