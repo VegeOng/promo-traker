@@ -326,6 +326,8 @@ async function init() {
   syncOffline();
   loadActivitiesDropdown();
   loadStock();
+  // Auto-jump to Setup on devices with no event configured
+  if (!eventInfo.name) showPage('setup');
 }
 
 // ── Stock (loaded − sold, computed live so multi-device stays consistent) ──
@@ -356,7 +358,14 @@ async function loadActivitiesDropdown() {
     const acts = await db('activities?select=activity_id,name&order=created_at.desc&limit=30');
     const sel = document.getElementById('su-activity');
     sel.innerHTML = '<option value="">— None —</option>' + (acts||[]).map(a =>
-      `<option value="${a.activity_id}"${a.activity_id===eventInfo.activity_id?' selected':''}>${a.name}</option>`).join('');
+      `<option value="${a.activity_id}" data-name="${esc(a.name)}"${a.activity_id===eventInfo.activity_id?' selected':''}>${a.name}</option>`).join('');
+    sel.onchange = function() {
+      const opt = sel.options[sel.selectedIndex];
+      if (opt && opt.value) {
+        const evInput = document.getElementById('su-event');
+        if (!evInput.value) evInput.value = opt.dataset.name || opt.text;
+      }
+    };
   } catch(e) {}
 }
 
