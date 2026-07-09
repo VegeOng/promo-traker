@@ -131,6 +131,21 @@
 .mv-top-btn{background:rgba(255,255,255,.12);border:none;color:rgba(255,255,255,.8);padding:5px 14px;border-radius:6px;font-size:12px;cursor:pointer;font-family:inherit}
 .mv-top-btn:hover{background:rgba(255,255,255,.2);color:#fff}
 .mv-top-sub{display:flex;justify-content:space-between;align-items:center;padding:5px 24px;background:#15532d;color:rgba(255,255,255,.6);font-size:11px}
+
+/* ── Print / PDF styles ── */
+@media print {
+  body { background: white !important; font-size: 12pt; }
+  .mv-top, .mode-cards, .form-card:not(#form-summary), .success-banner,
+  #summary-activity-list, .no-print { display: none !important; }
+  #form-summary { display: block !important; border: none !important; padding: 0 !important; }
+  .form-title, .form-subtitle { display: none !important; }
+  #summary-report { display: block !important; }
+  a { color: inherit !important; text-decoration: none !important; }
+  .print-header { display: block !important; }
+  img { max-width: 100% !important; page-break-inside: avoid; }
+  .receipt-photo-grid { grid-template-columns: repeat(3,1fr) !important; }
+}
+.print-header { display: none; padding-bottom: 16px; border-bottom: 2px solid #166534; margin-bottom: 20px; }
 </style>
 </head>
 <body>
@@ -1066,23 +1081,90 @@ async function loadSummary(activityId, activityName) {
         </div>
       </div>` : '';
 
+    // Per-transaction list for reconciliation
+    const txRows = salesArr.map((s, i) => {
+      const t = s.created_at ? new Date(s.created_at).toLocaleString('en-MY', {day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}) : '—';
+      const pm = s.payment_method || '—';
+      const pmColor = pm==='Cash'?'#166534':pm==='TNG'?'#2563eb':'#d97706';
+      return `<tr>
+        <td style="padding:7px 8px;font-size:12px;border-bottom:1px solid var(--border);color:var(--muted)">${i+1}</td>
+        <td style="padding:7px 8px;font-size:12px;border-bottom:1px solid var(--border)">${t}</td>
+        <td style="padding:7px 8px;font-size:12px;border-bottom:1px solid var(--border)">${escHtml(s.sold_by||'—')}</td>
+        <td style="padding:7px 8px;font-size:12px;border-bottom:1px solid var(--border);text-align:center"><span style="background:${pmColor}18;color:${pmColor};padding:2px 8px;border-radius:20px;font-size:11px;font-weight:700">${pm}</span></td>
+        <td style="padding:7px 8px;font-size:12px;border-bottom:1px solid var(--border);text-align:right;font-weight:700">${fmtRM(s.total)}</td>
+        <td style="padding:7px 8px;font-size:12px;border-bottom:1px solid var(--border);text-align:center">${s.receipt_url?`<a href="${s.receipt_url}" target="_blank" style="color:#2563eb;font-size:11px;font-weight:700">📷 View</a>`:'—'}</td>
+      </tr>`;
+    }).join('');
+
+    const printedAt = new Date().toLocaleString('en-MY',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
+
     box.innerHTML = `
+      <!-- Print header (hidden on screen) -->
+      <div class="print-header">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start">
+          <div>
+            <div style="font-size:18pt;font-weight:900;color:#166534">MamaVege</div>
+            <div style="font-size:13pt;font-weight:700;margin-top:4px">Activity Sales Report</div>
+            <div style="font-size:10pt;color:#6b7280;margin-top:2px">${escHtml(activityName)}</div>
+          </div>
+          <div style="text-align:right;font-size:9pt;color:#6b7280">
+            <div>Generated: ${printedAt}</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Download button (screen only) -->
+      <button class="no-print" onclick="window.print()" style="width:100%;padding:13px;background:#166534;color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;margin-bottom:16px;display:flex;align-items:center;justify-content:center;gap:8px;font-family:inherit">
+        📄 Download PDF / Share to Finance
+      </button>
+
+      <!-- Revenue summary -->
       <div style="background:var(--green-light);border:1.5px solid var(--green);border-radius:var(--radius);padding:18px;margin-bottom:12px;text-align:center">
         <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--green);margin-bottom:4px">Total Revenue</div>
         <div style="font-size:32px;font-weight:900;color:var(--green)">${fmtRM(totalRev)}</div>
         <div style="font-size:12px;color:var(--muted);margin-top:4px">${salesArr.length} transaction${salesArr.length!==1?'s':''}</div>
       </div>
 
+      <!-- Payment breakdown — FINANCE KEY VIEW -->
       <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:12px">
-        <div style="font-size:13px;font-weight:800;margin-bottom:10px">💳 Payment Breakdown</div>
-        ${payRows || '<div style="font-size:13px;color:var(--muted)">No sales yet.</div>'}
+        <div style="font-size:13px;font-weight:800;margin-bottom:12px">💳 Payment Breakdown</div>
+        ${['Cash','TNG','DuitNow','Other'].filter(m=>byPay[m]).map(m=>{
+          const color = m==='Cash'?'#166534':m==='TNG'?'#2563eb':'#d97706';
+          return `<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 12px;border-radius:8px;background:${color}10;border:1px solid ${color}30;margin-bottom:8px">
+            <span style="font-size:14px;font-weight:700;color:${color}">${m==='Cash'?'💵':m==='TNG'?'📱':'🏦'} ${m}</span>
+            <span style="font-size:18px;font-weight:900;color:${color}">${fmtRM(byPay[m])}</span>
+          </div>`;
+        }).join('') || '<div style="font-size:13px;color:var(--muted)">No sales yet.</div>'}
       </div>
 
+      <!-- Per-transaction list -->
+      ${salesArr.length ? `
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:12px;overflow-x:auto">
+        <div style="font-size:13px;font-weight:800;margin-bottom:10px">🧾 Transaction List</div>
+        <table style="width:100%;border-collapse:collapse">
+          <thead><tr style="font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);background:#f9fafb">
+            <th style="padding:6px 8px;text-align:left;border-bottom:2px solid var(--border)">#</th>
+            <th style="padding:6px 8px;text-align:left;border-bottom:2px solid var(--border)">Time</th>
+            <th style="padding:6px 8px;text-align:left;border-bottom:2px solid var(--border)">By</th>
+            <th style="padding:6px 8px;text-align:center;border-bottom:2px solid var(--border)">Method</th>
+            <th style="padding:6px 8px;text-align:right;border-bottom:2px solid var(--border)">Amount</th>
+            <th style="padding:6px 8px;text-align:center;border-bottom:2px solid var(--border)">Proof</th>
+          </tr></thead>
+          <tbody>${txRows}</tbody>
+          <tfoot><tr style="background:#f9fafb">
+            <td colspan="4" style="padding:8px;font-size:13px;font-weight:800;border-top:2px solid var(--border)">TOTAL</td>
+            <td style="padding:8px;font-size:14px;font-weight:900;color:#166534;text-align:right;border-top:2px solid var(--border)">${fmtRM(totalRev)}</td>
+            <td style="border-top:2px solid var(--border)"></td>
+          </tr></tfoot>
+        </table>
+      </div>` : ''}
+
+      <!-- Stock summary -->
       ${skuNames.length ? `
       <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:12px;overflow-x:auto">
         <div style="font-size:13px;font-weight:800;margin-bottom:10px">📦 Stock Summary</div>
         <table style="width:100%;border-collapse:collapse">
-          <thead><tr style="font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)">
+          <thead><tr style="font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);background:#f9fafb">
             <th style="padding:6px 8px;text-align:left;border-bottom:2px solid var(--border)">SKU</th>
             <th style="padding:6px 8px;text-align:center;border-bottom:2px solid var(--border)">Loaded</th>
             <th style="padding:6px 8px;text-align:center;border-bottom:2px solid var(--border)">Sold</th>
@@ -1092,6 +1174,7 @@ async function loadSummary(activityId, activityName) {
         </table>
       </div>` : ''}
 
+      <!-- Receipt photos -->
       ${photoHtml}
     `;
   } catch(e) {
