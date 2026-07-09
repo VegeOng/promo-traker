@@ -177,6 +177,11 @@
       <div class="mc-name">View Reviews</div>
       <div class="mc-sub">Browse past reviews</div>
     </div>
+    <div class="mode-card" id="card-summary" onclick="selectMode('summary')" style="grid-column:1/-1">
+      <div class="mc-icon">📈</div>
+      <div class="mc-name">Activity Summary</div>
+      <div class="mc-sub">Revenue, stock & payment proofs</div>
+    </div>
   </div>
 
   <div class="success-banner" id="successBanner">
@@ -305,6 +310,19 @@
     <div id="history-reviews" style="display:none;margin-top:8px"></div>
   </div>
 
+  <!-- ACTIVITY SUMMARY -->
+  <div class="form-card" id="form-summary">
+    <div class="form-title">📈 Activity Summary</div>
+    <div class="form-subtitle">Select an activity to view its full report.</div>
+    <div class="field">
+      <label>Select Activity</label>
+      <div class="activity-select-list" id="summary-activity-list">
+        <div class="loading-text">Loading activities…</div>
+      </div>
+    </div>
+    <div id="summary-report" style="display:none;margin-top:8px"></div>
+  </div>
+
   <!-- DAILY REPORT FORM -->
   <div class="form-card" id="form-report">
     <div class="form-title">📊 Daily Report</div>
@@ -427,6 +445,7 @@ function selectMode(mode) {
   document.getElementById('form-new').classList.remove('visible');
   document.getElementById('form-report').classList.remove('visible');
   document.getElementById('form-review').classList.remove('visible');
+  document.getElementById('form-summary').classList.remove('visible');
   document.getElementById('successBanner').classList.remove('visible');
   if (mode === 'new') {
     document.getElementById('form-new').classList.add('visible');
@@ -439,6 +458,9 @@ function selectMode(mode) {
   } else if (mode === 'history') {
     document.getElementById('form-history').classList.add('visible');
     loadHistoryActivities();
+  } else if (mode === 'summary') {
+    document.getElementById('form-summary').classList.add('visible');
+    loadSummaryActivities();
   }
   setTimeout(() => {
     const el = document.getElementById('form-' + mode);
@@ -851,6 +873,7 @@ function resetAll() {
   document.getElementById('form-report').classList.remove('visible');
   document.getElementById('form-review').classList.remove('visible');
   document.getElementById('form-history').classList.remove('visible');
+  document.getElementById('form-summary').classList.remove('visible');
   document.getElementById('history-reviews').style.display = 'none';
   document.getElementById('review-form-body').style.display = 'none';
   document.getElementById('rv-good').value = '';
@@ -942,6 +965,139 @@ function escHtml(s) { return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','
 // Set default responsible to logged user
 document.getElementById('n-responsible').value = loggedUser;
 document.getElementById('r-date').value = today;
+
+// ── Activity Summary ──────────────────────────────────────
+const SUPA_URL_S = 'https://wjhgezvrxlhpexocfsea.supabase.co';
+const SUPA_KEY_S = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndqaGdlenZyeGxocGV4b2Nmc2VhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg1MDU4NzgsImV4cCI6MjA5NDA4MTg3OH0.jENcrgEDYDlSRUCqve-T6rxYRJfz-dnZQHnXpPLJ_RE';
+const SH = { 'apikey': SUPA_KEY_S, 'Authorization': 'Bearer ' + SUPA_KEY_S };
+
+async function sdb(path) {
+  const r = await fetch(SUPA_URL_S + '/rest/v1/' + path, { headers: SH });
+  return r.json();
+}
+
+async function loadSummaryActivities() {
+  const list = document.getElementById('summary-activity-list');
+  list.innerHTML = '<div class="loading-text">Loading…</div>';
+  document.getElementById('summary-report').style.display = 'none';
+  try {
+    const data = await sdb('activities?select=*&order=created_at.desc') || [];
+    if (!data.length) { list.innerHTML = '<div class="empty-text">No activities found.</div>'; return; }
+    const typeIcons = { Sampling:'🧪', Roadshow:'🚗', Exhibition:'🏟️', 'Food Fair':'🍱', 'Food Expo':'🏪', Other:'📌' };
+    list.innerHTML = data.map(a => `
+      <div class="activity-item" onclick="loadSummary('${a.activity_id}','${escHtml(a.name)}','${escHtml(a.name)}')">
+        <div class="ai-icon">${typeIcons[a.type]||'📌'}</div>
+        <div class="ai-info">
+          <div class="ai-name">${escHtml(a.name)}</div>
+          <div class="ai-meta">${a.type||''}${a.location?' · '+escHtml(a.location):''}${a.start_date?' · '+a.start_date:''}</div>
+        </div>
+        <span class="ai-status ${a.status==='active'?'active':'ended'}">${a.status==='active'?'Active':'Ended'}</span>
+      </div>`).join('');
+  } catch(e) { list.innerHTML = '<div class="empty-text">Failed to load.</div>'; }
+}
+
+async function loadSummary(activityId, activityName) {
+  document.querySelectorAll('#summary-activity-list .activity-item').forEach(el => el.classList.remove('selected'));
+  if (event && event.currentTarget) event.currentTarget.classList.add('selected');
+  const box = document.getElementById('summary-report');
+  box.style.display = 'block';
+  box.innerHTML = '<div class="loading-text">Loading summary…</div>';
+
+  try {
+    const [sales, stockRows] = await Promise.all([
+      sdb(`pos_sales?activity_id=eq.${encodeURIComponent(activityId)}&order=created_at.asc`),
+      sdb(`pos_stock?event_name=eq.${encodeURIComponent(activityName)}`)
+    ]);
+
+    const salesArr = sales || [];
+    const stockArr = stockRows || [];
+
+    // Revenue totals
+    const totalRev = salesArr.reduce((s, r) => s + parseFloat(r.total || 0), 0);
+    const byPay = {};
+    salesArr.forEach(s => {
+      const m = s.payment_method || 'Other';
+      byPay[m] = (byPay[m] || 0) + parseFloat(s.total || 0);
+    });
+
+    // Units sold per SKU
+    const soldMap = {};
+    salesArr.forEach(s => (s.items || []).forEach(i => {
+      if (!i.bundle) soldMap[i.name] = (soldMap[i.name] || 0) + (i.qty || 0);
+      else (i.contents || []).forEach(x => { soldMap[x.name] = (soldMap[x.name] || 0) + (x.qty || 0) * (i.qty || 1); });
+    }));
+
+    // Receipt photos
+    const receipts = salesArr.filter(s => s.receipt_url);
+
+    const fmtRM = n => 'RM ' + Number(n).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+
+    // Payment breakdown rows
+    const payRows = Object.entries(byPay).map(([m, v]) =>
+      `<div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border);font-size:13px">
+        <span>${m}</span><span style="font-weight:700">${fmtRM(v)}</span>
+      </div>`).join('');
+
+    // Stock table
+    const skuNames = [...new Set([...stockArr.map(r => r.sku_name), ...Object.keys(soldMap)])].sort();
+    const stockRows2 = skuNames.map(name => {
+      const loaded = stockArr.find(r => r.sku_name === name);
+      const loadedQty = loaded ? parseFloat(loaded.loaded_qty) : null;
+      const sold = soldMap[name] || 0;
+      const remaining = loadedQty !== null ? loadedQty - sold : null;
+      return `<tr>
+        <td style="padding:7px 8px;font-size:13px;border-bottom:1px solid var(--border)">${escHtml(name)}</td>
+        <td style="padding:7px 8px;font-size:13px;border-bottom:1px solid var(--border);text-align:center">${loadedQty !== null ? loadedQty : '—'}</td>
+        <td style="padding:7px 8px;font-size:13px;border-bottom:1px solid var(--border);text-align:center;font-weight:700">${sold || 0}</td>
+        <td style="padding:7px 8px;font-size:13px;border-bottom:1px solid var(--border);text-align:center;color:${remaining !== null && remaining < 0 ? 'var(--red)' : 'inherit'}">${remaining !== null ? remaining : '—'}</td>
+      </tr>`;
+    }).join('');
+
+    // Receipt photos
+    const photoHtml = receipts.length ? `
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:12px">
+        <div style="font-size:13px;font-weight:800;margin-bottom:12px">📸 Payment Proofs (${receipts.length})</div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px">
+          ${receipts.map(s => `
+            <a href="${s.receipt_url}" target="_blank" style="display:block;border-radius:10px;overflow:hidden;border:1px solid var(--border)">
+              <img src="${s.receipt_url}" style="width:100%;height:120px;object-fit:cover;display:block">
+              <div style="padding:5px 8px;font-size:10px;color:var(--muted)">${s.payment_method} · ${fmtRM(s.total)}</div>
+            </a>`).join('')}
+        </div>
+      </div>` : '';
+
+    box.innerHTML = `
+      <div style="background:var(--green-light);border:1.5px solid var(--green);border-radius:var(--radius);padding:18px;margin-bottom:12px;text-align:center">
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--green);margin-bottom:4px">Total Revenue</div>
+        <div style="font-size:32px;font-weight:900;color:var(--green)">${fmtRM(totalRev)}</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:4px">${salesArr.length} transaction${salesArr.length!==1?'s':''}</div>
+      </div>
+
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:12px">
+        <div style="font-size:13px;font-weight:800;margin-bottom:10px">💳 Payment Breakdown</div>
+        ${payRows || '<div style="font-size:13px;color:var(--muted)">No sales yet.</div>'}
+      </div>
+
+      ${skuNames.length ? `
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:12px;overflow-x:auto">
+        <div style="font-size:13px;font-weight:800;margin-bottom:10px">📦 Stock Summary</div>
+        <table style="width:100%;border-collapse:collapse">
+          <thead><tr style="font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)">
+            <th style="padding:6px 8px;text-align:left;border-bottom:2px solid var(--border)">SKU</th>
+            <th style="padding:6px 8px;text-align:center;border-bottom:2px solid var(--border)">Loaded</th>
+            <th style="padding:6px 8px;text-align:center;border-bottom:2px solid var(--border)">Sold</th>
+            <th style="padding:6px 8px;text-align:center;border-bottom:2px solid var(--border)">Remaining</th>
+          </tr></thead>
+          <tbody>${stockRows2}</tbody>
+        </table>
+      </div>` : ''}
+
+      ${photoHtml}
+    `;
+  } catch(e) {
+    box.innerHTML = `<div class="empty-text">Failed to load summary: ${escHtml(e.message)}</div>`;
+  }
+}
 </script>
 </body>
 </html>
