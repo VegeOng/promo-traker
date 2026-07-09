@@ -185,9 +185,15 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   </div>
 
   <div class="setup-card">
-    <h3>📦 Stock Loaded (units for this event)</h3>
-    <div style="font-size:11px;color:var(--muted);margin-bottom:6px">Set how many units you brought. Leave blank to skip stock tracking for that product. Requires Activity saved first.</div>
-    <div id="su-stock"><div style="color:var(--ml);font-size:13px;padding:10px 0">Loading…</div></div>
+    <h3>📦 Stock Loaded</h3>
+    <div style="font-size:11px;color:var(--muted);margin-bottom:10px">Pre-load stock for any activity — not just the current one.</div>
+    <div class="field" style="margin-bottom:10px">
+      <label>Activity</label>
+      <select id="su-stock-activity" onchange="switchStockActivity()" style="width:100%;padding:9px 10px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:inherit;background:#fff">
+        <option value="">— Select Activity —</option>
+      </select>
+    </div>
+    <div id="su-stock"><div style="color:var(--ml);font-size:13px;padding:10px 0">Select an activity above to load stock.</div></div>
     <button class="save-btn" onclick="saveStock()">Save Stock</button>
   </div>
 
@@ -363,13 +369,59 @@ function remainingOf(name) {
   return stockMap[name] - (soldMap[name] || 0);
 }
 
+let _allActivities = [];
+let stockEventName = ''; // event name used for the stock section (may differ from current POS event)
+
 async function loadActivitiesDropdown() {
   try {
     const acts = await db('activities?select=activity_id,name&order=created_at.desc&limit=30');
-    const sel = document.getElementById('su-activity');
-    sel.innerHTML = '<option value="">— None —</option>' + (acts||[]).map(a =>
-      `<option value="${a.activity_id}" data-name="${esc(a.name)}"${a.activity_id===eventInfo.activity_id?' selected':''}>${a.name}</option>`).join('');
+    _allActivities = acts || [];
+    const opts = _allActivities.map(a =>
+      `<option value="${esc(a.name)}" data-name="${esc(a.name)}"${a.activity_id===eventInfo.activity_id?' selected':''}>${a.name}</option>`).join('');
+    // POS event selector
+    document.getElementById('su-activity').innerHTML = '<option value="">— Select Activity —</option>' + opts;
+    // Stock activity selector — default to current event
+    const stockSel = document.getElementById('su-stock-activity');
+    stockSel.innerHTML = '<option value="">— Select Activity —</option>' + opts;
+    if (eventInfo.name) {
+      stockSel.value = eventInfo.name;
+      stockEventName = eventInfo.name;
+      renderStockInputs();
+    }
   } catch(e) {}
+}
+
+async function switchStockActivity() {
+  const sel = document.getElementById('su-stock-activity');
+  stockEventName = sel.value;
+  if (!stockEventName) {
+    document.getElementById('su-stock').innerHTML = '<div style="color:var(--ml);font-size:13px;padding:10px 0">Select an activity above to load stock.</div>';
+    return;
+  }
+  document.getElementById('su-stock').innerHTML = '<div style="color:var(--ml);font-size:13px;padding:10px 0">Loading…</div>';
+  try {
+    const rows = await db(`pos_stock?event_name=eq.${encodeURIComponent(stockEventName)}`).catch(() => []);
+    const map = {};
+    (rows || []).forEach(r => { map[r.sku_name] = parseFloat(r.loaded_qty) || 0; });
+    document.getElementById('su-stock').innerHTML = skus.map(s => `
+      <div class="price-row">
+        <span class="prname">${esc(s.sku_name)}</span>
+        <input type="number" id="stock-${cssId(s.sku_name)}" value="${map[s.sku_name] ?? ''}" placeholder="—" min="0" step="1">
+      </div>`).join('') || '<div style="color:var(--ml);font-size:13px;padding:10px 0">No SKUs found.</div>';
+  } catch(e) {
+    document.getElementById('su-stock').innerHTML = '<div style="color:var(--ml);font-size:13px;padding:10px 0">Failed to load.</div>';
+  }
+}
+
+function renderStockInputs() {
+  if (!stockEventName) return;
+  // Reuse current stockMap only if stockEventName matches current event
+  const map = stockEventName === eventInfo.name ? stockMap : {};
+  document.getElementById('su-stock').innerHTML = skus.map(s => `
+    <div class="price-row">
+      <span class="prname">${esc(s.sku_name)}</span>
+      <input type="number" id="stock-${cssId(s.sku_name)}" value="${map[s.sku_name] ?? ''}" placeholder="—" min="0" step="1">
+    </div>`).join('') || '<div style="color:var(--ml);font-size:13px;padding:10px 0">No SKUs found.</div>';
 }
 
 function updateEventLabel() {
@@ -741,12 +793,7 @@ function renderSetup() {
       <input type="checkbox" class="ballowed-cb" value="${escq(s.sku_name)}" style="width:15px;height:15px;accent-color:var(--green)">
       <span>${esc(s.sku_name)}</span>
     </label>`).join('');
-  // stock
-  document.getElementById('su-stock').innerHTML = skus.map(s => `
-    <div class="price-row">
-      <span class="prname">${esc(s.sku_name)}</span>
-      <input type="number" id="stock-${cssId(s.sku_name)}" value="${stockMap[s.sku_name] ?? ''}" placeholder="—" min="0" step="1">
-    </div>`).join('') || '<div style="color:var(--ml);font-size:13px;padding:10px 0">No SKUs found.</div>';
+  // stock — rendered separately via switchStockActivity / renderStockInputs
   // bundles
   document.getElementById('su-bundles').innerHTML = bundles.map(b => `
     <div class="bundle-row">
@@ -833,17 +880,17 @@ async function savePrices() {
 }
 
 async function saveStock() {
-  if (!eventInfo.name) { toast('Please save Activity first', true); return; }
+  if (!stockEventName) { toast('Please select an Activity for stock first', true); return; }
   const rows = [];
   skus.forEach(s => {
     const el = document.getElementById('stock-' + cssId(s.sku_name));
     if (!el) return;
     const v = parseFloat(el.value);
     if (!isNaN(v) && el.value !== '') {
-      rows.push({ event_name: eventInfo.name, sku_name: s.sku_name, loaded_qty: v });
-      stockMap[s.sku_name] = v;
+      rows.push({ event_name: stockEventName, sku_name: s.sku_name, loaded_qty: v });
+      if (stockEventName === eventInfo.name) stockMap[s.sku_name] = v;
     } else {
-      delete stockMap[s.sku_name];
+      if (stockEventName === eventInfo.name) delete stockMap[s.sku_name];
     }
   });
   try {
