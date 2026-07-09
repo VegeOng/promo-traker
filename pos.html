@@ -178,6 +178,13 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   </div>
 
   <div class="setup-card">
+    <h3>🛍️ SKUs for This Activity</h3>
+    <div style="font-size:11px;color:var(--muted);margin-bottom:10px">Tick which products are sold at this event. Unticked SKUs won't appear on the Sell screen.</div>
+    <div id="su-sku-list" style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px"></div>
+    <button class="save-btn" onclick="saveActiveSkus()">Save SKU Selection</button>
+  </div>
+
+  <div class="setup-card">
     <h3>💲 Product Prices (RM/unit for this event)</h3>
     <div style="font-size:11px;color:var(--muted);margin-bottom:6px">Products without a price won't show on the Sell screen.</div>
     <div id="su-prices"><div style="color:var(--ml);font-size:13px;padding:10px 0">Loading…</div></div>
@@ -286,6 +293,7 @@ let skus = [];
 let bundles = [];
 let prices = JSON.parse(localStorage.getItem('mv_pos_prices') || '{}');
 let eventInfo = JSON.parse(localStorage.getItem('mv_pos_event') || '{"name":"","activity_id":""}');
+let activeSkus = []; // SKU names active for current activity (empty = all)
 let cart = [];
 let payMethod = 'Cash';
 let stockMap = {};  // sku_name -> loaded qty (for this event)
@@ -342,6 +350,7 @@ async function init() {
   syncOffline();
   loadActivitiesDropdown();
   loadStock();
+  loadActiveSkus();
   // Auto-jump to Setup on devices with no event configured
   if (!eventInfo.name) showPage('setup');
 }
@@ -424,6 +433,47 @@ function renderStockInputs() {
     </div>`).join('') || '<div style="color:var(--ml);font-size:13px;padding:10px 0">No SKUs found.</div>';
 }
 
+// ── Active SKUs for this activity ──
+async function loadActiveSkus() {
+  if (!eventInfo.activity_id) { activeSkus = []; renderProducts(); renderSkuCheckboxes(); return; }
+  try {
+    const rows = await db(`activities?activity_id=eq.${encodeURIComponent(eventInfo.activity_id)}&select=active_skus`);
+    const val = rows && rows[0] && rows[0].active_skus;
+    activeSkus = Array.isArray(val) ? val : [];
+  } catch(e) { activeSkus = []; }
+  renderProducts();
+  renderSkuCheckboxes();
+}
+
+function renderSkuCheckboxes() {
+  const wrap = document.getElementById('su-sku-list');
+  if (!wrap) return;
+  wrap.innerHTML = skus.map(s => {
+    const checked = !activeSkus.length || activeSkus.includes(s.sku_name);
+    return `<label style="display:flex;align-items:center;gap:7px;font-size:12px;font-weight:600;padding:7px 10px;border:1.5px solid var(--border);border-radius:8px;cursor:pointer;background:#fff">
+      <input type="checkbox" class="sku-active-cb" value="${escq(s.sku_name)}" ${checked?'checked':''} style="width:15px;height:15px;accent-color:var(--green)">
+      <span>${esc(s.sku_name)}</span>
+    </label>`;
+  }).join('');
+}
+
+async function saveActiveSkus() {
+  if (!eventInfo.activity_id) { toast('Save Activity first', true); return; }
+  const checked = [...document.querySelectorAll('.sku-active-cb:checked')].map(cb => cb.value);
+  const allChecked = checked.length === skus.length;
+  const toSave = allChecked ? null : checked; // null = all, saves space
+  try {
+    await fetch(SUPA_URL + '/rest/v1/activities?activity_id=eq.' + encodeURIComponent(eventInfo.activity_id), {
+      method: 'PATCH',
+      headers: { ...H, 'Prefer': 'return=minimal' },
+      body: JSON.stringify({ active_skus: toSave })
+    });
+    activeSkus = toSave || [];
+    renderProducts();
+    toast('✓ SKU selection saved');
+  } catch(e) { toast('Failed to save', true); }
+}
+
 function updateEventLabel() {
   const parts = [];
   if (eventInfo.name) parts.push('📍 ' + eventInfo.name);
@@ -434,7 +484,9 @@ function updateEventLabel() {
 // ── Products / bundles grid ──
 function renderProducts() {
   const grid = document.getElementById('product-grid');
-  const priced = skus.filter(s => prices[s.sku_name] > 0);
+  let priced = skus.filter(s => prices[s.sku_name] > 0);
+  if (activeSkus.length) priced = priced.filter(s => activeSkus.includes(s.sku_name));
+  const priced_orig = priced; // keep reference for below
   if (!priced.length) {
     grid.innerHTML = '<div style="grid-column:1/-1;color:var(--ml);font-size:13px;padding:16px;text-align:center">No prices set yet.<br>Go to ⚙️ Setup and set prices first.</div>';
     return;
@@ -793,6 +845,8 @@ function renderSetup() {
       <input type="checkbox" class="ballowed-cb" value="${escq(s.sku_name)}" style="width:15px;height:15px;accent-color:var(--green)">
       <span>${esc(s.sku_name)}</span>
     </label>`).join('');
+  // SKU checkboxes
+  renderSkuCheckboxes();
   // stock — rendered separately via switchStockActivity / renderStockInputs
   // bundles
   document.getElementById('su-bundles').innerHTML = bundles.map(b => `
@@ -852,6 +906,7 @@ function saveEvent() {
   localStorage.setItem('mv_pos_event', JSON.stringify(eventInfo));
   updateEventLabel();
   loadStock().then(renderSetup);
+  loadActiveSkus();
   toast('✓ Event saved');
   showPage('sell');
 }
