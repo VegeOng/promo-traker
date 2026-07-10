@@ -724,20 +724,31 @@ function previewReceipt(input) {
 async function uploadReceipt() {
   const input = document.getElementById('receipt-input');
   const file = input.files[0];
-  if (!file || !_lastSaleId) return;
+  const errDiv = document.getElementById('receipt-err');
+  errDiv.style.display = 'none';
+
+  if (!file) { errDiv.textContent = '❌ No photo selected.'; errDiv.style.display = 'block'; return; }
+  if (!_lastSaleId) { errDiv.textContent = '❌ Sale ID missing — sale may be offline.'; errDiv.style.display = 'block'; return; }
+
   const btn = document.getElementById('receipt-upload-btn');
   btn.disabled = true; btn.textContent = 'Uploading…';
+
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 30000);
+
   try {
-    const ext = file.name.split('.').pop() || 'jpg';
+    const ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
     const path = `receipts/${_lastSaleId}_${Date.now()}.${ext}`;
     const upRes = await fetch(`${SUPA_URL}/storage/v1/object/pos-receipts/${path}`, {
       method: 'POST',
-      headers: { 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY, 'Content-Type': file.type },
-      body: file
+      headers: { 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY, 'Content-Type': file.type || 'image/jpeg' },
+      body: file,
+      signal: controller.signal
     });
+    clearTimeout(timer);
     if (!upRes.ok) {
       const errText = await upRes.text().catch(() => '');
-      throw new Error(`HTTP ${upRes.status}: ${errText}`);
+      throw new Error(`HTTP ${upRes.status} — ${errText || 'check Storage bucket & policy'}`);
     }
     const publicUrl = `${SUPA_URL}/storage/v1/object/public/pos-receipts/${path}`;
     await fetch(`${SUPA_URL}/rest/v1/pos_sales?id=eq.${_lastSaleId}`, {
@@ -745,14 +756,14 @@ async function uploadReceipt() {
       headers: { ...H, 'Prefer': 'return=minimal' },
       body: JSON.stringify({ receipt_url: publicUrl })
     });
-    // Show success screen inside modal, then auto-close after 2s
     document.getElementById('receipt-body').style.display = 'none';
     document.getElementById('receipt-success').style.display = 'block';
     setTimeout(closeReceiptModal, 2000);
   } catch(e) {
+    clearTimeout(timer);
     btn.disabled = false; btn.textContent = '✓ Upload & Save';
-    const errDiv = document.getElementById('receipt-err');
-    errDiv.textContent = '❌ ' + e.message;
+    const msg = e.name === 'AbortError' ? 'Upload timed out — check your internet connection.' : e.message;
+    errDiv.textContent = '❌ ' + msg;
     errDiv.style.display = 'block';
   }
 }
