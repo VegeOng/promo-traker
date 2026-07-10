@@ -394,7 +394,7 @@ async function loadActivitiesDropdown() {
     const acts = await db('activities?select=activity_id,name&order=created_at.desc&limit=30');
     _allActivities = acts || [];
     const opts = _allActivities.map(a =>
-      `<option value="${esc(a.name)}" data-name="${esc(a.name)}"${a.activity_id===eventInfo.activity_id?' selected':''}>${a.name}</option>`).join('');
+      `<option value="${esc(a.activity_id)}" data-name="${esc(a.name)}"${a.activity_id===eventInfo.activity_id?' selected':''}>${a.name}</option>`).join('');
     // POS event selector
     document.getElementById('su-activity').innerHTML = '<option value="">— Select Activity —</option>' + opts;
     // Stock activity selector — default to current event
@@ -948,9 +948,10 @@ function saveEvent() {
   const actSel = document.getElementById('su-activity');
   if (!actSel.value) { toast('Please select an Activity', true); return; }
   const actName = actSel.options[actSel.selectedIndex].text;
+  const actId = actSel.options[actSel.selectedIndex].value;
   eventInfo = {
     name: actName,
-    activity_id: actSel.value,
+    activity_id: actId,
     activity_name: actName
   };
   localStorage.setItem('mv_pos_event', JSON.stringify(eventInfo));
