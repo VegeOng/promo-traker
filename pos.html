@@ -841,7 +841,7 @@ async function loadStats() {
     // recent
     document.getElementById('st-sales').innerHTML = sales.slice(0, 20).map(s => `
       <div class="sale-row">
-        <div class="sr1"><span>${new Date(s.created_at).toLocaleTimeString('en-MY',{hour:'2-digit',minute:'2-digit'})} · ${esc(s.payment_method||'')}</span>
+        <div class="sr1"><span>${new Date(s.created_at).toLocaleTimeString('en-MY',{hour:'2-digit',minute:'2-digit'})} · ${esc(s.payment_method||'')} · ${esc(s.sold_by||'—')}</span>
         <span>${fmtRM(s.total)}<button class="void-btn" onclick="voidSale('${s.id}')">void</button></span></div>
         <div class="sr2">${(s.items||[]).map(i => `${i.name}×${i.qty}`).join(', ')}</div>
       </div>`).join('') || '<div class="trow"><span class="tn" style="color:var(--ml)">No sales yet</span></div>';
