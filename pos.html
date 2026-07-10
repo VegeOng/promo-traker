@@ -246,16 +246,23 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 </div>
 
 <!-- RECEIPT PHOTO MODAL -->
-<div id="receipt-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:200;display:none;align-items:center;justify-content:center;padding:16px;">
+<div id="receipt-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:200;align-items:center;justify-content:center;padding:16px;">
   <div style="background:#fff;border-radius:16px;padding:22px;max-width:360px;width:100%;text-align:center;">
-    <div style="font-size:20px;margin-bottom:6px;">📸</div>
-    <div style="font-size:15px;font-weight:800;margin-bottom:4px;">Capture Payment Proof</div>
-    <div style="font-size:12px;color:var(--muted);margin-bottom:16px;">Take a photo of the TNG / DuitNow transfer confirmation.</div>
-    <div id="receipt-preview" style="display:none;margin-bottom:12px;"><img id="receipt-img" style="width:100%;border-radius:10px;max-height:240px;object-fit:cover;" src=""></div>
-    <input type="file" id="receipt-input" accept="image/*" capture="environment" style="display:none;" onchange="previewReceipt(this)">
-    <button onclick="document.getElementById('receipt-input').click()" style="width:100%;padding:12px;background:var(--green);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;margin-bottom:8px;">📷 Open Camera</button>
-    <button id="receipt-upload-btn" onclick="uploadReceipt()" style="display:none;width:100%;padding:12px;background:var(--blue);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;margin-bottom:8px;">✓ Upload & Save</button>
-    <button onclick="closeReceiptModal()" style="width:100%;padding:10px;background:var(--bg);border:1.5px solid var(--border);border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;color:var(--muted);">Skip</button>
+    <div id="receipt-body">
+      <div style="font-size:20px;margin-bottom:6px;">📸</div>
+      <div style="font-size:15px;font-weight:800;margin-bottom:4px;">Capture Payment Proof</div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:16px;">Take a photo of the TNG / DuitNow transfer confirmation.</div>
+      <div id="receipt-preview" style="display:none;margin-bottom:12px;"><img id="receipt-img" style="width:100%;border-radius:10px;max-height:240px;object-fit:cover;" src=""></div>
+      <input type="file" id="receipt-input" accept="image/*" capture="environment" style="display:none;" onchange="previewReceipt(this)">
+      <button onclick="document.getElementById('receipt-input').click()" style="width:100%;padding:12px;background:var(--green);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;margin-bottom:8px;">📷 Open Camera</button>
+      <button id="receipt-upload-btn" onclick="uploadReceipt()" style="display:none;width:100%;padding:12px;background:#2563eb;color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;margin-bottom:8px;">✓ Upload & Save</button>
+      <button onclick="closeReceiptModal()" style="width:100%;padding:10px;background:#f3f4f6;border:1.5px solid #e5e7eb;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;color:#6b7280;">Skip</button>
+    </div>
+    <div id="receipt-success" style="display:none;">
+      <div style="font-size:48px;margin-bottom:12px;">✅</div>
+      <div style="font-size:17px;font-weight:800;color:#166534;margin-bottom:6px;">Receipt Saved!</div>
+      <div style="font-size:13px;color:#6b7280;">Photo uploaded successfully.</div>
+    </div>
   </div>
 </div>
 
@@ -699,6 +706,8 @@ function openReceiptModal() {
 
 function closeReceiptModal() {
   document.getElementById('receipt-modal').style.display = 'none';
+  document.getElementById('receipt-body').style.display = 'block';
+  document.getElementById('receipt-success').style.display = 'none';
   _lastSaleId = null;
 }
 
@@ -732,8 +741,10 @@ async function uploadReceipt() {
       headers: { ...H, 'Prefer': 'return=minimal' },
       body: JSON.stringify({ receipt_url: publicUrl })
     });
-    toast('✓ Receipt saved');
-    closeReceiptModal();
+    // Show success screen inside modal, then auto-close after 2s
+    document.getElementById('receipt-body').style.display = 'none';
+    document.getElementById('receipt-success').style.display = 'block';
+    setTimeout(closeReceiptModal, 2000);
   } catch(e) {
     toast('Upload failed — ' + e.message, true);
     btn.disabled = false; btn.textContent = '✓ Upload & Save';
