@@ -669,6 +669,10 @@ async function checkout() {
       headers: { ...H, 'Prefer': 'return=representation' },
       body: JSON.stringify(sale)
     });
+    if (!res.ok) {
+      const errText = await res.text().catch(() => '');
+      throw new Error('HTTP ' + res.status + ': ' + errText);
+    }
     const rows = await res.json();
     saleId = rows && rows[0] && rows[0].id;
     toast('✓ Sale recorded — ' + fmtRM(sale.total));
@@ -677,7 +681,7 @@ async function checkout() {
     q.push(sale);
     localStorage.setItem('mv_pos_queue', JSON.stringify(q));
     updateOfflineBadge();
-    toast('📥 Saved offline — will sync later');
+    toast('⚠️ Saved offline — ' + (e.message || 'will sync later'));
   }
   // Update local sold counts so stock badges deduct immediately
   cart.forEach(c => {
