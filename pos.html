@@ -840,7 +840,7 @@ async function loadStats() {
   const y = today.getFullYear(), m = String(today.getMonth()+1).padStart(2,'0'), d = String(today.getDate()).padStart(2,'0');
   const start = `${y}-${m}-${d}T00:00:00`;
   try {
-    let q = `pos_sales?created_at=gte.${start}&order=created_at.desc`;
+    let q = `pos_sales?created_at=gte.${start}&order=created_at.desc&select=id,created_at,total,discount,payment_method,sold_by,items,event_name,activity_id`;
     if (eventInfo.name) q += `&event_name=eq.${encodeURIComponent(eventInfo.name)}`;
     const [sales] = await Promise.all([db(q).then(r => r || []), loadStock()]);
     const revenue = sales.reduce((s, x) => s + parseFloat(x.total || 0), 0);
