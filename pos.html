@@ -291,6 +291,13 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
       <div class="paybtn" data-pay="DuitNow" onclick="setPay('DuitNow',this)">🏦 DuitNow</div>
       <div class="paybtn" data-pay="Other" onclick="setPay('Other',this)">Other</div>
     </div>
+    <div style="display:flex;align-items:center;gap:8px;padding:6px 0;">
+      <span style="font-size:12px;font-weight:700;color:var(--muted);white-space:nowrap;">Discount</span>
+      <div style="display:flex;gap:4px;flex:1">
+        <input type="number" id="disc-amt" placeholder="RM" min="0" step="0.50" oninput="applyDiscount()" style="flex:1;padding:7px 8px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:inherit;background:#fff;">
+        <input type="number" id="disc-pct" placeholder="%" min="0" max="100" step="1" oninput="applyDiscountPct()" style="width:64px;padding:7px 8px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:inherit;background:#fff;">
+      </div>
+    </div>
     <button class="checkout-btn" id="checkout-btn" onclick="checkout()" disabled>✓ Complete Sale — RM 0.00</button>
     <button class="clear-btn" onclick="clearCart()">Clear cart</button>
   </div>
@@ -624,9 +631,26 @@ function changeQty(i, d) {
 }
 function delItem(i) { cart.splice(i, 1); renderCart(); }
 function setLinePrice(i, v) { cart[i].price = parseFloat(v) || 0; renderCart(false); }
-function clearCart() { cart = []; renderCart(); }
+function clearCart() { cart = []; cartDiscount = 0; document.getElementById('disc-amt').value = ''; document.getElementById('disc-pct').value = ''; renderCart(); }
 
-function cartTotal() { return cart.reduce((s, c) => s + c.qty * c.price, 0); }
+let cartDiscount = 0;
+
+function cartSubtotal() { return cart.reduce((s, c) => s + c.qty * c.price, 0); }
+function cartTotal() { return Math.max(0, cartSubtotal() - cartDiscount); }
+
+function applyDiscount() {
+  const amt = parseFloat(document.getElementById('disc-amt').value) || 0;
+  cartDiscount = amt;
+  document.getElementById('disc-pct').value = '';
+  renderCart(false);
+}
+
+function applyDiscountPct() {
+  const pct = parseFloat(document.getElementById('disc-pct').value) || 0;
+  cartDiscount = cartSubtotal() * pct / 100;
+  document.getElementById('disc-amt').value = '';
+  renderCart(false);
+}
 
 function renderCart(rebuild = true) {
   const n = cart.reduce((s, c) => s + c.qty, 0);
@@ -637,6 +661,9 @@ function renderCart(rebuild = true) {
   document.getElementById('checkout-btn').disabled = !cart.length;
   if (!rebuild) return;
   renderProducts();
+  const discLine = cartDiscount > 0
+    ? `<div class="citem" style="color:var(--red);font-weight:700;"><div class="cname" style="flex:1">Discount</div><div style="margin-right:36px">− ${fmtRM(cartDiscount)}</div></div>`
+    : '';
   document.getElementById('cart-body').innerHTML = cart.map((c, i) => `
     <div class="citem">
       <div class="cname">${c.bundle ? '🎁 ' : c.gift ? '🎁 ' : ''}${esc(c.name)}${c.gift ? '<span style="font-size:10px;color:#166534;font-weight:700;background:#f0fdf4;padding:1px 6px;border-radius:10px;margin-left:4px">FREE</span>' : ''}${c.bundle && c.items ? `<div class="cbundle">${esc(c.items)}</div>` : ''}</div>
@@ -645,7 +672,7 @@ function renderCart(rebuild = true) {
       </div>
       <div class="cprice"><input type="number" value="${c.price}" step="0.01" min="0" onchange="setLinePrice(${i},this.value)"></div>
       <button class="cdel" onclick="delItem(${i})">✕</button>
-    </div>`).join('');
+    </div>`).join('') + discLine;
 }
 
 function toggleCart() {
@@ -670,6 +697,7 @@ async function checkout() {
     activity_id: eventInfo.activity_id || null,
     items: cart.map(c => ({ name: c.name, qty: c.qty, price: c.price, bundle: c.bundle, items: c.items || null, contents: c.contents || null })),
     total: cartTotal(),
+    discount: cartDiscount || 0,
     payment_method: payMethod,
     sold_by: loggedUser
   };
