@@ -842,7 +842,7 @@ async function loadStats() {
   try {
     let q = `pos_sales?created_at=gte.${start}&order=created_at.desc`;
     if (eventInfo.name) q += `&event_name=eq.${encodeURIComponent(eventInfo.name)}`;
-    const sales = await db(q) || [];
+    const [sales] = await Promise.all([db(q).then(r => r || []), loadStock()]);
     const revenue = sales.reduce((s, x) => s + parseFloat(x.total || 0), 0);
     const units = sales.reduce((s, x) => s + (x.items || []).reduce((a, i) => a + i.qty, 0), 0);
     document.getElementById('st-revenue').textContent = fmtRM(revenue);
@@ -868,7 +868,6 @@ async function loadStats() {
       `<div class="trow"><span class="tn">${esc(k)} × ${v.qty}</span><span class="tv">${fmtRM(v.amt)}</span></div>`).join('') || '<div class="trow"><span class="tn" style="color:var(--ml)">No sales yet</span></div>';
 
     // stock reconciliation (event totals, not just today)
-    await loadStock();
     const trackedSkus = Object.keys(stockMap);
     const stockCard = document.getElementById('st-stock-card');
     if (trackedSkus.length) {
