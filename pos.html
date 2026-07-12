@@ -916,55 +916,60 @@ async function loadStats() {
   }
 }
 
-let _skuChangeState = {}; // { id, itemIdx, oldSku, newSku }
+let _skuChangeState = {}; // { id, itemIdx, contentIdx, oldSku, newSku }
 
 function changeSku(id) {
   const sale = salesCache[id];
   if (!sale || !sale.items || sale.items.length === 0) { toast('No items to change', true); return; }
-  _skuChangeState = { id, itemIdx: null, oldSku: null, newSku: null };
+  _skuChangeState = { id, itemIdx: null, contentIdx: null, oldSku: null, newSku: null };
   showChangeSkuStep1();
 }
 
 function showChangeSkuStep1() {
   const sale = salesCache[_skuChangeState.id];
   document.getElementById('changesku-title').textContent = 'Change SKU';
-  document.getElementById('changesku-subtitle').textContent = 'Original order — tap item to change:';
+  document.getElementById('changesku-subtitle').textContent = 'Original order — tap Change on the item:';
   document.getElementById('changesku-confirm-btn').style.display = 'none';
   document.getElementById('changesku-cancel-btn').textContent = 'Cancel';
+  document.getElementById('changesku-cancel-btn').onclick = () => document.getElementById('changesku-modal').style.display = 'none';
   document.getElementById('changesku-list').innerHTML = sale.items.map((it, i) => `
-    <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border:1.5px solid #e5e7eb;border-radius:10px;margin-bottom:8px;">
-      <div>
-        <div style="font-size:14px;font-weight:700;">${esc(it.name)}</div>
-        <div style="font-size:11px;color:var(--muted);">×${it.qty}${it.bundle && it.items ? ' · ' + esc(it.items) : ''}</div>
+    <div style="padding:12px 14px;border:1.5px solid #e5e7eb;border-radius:10px;margin-bottom:8px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;${it.bundle && it.contents && it.contents.length ? 'margin-bottom:8px' : ''}">
+        <div style="font-size:14px;font-weight:700;">${esc(it.name)} <span style="color:var(--muted);font-size:12px;font-weight:400">×${it.qty}</span></div>
+        ${!it.bundle ? `<button onclick="showChangeSkuPickerStep('${escq(it.name)}',${i},null)" style="padding:6px 12px;background:#2563eb;color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;flex-shrink:0;">Change</button>` : ''}
       </div>
-      <button onclick="showChangeSkuStep2(${i})" style="padding:6px 12px;background:#2563eb;color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;">Change</button>
+      ${it.bundle && it.contents && it.contents.length ? it.contents.map((c, ci) => `
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 10px;background:#f9fafb;border-radius:8px;margin-bottom:4px;">
+          <span style="font-size:13px;font-weight:600;">${esc(c.name)} <span style="color:var(--muted);font-weight:400">×${c.qty}</span></span>
+          <button onclick="showChangeSkuPickerStep('${escq(c.name)}',${i},${ci})" style="padding:4px 10px;background:#2563eb;color:#fff;border:none;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;flex-shrink:0;">Change</button>
+        </div>`).join('') : ''}
     </div>`).join('');
   document.getElementById('changesku-modal').style.display = 'flex';
 }
 
-function showChangeSkuStep2(itemIdx) {
-  const sale = salesCache[_skuChangeState.id];
+function showChangeSkuPickerStep(oldSku, itemIdx, contentIdx) {
   _skuChangeState.itemIdx = itemIdx;
-  _skuChangeState.oldSku = sale.items[itemIdx].name;
+  _skuChangeState.contentIdx = contentIdx;
+  _skuChangeState.oldSku = oldSku;
   const availSkus = activeSkus.length ? skus.filter(s => activeSkus.includes(s.sku_name)) : skus;
   document.getElementById('changesku-title').textContent = 'Select New SKU';
-  document.getElementById('changesku-subtitle').textContent = 'Replacing: ' + _skuChangeState.oldSku;
+  document.getElementById('changesku-subtitle').textContent = 'Replacing: ' + oldSku;
   document.getElementById('changesku-confirm-btn').style.display = 'none';
   document.getElementById('changesku-cancel-btn').textContent = '← Back';
   document.getElementById('changesku-cancel-btn').onclick = showChangeSkuStep1;
   document.getElementById('changesku-list').innerHTML = availSkus.map(s => `
-    <div onclick="showChangeSkuStep3('${escq(s.sku_name)}')" style="padding:12px 14px;border:1.5px solid ${s.sku_name === _skuChangeState.oldSku ? 'var(--green)' : '#e5e7eb'};border-radius:10px;margin-bottom:8px;cursor:pointer;font-size:14px;font-weight:600;color:${s.sku_name === _skuChangeState.oldSku ? 'var(--green)' : 'inherit'};">
+    <div onclick="showChangeSkuConfirmStep('${escq(s.sku_name)}')" style="padding:12px 14px;border:1.5px solid ${s.sku_name === oldSku ? 'var(--green)' : '#e5e7eb'};border-radius:10px;margin-bottom:8px;cursor:pointer;font-size:14px;font-weight:600;color:${s.sku_name === oldSku ? 'var(--green)' : 'inherit'};">
       ${esc(s.sku_name)}
     </div>`).join('');
 }
 
-function showChangeSkuStep3(newSku) {
+function showChangeSkuConfirmStep(newSku) {
   _skuChangeState.newSku = newSku;
   document.getElementById('changesku-title').textContent = 'Confirm Change';
   document.getElementById('changesku-subtitle').textContent = '';
   document.getElementById('changesku-confirm-btn').style.display = 'block';
   document.getElementById('changesku-cancel-btn').textContent = '← Back';
-  document.getElementById('changesku-cancel-btn').onclick = () => showChangeSkuStep2(_skuChangeState.itemIdx);
+  document.getElementById('changesku-cancel-btn').onclick = () => showChangeSkuPickerStep(_skuChangeState.oldSku, _skuChangeState.itemIdx, _skuChangeState.contentIdx);
   document.getElementById('changesku-list').innerHTML = `
     <div style="background:#fef9c3;border:1.5px solid #fde68a;border-radius:12px;padding:16px;margin-bottom:8px;">
       <div style="font-size:11px;font-weight:700;color:#92400e;margin-bottom:8px;text-transform:uppercase;">Before</div>
@@ -978,11 +983,16 @@ function showChangeSkuStep3(newSku) {
 }
 
 async function submitSkuChange() {
-  const { id, itemIdx, oldSku, newSku } = _skuChangeState;
+  const { id, itemIdx, contentIdx, oldSku, newSku } = _skuChangeState;
   if (!id || !newSku || oldSku === newSku) { document.getElementById('changesku-modal').style.display = 'none'; return; }
   document.getElementById('changesku-modal').style.display = 'none';
   const sale = salesCache[id];
-  const newItems = sale.items.map((it, i) => i === itemIdx ? { ...it, name: newSku } : it);
+  const newItems = sale.items.map((it, i) => {
+    if (i !== itemIdx) return it;
+    if (contentIdx === null) return { ...it, name: newSku };
+    const newContents = it.contents.map((c, ci) => ci === contentIdx ? { ...c, name: newSku } : c);
+    return { ...it, contents: newContents, items: newContents.map(c => `${c.name}×${c.qty}`).join(' + ') };
+  });
   try {
     await fetch(SUPA_URL + '/rest/v1/pos_sales?id=eq.' + id, {
       method: 'PATCH',
