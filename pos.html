@@ -894,12 +894,33 @@ async function loadStats() {
     document.getElementById('st-sales').innerHTML = sales.slice(0, 20).map(s => `
       <div class="sale-row">
         <div class="sr1"><span>${new Date(s.created_at).toLocaleTimeString('en-MY',{hour:'2-digit',minute:'2-digit'})} · ${esc(s.payment_method||'')} · ${esc(s.sold_by||'—')}</span>
-        <span>${fmtRM(s.total)}<button class="void-btn" onclick="changePay('${s.id}','${esc(s.payment_method||'')}')">⇄</button><button class="void-btn" onclick="voidSale('${s.id}')">void</button></span></div>
+        <span>${fmtRM(s.total)}<button class="void-btn" onclick="changePay('${s.id}','${esc(s.payment_method||'')}')">⇄</button><button class="void-btn" onclick="changeSku('${s.id}',${JSON.stringify(s.items||[]).replace(/'/g,'&#39;')})">SKU</button><button class="void-btn" onclick="voidSale('${s.id}')">void</button></span></div>
         <div class="sr2">${(s.items||[]).map(i => `${i.name}×${i.qty}`).join(', ')}</div>
       </div>`).join('') || '<div class="trow"><span class="tn" style="color:var(--ml)">No sales yet</span></div>';
   } catch(e) {
     document.getElementById('st-pay').innerHTML = '<div class="trow"><span class="tn" style="color:var(--red)">Failed to load</span></div>';
   }
+}
+
+async function changeSku(id, items) {
+  if (!items || items.length === 0) { toast('No items to change', true); return; }
+  const availSkus = activeSkus.length ? skus.filter(s => activeSkus.includes(s.sku_name)) : skus;
+  const idx = items.length === 1 ? 0 : parseInt(prompt(items.map((it, i) => `${i+1}. ${it.name} x${it.qty}`).join('\n') + '\n\nWhich item to change? Enter number:')) - 1;
+  if (isNaN(idx) || idx < 0 || idx >= items.length) return;
+  const chosen = prompt('Change "' + items[idx].name + '" to:\n' + availSkus.map((s, i) => `${i+1}. ${s.sku_name}`).join('\n') + '\n\nEnter number:');
+  if (!chosen) return;
+  const skuIdx = parseInt(chosen) - 1;
+  if (skuIdx < 0 || skuIdx >= availSkus.length) { toast('Invalid choice', true); return; }
+  const newItems = items.map((it, i) => i === idx ? { ...it, name: availSkus[skuIdx].sku_name } : it);
+  try {
+    await fetch(SUPA_URL + '/rest/v1/pos_sales?id=eq.' + id, {
+      method: 'PATCH',
+      headers: { ...H, 'Prefer': 'return=minimal' },
+      body: JSON.stringify({ items: newItems })
+    });
+    toast('✓ SKU changed');
+    loadStats();
+  } catch(e) { toast('Failed to update', true); }
 }
 
 async function changePay(id, current) {
