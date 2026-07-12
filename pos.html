@@ -322,6 +322,7 @@ let cart = [];
 let payMethod = 'Cash';
 let stockMap = {};  // sku_name -> loaded qty (for this event)
 let soldMap = {};   // sku_name -> sold qty (from pos_sales for this event)
+let salesCache = {}; // id -> sale object for changeSku lookup
 
 async function db(path, opts = {}) {
   const controller = new AbortController();
@@ -852,6 +853,7 @@ async function loadStats() {
     let q = `pos_sales?created_at=gte.${start}&order=created_at.desc&select=id,created_at,total,discount,payment_method,sold_by,items,event_name,activity_id`;
     if (eventInfo.name) q += `&event_name=eq.${encodeURIComponent(eventInfo.name)}`;
     const [sales] = await Promise.all([db(q).then(r => r || []), loadStock()]);
+    salesCache = {}; sales.forEach(s => { salesCache[s.id] = s; });
     const revenue = sales.reduce((s, x) => s + parseFloat(x.total || 0), 0);
     const units = sales.reduce((s, x) => s + (x.items || []).reduce((a, i) => a + i.qty, 0), 0);
     document.getElementById('st-revenue').textContent = fmtRM(revenue);
@@ -894,7 +896,7 @@ async function loadStats() {
     document.getElementById('st-sales').innerHTML = sales.slice(0, 20).map(s => `
       <div class="sale-row">
         <div class="sr1"><span>${new Date(s.created_at).toLocaleTimeString('en-MY',{hour:'2-digit',minute:'2-digit'})} · ${esc(s.payment_method||'')} · ${esc(s.sold_by||'—')}</span>
-        <span>${fmtRM(s.total)}<button class="void-btn" onclick="changePay('${s.id}','${esc(s.payment_method||'')}')">⇄</button><button class="void-btn" onclick="changeSku('${s.id}',${JSON.stringify(s.items||[]).replace(/'/g,'&#39;')})">Change SKU</button><button class="void-btn" onclick="voidSale('${s.id}')">void</button></span></div>
+        <span>${fmtRM(s.total)}<button class="void-btn" onclick="changePay('${s.id}','${esc(s.payment_method||'')}')">⇄</button><button class="void-btn" onclick="changeSku('${s.id}')">Change SKU</button><button class="void-btn" onclick="voidSale('${s.id}')">void</button></span></div>
         <div class="sr2">${(s.items||[]).map(i => `${i.name}×${i.qty}`).join(', ')}</div>
       </div>`).join('') || '<div class="trow"><span class="tn" style="color:var(--ml)">No sales yet</span></div>';
   } catch(e) {
@@ -902,11 +904,18 @@ async function loadStats() {
   }
 }
 
-async function changeSku(id, items) {
-  if (!items || items.length === 0) { toast('No items to change', true); return; }
+async function changeSku(id) {
+  const sale = salesCache[id];
+  if (!sale || !sale.items || sale.items.length === 0) { toast('No items to change', true); return; }
+  const items = sale.items;
   const availSkus = activeSkus.length ? skus.filter(s => activeSkus.includes(s.sku_name)) : skus;
-  const idx = items.length === 1 ? 0 : parseInt(prompt(items.map((it, i) => `${i+1}. ${it.name} x${it.qty}`).join('\n') + '\n\nWhich item to change? Enter number:')) - 1;
-  if (isNaN(idx) || idx < 0 || idx >= items.length) return;
+  let idx = 0;
+  if (items.length > 1) {
+    const pick = prompt(items.map((it, i) => `${i+1}. ${it.name} x${it.qty}`).join('\n') + '\n\nWhich item to change? Enter number:');
+    if (!pick) return;
+    idx = parseInt(pick) - 1;
+    if (isNaN(idx) || idx < 0 || idx >= items.length) return;
+  }
   const chosen = prompt('Change "' + items[idx].name + '" to:\n' + availSkus.map((s, i) => `${i+1}. ${s.sku_name}`).join('\n') + '\n\nEnter number:');
   if (!chosen) return;
   const skuIdx = parseInt(chosen) - 1;
