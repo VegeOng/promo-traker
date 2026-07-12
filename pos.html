@@ -135,12 +135,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 </div>
 
 <!-- FREE GIFT MODAL -->
-<div id="changesku-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;align-items:center;justify-content:center;padding:16px;">
-  <div style="background:#fff;border-radius:16px;padding:20px;max-width:360px;width:100%;max-height:85vh;display:flex;flex-direction:column;">
+<div id="changesku-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;align-items:flex-end;justify-content:center;padding:0;">
+  <div style="background:#fff;border-radius:16px 16px 0 0;padding:20px;max-width:480px;width:100%;max-height:80vh;display:flex;flex-direction:column;">
     <div style="font-size:15px;font-weight:800;margin-bottom:4px;" id="changesku-title">Change SKU</div>
     <div id="changesku-subtitle" style="font-size:12px;color:var(--muted);margin-bottom:12px;"></div>
-    <div style="overflow-y:auto;flex:1;" id="changesku-list"></div>
-    <div style="display:flex;gap:8px;margin-top:12px;">
+    <div style="overflow-y:auto;flex:1;min-height:0;" id="changesku-list"></div>
+    <div style="display:flex;gap:8px;margin-top:12px;flex-shrink:0;">
       <button id="changesku-cancel-btn" onclick="document.getElementById('changesku-modal').style.display='none'" style="flex:1;padding:11px;background:#f3f4f6;border:1.5px solid #e5e7eb;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;">Cancel</button>
       <button id="changesku-confirm-btn" style="display:none;flex:1;padding:11px;background:var(--green);color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;" onclick="submitSkuChange()">Confirm Change</button>
     </div>
