@@ -946,8 +946,11 @@ function openChangeSkuSkuPicker(id, items, itemIdx) {
 }
 
 async function applySkuChange(id, itemIdx, newSku) {
-  document.getElementById('changesku-modal').style.display = 'none';
   const sale = salesCache[id];
+  const oldSku = sale.items[itemIdx].name;
+  if (oldSku === newSku) { document.getElementById('changesku-modal').style.display = 'none'; return; }
+  if (!confirm(`Change SKU:\n"${oldSku}" → "${newSku}"\n\nConfirm?`)) return;
+  document.getElementById('changesku-modal').style.display = 'none';
   const newItems = sale.items.map((it, i) => i === itemIdx ? { ...it, name: newSku } : it);
   try {
     await fetch(SUPA_URL + '/rest/v1/pos_sales?id=eq.' + id, {
