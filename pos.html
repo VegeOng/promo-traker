@@ -450,9 +450,12 @@ async function switchStockActivity() {
   }
 }
 
-function renderStockInputs() {
+async function renderStockInputs() {
   if (!stockEventName) return;
-  const map = stockEventName === eventInfo.name ? stockMap : {};
+  document.getElementById('su-stock').innerHTML = '<div style="color:var(--ml);font-size:13px;padding:10px 0">Loading…</div>';
+  const rows = await db(`pos_stock?event_name=eq.${encodeURIComponent(stockEventName)}`).catch(() => []);
+  const map = {};
+  (rows || []).forEach(r => { map[r.sku_name] = parseFloat(r.loaded_qty) || 0; });
   stockBaseMap = map;
   document.getElementById('su-stock').innerHTML = skus.map(s => {
     const cur = map[s.sku_name] ?? 0;
