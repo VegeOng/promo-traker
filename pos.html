@@ -894,7 +894,7 @@ async function loadStats() {
     document.getElementById('st-sales').innerHTML = sales.slice(0, 20).map(s => `
       <div class="sale-row">
         <div class="sr1"><span>${new Date(s.created_at).toLocaleTimeString('en-MY',{hour:'2-digit',minute:'2-digit'})} · ${esc(s.payment_method||'')} · ${esc(s.sold_by||'—')}</span>
-        <span>${fmtRM(s.total)}<button class="void-btn" onclick="changePay('${s.id}','${esc(s.payment_method||'')}')">⇄</button><button class="void-btn" onclick="changeSku('${s.id}',${JSON.stringify(s.items||[]).replace(/'/g,'&#39;')})">SKU</button><button class="void-btn" onclick="voidSale('${s.id}')">void</button></span></div>
+        <span>${fmtRM(s.total)}<button class="void-btn" onclick="changePay('${s.id}','${esc(s.payment_method||'')}')">⇄</button><button class="void-btn" onclick="changeSku('${s.id}',${JSON.stringify(s.items||[]).replace(/'/g,'&#39;')})">Change SKU</button><button class="void-btn" onclick="voidSale('${s.id}')">void</button></span></div>
         <div class="sr2">${(s.items||[]).map(i => `${i.name}×${i.qty}`).join(', ')}</div>
       </div>`).join('') || '<div class="trow"><span class="tn" style="color:var(--ml)">No sales yet</span></div>';
   } catch(e) {
