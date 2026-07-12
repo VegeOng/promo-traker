@@ -544,7 +544,7 @@ function renderBundles() {
   label.style.display = 'block';
   grid.innerHTML = bundles.map(b => `
     <div class="pbtn bundle" onclick="addBundleToCart('${b.id}')">
-      <div class="pname">🎁 ${esc(b.name)}</div>
+      <div class="pname">${esc(b.name)}</div>
       <div class="pprice">${fmtRM(b.price)}</div>
     </div>`).join('');
 }
@@ -666,7 +666,7 @@ function renderCart(rebuild = true) {
     : '';
   document.getElementById('cart-body').innerHTML = cart.map((c, i) => `
     <div class="citem">
-      <div class="cname">${c.bundle ? '🎁 ' : c.gift ? '🎁 ' : ''}${esc(c.name)}${c.gift ? '<span style="font-size:10px;color:#166534;font-weight:700;background:#f0fdf4;padding:1px 6px;border-radius:10px;margin-left:4px">FREE</span>' : ''}${c.bundle && c.items ? `<div class="cbundle">${esc(c.items)}</div>` : ''}</div>
+      <div class="cname">${esc(c.name)}${c.gift ? '<span style="font-size:10px;color:#166534;font-weight:700;background:#f0fdf4;padding:1px 6px;border-radius:10px;margin-left:4px">FREE</span>' : ''}${c.bundle && c.items ? `<div class="cbundle">${esc(c.items)}</div>` : ''}</div>
       <div class="cqty">
         <button onclick="changeQty(${i},-1)">−</button><span>${c.qty}</span><button onclick="changeQty(${i},1)">＋</button>
       </div>
@@ -859,7 +859,7 @@ async function loadStats() {
     // by product
     const byProd = {};
     sales.forEach(s => (s.items || []).forEach(i => {
-      const key = (i.bundle ? '🎁 ' : '') + i.name;
+      const key = i.name;
       if (!byProd[key]) byProd[key] = { qty: 0, amt: 0 };
       byProd[key].qty += i.qty;
       byProd[key].amt += i.qty * i.price;
@@ -961,7 +961,7 @@ function renderSetup() {
   // bundles
   document.getElementById('su-bundles').innerHTML = bundles.map(b => `
     <div class="bundle-row">
-      <span class="bn">🎁 ${esc(b.name)}${b.items ? `<div style="font-size:11px;color:var(--muted);font-weight:400">${esc(b.items)}</div>` : ''}${b.pick_count ? `<div style="font-size:11px;color:var(--amber);font-weight:600">Pick ${b.pick_count}${b.allowed_skus && b.allowed_skus.length ? ' · ' + b.allowed_skus.join(', ') : ''}</div>` : (b.allowed_skus && b.allowed_skus.length ? `<div style="font-size:11px;color:var(--amber);font-weight:600">${b.allowed_skus.join(', ')}</div>` : '')}</span>
+      <span class="bn">${esc(b.name)}${b.items ? `<div style="font-size:11px;color:var(--muted);font-weight:400">${esc(b.items)}</div>` : ''}${b.pick_count ? `<div style="font-size:11px;color:var(--amber);font-weight:600">Pick ${b.pick_count}${b.allowed_skus && b.allowed_skus.length ? ' · ' + b.allowed_skus.join(', ') : ''}</div>` : (b.allowed_skus && b.allowed_skus.length ? `<div style="font-size:11px;color:var(--amber);font-weight:600">${b.allowed_skus.join(', ')}</div>` : '')}</span>
       <span class="bp">${fmtRM(b.price)}</span>
       <button style="font-size:12px;color:var(--green);background:var(--gxl);border:1.5px solid var(--gl);border-radius:7px;padding:5px 10px;cursor:pointer;font-weight:700;font-family:inherit" onclick="editBundle('${b.id}')">✏️</button>
       <button class="cdel" onclick="removeBundle('${b.id}')">✕</button>
