@@ -441,8 +441,8 @@ async function switchStockActivity() {
     document.getElementById('su-stock').innerHTML = skus.map(s => {
       const cur = map[s.sku_name] ?? 0;
       return `<div class="price-row">
-        <span class="prname">${esc(s.sku_name)}<span style="font-size:11px;color:var(--muted);font-weight:400;margin-left:6px">现有 ${cur}</span></span>
-        <input type="number" id="stock-${cssId(s.sku_name)}" placeholder="＋加" min="0" step="1" style="width:70px">
+        <span class="prname">${esc(s.sku_name)}<span style="font-size:11px;color:var(--muted);font-weight:400;margin-left:6px">Current: ${cur}</span></span>
+        <input type="number" id="stock-${cssId(s.sku_name)}" placeholder="+ Add" min="0" step="1" style="width:70px">
       </div>`;
     }).join('') || '<div style="color:var(--ml);font-size:13px;padding:10px 0">No SKUs found.</div>';
   } catch(e) {
@@ -460,8 +460,8 @@ async function renderStockInputs() {
   document.getElementById('su-stock').innerHTML = skus.map(s => {
     const cur = map[s.sku_name] ?? 0;
     return `<div class="price-row">
-      <span class="prname">${esc(s.sku_name)}<span style="font-size:11px;color:var(--muted);font-weight:400;margin-left:6px">现有 ${cur}</span></span>
-      <input type="number" id="stock-${cssId(s.sku_name)}" placeholder="＋加" min="0" step="1" style="width:70px">
+      <span class="prname">${esc(s.sku_name)}<span style="font-size:11px;color:var(--muted);font-weight:400;margin-left:6px">Current: ${cur}</span></span>
+      <input type="number" id="stock-${cssId(s.sku_name)}" placeholder="+ Add" min="0" step="1" style="width:70px">
     </div>`;
   }).join('') || '<div style="color:var(--ml);font-size:13px;padding:10px 0">No SKUs found.</div>';
 }
