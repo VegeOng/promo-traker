@@ -404,6 +404,7 @@ function remainingOf(name) {
 
 let _allActivities = [];
 let stockEventName = ''; // event name used for the stock section (may differ from current POS event)
+let stockBaseMap = {};  // existing loaded_qty before adding more
 
 async function loadActivitiesDropdown() {
   try {
@@ -436,11 +437,14 @@ async function switchStockActivity() {
     const rows = await db(`pos_stock?event_name=eq.${encodeURIComponent(stockEventName)}`).catch(() => []);
     const map = {};
     (rows || []).forEach(r => { map[r.sku_name] = parseFloat(r.loaded_qty) || 0; });
-    document.getElementById('su-stock').innerHTML = skus.map(s => `
-      <div class="price-row">
-        <span class="prname">${esc(s.sku_name)}</span>
-        <input type="number" id="stock-${cssId(s.sku_name)}" value="${map[s.sku_name] ?? ''}" placeholder="—" min="0" step="1">
-      </div>`).join('') || '<div style="color:var(--ml);font-size:13px;padding:10px 0">No SKUs found.</div>';
+    stockBaseMap = map;
+    document.getElementById('su-stock').innerHTML = skus.map(s => {
+      const cur = map[s.sku_name] ?? 0;
+      return `<div class="price-row">
+        <span class="prname">${esc(s.sku_name)}<span style="font-size:11px;color:var(--muted);font-weight:400;margin-left:6px">现有 ${cur}</span></span>
+        <input type="number" id="stock-${cssId(s.sku_name)}" placeholder="＋加" min="0" step="1" style="width:70px">
+      </div>`;
+    }).join('') || '<div style="color:var(--ml);font-size:13px;padding:10px 0">No SKUs found.</div>';
   } catch(e) {
     document.getElementById('su-stock').innerHTML = '<div style="color:var(--ml);font-size:13px;padding:10px 0">Failed to load.</div>';
   }
@@ -448,13 +452,15 @@ async function switchStockActivity() {
 
 function renderStockInputs() {
   if (!stockEventName) return;
-  // Reuse current stockMap only if stockEventName matches current event
   const map = stockEventName === eventInfo.name ? stockMap : {};
-  document.getElementById('su-stock').innerHTML = skus.map(s => `
-    <div class="price-row">
-      <span class="prname">${esc(s.sku_name)}</span>
-      <input type="number" id="stock-${cssId(s.sku_name)}" value="${map[s.sku_name] ?? ''}" placeholder="—" min="0" step="1">
-    </div>`).join('') || '<div style="color:var(--ml);font-size:13px;padding:10px 0">No SKUs found.</div>';
+  stockBaseMap = map;
+  document.getElementById('su-stock').innerHTML = skus.map(s => {
+    const cur = map[s.sku_name] ?? 0;
+    return `<div class="price-row">
+      <span class="prname">${esc(s.sku_name)}<span style="font-size:11px;color:var(--muted);font-weight:400;margin-left:6px">现有 ${cur}</span></span>
+      <input type="number" id="stock-${cssId(s.sku_name)}" placeholder="＋加" min="0" step="1" style="width:70px">
+    </div>`;
+  }).join('') || '<div style="color:var(--ml);font-size:13px;padding:10px 0">No SKUs found.</div>';
 }
 
 // ── Active SKUs for this activity ──
@@ -1051,12 +1057,11 @@ async function saveStock() {
   skus.forEach(s => {
     const el = document.getElementById('stock-' + cssId(s.sku_name));
     if (!el) return;
-    const v = parseFloat(el.value);
-    if (!isNaN(v) && el.value !== '') {
-      rows.push({ event_name: stockEventName, sku_name: s.sku_name, loaded_qty: v });
-      if (stockEventName === eventInfo.name) stockMap[s.sku_name] = v;
-    } else {
-      if (stockEventName === eventInfo.name) delete stockMap[s.sku_name];
+    const delta = parseFloat(el.value);
+    if (!isNaN(delta) && el.value !== '') {
+      const newQty = (stockBaseMap[s.sku_name] || 0) + delta;
+      rows.push({ event_name: stockEventName, sku_name: s.sku_name, loaded_qty: newQty });
+      if (stockEventName === eventInfo.name) stockMap[s.sku_name] = newQty;
     }
   });
   try {
