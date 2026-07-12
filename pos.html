@@ -135,6 +135,15 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 </div>
 
 <!-- FREE GIFT MODAL -->
+<div id="changesku-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;align-items:center;justify-content:center;padding:16px;">
+  <div style="background:#fff;border-radius:16px;padding:20px;max-width:360px;width:100%;max-height:80vh;display:flex;flex-direction:column;">
+    <div style="font-size:15px;font-weight:800;margin-bottom:4px;">Change SKU</div>
+    <div id="changesku-subtitle" style="font-size:12px;color:var(--muted);margin-bottom:12px;"></div>
+    <div style="overflow-y:auto;flex:1;" id="changesku-list"></div>
+    <button onclick="document.getElementById('changesku-modal').style.display='none'" style="margin-top:12px;width:100%;padding:11px;background:#f3f4f6;border:1.5px solid #e5e7eb;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;">Cancel</button>
+  </div>
+</div>
+
 <div id="gift-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;align-items:center;justify-content:center;padding:16px;">
   <div style="background:#fff;border-radius:16px;padding:20px;max-width:360px;width:100%;max-height:80vh;display:flex;flex-direction:column;">
     <div style="font-size:15px;font-weight:800;margin-bottom:12px;">🎁 Add Free Gift</div>
@@ -904,23 +913,42 @@ async function loadStats() {
   }
 }
 
-async function changeSku(id) {
+function changeSku(id) {
   const sale = salesCache[id];
   if (!sale || !sale.items || sale.items.length === 0) { toast('No items to change', true); return; }
   const items = sale.items;
-  const availSkus = activeSkus.length ? skus.filter(s => activeSkus.includes(s.sku_name)) : skus;
-  let idx = 0;
   if (items.length > 1) {
-    const pick = prompt(items.map((it, i) => `${i+1}. ${it.name} x${it.qty}`).join('\n') + '\n\nWhich item to change? Enter number:');
-    if (!pick) return;
-    idx = parseInt(pick) - 1;
-    if (isNaN(idx) || idx < 0 || idx >= items.length) return;
+    openChangeSkuItemPicker(id, items);
+  } else {
+    openChangeSkuSkuPicker(id, items, 0);
   }
-  const chosen = prompt('Change "' + items[idx].name + '" to:\n' + availSkus.map((s, i) => `${i+1}. ${s.sku_name}`).join('\n') + '\n\nEnter number:');
-  if (!chosen) return;
-  const skuIdx = parseInt(chosen) - 1;
-  if (skuIdx < 0 || skuIdx >= availSkus.length) { toast('Invalid choice', true); return; }
-  const newItems = items.map((it, i) => i === idx ? { ...it, name: availSkus[skuIdx].sku_name } : it);
+}
+
+function openChangeSkuItemPicker(id, items) {
+  document.getElementById('changesku-subtitle').textContent = 'Which item to change?';
+  document.getElementById('changesku-list').innerHTML = items.map((it, i) => `
+    <div onclick="openChangeSkuSkuPicker('${id}',null,${i})" style="padding:12px 14px;border:1.5px solid #e5e7eb;border-radius:10px;margin-bottom:8px;cursor:pointer;font-size:14px;font-weight:600;">
+      ${esc(it.name)} <span style="color:var(--muted);font-weight:400">×${it.qty}</span>
+    </div>`).join('');
+  document.getElementById('changesku-modal').style.display = 'flex';
+}
+
+function openChangeSkuSkuPicker(id, items, itemIdx) {
+  const sale = salesCache[id];
+  if (!items) items = sale.items;
+  const availSkus = activeSkus.length ? skus.filter(s => activeSkus.includes(s.sku_name)) : skus;
+  document.getElementById('changesku-subtitle').textContent = 'Replacing: ' + items[itemIdx].name;
+  document.getElementById('changesku-list').innerHTML = availSkus.map(s => `
+    <div onclick="applySkuChange('${id}',${itemIdx},'${escq(s.sku_name)}')" style="padding:12px 14px;border:1.5px solid #e5e7eb;border-radius:10px;margin-bottom:8px;cursor:pointer;font-size:14px;font-weight:600;${s.sku_name===items[itemIdx].name?'border-color:var(--green);color:var(--green)':''}">
+      ${esc(s.sku_name)}
+    </div>`).join('');
+  document.getElementById('changesku-modal').style.display = 'flex';
+}
+
+async function applySkuChange(id, itemIdx, newSku) {
+  document.getElementById('changesku-modal').style.display = 'none';
+  const sale = salesCache[id];
+  const newItems = sale.items.map((it, i) => i === itemIdx ? { ...it, name: newSku } : it);
   try {
     await fetch(SUPA_URL + '/rest/v1/pos_sales?id=eq.' + id, {
       method: 'PATCH',
