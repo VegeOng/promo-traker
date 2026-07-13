@@ -1164,7 +1164,7 @@ async function loadSummary(activityId, activityName) {
       </div>
 
       <!-- Daily breakdown -->
-      ${Object.keys(byDay).length > 1 ? `
+      ${Object.keys(byDay).length >= 1 ? `
       <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:12px">
         <div style="font-size:13px;font-weight:800;margin-bottom:4px">📅 Daily Breakdown</div>
         ${dailyHtml}
