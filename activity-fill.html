@@ -1042,6 +1042,32 @@ async function loadSummary(activityId, activityName) {
       else (i.contents || []).forEach(x => { soldMap[x.name] = (soldMap[x.name] || 0) + (x.qty || 0) * (i.qty || 1); });
     }));
 
+    // Daily breakdown (MYT = UTC+8)
+    const byDay = {};
+    salesArr.forEach(s => {
+      const d = s.created_at ? new Date(new Date(s.created_at).getTime() + 8*3600000).toISOString().slice(0,10) : 'Unknown';
+      if (!byDay[d]) byDay[d] = {};
+      const m = s.payment_method || 'Other';
+      byDay[d][m] = (byDay[d][m] || 0) + parseFloat(s.total || 0);
+      byDay[d]._total = (byDay[d]._total || 0) + parseFloat(s.total || 0);
+    });
+    const payMethods = ['Cash','TNG','DuitNow','Other'];
+    const payColors = {Cash:'#166534',TNG:'#2563eb',DuitNow:'#d97706',Other:'#6b7280'};
+    const dailyHtml = Object.keys(byDay).sort().map(day => {
+      const d = byDay[day];
+      const label = new Date(day + 'T00:00:00').toLocaleDateString('en-MY',{weekday:'short',day:'2-digit',month:'short'});
+      const payBadges = payMethods.filter(m => d[m]).map(m =>
+        `<span style="font-size:11px;padding:2px 8px;border-radius:20px;background:${payColors[m]}18;color:${payColors[m]};font-weight:700">${m} ${fmtRM(d[m])}</span>`
+      ).join(' ');
+      return `<div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:6px;padding:10px 12px;border-bottom:1px solid var(--border)">
+        <div>
+          <div style="font-size:13px;font-weight:700">${label}</div>
+          <div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:4px">${payBadges}</div>
+        </div>
+        <div style="font-size:16px;font-weight:900;color:var(--green)">${fmtRM(d._total)}</div>
+      </div>`;
+    }).join('');
+
     // Receipt photos
     const receipts = salesArr.filter(s => s.receipt_url);
 
@@ -1136,6 +1162,13 @@ async function loadSummary(activityId, activityName) {
           </div>`;
         }).join('') || '<div style="font-size:13px;color:var(--muted)">No sales yet.</div>'}
       </div>
+
+      <!-- Daily breakdown -->
+      ${Object.keys(byDay).length > 1 ? `
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:12px">
+        <div style="font-size:13px;font-weight:800;margin-bottom:4px">📅 Daily Breakdown</div>
+        ${dailyHtml}
+      </div>` : ''}
 
       <!-- Per-transaction list -->
       ${salesArr.length ? `
