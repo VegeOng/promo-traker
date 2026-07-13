@@ -631,14 +631,20 @@ async function prefillPosRevenue() {
     // POS created_at 是 UTC，马来西亚当天 = UTC 当天-8小时起
     const start = new Date(date + 'T00:00:00+08:00').toISOString();
     const end   = new Date(date + 'T23:59:59+08:00').toISOString();
-    const sales = await db(`pos_sales?activity_id=eq.${selectedActivityId}&created_at=gte.${start}&created_at=lte.${end}&select=total`) || [];
+    const sales = await db(`pos_sales?activity_id=eq.${selectedActivityId}&created_at=gte.${start}&created_at=lte.${end}&select=total,payment_method`) || [];
     if (!sales.length) return;
     const total = sales.reduce((s, x) => s + parseFloat(x.total || 0), 0);
+    const byPay = {};
+    sales.forEach(x => { const m = x.payment_method || 'Other'; byPay[m] = (byPay[m] || 0) + parseFloat(x.total || 0); });
+    const payColors = {Cash:'#166534',TNG:'#2563eb',DuitNow:'#d97706',Other:'#6b7280'};
+    const payBadges = ['Cash','TNG','DuitNow','Other'].filter(m => byPay[m]).map(m =>
+      `<span style="font-size:12px;padding:3px 10px;border-radius:20px;background:${payColors[m]}18;color:${payColors[m]};font-weight:700;white-space:nowrap">${m} RM ${byPay[m].toFixed(2)}</span>`
+    ).join('');
     const revEl = document.getElementById('r-revenue');
     revEl.value = total.toFixed(2);
     calcProfit();
     if (hint) {
-      hint.textContent = `⚡ Auto-filled from Event POS: ${sales.length} sale(s), RM ${total.toFixed(2)}`;
+      hint.innerHTML = `<div style="font-weight:700;margin-bottom:6px">⚡ Auto-filled from Event POS: ${sales.length} sale(s), RM ${total.toFixed(2)}</div><div style="display:flex;flex-wrap:wrap;gap:6px">${payBadges}</div>`;
       hint.style.display = 'block';
     }
   } catch(e) { console.error(e); }
