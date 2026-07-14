@@ -1046,6 +1046,8 @@ async function loadSummary(activityId, activityName) {
       else (i.contents || []).forEach(x => { soldMap[x.name] = (soldMap[x.name] || 0) + (x.qty || 0) * (i.qty || 1); });
     }));
 
+    const fmtRM = n => 'RM ' + Number(n).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+
     // Daily breakdown (MYT = UTC+8)
     const byDay = {};
     salesArr.forEach(s => {
@@ -1074,8 +1076,6 @@ async function loadSummary(activityId, activityName) {
 
     // Receipt photos
     const receipts = salesArr.filter(s => s.receipt_url);
-
-    const fmtRM = n => 'RM ' + Number(n).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 
     // Payment breakdown rows
     const payRows = Object.entries(byPay).map(([m, v]) =>
