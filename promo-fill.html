@@ -64,6 +64,31 @@ textarea{resize:vertical;min-height:72px;line-height:1.5;}
 .spinner{display:inline-block;width:15px;height:15px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite;vertical-align:middle;margin-right:6px;}
 @keyframes spin{to{transform:rotate(360deg)}}
 
+/* KOL Metrics */
+.kol-card{background:var(--s1);border:2px solid #a78bfa;border-radius:var(--r2);padding:18px;margin-bottom:14px;display:none;}
+.kol-card.show{display:block;}
+.kol-title{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#7c3aed;margin-bottom:14px;display:flex;align-items:center;gap:8px;}
+.kol-title::after{content:'';flex:1;height:1px;background:#ddd6fe;}
+.kol-metrics-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px;}
+@media(max-width:480px){.kol-metrics-row{grid-template-columns:repeat(2,1fr);}}
+.kol-computed{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;}
+.kol-stat{background:var(--s2);border-radius:var(--r);padding:12px;text-align:center;}
+.kol-stat-label{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--t3);margin-bottom:4px;}
+.kol-stat-val{font-size:20px;font-weight:700;font-family:var(--mono);}
+.kol-stat-sub{font-size:10px;margin-top:3px;}
+.kol-pass{color:#16a34a;background:#f0fdf4;border:1px solid #bbf7d0;}
+.kol-fail{color:#dc2626;background:#fef2f2;border:1px solid #fecaca;}
+.kol-na{color:var(--t3);}
+.kol-badge{display:inline-block;padding:2px 8px;border-radius:99px;font-size:10px;font-weight:700;letter-spacing:.05em;}
+.badge-pass{background:#dcfce7;color:#15803d;}
+.badge-fail{background:#fee2e2;color:#b91c1c;}
+.badge-na{background:var(--s2);color:var(--t3);}
+.audience-btns{display:flex;gap:8px;margin-top:2px;}
+.audience-btn{flex:1;padding:9px;border:1.5px solid var(--b1);border-radius:var(--r);font-size:12px;font-weight:600;background:var(--s2);cursor:pointer;transition:all .15s;text-align:center;}
+.audience-btn.sel-yes{background:#dcfce7;border-color:#86efac;color:#15803d;}
+.audience-btn.sel-partial{background:#fffbeb;border-color:#fde68a;color:#92400e;}
+.audience-btn.sel-no{background:#fee2e2;border-color:#fca5a5;color:#b91c1c;}
+
 .mv-top{overflow:hidden}
 .mv-top-main{display:flex;justify-content:space-between;align-items:center;padding:12px 24px;background:#166534}
 .mv-top-left{display:flex;align-items:center;gap:12px}
@@ -124,13 +149,14 @@ textarea{resize:vertical;min-height:72px;line-height:1.5;}
       </div>
       <div class="field full" id="w-type">
         <label>Promo Type <span class="req">*</span></label>
-        <select id="f-type" onchange="document.getElementById('f-type-other-wrap').style.display=this.value==='OTHER'?'block':'none'">
+        <select id="f-type" onchange="onTypeChange(this.value)">
           <option value="">Select promo type…</option>
           <option value="PROMOTER">Promoter</option>
           <option value="GE">GE (端架)</option>
           <option value="ISLAND">Island (中岛)</option>
           <option value="BLOCK">Block (集团陈列)</option>
           <option value="SAMPLING">Sampling (试吃)</option>
+          <option value="BRAND_KOL">Brand / KOL 品牌合作</option>
           <option value="OTHER">Other</option>
         </select>
         <span class="err" id="e-type">Please select promo type</span>
@@ -150,7 +176,7 @@ textarea{resize:vertical;min-height:72px;line-height:1.5;}
       </div>
       <div class="field" id="w-cost">
         <label>Cost (RM) <span class="req">*</span></label>
-        <input type="number" id="f-cost" placeholder="0.00" min="0" step="0.01">
+        <input type="number" id="f-cost" placeholder="0.00" min="0" step="0.01" oninput="calcKolMetrics()">
         <span class="err" id="e-cost">Please enter cost</span>
       </div>
       <div class="field full" id="w-support-products">
@@ -176,6 +202,72 @@ textarea{resize:vertical;min-height:72px;line-height:1.5;}
     </div>
   </div>
 
+  <!-- KOL Metrics Card -->
+  <div class="kol-card" id="kol-card">
+    <div class="kol-title">📊 KOL 发布后指标（付款前填写）</div>
+    <div class="grid2" style="margin-bottom:12px;">
+      <div class="field">
+        <label>达人 / KOL 名字</label>
+        <input type="text" id="kol-name" placeholder="e.g. @vegelife_my">
+      </div>
+      <div class="field">
+        <label>平台</label>
+        <select id="kol-platform">
+          <option value="">Select…</option>
+          <option value="TikTok">TikTok</option>
+          <option value="Instagram">Instagram</option>
+          <option value="Facebook">Facebook</option>
+          <option value="YouTube">YouTube</option>
+          <option value="Xiaohongshu">小红书</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+      <div class="field full">
+        <label>帖子链接 (Post URL)</label>
+        <input type="url" id="kol-url" placeholder="https://...">
+      </div>
+    </div>
+    <div class="kol-metrics-row">
+      <div class="field">
+        <label>观看数 Views</label>
+        <input type="number" id="kol-views" placeholder="0" min="0" oninput="calcKolMetrics()">
+      </div>
+      <div class="field">
+        <label>赞 Likes</label>
+        <input type="number" id="kol-likes" placeholder="0" min="0" oninput="calcKolMetrics()">
+      </div>
+      <div class="field">
+        <label>评论 Comments</label>
+        <input type="number" id="kol-comments" placeholder="0" min="0" oninput="calcKolMetrics()">
+      </div>
+      <div class="field">
+        <label>转发 Shares</label>
+        <input type="number" id="kol-shares" placeholder="0" min="0" oninput="calcKolMetrics()">
+      </div>
+    </div>
+    <div class="kol-computed">
+      <div class="kol-stat" id="cpv-stat">
+        <div class="kol-stat-label">CPV 每观看成本</div>
+        <div class="kol-stat-val kol-na" id="cpv-val">—</div>
+        <div class="kol-stat-sub" id="cpv-sub">及格线 ≤ RM 0.02/view</div>
+      </div>
+      <div class="kol-stat" id="er-stat">
+        <div class="kol-stat-label">互动率 Engagement</div>
+        <div class="kol-stat-val kol-na" id="er-val">—</div>
+        <div class="kol-stat-sub" id="er-sub">及格线 ≥ 3%</div>
+      </div>
+    </div>
+    <div class="field">
+      <label>受众相关性 Audience Relevance</label>
+      <div style="font-size:11px;color:var(--t3);margin-top:-2px;margin-bottom:6px;">受众是否为素食 / 健康 / 清真食品人群</div>
+      <div class="audience-btns">
+        <button type="button" class="audience-btn" id="aud-yes" onclick="setAudience('yes')">✅ 相关</button>
+        <button type="button" class="audience-btn" id="aud-partial" onclick="setAudience('partial')">⚠️ 部分相关</button>
+        <button type="button" class="audience-btn" id="aud-no" onclick="setAudience('no')">❌ 不相关</button>
+      </div>
+    </div>
+  </div>
+
   <div id="edit-banner" style="display:none;background:var(--amber-bg);border:1px solid var(--amber-border);border-radius:var(--r);padding:10px 14px;margin-bottom:10px;font-size:13px;color:var(--amber);justify-content:space-between;align-items:center;">
     <span>✏️ Editing existing entry</span>
     <a href="#" onclick="cancelEdit();return false;" style="color:var(--amber);font-weight:600;text-decoration:underline;">Cancel</a>
@@ -192,6 +284,110 @@ const sb=supabase.createClient(
   'https://wjhgezvrxlhpexocfsea.supabase.co',
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndqaGdlenZyeGxocGV4b2Nmc2VhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg1MDU4NzgsImV4cCI6MjA5NDA4MTg3OH0.jENcrgEDYDlSRUCqve-T6rxYRJfz-dnZQHnXpPLJ_RE'
 );
+
+// ── KOL Metrics ──────────────────────────────────────────
+let kolAudience = '';
+
+function onTypeChange(val) {
+  document.getElementById('f-type-other-wrap').style.display = val === 'OTHER' ? 'block' : 'none';
+  document.getElementById('kol-card').classList.toggle('show', val === 'BRAND_KOL');
+}
+
+function setAudience(val) {
+  kolAudience = val;
+  ['yes','partial','no'].forEach(v => {
+    const btn = document.getElementById('aud-'+v);
+    btn.classList.remove('sel-yes','sel-partial','sel-no');
+    if (v === val) btn.classList.add('sel-'+v);
+  });
+}
+
+function calcKolMetrics() {
+  const cost = parseFloat(document.getElementById('f-cost').value) || 0;
+  const views = parseInt(document.getElementById('kol-views').value) || 0;
+  const likes = parseInt(document.getElementById('kol-likes').value) || 0;
+  const comments = parseInt(document.getElementById('kol-comments').value) || 0;
+  const shares = parseInt(document.getElementById('kol-shares').value) || 0;
+
+  // CPV
+  const cpvEl = document.getElementById('cpv-val');
+  const cpvStat = document.getElementById('cpv-stat');
+  if (views > 0 && cost > 0) {
+    const cpv = cost / views;
+    const pass = cpv <= 0.02;
+    cpvEl.textContent = 'RM ' + cpv.toFixed(4);
+    cpvEl.className = 'kol-stat-val ' + (pass ? 'kol-pass' : 'kol-fail');
+    document.getElementById('cpv-sub').innerHTML = pass
+      ? '<span class="kol-badge badge-pass">✓ 及格</span>'
+      : '<span class="kol-badge badge-fail">✗ 偏贵</span>';
+  } else {
+    cpvEl.textContent = '—';
+    cpvEl.className = 'kol-stat-val kol-na';
+    document.getElementById('cpv-sub').textContent = '及格线 ≤ RM 0.02/view';
+  }
+
+  // Engagement rate
+  const erEl = document.getElementById('er-val');
+  if (views > 0) {
+    const er = (likes + comments + shares) / views * 100;
+    const pass = er >= 3;
+    const warn = er >= 1;
+    erEl.textContent = er.toFixed(2) + '%';
+    erEl.className = 'kol-stat-val ' + (pass ? 'kol-pass' : 'kol-fail');
+    document.getElementById('er-sub').innerHTML = pass
+      ? '<span class="kol-badge badge-pass">✓ 及格</span>'
+      : `<span class="kol-badge badge-fail">${warn ? '⚠ 偏低' : '✗ 买量嫌疑'}</span>`;
+  } else {
+    erEl.textContent = '—';
+    erEl.className = 'kol-stat-val kol-na';
+    document.getElementById('er-sub').textContent = '及格线 ≥ 3%';
+  }
+}
+
+function getKolData() {
+  return {
+    kol_name: document.getElementById('kol-name').value.trim(),
+    platform: document.getElementById('kol-platform').value,
+    post_url: document.getElementById('kol-url').value.trim(),
+    views: parseInt(document.getElementById('kol-views').value) || 0,
+    likes: parseInt(document.getElementById('kol-likes').value) || 0,
+    comments: parseInt(document.getElementById('kol-comments').value) || 0,
+    shares: parseInt(document.getElementById('kol-shares').value) || 0,
+    audience: kolAudience,
+  };
+}
+
+function setKolData(d) {
+  if (!d) return;
+  document.getElementById('kol-name').value = d.kol_name || '';
+  document.getElementById('kol-platform').value = d.platform || '';
+  document.getElementById('kol-url').value = d.post_url || '';
+  document.getElementById('kol-views').value = d.views || '';
+  document.getElementById('kol-likes').value = d.likes || '';
+  document.getElementById('kol-comments').value = d.comments || '';
+  document.getElementById('kol-shares').value = d.shares || '';
+  if (d.audience) setAudience(d.audience);
+  calcKolMetrics();
+}
+
+function clearKolData() {
+  ['kol-name','kol-url','kol-views','kol-likes','kol-comments','kol-shares'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('kol-platform').value = '';
+  kolAudience = '';
+  ['yes','partial','no'].forEach(v => document.getElementById('aud-'+v).classList.remove('sel-yes','sel-partial','sel-no'));
+  calcKolMetrics();
+}
+
+// Encode KOL data into note field prefix
+function encodeKolNote(kolData, userNote) {
+  return '[KOL_DATA]' + JSON.stringify(kolData) + '[/KOL_DATA]\n' + userNote;
+}
+
+function decodeKolNote(note) {
+  const m = (note || '').match(/^\[KOL_DATA\]([\s\S]*?)\[\/KOL_DATA\]\n?([\s\S]*)$/);
+  if (!m) return { kol: null, note: note || '' };
+  try { return { kol: JSON.parse(m[1]), note: m[2] }; } catch { return { kol: null, note: note || '' }; }
+}
 
 // ── Auth ─────────────────────────────────────────────────
 function lsGet(key) {
@@ -405,6 +601,10 @@ async function submitForm(){
   const supportData=getSupportProductsData();
   const supportSummary=supportData.map(r=>`${r.product?r.product+' ':''}${r.detail}`.trim()).filter(Boolean).join('; ');
 
+  const isKol = (g('f-type') === 'BRAND_KOL');
+  const userNote = g('f-discount').trim();
+  const noteVal = isKol ? encodeKolNote(getKolData(), userNote) : userNote;
+
   const payload={
     date:start,
     region:'',
@@ -414,7 +614,7 @@ async function submitForm(){
     manager:g('f-manager').trim(),
     activity_name:g('f-name').trim(),
     duration:`${days} day${days>1?'s':''}`,
-    note:g('f-discount').trim(),
+    note:noteVal,
     products:supportSummary,
     total_cost:cost,
     other_cost:cost,
@@ -439,7 +639,7 @@ async function submitForm(){
     `<strong>${g('f-store').trim()}</strong> · ${g('f-name').trim()}<br>
      ${start}${end&&end!==start?' → '+end:''} &nbsp;·&nbsp; Cost: RM ${cost.toFixed(2)}<br>
      ${supportSummary?'Off Invoice / Scan Sale: '+supportSummary+'<br>':''}
-     ${g('f-discount').trim()}`;
+     ${userNote}`;
   document.getElementById('success-title').textContent = editingId ? 'Updated successfully!' : 'Submitted successfully!';
   document.getElementById('success-card').classList.add('show');
   document.getElementById('edit-banner').style.display='none';
@@ -458,6 +658,8 @@ function resetForm(){
   editingId=null;
   ['f-store','f-name','f-cost','f-discount','f-type','f-type-other'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('f-type-other-wrap').style.display='none';
+  document.getElementById('kol-card').classList.remove('show');
+  clearKolData();
   supportRows=[];supportRowId=0;
   renderSupportRows();
   // 提交者名字保持锁定，HQ 清空
@@ -477,8 +679,12 @@ function editRecord(id){
   document.getElementById('f-type').value=r.promo_type||'';
   document.getElementById('f-type-other').value=r.promo_type_other||'';
   document.getElementById('f-type-other-wrap').style.display=(r.promo_type||'')==='OTHER'?'block':'none';
+  const isKolEdit = (r.promo_type||'')==='BRAND_KOL';
+  document.getElementById('kol-card').classList.toggle('show', isKolEdit);
+  const decoded = decodeKolNote(r.note||'');
+  document.getElementById('f-discount').value=decoded.note;
+  if (isKolEdit) { clearKolData(); setKolData(decoded.kol); }
   document.getElementById('f-cost').value=r.total_cost||r.other_cost||0;
-  document.getElementById('f-discount').value=r.note||'';
   if (userRole !== 'member') document.getElementById('f-manager').value=r.manager||'';
 
   const start=r.date;
