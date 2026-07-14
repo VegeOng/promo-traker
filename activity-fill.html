@@ -457,11 +457,9 @@ async function db(path, opts = {}) {
 function selectMode(mode) {
   document.querySelectorAll('.mode-card').forEach(c => c.classList.remove('active'));
   document.getElementById('card-' + mode).classList.add('active');
-  document.getElementById('form-new').classList.remove('visible');
-  document.getElementById('form-report').classList.remove('visible');
-  document.getElementById('form-review').classList.remove('visible');
-  document.getElementById('form-summary').classList.remove('visible');
-  document.getElementById('successBanner').classList.remove('visible');
+  ['form-new','form-report','form-review','form-history','form-summary','successBanner'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.classList.remove('visible');
+  });
   if (mode === 'new') {
     document.getElementById('form-new').classList.add('visible');
   } else if (mode === 'report') {
