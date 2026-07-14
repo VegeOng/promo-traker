@@ -757,6 +757,17 @@ async function loadRecords(){
 }
 loadRecords();
 
+// ── Auto-select type from URL param (?type=BRAND_KOL) ────
+(function(){
+  const t = new URLSearchParams(location.search).get('type');
+  if (!t) return;
+  const sel = document.getElementById('f-type');
+  if ([...sel.options].some(o => o.value === t)) {
+    sel.value = t;
+    onTypeChange(t);
+  }
+})();
+
 // ── Auto-edit from URL param (?edit=ID) ──────────────────
 (async function(){
   const editId = new URLSearchParams(location.search).get('edit');
