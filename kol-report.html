@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KOL Report — MamaVege</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#fafafa;--s1:#fff;--s2:#f3f4f6;
+  --b1:#e5e7eb;--t1:#111827;--t2:#4b5563;--t3:#9ca3af;
+  --purple:#7c3aed;--purple-bg:#f5f3ff;--purple-border:#ddd6fe;
+  --green:#166534;--green-bg:#f0fdf4;--green-border:#bbf7d0;
+  --red:#dc2626;--red-bg:#fef2f2;--red-border:#fecaca;
+  --amber:#d97706;--amber-bg:#fffbeb;
+  --font:'Plus Jakarta Sans',sans-serif;--mono:'DM Mono',monospace;
+  --r:10px;--r2:16px;
+}
+body{background:var(--bg);color:var(--t1);font-family:var(--font);min-height:100vh;padding-bottom:60px;}
+.container{max-width:780px;margin:0 auto;padding:20px 16px 0;}
+
+/* top bar */
+.mv-top{overflow:hidden}
+.mv-top-main{display:flex;justify-content:space-between;align-items:center;padding:12px 24px;background:#5b21b6}
+.mv-top-left{display:flex;align-items:center;gap:12px}
+.mv-top-logo{height:34px;background:#fff;border-radius:8px;padding:3px 8px;display:flex;align-items:center;text-decoration:none}
+.mv-top-logo img{height:26px}
+.mv-top-sep{width:1px;height:24px;background:rgba(255,255,255,.2)}
+.mv-top-tool{color:#fff;font-size:14px;font-weight:700}
+.mv-top-back{color:rgba(255,255,255,.8);text-decoration:none;font-size:13px;font-weight:600}
+.mv-top-back:hover{color:#fff}
+.mv-top-sub{display:flex;justify-content:space-between;align-items:center;padding:5px 24px;background:#4c1d95;color:rgba(255,255,255,.6);font-size:11px}
+
+/* summary stats */
+.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px;}
+@media(max-width:520px){.stat-grid{grid-template-columns:repeat(2,1fr);}}
+.stat-card{background:var(--s1);border:1px solid var(--b1);border-radius:var(--r);padding:14px;text-align:center;}
+.stat-label{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--t3);margin-bottom:6px;}
+.stat-val{font-size:22px;font-weight:700;font-family:var(--mono);color:var(--purple);}
+.stat-sub{font-size:11px;color:var(--t3);margin-top:3px;}
+
+/* filter bar */
+.filter-bar{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;}
+.filter-btn{padding:6px 14px;border:1.5px solid var(--b1);border-radius:99px;font-size:12px;font-weight:600;background:var(--s1);cursor:pointer;color:var(--t2);}
+.filter-btn.active{background:var(--purple);border-color:var(--purple);color:#fff;}
+select.filter-sel{padding:6px 12px;border:1.5px solid var(--b1);border-radius:99px;font-size:12px;font-weight:600;background:var(--s1);cursor:pointer;color:var(--t2);font-family:var(--font);}
+
+/* record card */
+.rec-card{background:var(--s1);border:1px solid var(--b1);border-radius:var(--r2);padding:14px;margin-bottom:10px;}
+.rec-header{display:flex;align-items:flex-start;gap:10px;margin-bottom:10px;}
+.rec-avatar{width:38px;height:38px;border-radius:50%;background:var(--purple-bg);border:2px solid var(--purple-border);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;}
+.rec-info{flex:1;min-width:0;}
+.rec-name{font-size:14px;font-weight:700;color:var(--t1);}
+.rec-meta{font-size:11px;color:var(--t3);margin-top:2px;font-family:var(--mono);}
+.rec-cost{font-size:14px;font-weight:700;font-family:var(--mono);color:var(--purple);flex-shrink:0;}
+.platform-tags{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;}
+.ptag{font-size:11px;font-weight:600;padding:3px 10px;border-radius:99px;background:var(--purple-bg);color:var(--purple);border:1px solid var(--purple-border);}
+.platform-row-data{background:var(--s2);border-radius:var(--r);padding:10px 12px;margin-bottom:6px;}
+.platform-row-data:last-child{margin-bottom:0;}
+.prd-header{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
+.prd-platform{font-size:12px;font-weight:700;color:var(--t1);}
+.prd-metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;}
+@media(max-width:480px){.prd-metrics{grid-template-columns:repeat(2,1fr);}}
+.prd-metric{text-align:center;}
+.prd-metric-label{font-size:9px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--t3);margin-bottom:2px;}
+.prd-metric-val{font-size:13px;font-weight:700;font-family:var(--mono);}
+.badge{display:inline-block;padding:2px 8px;border-radius:99px;font-size:10px;font-weight:700;}
+.badge-pass{background:#dcfce7;color:#15803d;}
+.badge-fail{background:#fee2e2;color:#b91c1c;}
+.badge-warn{background:#fffbeb;color:#92400e;}
+.badge-na{background:var(--s2);color:var(--t3);}
+.aud-tag{font-size:11px;font-weight:600;padding:2px 8px;border-radius:99px;}
+.aud-yes{background:#dcfce7;color:#15803d;}
+.aud-partial{background:#fffbeb;color:#92400e;}
+.aud-no{background:#fee2e2;color:#b91c1c;}
+.aud-na{background:var(--s2);color:var(--t3);}
+.rec-footer{display:flex;align-items:center;gap:8px;margin-top:8px;padding-top:8px;border-top:1px solid var(--b1);}
+.rec-footer-meta{font-size:11px;color:var(--t3);flex:1;}
+
+.empty{text-align:center;padding:40px;color:var(--t3);font-size:13px;}
+.loading{text-align:center;padding:40px;color:var(--t3);font-size:13px;}
+</style>
+</head>
+<body>
+<div class="mv-top">
+  <div class="mv-top-main">
+    <div class="mv-top-left">
+      <a href="index.html" class="mv-top-logo"><img src="Mamavege_Logo.png" alt="MamaVege"></a>
+      <div class="mv-top-sep"></div>
+      <span class="mv-top-tool">📋 KOL Report</span>
+    </div>
+    <div style="display:flex;gap:12px;align-items:center;">
+      <a href="kol-tracker.html" style="color:rgba(255,255,255,.85);text-decoration:none;font-size:13px;font-weight:600;">+ New Entry</a>
+      <a href="index.html" class="mv-top-back">← Hub</a>
+    </div>
+  </div>
+  <div class="mv-top-sub">
+    <span class="mv-top-date"></span>
+    <span>MamaVege Management Hub</span>
+  </div>
+</div>
+<script>document.querySelectorAll('.mv-top-date').forEach(e=>e.textContent=new Date().toLocaleDateString('en-MY',{weekday:'short',year:'numeric',month:'short',day:'numeric'}));</script>
+
+<div class="container">
+  <!-- Summary stats -->
+  <div class="stat-grid" id="stat-grid">
+    <div class="stat-card"><div class="stat-label">Total KOL Entries</div><div class="stat-val" id="s-total">—</div></div>
+    <div class="stat-card"><div class="stat-label">Total Spend</div><div class="stat-val" id="s-spend">—</div><div class="stat-sub">RM</div></div>
+    <div class="stat-card"><div class="stat-label">Avg CPV</div><div class="stat-val" id="s-cpv">—</div><div class="stat-sub">RM/view</div></div>
+    <div class="stat-card"><div class="stat-label">Avg Engagement</div><div class="stat-val" id="s-er">—</div></div>
+  </div>
+
+  <!-- Filters -->
+  <div class="filter-bar">
+    <button class="filter-btn active" onclick="setFilter('all',this)">全部</button>
+    <button class="filter-btn" onclick="setFilter('pass',this)">✓ 全及格</button>
+    <button class="filter-btn" onclick="setFilter('fail',this)">✗ 有不及格</button>
+    <select class="filter-sel" id="platform-filter" onchange="renderList()">
+      <option value="">所有平台</option>
+      <option value="TikTok">TikTok</option>
+      <option value="Instagram">Instagram</option>
+      <option value="Facebook">Facebook</option>
+      <option value="YouTube">YouTube</option>
+      <option value="小红书">小红书</option>
+    </select>
+  </div>
+
+  <div id="list"><div class="loading">Loading…</div></div>
+</div>
+
+<script src="/supabase.min.js"></script>
+<script>
+const sb = supabase.createClient(
+  'https://wjhgezvrxlhpexocfsea.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndqaGdlenZyeGxocGV4b2Nmc2VhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg1MDU4NzgsImV4cCI6MjA5NDA4MTg3OH0.jENcrgEDYDlSRUCqve-T6rxYRJfz-dnZQHnXpPLJ_RE'
+);
+
+function lsGet(key) {
+  const raw = localStorage.getItem(key);
+  if (!raw) return null;
+  try { const item = JSON.parse(raw); if (Date.now() > item.expiry) { localStorage.removeItem(key); return null; } return item.value; } catch { return null; }
+}
+if (!lsGet('userName')) { location.href = 'index.html'; }
+
+let allRecords = [];
+let currentFilter = 'all';
+
+function parseKolData(note) {
+  const m = (note||'').match(/^\[KOL_DATA\]([\s\S]*?)\[\/KOL_DATA\]/);
+  if (!m) return null;
+  try { return JSON.parse(m[1]); } catch { return null; }
+}
+
+function platformPass(p) {
+  const cpvOk = p.cpv !== null ? p.cpv <= 0.02 : null;
+  const erOk  = p.er  !== null ? p.er  >= 3    : null;
+  return { cpvOk, erOk, allPass: cpvOk !== false && erOk !== false };
+}
+
+function fmtNum(n) {
+  if (!n && n !== 0) return '—';
+  if (n >= 1000000) return (n/1000000).toFixed(1)+'M';
+  if (n >= 1000) return (n/1000).toFixed(1)+'K';
+  return String(n);
+}
+
+function audBadge(aud) {
+  if (aud === 'yes') return '<span class="aud-tag aud-yes">✅ 相关</span>';
+  if (aud === 'partial') return '<span class="aud-tag aud-partial">⚠️ 部分</span>';
+  if (aud === 'no') return '<span class="aud-tag aud-no">❌ 不相关</span>';
+  return '<span class="aud-tag aud-na">— 未填</span>';
+}
+
+function platIcon(p) {
+  const icons = {TikTok:'🎵',Instagram:'📸',Facebook:'📘',YouTube:'▶️','小红书':'📕',Other:'🔗'};
+  return icons[p] || '🔗';
+}
+
+async function loadData() {
+  const { data } = await sb.from('promotions').select('*')
+    .eq('promo_type', 'BRAND_KOL')
+    .order('date', { ascending: false });
+  allRecords = (data || []).map(r => {
+    const kol = parseKolData(r.note);
+    return { ...r, kol };
+  });
+  updateStats();
+  renderList();
+}
+
+function updateStats() {
+  const valid = allRecords.filter(r => r.kol);
+  document.getElementById('s-total').textContent = valid.length;
+  const totalSpend = valid.reduce((s, r) => s + (r.total_cost || 0), 0);
+  document.getElementById('s-spend').textContent = totalSpend.toLocaleString('en-MY', {minimumFractionDigits:0, maximumFractionDigits:0});
+
+  let cpvVals = [], erVals = [];
+  valid.forEach(r => {
+    (r.kol.platforms || []).forEach(p => {
+      if (p.cpv !== null && p.cpv !== undefined) cpvVals.push(p.cpv);
+      if (p.er  !== null && p.er  !== undefined) erVals.push(p.er);
+    });
+  });
+  const avgCpv = cpvVals.length ? cpvVals.reduce((a,b)=>a+b,0)/cpvVals.length : null;
+  const avgEr  = erVals.length  ? erVals.reduce((a,b)=>a+b,0)/erVals.length   : null;
+  document.getElementById('s-cpv').textContent = avgCpv !== null ? avgCpv.toFixed(4) : '—';
+  document.getElementById('s-er').textContent  = avgEr  !== null ? avgEr.toFixed(1)+'%' : '—';
+}
+
+function setFilter(f, btn) {
+  currentFilter = f;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderList();
+}
+
+function renderList() {
+  const platFilter = document.getElementById('platform-filter').value;
+  let records = allRecords.filter(r => r.kol);
+
+  if (platFilter) {
+    records = records.filter(r => (r.kol.platforms||[]).some(p => p.platform === platFilter));
+  }
+
+  if (currentFilter === 'pass') {
+    records = records.filter(r => (r.kol.platforms||[]).every(p => platformPass(p).allPass));
+  } else if (currentFilter === 'fail') {
+    records = records.filter(r => (r.kol.platforms||[]).some(p => !platformPass(p).allPass));
+  }
+
+  const wrap = document.getElementById('list');
+  if (!records.length) { wrap.innerHTML = '<div class="empty">No records found</div>'; return; }
+
+  wrap.innerHTML = records.map(r => {
+    const kol = r.kol;
+    const platforms = kol.platforms || [];
+    const cost = r.total_cost || 0;
+    const costPerPlat = platforms.length ? cost / platforms.length : cost;
+
+    const platRows = platforms.map(p => {
+      const { cpvOk, erOk } = platformPass(p);
+      const cpvBadge = cpvOk === true ? '<span class="badge badge-pass">✓</span>' : cpvOk === false ? '<span class="badge badge-fail">✗</span>' : '<span class="badge badge-na">—</span>';
+      const erBadge  = erOk  === true ? '<span class="badge badge-pass">✓</span>' : erOk  === false ? `<span class="badge ${p.er>=1?'badge-warn':'badge-fail'}">✗</span>` : '<span class="badge badge-na">—</span>';
+      return `<div class="platform-row-data">
+        <div class="prd-header">
+          <span style="font-size:16px;">${platIcon(p.platform)}</span>
+          <span class="prd-platform">${p.platform || '—'}</span>
+          ${p.url ? `<a href="${p.url}" target="_blank" style="font-size:11px;color:var(--purple);text-decoration:none;margin-left:auto;">🔗 帖子</a>` : ''}
+        </div>
+        <div class="prd-metrics">
+          <div class="prd-metric"><div class="prd-metric-label">Views</div><div class="prd-metric-val">${fmtNum(p.views)}</div></div>
+          <div class="prd-metric"><div class="prd-metric-label">Likes</div><div class="prd-metric-val">${fmtNum(p.likes)}</div></div>
+          <div class="prd-metric"><div class="prd-metric-label">Comments</div><div class="prd-metric-val">${fmtNum(p.comments)}</div></div>
+          <div class="prd-metric"><div class="prd-metric-label">Shares</div><div class="prd-metric-val">${fmtNum(p.shares)}</div></div>
+          <div class="prd-metric"><div class="prd-metric-label">CPV ${cpvBadge}</div><div class="prd-metric-val" style="font-size:12px;">${p.cpv !== null && p.cpv !== undefined ? 'RM '+p.cpv.toFixed(4) : '—'}</div></div>
+          <div class="prd-metric"><div class="prd-metric-label">ER ${erBadge}</div><div class="prd-metric-val" style="font-size:12px;">${p.er !== null && p.er !== undefined ? p.er.toFixed(2)+'%' : '—'}</div></div>
+        </div>
+      </div>`;
+    }).join('');
+
+    return `<div class="rec-card">
+      <div class="rec-header">
+        <div class="rec-avatar">${kol.kol_type === '素食' ? '🥦' : kol.kol_type === '非素食' ? '🍖' : '👤'}</div>
+        <div class="rec-info">
+          <div class="rec-name">${kol.kol_name || '未填名字'} ${kol.kol_type ? `<span style="font-size:11px;color:var(--t3);font-weight:400;">(${kol.kol_type})</span>` : ''}</div>
+          <div class="rec-meta">${r.date} · by ${r.manager}</div>
+        </div>
+        <div class="rec-cost">RM ${cost.toLocaleString('en-MY',{minimumFractionDigits:0})}</div>
+      </div>
+      <div class="platform-tags">${platforms.map(p=>`<span class="ptag">${platIcon(p.platform)} ${p.platform||'?'}</span>`).join('')} ${audBadge(kol.audience)}</div>
+      ${platRows}
+      ${kol.notes || r.note?.replace(/^\[KOL_DATA\][\s\S]*?\[\/KOL_DATA\]\n?/,'') ? `<div style="margin-top:8px;font-size:12px;color:var(--t2);">${(kol.notes || r.note?.replace(/^\[KOL_DATA\][\s\S]*?\[\/KOL_DATA\]\n?/,'')||'').trim()}</div>` : ''}
+      <div class="rec-footer">
+        <span class="rec-footer-meta">${platforms.length} platform${platforms.length!==1?'s':''} · RM ${costPerPlat.toFixed(0)}/platform</span>
+        <a href="kol-tracker.html?edit=${r.id}" style="font-size:12px;color:var(--purple);text-decoration:none;font-weight:600;">✏️ Edit</a>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+loadData();
+</script>
+</body>
+</html>
