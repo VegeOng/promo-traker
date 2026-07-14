@@ -289,8 +289,10 @@ const sb=supabase.createClient(
 let kolAudience = '';
 
 function onTypeChange(val) {
+  const isKol = val === 'BRAND_KOL';
   document.getElementById('f-type-other-wrap').style.display = val === 'OTHER' ? 'block' : 'none';
-  document.getElementById('kol-card').classList.toggle('show', val === 'BRAND_KOL');
+  document.getElementById('kol-card').classList.toggle('show', isKol);
+  document.getElementById('w-store').style.display = isKol ? 'none' : '';
 }
 
 function setAudience(val) {
@@ -558,7 +560,9 @@ let recentRecords=[];
 function validate(){
   let ok=true;
   const g=id=>document.getElementById(id).value;
-  [['f-store','e-store','w-store'],
+  const isKol = g('f-type') === 'BRAND_KOL';
+  const storeFields = isKol ? [] : [['f-store','e-store','w-store']];
+  [...storeFields,
    ['f-name','e-name','w-name'],
    ['f-type','e-type','w-type'],
    ['f-start','e-start','w-start'],
@@ -659,6 +663,7 @@ function resetForm(){
   ['f-store','f-name','f-cost','f-discount','f-type','f-type-other'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('f-type-other-wrap').style.display='none';
   document.getElementById('kol-card').classList.remove('show');
+  document.getElementById('w-store').style.display = '';
   clearKolData();
   supportRows=[];supportRowId=0;
   renderSupportRows();
