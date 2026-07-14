@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KOL Tracker — MamaVege</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#fafafa;--s1:#fff;--s2:#f3f4f6;
+  --b1:#e5e7eb;--b2:#d1d5db;
+  --t1:#111827;--t2:#4b5563;--t3:#9ca3af;
+  --green:#166534;--green-bg:#f0fdf4;--green-border:#bbf7d0;
+  --red:#dc2626;--red-bg:#fef2f2;--red-border:#fecaca;
+  --amber:#d97706;--amber-bg:#fffbeb;--amber-border:#fde68a;
+  --purple:#7c3aed;--purple-bg:#f5f3ff;--purple-border:#ddd6fe;
+  --font:'Plus Jakarta Sans',sans-serif;--mono:'DM Mono',monospace;
+  --r:10px;--r2:16px;
+}
+body{background:var(--bg);color:var(--t1);font-family:var(--font);min-height:100vh;padding-bottom:60px;}
+.container{max-width:640px;margin:0 auto;padding:24px 16px 0;}
+.field{display:flex;flex-direction:column;gap:5px;}
+.field.full{grid-column:1/-1;}
+label{font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--t2);}
+input,select,textarea{background:var(--s2);border:1.5px solid var(--b1);border-radius:var(--r);padding:10px 12px;font-size:14px;font-family:var(--font);color:var(--t1);outline:none;transition:border .15s;width:100%;}
+input:focus,select:focus,textarea:focus{border-color:var(--purple);background:var(--s1);}
+input::placeholder,textarea::placeholder{color:var(--t3);}
+textarea{resize:vertical;min-height:72px;line-height:1.5;}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+
+.kol-card{background:var(--s1);border:2px solid var(--purple-border);border-radius:var(--r2);padding:18px;margin-bottom:14px;box-shadow:0 1px 3px rgba(0,0,0,.04);}
+.kol-title{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--purple);margin-bottom:16px;display:flex;align-items:center;gap:8px;}
+.kol-title::after{content:'';flex:1;height:1px;background:var(--purple-border);}
+.kol-metrics-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px;}
+@media(max-width:480px){.kol-metrics-row{grid-template-columns:repeat(2,1fr);}}
+.kol-computed{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;}
+.kol-stat{background:var(--s2);border-radius:var(--r);padding:12px;text-align:center;}
+.kol-stat-label{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--t3);margin-bottom:4px;}
+.kol-stat-val{font-size:20px;font-weight:700;font-family:var(--mono);}
+.kol-stat-sub{font-size:10px;margin-top:3px;}
+.kol-pass{color:#16a34a;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:var(--r);}
+.kol-fail{color:#dc2626;background:#fef2f2;border:1px solid #fecaca;border-radius:var(--r);}
+.kol-na{color:var(--t3);}
+.kol-badge{display:inline-block;padding:2px 8px;border-radius:99px;font-size:10px;font-weight:700;}
+.badge-pass{background:#dcfce7;color:#15803d;}
+.badge-fail{background:#fee2e2;color:#b91c1c;}
+.audience-btns{display:flex;gap:8px;margin-top:2px;}
+.audience-btn{flex:1;padding:9px;border:1.5px solid var(--b1);border-radius:var(--r);font-size:12px;font-weight:600;background:var(--s2);cursor:pointer;transition:all .15s;text-align:center;}
+.audience-btn.sel-yes{background:#dcfce7;border-color:#86efac;color:#15803d;}
+.audience-btn.sel-partial{background:#fffbeb;border-color:#fde68a;color:#92400e;}
+.audience-btn.sel-no{background:#fee2e2;border-color:#fca5a5;color:#b91c1c;}
+
+.err{color:var(--red);font-size:11px;margin-top:3px;display:none;}
+.err.show{display:block;}
+.has-err input,.has-err select{border-color:var(--red)!important;}
+
+.submit-btn{width:100%;padding:14px;background:var(--purple);color:#fff;border:none;border-radius:var(--r2);font-size:15px;font-weight:700;font-family:var(--font);cursor:pointer;transition:all .2s;margin-top:4px;}
+.submit-btn:hover{background:#6d28d9;}
+.submit-btn:disabled{background:var(--t3);cursor:not-allowed;}
+.spinner{display:inline-block;width:15px;height:15px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite;vertical-align:middle;margin-right:6px;}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.success-card{background:var(--purple-bg);border:1px solid var(--purple-border);border-radius:var(--r2);padding:28px;text-align:center;display:none;margin-bottom:14px;}
+.success-card.show{display:block;}
+.success-title{font-size:18px;font-weight:700;color:var(--purple);margin-bottom:6px;}
+.success-sub{font-size:13px;color:var(--purple);line-height:1.6;}
+.again-btn{margin-top:14px;padding:9px 20px;background:var(--purple);color:#fff;border:none;border-radius:var(--r);font-size:13px;font-weight:600;font-family:var(--font);cursor:pointer;}
+
+.mv-top{overflow:hidden}
+.mv-top-main{display:flex;justify-content:space-between;align-items:center;padding:12px 24px;background:#5b21b6}
+.mv-top-left{display:flex;align-items:center;gap:12px}
+.mv-top-logo{height:34px;background:#fff;border-radius:8px;padding:3px 8px;display:flex;align-items:center;text-decoration:none}
+.mv-top-logo img{height:26px}
+.mv-top-sep{width:1px;height:24px;background:rgba(255,255,255,.2)}
+.mv-top-tool{color:#fff;font-size:14px;font-weight:700;letter-spacing:.3px}
+.mv-top-right{display:flex;align-items:center;gap:12px}
+.mv-top-back{color:rgba(255,255,255,.8);text-decoration:none;font-size:13px;font-weight:600}
+.mv-top-back:hover{color:#fff}
+.mv-top-sub{display:flex;justify-content:space-between;align-items:center;padding:5px 24px;background:#4c1d95;color:rgba(255,255,255,.6);font-size:11px}
+</style>
+</head>
+<body>
+<div class="mv-top">
+  <div class="mv-top-main">
+    <div class="mv-top-left">
+      <a href="index.html" class="mv-top-logo"><img src="Mamavege_Logo.png" alt="MamaVege"></a>
+      <div class="mv-top-sep"></div>
+      <span class="mv-top-tool">📊 KOL Tracker</span>
+    </div>
+    <div class="mv-top-right">
+      <a href="index.html" class="mv-top-back">← Hub</a>
+    </div>
+  </div>
+  <div class="mv-top-sub">
+    <span class="mv-top-date"></span>
+    <span>MamaVege Management Hub</span>
+  </div>
+</div>
+<script>document.querySelectorAll('.mv-top-date').forEach(e=>e.textContent=new Date().toLocaleDateString('en-MY',{weekday:'short',year:'numeric',month:'short',day:'numeric'}));</script>
+
+<div class="container">
+  <div class="success-card" id="success-card">
+    <div style="font-size:38px;margin-bottom:10px;">✅</div>
+    <div class="success-title" id="success-title">Submitted!</div>
+    <div class="success-sub" id="success-msg"></div>
+    <button class="again-btn" onclick="resetForm()">Submit another</button>
+  </div>
+
+  <div class="kol-card" id="kol-card">
+    <div class="kol-title">📊 KOL 发布后指标（付款前填写）</div>
+    <div class="grid2" style="margin-bottom:12px;">
+      <div class="field">
+        <label>Activity Name <span style="color:var(--red)">*</span></label>
+        <input type="text" id="kol-activity" placeholder="e.g. Ramadan Collab">
+        <span class="err" id="e-activity">Please enter activity name</span>
+      </div>
+      <div class="field">
+        <label>Date <span style="color:var(--red)">*</span></label>
+        <input type="date" id="kol-date">
+        <span class="err" id="e-date">Please select date</span>
+      </div>
+      <div class="field">
+        <label>Cost (RM) <span style="color:var(--red)">*</span></label>
+        <input type="number" id="kol-cost" placeholder="0.00" min="0" step="0.01" oninput="calcKolMetrics()">
+        <span class="err" id="e-cost">Please enter cost</span>
+      </div>
+      <div class="field">
+        <label>KOL 属性</label>
+        <select id="kol-type">
+          <option value="">Select…</option>
+          <option value="素食">素食</option>
+          <option value="非素食">非素食</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>达人 / KOL 名字</label>
+        <input type="text" id="kol-name" placeholder="e.g. @vegelife_my">
+      </div>
+      <div class="field">
+        <label>平台</label>
+        <select id="kol-platform">
+          <option value="">Select…</option>
+          <option value="TikTok">TikTok</option>
+          <option value="Instagram">Instagram</option>
+          <option value="Facebook">Facebook</option>
+          <option value="YouTube">YouTube</option>
+          <option value="Xiaohongshu">小红书</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+      <div class="field full">
+        <label>帖子链接 (Post URL)</label>
+        <input type="url" id="kol-url" placeholder="https://...">
+      </div>
+    </div>
+
+    <div class="kol-metrics-row">
+      <div class="field">
+        <label>观看数 Views</label>
+        <input type="number" id="kol-views" placeholder="0" min="0" oninput="calcKolMetrics()">
+      </div>
+      <div class="field">
+        <label>赞 Likes</label>
+        <input type="number" id="kol-likes" placeholder="0" min="0" oninput="calcKolMetrics()">
+      </div>
+      <div class="field">
+        <label>评论 Comments</label>
+        <input type="number" id="kol-comments" placeholder="0" min="0" oninput="calcKolMetrics()">
+      </div>
+      <div class="field">
+        <label>转发 Shares</label>
+        <input type="number" id="kol-shares" placeholder="0" min="0" oninput="calcKolMetrics()">
+      </div>
+    </div>
+
+    <div class="kol-computed">
+      <div class="kol-stat" id="cpv-stat">
+        <div class="kol-stat-label">CPV 每观看成本</div>
+        <div class="kol-stat-val kol-na" id="cpv-val">—</div>
+        <div class="kol-stat-sub" id="cpv-sub">及格线 ≤ RM 0.02/view</div>
+      </div>
+      <div class="kol-stat" id="er-stat">
+        <div class="kol-stat-label">互动率 Engagement</div>
+        <div class="kol-stat-val kol-na" id="er-val">—</div>
+        <div class="kol-stat-sub" id="er-sub">及格线 ≥ 3%</div>
+      </div>
+    </div>
+
+    <div class="field" style="margin-bottom:14px;">
+      <label>受众相关性 Audience Relevance</label>
+      <div style="font-size:11px;color:var(--t3);margin-top:-2px;margin-bottom:6px;">受众是否为素食 / 健康 / 清真食品人群</div>
+      <div class="audience-btns">
+        <button type="button" class="audience-btn" id="aud-yes" onclick="setAudience('yes')">✅ 相关</button>
+        <button type="button" class="audience-btn" id="aud-partial" onclick="setAudience('partial')">⚠️ 部分相关</button>
+        <button type="button" class="audience-btn" id="aud-no" onclick="setAudience('no')">❌ 不相关</button>
+      </div>
+    </div>
+
+    <div class="field" style="margin-bottom:14px;">
+      <label>备注 Notes</label>
+      <textarea id="kol-notes" placeholder="e.g. 内容风格、合作效果评估..."></textarea>
+    </div>
+
+    <div class="field">
+      <label>Submitted By <span style="color:var(--red)">*</span></label>
+      <input type="text" id="kol-manager" placeholder="Your full name">
+      <span class="err" id="e-manager">Please enter your name</span>
+    </div>
+  </div>
+
+  <div id="edit-banner" style="display:none;background:var(--amber-bg);border:1px solid var(--amber-border);border-radius:var(--r);padding:10px 14px;margin-bottom:10px;font-size:13px;color:var(--amber);justify-content:space-between;align-items:center;">
+    <span>✏️ Editing existing entry</span>
+    <a href="#" onclick="cancelEdit();return false;" style="color:var(--amber);font-weight:600;text-decoration:underline;">Cancel</a>
+  </div>
+  <button class="submit-btn" id="submit-btn" onclick="submitForm()">Submit</button>
+</div>
+
+<script src="/supabase.min.js"></script>
+<script>
+const sb = supabase.createClient(
+  'https://wjhgezvrxlhpexocfsea.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndqaGdlenZyeGxocGV4b2Nmc2VhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg1MDU4NzgsImV4cCI6MjA5NDA4MTg3OH0.jENcrgEDYDlSRUCqve-T6rxYRJfz-dnZQHnXpPLJ_RE'
+);
+
+function lsGet(key) {
+  const raw = localStorage.getItem(key);
+  if (!raw) return null;
+  try { const item = JSON.parse(raw); if (Date.now() > item.expiry) { localStorage.removeItem(key); return null; } return item.value; } catch { return null; }
+}
+const loggedUser = lsGet('userName');
+const userRole = lsGet('userRole');
+if (!loggedUser) { location.href = 'index.html'; }
+
+document.getElementById('kol-date').value = new Date().toISOString().slice(0,10);
+if (userRole === 'member') {
+  const m = document.getElementById('kol-manager');
+  m.value = loggedUser; m.setAttribute('readonly','readonly');
+}
+
+let kolAudience = '';
+let editingId = null;
+
+function setAudience(val) {
+  kolAudience = val;
+  ['yes','partial','no'].forEach(v => {
+    document.getElementById('aud-'+v).classList.remove('sel-yes','sel-partial','sel-no');
+    if (v === val) document.getElementById('aud-'+v).classList.add('sel-'+v);
+  });
+}
+
+function calcKolMetrics() {
+  const cost = parseFloat(document.getElementById('kol-cost').value) || 0;
+  const views = parseInt(document.getElementById('kol-views').value) || 0;
+  const likes = parseInt(document.getElementById('kol-likes').value) || 0;
+  const comments = parseInt(document.getElementById('kol-comments').value) || 0;
+  const shares = parseInt(document.getElementById('kol-shares').value) || 0;
+
+  const cpvEl = document.getElementById('cpv-val');
+  if (views > 0 && cost > 0) {
+    const cpv = cost / views;
+    const pass = cpv <= 0.02;
+    cpvEl.textContent = 'RM ' + cpv.toFixed(4);
+    cpvEl.className = 'kol-stat-val ' + (pass ? 'kol-pass' : 'kol-fail');
+    document.getElementById('cpv-sub').innerHTML = pass
+      ? '<span class="kol-badge badge-pass">✓ 及格</span>'
+      : '<span class="kol-badge badge-fail">✗ 偏贵</span>';
+  } else {
+    cpvEl.textContent = '—'; cpvEl.className = 'kol-stat-val kol-na';
+    document.getElementById('cpv-sub').textContent = '及格线 ≤ RM 0.02/view';
+  }
+
+  const erEl = document.getElementById('er-val');
+  if (views > 0) {
+    const er = (likes + comments + shares) / views * 100;
+    const pass = er >= 3;
+    erEl.textContent = er.toFixed(2) + '%';
+    erEl.className = 'kol-stat-val ' + (pass ? 'kol-pass' : 'kol-fail');
+    document.getElementById('er-sub').innerHTML = pass
+      ? '<span class="kol-badge badge-pass">✓ 及格</span>'
+      : `<span class="kol-badge badge-fail">${er >= 1 ? '⚠ 偏低' : '✗ 买量嫌疑'}</span>`;
+  } else {
+    erEl.textContent = '—'; erEl.className = 'kol-stat-val kol-na';
+    document.getElementById('er-sub').textContent = '及格线 ≥ 3%';
+  }
+}
+
+function g(id) { return document.getElementById(id).value; }
+
+function validate() {
+  let ok = true;
+  [['kol-activity','e-activity'],['kol-date','e-date'],['kol-manager','e-manager']].forEach(([fid,eid]) => {
+    const v = g(fid).trim();
+    document.getElementById(eid).classList.toggle('show', !v);
+    if (!v) ok = false;
+  });
+  const cost = g('kol-cost');
+  const costInvalid = cost === '' || isNaN(parseFloat(cost)) || parseFloat(cost) < 0;
+  document.getElementById('e-cost').classList.toggle('show', costInvalid);
+  if (costInvalid) ok = false;
+  return ok;
+}
+
+function buildPayload() {
+  const kolData = {
+    kol_name: g('kol-name').trim(),
+    platform: g('kol-platform'),
+    kol_type: g('kol-type'),
+    post_url: g('kol-url').trim(),
+    views: parseInt(g('kol-views')) || 0,
+    likes: parseInt(g('kol-likes')) || 0,
+    comments: parseInt(g('kol-comments')) || 0,
+    shares: parseInt(g('kol-shares')) || 0,
+    audience: kolAudience,
+  };
+  const cost = parseFloat(g('kol-cost')) || 0;
+  const views = kolData.views;
+  const cpv = (cost > 0 && views > 0) ? cost / views : null;
+  const er = views > 0 ? (kolData.likes + kolData.comments + kolData.shares) / views * 100 : null;
+  return {
+    date: g('kol-date'),
+    region: '',
+    promo_type: 'BRAND_KOL',
+    promo_type_other: '',
+    store: '',
+    manager: g('kol-manager').trim(),
+    activity_name: g('kol-activity').trim(),
+    duration: '1 day',
+    note: '[KOL_DATA]' + JSON.stringify({...kolData, cpv, er, audience: kolAudience}) + '[/KOL_DATA]\n' + g('kol-notes').trim(),
+    products: '',
+    total_cost: cost,
+    other_cost: cost,
+    rent_cost: 0,
+    staff_cost: 0,
+    target: 0,
+    actual_sales: 0,
+    products_data: [],
+    sampling_qty: 0,
+    total_target_qty: 0,
+    total_sold_qty: 0,
+    photo_urls: [],
+  };
+}
+
+async function submitForm() {
+  if (!validate()) return;
+  const btn = document.getElementById('submit-btn');
+  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>Submitting…';
+  const payload = buildPayload();
+  const { error } = editingId
+    ? await sb.from('promotions').update(payload).eq('id', editingId)
+    : await sb.from('promotions').insert(payload).select();
+  if (error) { alert('Submit failed: ' + error.message); btn.disabled = false; btn.innerHTML = editingId ? 'Update' : 'Submit'; return; }
+
+  document.getElementById('success-msg').innerHTML =
+    `<strong>${g('kol-activity').trim()}</strong><br>${g('kol-date')} · RM ${parseFloat(g('kol-cost')).toFixed(2)}`;
+  document.getElementById('success-title').textContent = editingId ? 'Updated!' : 'Submitted!';
+  document.getElementById('success-card').classList.add('show');
+  document.getElementById('edit-banner').style.display = 'none';
+  btn.style.display = 'none';
+  editingId = null;
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function resetForm() {
+  document.getElementById('success-card').classList.remove('show');
+  const btn = document.getElementById('submit-btn');
+  btn.style.display = ''; btn.disabled = false; btn.innerHTML = 'Submit';
+  document.getElementById('edit-banner').style.display = 'none';
+  document.getElementById('success-title').textContent = 'Submitted!';
+  editingId = null;
+  ['kol-activity','kol-cost','kol-name','kol-url','kol-views','kol-likes','kol-comments','kol-shares','kol-notes'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('kol-platform').value = '';
+  document.getElementById('kol-type').value = '';
+  document.getElementById('kol-date').value = new Date().toISOString().slice(0,10);
+  kolAudience = '';
+  ['yes','partial','no'].forEach(v => document.getElementById('aud-'+v).classList.remove('sel-yes','sel-partial','sel-no'));
+  calcKolMetrics();
+  if (userRole !== 'member') document.getElementById('kol-manager').value = '';
+}
+
+function cancelEdit() { resetForm(); }
+</script>
+</body>
+</html>
