@@ -110,12 +110,7 @@ textarea{resize:vertical;min-height:72px;line-height:1.5;}
   <div class="kol-card" id="kol-card">
     <div class="kol-title">📊 KOL 发布后指标（付款前填写）</div>
     <div class="grid2" style="margin-bottom:12px;">
-      <div class="field">
-        <label>Activity Name <span style="color:var(--red)">*</span></label>
-        <input type="text" id="kol-activity" placeholder="e.g. Ramadan Collab">
-        <span class="err" id="e-activity">Please enter activity name</span>
-      </div>
-      <div class="field">
+      <div class="field full">
         <label>Date <span style="color:var(--red)">*</span></label>
         <input type="date" id="kol-date">
         <span class="err" id="e-date">Please select date</span>
@@ -289,7 +284,7 @@ function g(id) { return document.getElementById(id).value; }
 
 function validate() {
   let ok = true;
-  [['kol-activity','e-activity'],['kol-date','e-date'],['kol-manager','e-manager']].forEach(([fid,eid]) => {
+  [['kol-date','e-date'],['kol-manager','e-manager']].forEach(([fid,eid]) => {
     const v = g(fid).trim();
     document.getElementById(eid).classList.toggle('show', !v);
     if (!v) ok = false;
@@ -324,7 +319,7 @@ function buildPayload() {
     promo_type_other: '',
     store: '',
     manager: g('kol-manager').trim(),
-    activity_name: g('kol-activity').trim(),
+    activity_name: (g('kol-name').trim() || g('kol-platform') || 'KOL') + ' · ' + g('kol-date'),
     duration: '1 day',
     note: '[KOL_DATA]' + JSON.stringify({...kolData, cpv, er, audience: kolAudience}) + '[/KOL_DATA]\n' + g('kol-notes').trim(),
     products: '',
@@ -353,7 +348,7 @@ async function submitForm() {
   if (error) { alert('Submit failed: ' + error.message); btn.disabled = false; btn.innerHTML = editingId ? 'Update' : 'Submit'; return; }
 
   document.getElementById('success-msg').innerHTML =
-    `<strong>${g('kol-activity').trim()}</strong><br>${g('kol-date')} · RM ${parseFloat(g('kol-cost')).toFixed(2)}`;
+    `${g('kol-name').trim() || '—'} · ${g('kol-platform') || '—'}<br>${g('kol-date')} · RM ${parseFloat(g('kol-cost')).toFixed(2)}`;
   document.getElementById('success-title').textContent = editingId ? 'Updated!' : 'Submitted!';
   document.getElementById('success-card').classList.add('show');
   document.getElementById('edit-banner').style.display = 'none';
@@ -369,7 +364,7 @@ function resetForm() {
   document.getElementById('edit-banner').style.display = 'none';
   document.getElementById('success-title').textContent = 'Submitted!';
   editingId = null;
-  ['kol-activity','kol-cost','kol-name','kol-url','kol-views','kol-likes','kol-comments','kol-shares','kol-notes'].forEach(id => document.getElementById(id).value = '');
+  ['kol-cost','kol-name','kol-url','kol-views','kol-likes','kol-comments','kol-shares','kol-notes'].forEach(id => document.getElementById(id).value = '');
   document.getElementById('kol-platform').value = '';
   document.getElementById('kol-type').value = '';
   document.getElementById('kol-date').value = new Date().toISOString().slice(0,10);
