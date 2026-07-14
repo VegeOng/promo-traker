@@ -222,6 +222,14 @@ textarea{resize:vertical;min-height:72px;line-height:1.5;}
           <option value="Other">Other</option>
         </select>
       </div>
+      <div class="field">
+        <label>KOL 属性</label>
+        <select id="kol-type">
+          <option value="">Select…</option>
+          <option value="素食">素食</option>
+          <option value="非素食">非素食</option>
+        </select>
+      </div>
       <div class="field full">
         <label>帖子链接 (Post URL)</label>
         <input type="url" id="kol-url" placeholder="https://...">
@@ -350,6 +358,7 @@ function getKolData() {
   return {
     kol_name: document.getElementById('kol-name').value.trim(),
     platform: document.getElementById('kol-platform').value,
+    kol_type: document.getElementById('kol-type').value,
     post_url: document.getElementById('kol-url').value.trim(),
     views: parseInt(document.getElementById('kol-views').value) || 0,
     likes: parseInt(document.getElementById('kol-likes').value) || 0,
@@ -363,6 +372,7 @@ function setKolData(d) {
   if (!d) return;
   document.getElementById('kol-name').value = d.kol_name || '';
   document.getElementById('kol-platform').value = d.platform || '';
+  document.getElementById('kol-type').value = d.kol_type || '';
   document.getElementById('kol-url').value = d.post_url || '';
   document.getElementById('kol-views').value = d.views || '';
   document.getElementById('kol-likes').value = d.likes || '';
@@ -375,6 +385,7 @@ function setKolData(d) {
 function clearKolData() {
   ['kol-name','kol-url','kol-views','kol-likes','kol-comments','kol-shares'].forEach(id => document.getElementById(id).value = '');
   document.getElementById('kol-platform').value = '';
+  document.getElementById('kol-type').value = '';
   kolAudience = '';
   ['yes','partial','no'].forEach(v => document.getElementById('aud-'+v).classList.remove('sel-yes','sel-partial','sel-no'));
   calcKolMetrics();
