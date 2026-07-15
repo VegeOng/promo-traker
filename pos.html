@@ -154,6 +154,13 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
     <button onclick="document.getElementById('gift-modal').style.display='none'" style="margin-top:12px;width:100%;padding:11px;background:#f3f4f6;border:1.5px solid #e5e7eb;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;">Cancel</button>
   </div>
 </div>
+<div id="sample-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;align-items:center;justify-content:center;padding:16px;">
+  <div style="background:#fff;border-radius:16px;padding:20px;max-width:360px;width:100%;max-height:80vh;display:flex;flex-direction:column;">
+    <div style="font-size:15px;font-weight:800;margin-bottom:12px;">🧪 Add Sample</div>
+    <div style="overflow-y:auto;flex:1;" id="sample-list"></div>
+    <button onclick="document.getElementById('sample-modal').style.display='none'" style="margin-top:12px;width:100%;padding:11px;background:#f3f4f6;border:1.5px solid #e5e7eb;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;">Cancel</button>
+  </div>
+</div>
 
 <!-- SELL -->
 <div class="page active" id="page-sell">
@@ -544,7 +551,11 @@ function renderProducts() {
     <div class="pname" style="color:#166534;">🎁 Free Gift</div>
     <div class="pprice" style="color:#166534;">RM 0.00</div>
   </div>`;
-  grid.innerHTML = giftCard + priced.map(s => {
+  const sampleCard = `<div class="pbtn" onclick="openSampleModal()" style="background:#eff6ff;border:1.5px solid #bfdbfe;">
+    <div class="pname" style="color:#1e40af;">🧪 Sample</div>
+    <div class="pprice" style="color:#1e40af;">RM 0.00</div>
+  </div>`;
+  grid.innerHTML = giftCard + sampleCard + priced.map(s => {
     const rem = remainingOf(s.sku_name);
     const inCart = cart.filter(c => !c.bundle && c.name === s.sku_name).reduce((a, c) => a + c.qty, 0);
     const left = rem === null ? null : rem - inCart;
@@ -691,7 +702,7 @@ function renderCart(rebuild = true) {
     : '';
   document.getElementById('cart-body').innerHTML = cart.map((c, i) => `
     <div class="citem">
-      <div class="cname">${esc(c.name)}${c.gift ? '<span style="font-size:10px;color:#166534;font-weight:700;background:#f0fdf4;padding:1px 6px;border-radius:10px;margin-left:4px">FREE</span>' : ''}${c.bundle && c.items ? `<div class="cbundle">${esc(c.items)}</div>` : ''}</div>
+      <div class="cname">${esc(c.name)}${c.gift ? '<span style="font-size:10px;color:#166534;font-weight:700;background:#f0fdf4;padding:1px 6px;border-radius:10px;margin-left:4px">FREE</span>' : ''}${c.sample ? '<span style="font-size:10px;color:#1e40af;font-weight:700;background:#eff6ff;padding:1px 6px;border-radius:10px;margin-left:4px">SAMPLE</span>' : ''}${c.bundle && c.items ? `<div class="cbundle">${esc(c.items)}</div>` : ''}</div>
       <div class="cqty">
         <button onclick="changeQty(${i},-1)">−</button><span>${c.qty}</span><button onclick="changeQty(${i},1)">＋</button>
       </div>
@@ -1052,6 +1063,27 @@ function addGift(skuName) {
   document.getElementById('cartbar').classList.add('open');
   document.getElementById('cart-arrow').textContent = '▼';
   toast('🎁 ' + skuName + ' added as free gift');
+}
+
+function openSampleModal() {
+  const modal = document.getElementById('sample-modal');
+  const list = document.getElementById('sample-list');
+  const sampleSkus = activeSkus.length ? skus.filter(s => activeSkus.includes(s.sku_name)) : skus;
+  list.innerHTML = sampleSkus.map(s => `
+    <div onclick="addSample('${escq(s.sku_name)}')" style="padding:12px 14px;border:1.5px solid #e5e7eb;border-radius:10px;margin-bottom:8px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;font-size:14px;font-weight:600;">
+      <span>${esc(s.sku_name)}</span>
+      <span style="font-size:12px;color:#1e40af;font-weight:700;background:#eff6ff;padding:3px 10px;border-radius:20px;">SAMPLE</span>
+    </div>`).join('') || '<div style="color:#9ca3af;font-size:13px;padding:16px;text-align:center">No SKUs available.</div>';
+  modal.style.display = 'flex';
+}
+
+function addSample(skuName) {
+  document.getElementById('sample-modal').style.display = 'none';
+  cart.push({ name: skuName, qty: 1, price: 0, bundle: false, sample: true });
+  renderCart(true);
+  document.getElementById('cartbar').classList.add('open');
+  document.getElementById('cart-arrow').textContent = '▼';
+  toast('🧪 ' + skuName + ' added as sample');
 }
 
 async function voidSale(id) {
