@@ -454,8 +454,11 @@ async function switchStockActivity() {
     document.getElementById('su-stock').innerHTML = skus.map(s => {
       const cur = map[s.sku_name] ?? 0;
       return `<div class="price-row">
-        <span class="prname">${esc(s.sku_name)}</span>
-        <input type="number" id="stock-${cssId(s.sku_name)}" value="${cur}" min="0" step="1" style="width:70px">
+        <span class="prname">${esc(s.sku_name)}<span style="font-size:11px;color:var(--muted);font-weight:400;margin-left:6px">Current: <span id="scur-${cssId(s.sku_name)}">${cur}</span></span></span>
+        <div style="display:flex;gap:4px;align-items:center">
+          <input type="number" id="stock-${cssId(s.sku_name)}" placeholder="+ Add" min="0" step="1" style="width:65px">
+          <button onclick="editStockDirect('${cssId(s.sku_name)}',${cur})" style="padding:4px 8px;background:#f3f4f6;border:1px solid #e5e7eb;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;color:#374151">Edit</button>
+        </div>
       </div>`;
     }).join('') || '<div style="color:var(--ml);font-size:13px;padding:10px 0">No SKUs found.</div>';
   } catch(e) {
@@ -1165,16 +1168,37 @@ async function savePrices() {
   }
 }
 
+async function editStockDirect(id, cur) {
+  const val = prompt(`Edit total stock for this SKU:\nCurrent: ${cur}\n\nEnter new total:`);
+  if (val === null || val === '') return;
+  const newQty = parseFloat(val);
+  if (isNaN(newQty) || newQty < 0) { toast('Invalid number', true); return; }
+  const skuName = skus.find(s => cssId(s.sku_name) === id)?.sku_name;
+  if (!skuName) return;
+  try {
+    await fetch(SUPA_URL + '/rest/v1/pos_stock?on_conflict=event_name,sku_name', {
+      method: 'POST',
+      headers: { ...H, 'Prefer': 'resolution=merge-duplicates' },
+      body: JSON.stringify([{ event_name: stockEventName, sku_name: skuName, loaded_qty: newQty }])
+    }).then(r => { if (!r.ok) throw new Error(r.status); });
+    stockBaseMap[skuName] = newQty;
+    if (stockEventName === eventInfo.name) stockMap[skuName] = newQty;
+    document.getElementById('scur-' + id).textContent = newQty;
+    toast('✓ Stock updated to ' + newQty);
+  } catch(e) { toast('Failed to update', true); }
+}
+
 async function saveStock() {
   if (!stockEventName) { toast('Please select an Activity for stock first', true); return; }
   const rows = [];
   skus.forEach(s => {
     const el = document.getElementById('stock-' + cssId(s.sku_name));
     if (!el) return;
-    const v = parseFloat(el.value);
-    if (!isNaN(v) && el.value !== '') {
-      rows.push({ event_name: stockEventName, sku_name: s.sku_name, loaded_qty: v });
-      if (stockEventName === eventInfo.name) stockMap[s.sku_name] = v;
+    const delta = parseFloat(el.value);
+    if (!isNaN(delta) && el.value !== '') {
+      const newQty = (stockBaseMap[s.sku_name] || 0) + delta;
+      rows.push({ event_name: stockEventName, sku_name: s.sku_name, loaded_qty: newQty });
+      if (stockEventName === eventInfo.name) stockMap[s.sku_name] = newQty;
     }
   });
   try {
