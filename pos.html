@@ -1134,6 +1134,7 @@ function saveEvent() {
     activity_name: actName
   };
   localStorage.setItem('mv_pos_event', JSON.stringify(eventInfo));
+  stockEventName = actName;
   updateEventLabel();
   loadStock().then(renderSetup);
   loadActiveSkus();
