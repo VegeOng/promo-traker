@@ -1084,12 +1084,23 @@ async function loadSummary(activityId, activityName) {
       byPay[m] = (byPay[m] || 0) + parseFloat(s.total || 0);
     });
 
-    // Units sold per SKU
-    const soldMap = {};
-    salesArr.forEach(s => (s.items || []).forEach(i => {
-      if (!i.bundle) soldMap[i.name] = (soldMap[i.name] || 0) + (i.qty || 0);
-      else (i.contents || []).forEach(x => { soldMap[x.name] = (soldMap[x.name] || 0) + (x.qty || 0) * (i.qty || 1); });
-    }));
+    // Units sold & revenue per SKU
+    const soldMap = {}, skuRevMap = {};
+    salesArr.forEach(s => {
+      (s.items || []).forEach(i => {
+        if (!i.bundle) {
+          soldMap[i.name] = (soldMap[i.name] || 0) + (i.qty || 0);
+          skuRevMap[i.name] = (skuRevMap[i.name] || 0) + parseFloat(i.price || 0) * (i.qty || 1);
+        } else {
+          const totalUnits = (i.contents || []).reduce((a, c) => a + (c.qty || 0) * (i.qty || 1), 0);
+          (i.contents || []).forEach(c => {
+            const units = (c.qty || 0) * (i.qty || 1);
+            soldMap[c.name] = (soldMap[c.name] || 0) + units;
+            skuRevMap[c.name] = (skuRevMap[c.name] || 0) + (totalUnits ? parseFloat(i.price || 0) * (i.qty || 1) * units / totalUnits : 0);
+          });
+        }
+      });
+    });
 
     const fmtRM = n => 'RM ' + Number(n).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 
@@ -1140,6 +1151,7 @@ async function loadSummary(activityId, activityName) {
         <td style="padding:7px 8px;font-size:13px;border-bottom:1px solid var(--border);text-align:center">${loadedQty !== null ? loadedQty : '—'}</td>
         <td style="padding:7px 8px;font-size:13px;border-bottom:1px solid var(--border);text-align:center;font-weight:700">${sold || 0}</td>
         <td style="padding:7px 8px;font-size:13px;border-bottom:1px solid var(--border);text-align:center;color:${remaining !== null && remaining < 0 ? 'var(--red)' : 'inherit'}">${remaining !== null ? remaining : '—'}</td>
+        <td style="padding:7px 8px;font-size:13px;border-bottom:1px solid var(--border);text-align:right;color:#166534;font-weight:700">${skuRevMap[name] ? fmtRM(skuRevMap[name]) : '—'}</td>
       </tr>`;
     }).join('');
 
@@ -1251,6 +1263,7 @@ async function loadSummary(activityId, activityName) {
             <th style="padding:6px 8px;text-align:center;border-bottom:2px solid var(--border)">Loaded</th>
             <th style="padding:6px 8px;text-align:center;border-bottom:2px solid var(--border)">Sold</th>
             <th style="padding:6px 8px;text-align:center;border-bottom:2px solid var(--border)">Remaining</th>
+            <th style="padding:6px 8px;text-align:right;border-bottom:2px solid var(--border)">Revenue</th>
           </tr></thead>
           <tbody>${stockRows2}</tbody>
         </table>
