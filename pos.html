@@ -566,7 +566,7 @@ function renderBundles() {
 
 // ── Cart ──
 function addToCart(name) {
-  const existing = cart.find(c => c.name === name && !c.bundle);
+  const existing = cart.find(c => c.name === name && !c.bundle && !c.gift && !c.sample);
   if (existing) existing.qty++;
   else cart.push({ name, qty: 1, price: prices[name] || 0, bundle: false });
   renderCart();
