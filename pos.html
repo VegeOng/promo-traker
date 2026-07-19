@@ -536,7 +536,7 @@ function renderProducts() {
   </div>`;
   grid.innerHTML = giftCard + sampleCard + priced.map(s => {
     const rem = remainingOf(s.sku_name);
-    const inCart = cart.filter(c => !c.bundle && !c.gift && !c.sample && c.name === s.sku_name).reduce((a, c) => a + c.qty, 0);
+    const inCart = cart.filter(c => !c.bundle && c.name === s.sku_name).reduce((a, c) => a + c.qty, 0);
     const left = rem === null ? null : rem - inCart;
     let badge = '';
     if (left !== null) {
