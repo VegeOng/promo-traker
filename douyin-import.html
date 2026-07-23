@@ -99,16 +99,17 @@ const SUPABASE_URL = 'https://wjhgezvrxlhpexocfsea.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndqaGdlenZyeGxocGV4b2Nmc2VhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg1MDU4NzgsImV4cCI6MjA5NDA4MTg3OH0.jENcrgEDYDlSRUCqve-T6rxYRJfz-dnZQHnXpPLJ_RE';
 
 // 目标字段 → 抖店导出可能的列名（模糊匹配关键词）
+// 精确名放前面（exact/startsWith 优先命中），模糊词放后面兜底
 const FIELD_HINTS = {
-  order_id:   ['主订单编号','订单编号','订单号','order'],
-  pay_time:   ['支付完成时间','支付时间','下单时间','订单提交时间','成交时间','付款时间'],
-  status:     ['订单状态','状态'],
-  revenue:    ['订单实付金额','实付金额','订单应付金额','买家实付','实收','订单金额','支付金额'],
-  title:      ['商品名称','商品标题','宝贝名称'],
+  order_id:   ['订单号','主订单编号','订单编号','子订单编号','order'],
+  pay_time:   ['支付时间','支付完成时间','付款时间','成交时间','下单时间','订单提交时间'],
+  status:     ['订单状态','售后状态','状态'],
+  revenue:    ['用户实际支付金额','用户支付金额','订单实付金额','实付金额','商家实收','订单应付金额','支付金额'],
+  title:      ['商品名称','选购商品','商品标题','商品'],
   spec:       ['商品规格','规格','sku','商品属性'],
-  qty:        ['商品数量','购买数量','数量','件数'],
-  province:   ['收件人所在省','收货省份','省','收货地址-省','收件省'],
-  source_name:['达人昵称','推广者','流量来源','带货达人','作者昵称','分销达人'],
+  qty:        ['成交件数','商品数量','购买数量','件数','数量'],
+  province:   ['省','收件人所在省','收货省份','收货地址-省','收件省'],
+  source_name:['达人昵称','推广者昵称','推广者','带货达人','作者昵称','分销达人','流量来源'],
 };
 const FIELD_LABELS = {
   order_id:'订单编号 *', pay_time:'支付时间 *', status:'订单状态', revenue:'实付金额 *',
@@ -140,7 +141,11 @@ function handleFile(file){
       headers = json[headerIdx].map(h=>String(h).trim());
       rawRows = json.slice(headerIdx+1).filter(r=>r.some(c=>String(c).trim()));
       if(!rawRows.length){ fm.innerHTML = `<div class="msg err">文件里没读到数据行</div>`; return; }
-      fm.innerHTML = `<div class="msg ok">✓ 解析成功：${rawRows.length} 行数据，${headers.length} 列</div>`;
+      fm.innerHTML = `<div class="msg ok">✓ 解析成功：${rawRows.length} 行数据，${headers.length} 列</div>`
+        + `<details style="margin-top:10px"><summary style="cursor:pointer;font-size:12px;color:var(--muted)">点这里展开全部 ${headers.length} 个列名（供核对）</summary>`
+        + `<div style="font-size:11px;color:var(--muted);line-height:1.9;margin-top:6px">`
+        + headers.map((h,i)=>`<span style="display:inline-block;background:#f0fdf4;border:1px solid var(--border);border-radius:4px;padding:1px 6px;margin:2px">${i}. ${escH(h)}</span>`).join('')
+        + `</div></details>`;
       autoMap();
       buildMapUI();
       buildPreview();
@@ -151,9 +156,24 @@ function handleFile(file){
 
 function autoMap(){
   mapping = {};
-  for(const [field, hints] of Object.entries(FIELD_HINTS)){
-    const idx = headers.findIndex(h=> hints.some(k=> h.toLowerCase().includes(k.toLowerCase())));
-    if(idx>=0) mapping[field] = idx;
+  const used = new Set();
+  const norm = s => String(s).toLowerCase().replace(/\s/g,'');
+  // 优先级：精确 > 开头匹配 > 包含匹配；已用过的列不再复用，避免认错
+  for(const tier of ['exact','starts','includes']){
+    for(const [field, hints] of Object.entries(FIELD_HINTS)){
+      if(mapping[field]!=null) continue;
+      const idx = headers.findIndex((h,i)=>{
+        if(used.has(i)) return false;
+        const hn = norm(h);
+        return hints.some(k=>{
+          const kn = norm(k);
+          if(tier==='exact') return hn===kn;
+          if(tier==='starts') return hn.startsWith(kn);
+          return hn.includes(kn);
+        });
+      });
+      if(idx>=0){ mapping[field]=idx; used.add(idx); }
+    }
   }
 }
 
