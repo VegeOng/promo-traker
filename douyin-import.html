@@ -108,10 +108,19 @@ let importPayload = null; // {table, records}
 function handleFile(file){
   const fm = document.getElementById('fileMsg');
   fm.innerHTML = `<div class="msg info">正在解析 <b>${escH(file.name)}</b>…</div>`;
+  const isCsv = /\.csv$/i.test(file.name);
   const reader = new FileReader();
   reader.onload = e=>{
     try{
-      const wb = XLSX.read(e.target.result, {type:'array'});
+      let wb;
+      if(isCsv){
+        // CSV 多为 UTF-8（抖店导出带 BOM），按文本读避免编码误判
+        let txt = e.target.result;
+        if(txt.charCodeAt(0)===0xFEFF) txt = txt.slice(1);
+        wb = XLSX.read(txt, {type:'string'});
+      } else {
+        wb = XLSX.read(e.target.result, {type:'array'});
+      }
       const names = wb.SheetNames;
       if(names.includes('成交概览') || names.includes('商品构成') || names.includes('账号构成')){
         parseCompass(wb, fm);
@@ -120,7 +129,22 @@ function handleFile(file){
       }
     }catch(err){ fm.innerHTML = `<div class="msg err">解析失败：${escH(err.message)}</div>`; }
   };
-  reader.readAsArrayBuffer(file);
+  if(isCsv) reader.readAsText(file, 'UTF-8'); else reader.readAsArrayBuffer(file);
+}
+
+// 抖店商家编码/规格 → 内部SKU名（与仪表板一致）
+function mapDouyinSku(code, spec, title){
+  code = String(code||'').replace(/\t/g,'').trim().replace(/^0+/,'');
+  const M = {'9555988500819-3':'香椿干盘面 3袋装','9555988500819-6':'香椿干盘面 6袋装','9555988500819-32':'香椿干盘面 32袋装','955988501076-3':'青柠干盘面 3袋装','955988501076-6':'青柠干盘面 6袋装','955988501051-3':'香椿杯面 3杯装','955988501051-6':'香椿杯面 6杯装','955988501052-3':'青柠杯面 3杯装','955988501052-6':'青柠杯面 6杯装','955988501052-33':'混合装（香椿杯面3+青柠杯面3）'};
+  if(M[code]) return M[code];
+  const s = String(spec||'').replace(/\t/g,'').trim();
+  if(/香椿摇摇面.*青柠/.test(s)) return '混合装（香椿杯面3+青柠杯面3）';
+  if(/香椿摇摇面/.test(s)) return '香椿杯面 '+(/6[桶盒]/.test(s)?'6':'3')+'杯装';
+  if(/青柠.*摇摇面/.test(s)) return '青柠杯面 '+(/6[桶盒]/.test(s)?'6':'3')+'杯装';
+  const p=(s.match(/(\d+)袋/)||[])[1]||'?';
+  if(/青柠|辣椒/.test(s)) return '青柠干盘面 '+p+'袋装';
+  if(/袋|原味/.test(s)) return '香椿干盘面 '+p+'袋装';
+  return String(title||spec||'未知').replace(/\t/g,'').trim().slice(0,20);
 }
 
 // ── 表头名 → 列号 ──
@@ -132,6 +156,14 @@ function headIndex(rows){
 }
 function ymd(s){ s=String(s).replace(/\D/g,''); return s.length>=8 ? `${s.slice(0,4)}-${s.slice(4,6)}-${s.slice(6,8)}` : null; }
 function num(v){ return parseFloat(String(v).replace(/[^0-9.\-]/g,''))||0; }
+// 日期→ISO（视为北京时间 UTC+8）。兼容 XLSX 美式格式化「6/30/26」与标准「2026-06-30 14:30:22」
+function toISO(v){
+  if(v==null||v==='') return null;
+  let s=String(v).trim(); if(!s) return null;
+  let m=s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})(?:\s+(\d{1,2}):(\d{2})(?::(\d{2}))?)?$/);
+  if(m){ let yr=+m[3]; if(yr<100)yr+=2000; const d=new Date(Date.UTC(yr,+m[1]-1,+m[2],+(m[4]||0),+(m[5]||0),+(m[6]||0))-8*3600000); return isNaN(d)?null:d.toISOString(); }
+  s=s.replace(/\//g,'-'); const d=new Date(s.includes('T')?s:s.replace(' ','T')+'+08:00'); return isNaN(d)?null:d.toISOString();
+}
 
 // ── 罗盘·成交分析 ──
 function parseCompass(wb, fm){
@@ -213,9 +245,10 @@ function aggTop(rows, n, talent){
 
 // ── 订单明细 ──
 const FIELD_HINTS = {
-  order_id:['订单号','主订单编号','订单编号','子订单编号'], pay_time:['支付时间','支付完成时间','付款时间','成交时间','下单时间'],
-  status:['订单状态','售后状态','状态'], revenue:['用户实际支付金额','用户支付金额','订单实付金额','实付金额','商家实收','订单应付金额'],
-  title:['商品名称','选购商品','商品标题'], spec:['商品规格','规格','商品属性'], qty:['成交件数','商品数量','购买数量','件数','数量'],
+  order_id:['主订单编号','订单号','订单编号','子订单编号'], pay_time:['支付完成时间','支付时间','订单提交时间','付款时间','成交时间','下单时间'],
+  status:['订单状态','售后状态','状态'], revenue:['订单应付金额','用户实际支付金额','用户支付金额','订单实付金额','实付金额'],
+  title:['选购商品','商品名称','商品标题'], spec:['商品规格','规格','商品属性'], qty:['商品数量','成交件数','购买数量','件数','数量'],
+  price:['商品单价','单价'], sku_code:['商家编码','商品编码','规格编码'], pay_time2:['订单提交时间','下单时间','成交时间'],
   province:['省','收件人所在省','收货省份'], source_name:['达人昵称','推广者昵称','推广者','带货达人','作者昵称','流量来源'],
 };
 function parseOrders(wb, fm){
@@ -225,17 +258,25 @@ function parseOrders(wb, fm){
   const headers = json[hi].map(h=>String(h).trim());
   const rows = json.slice(hi+1).filter(r=>r.some(c=>String(c).trim()));
   const norm=s=>String(s).toLowerCase().replace(/\s/g,''); const map={}, used=new Set();
+  // 提示按顺序优先（达人昵称 优先于 流量来源，不受列位置影响）；三档精度全局精确优先
   for(const tier of ['exact','starts','includes']) for(const [f,hints] of Object.entries(FIELD_HINTS)){
     if(map[f]!=null) continue;
-    const idx=headers.findIndex((h,i)=>{ if(used.has(i))return false; const hn=norm(h); return hints.some(k=>{const kn=norm(k); return tier==='exact'?hn===kn:tier==='starts'?hn.startsWith(kn):hn.includes(kn);}); });
-    if(idx>=0){ map[f]=idx; used.add(idx); }
+    let found=-1;
+    for(const k of hints){ const kn=norm(k);
+      const idx=headers.findIndex((h,i)=>{ if(used.has(i))return false; const hn=norm(h); return tier==='exact'?hn===kn:tier==='starts'?hn.startsWith(kn):hn.includes(kn); });
+      if(idx>=0){ found=idx; break; }
+    }
+    if(found>=0){ map[f]=found; used.add(found); }
   }
   const g=(r,f)=> map[f]!=null?String(r[map[f]]??'').trim():'';
   let parsed = rows.map(r=>{
     const rev=num(g(r,'revenue')), qty=parseInt(num(g(r,'qty')))||1;
-    let t=(g(r,'pay_time')||'').replace(/\//g,'-'); const d=new Date(t.includes('T')?t:t.replace(' ','T')+'+08:00');
-    return { order_id:g(r,'order_id'), pay_time: isNaN(d)?null:d.toISOString(), status:g(r,'status')||null, revenue:rev,
-      products:[{title:g(r,'title'),spec:g(r,'spec'),qty,price:qty?+(rev/qty).toFixed(2):rev}], province:g(r,'province')||null, source_name:g(r,'source_name')||'未知' };
+    const unit=num(g(r,'price'))|| (qty?+(rev/qty).toFixed(2):rev);
+    const spec=g(r,'spec'), code=g(r,'sku_code'), title=g(r,'title');
+    const iso = toISO(g(r,'pay_time')) || toISO(g(r,'pay_time2'));
+    return { order_id:g(r,'order_id'), pay_time: iso, status:g(r,'status')||null, revenue:rev,
+      products:[{title, spec, sku_code:code, internal_sku:mapDouyinSku(code,spec,title), qty, price:unit}],
+      province:g(r,'province')||null, source_name:g(r,'source_name')||'自然流量' };
   }).filter(r=>r.order_id);
   // 合并同主订单
   const mm={}; parsed.forEach(r=>{ if(!mm[r.order_id])mm[r.order_id]={...r,products:[...r.products]}; else {mm[r.order_id].products.push(...r.products); mm[r.order_id].revenue+=r.revenue;} });
@@ -246,9 +287,9 @@ function parseOrders(wb, fm){
   fm.innerHTML = `<div class="msg ok">✓ 识别为 <span class="tag order">订单明细</span>：${parsed.length} 笔订单</div>`
     + (missing.length?`<div class="msg err">缺少必要列：${missing.join('、')}，请检查文件是否为订单导出</div>`:'');
   document.getElementById('resultCard').style.display='block';
-  const head=['订单编号','支付时间','状态','实付','商品','省份','来源'];
+  const head=['订单编号','支付时间','状态','实付','内部SKU（规格）','单价','省份','达人/来源'];
   document.getElementById('resultBody').innerHTML = `<div class="card-title">数据预览（前8笔 / 共 ${parsed.length}）</div><div style="overflow-x:auto"><table><thead><tr>${head.map(h=>`<th>${h}</th>`).join('')}</tr></thead><tbody>`
-    + parsed.slice(0,8).map(r=>`<tr><td>${escH(r.order_id)}</td><td>${escH((r.pay_time||'').slice(0,10))}</td><td>${escH(r.status||'')}</td><td class="num">${r.revenue.toFixed(2)}</td><td style="max-width:240px">${escH(r.products.map(p=>`${p.title||''}${p.spec||''}×${p.qty}`).join('；'))}</td><td>${escH(r.province||'')}</td><td>${escH(r.source_name)}</td></tr>`).join('')
+    + parsed.slice(0,8).map(r=>{ const p0=r.products[0]||{}; return `<tr><td>${escH(r.order_id)}</td><td>${escH((r.pay_time||'').slice(0,10))}</td><td>${escH(r.status||'')}</td><td class="num">${r.revenue.toFixed(2)}</td><td style="max-width:220px">${escH(r.products.map(p=>`${p.internal_sku||''}（${p.spec||''}）×${p.qty}`).join('；'))}</td><td class="num">${(p0.price||0).toFixed(2)}</td><td>${escH(r.province||'')}</td><td>${escH(r.source_name)}</td></tr>`; }).join('')
     + `</tbody></table></div>`;
 }
 
