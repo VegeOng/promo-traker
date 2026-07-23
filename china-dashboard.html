@@ -181,6 +181,26 @@
       <div id="wechat-live" style="font-size:13px;color:var(--muted)">加载中…</div>
     </div>
 
+    <div class="card" style="margin-bottom:16px">
+      <div class="card-title" style="flex-wrap:wrap">🎵 抖店 · 罗盘成交分析 <span style="color:var(--muted);font-weight:500">（手动导入的罗盘数据：每日GMV / SKU / 达人 / 佣金）</span></div>
+      <div class="date-selector" style="margin-bottom:12px">
+        <div class="ds-tabs">
+          <button class="ds-tab active" data-dymode="all" onclick="setDyMode('all')">📦 全部</button>
+          <button class="ds-tab" data-dymode="month" onclick="setDyMode('month')">📅 按月</button>
+          <button class="ds-tab" data-dymode="range" onclick="setDyMode('range')">🔧 自定义范围</button>
+        </div>
+        <div class="ds-controls" id="dy-controls-month" style="display:none">
+          <select id="dy-month-select" onchange="renderDouyin()"></select>
+        </div>
+        <div class="ds-controls" id="dy-controls-range" style="display:none">
+          <input type="date" id="dy-range-start" onchange="renderDouyin()">
+          <span style="color:var(--muted)">→</span>
+          <input type="date" id="dy-range-end" onchange="renderDouyin()">
+        </div>
+      </div>
+      <div id="douyin-live" style="font-size:13px;color:var(--muted)">加载中…</div>
+    </div>
+
     <div class="grid-2b">
       <div class="card">
         <div class="card-title">🏆 客户 / 达人业绩排行榜 TOP 15 <span id="lbl-customers" style="color:var(--muted);font-weight:500"></span></div>
@@ -786,6 +806,80 @@ function renderWechatLive(){
     <style>@media(max-width:900px){.wx-grid{grid-template-columns:1fr !important}}</style>`;
 }
 loadWechatLive();
+
+// ── 抖店罗盘数据（Supabase douyin_compass，手动导入）──
+let dyRows = [], dyMode = 'all';
+function setDyMode(mode){
+  dyMode = mode;
+  document.querySelectorAll('[data-dymode]').forEach(b=>b.classList.toggle('active', b.dataset.dymode===mode));
+  document.getElementById('dy-controls-month').style.display = mode==='month' ? 'flex' : 'none';
+  document.getElementById('dy-controls-range').style.display = mode==='range' ? 'flex' : 'none';
+  if(mode==='range'){
+    const s=document.getElementById('dy-range-start'), e=document.getElementById('dy-range-end');
+    if(!s.value||!e.value){ const now=new Date(); if(!s.value)s.value=fmtDateInput(new Date(now.getFullYear(),now.getMonth(),1)); if(!e.value)e.value=fmtDateInput(now); }
+  }
+  renderDouyin();
+}
+async function loadDouyin(){
+  const box=document.getElementById('douyin-live');
+  try{
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/douyin_compass?select=dim,ymd,name,gmv,orders,units,commission,extra&order=ymd.desc&limit=10000`, {
+      headers:{ apikey:SUPABASE_KEY, Authorization:'Bearer '+SUPABASE_KEY } });
+    if(r.status===404){ box.innerHTML='抖店数据表还没建好，或还没导入数据。<a href="douyin-import.html" style="color:var(--green);font-weight:700">→ 去导入罗盘文件</a>'; return; }
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    dyRows = await r.json();
+    if(!dyRows.length){ box.innerHTML='还没有抖店数据。<a href="douyin-import.html" style="color:var(--green);font-weight:700">→ 去导入罗盘文件</a>'; return; }
+    // 月份下拉
+    const yms=[...new Set(dyRows.map(o=>o.ymd.slice(0,7)))].sort().reverse();
+    document.getElementById('dy-month-select').innerHTML = yms.map(ym=>{const[y,m]=ym.split('-');return `<option value="${ym}">${y}年 ${mNamesZh[parseInt(m)-1]}</option>`;}).join('');
+    renderDouyin();
+  }catch(e){ box.innerHTML=`<span style="color:var(--red)">抖店数据加载失败：${escHtml(e.message)}</span>`; }
+}
+function renderDouyin(){
+  const box=document.getElementById('douyin-live');
+  let rows=dyRows, label='全部期间';
+  if(dyMode==='month'){ const ym=document.getElementById('dy-month-select').value; rows=dyRows.filter(o=>o.ymd.slice(0,7)===ym); const[y,m]=ym.split('-'); label=`${y}年${mNamesZh[parseInt(m)-1]}`; }
+  else if(dyMode==='range'){ const s=document.getElementById('dy-range-start').value, e=document.getElementById('dy-range-end').value; rows=dyRows.filter(o=>(!s||o.ymd>=s)&&(!e||o.ymd<=e)); label=`${s||'…'} ~ ${e||'…'}`; }
+  if(!rows.length){ box.innerHTML='该期间暂无抖店数据'; return; }
+
+  const ov=rows.filter(r=>r.dim==='overview');
+  const gmv=ov.reduce((s,r)=>s+ +r.gmv,0), orders=ov.reduce((s,r)=>s+ +r.orders,0), units=ov.reduce((s,r)=>s+ +r.units,0);
+
+  // 商品排行
+  const pm={}; rows.filter(r=>r.dim==='product').forEach(r=>{ pm[r.name]=(pm[r.name]||0)+ +r.gmv; });
+  const prods=Object.entries(pm).sort((a,b)=>b[1]-a[1]).slice(0,10);
+  // 达人排行
+  const tm={}; rows.filter(r=>r.dim==='talent').forEach(r=>{ if(!tm[r.name])tm[r.name]={gmv:0,ord:0,u:0,cm:0,co:r.extra&&r.extra.合作||''}; tm[r.name].gmv+= +r.gmv; tm[r.name].ord+= +r.orders; tm[r.name].u+= +r.units; tm[r.name].cm+= +r.commission; });
+  const tals=Object.entries(tm).sort((a,b)=>b[1].gmv-a[1].gmv).slice(0,10);
+  // 每日
+  const daily={}; ov.forEach(r=>{ daily[r.ymd]={gmv:+r.gmv,orders:+r.orders,units:+r.units}; });
+  const days=Object.keys(daily).sort().reverse();
+  const totalComm=Object.values(tm).reduce((s,t)=>s+t.cm,0);
+
+  box.innerHTML = `
+    <div style="display:flex;gap:24px;flex-wrap:wrap;margin-bottom:12px">
+      <div><span style="font-size:11px;color:#9ca3af;font-weight:700;text-transform:uppercase">${escHtml(label)} GMV</span><div style="font-size:22px;font-weight:800;color:#166534">${fmtRMB(gmv)}</div></div>
+      <div><span style="font-size:11px;color:#9ca3af;font-weight:700;text-transform:uppercase">成交订单</span><div style="font-size:22px;font-weight:800;color:var(--text)">${orders} 单</div></div>
+      <div><span style="font-size:11px;color:#9ca3af;font-weight:700;text-transform:uppercase">成交件数</span><div style="font-size:22px;font-weight:800;color:var(--text)">${units} 件</div></div>
+      <div><span style="font-size:11px;color:#9ca3af;font-weight:700;text-transform:uppercase">达人佣金合计</span><div style="font-size:22px;font-weight:800;color:var(--amber)">${fmtRMB(totalComm)}</div></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1.3fr;gap:16px" class="dy-grid">
+      <div style="overflow-x:auto"><div class="card-title" style="margin-bottom:8px">🍜 商品 GMV 排行</div><table>
+        <thead><tr><th>商品</th><th class="num">GMV</th></tr></thead>
+        <tbody>${prods.map(([n,v])=>`<tr><td style="max-width:300px">${escHtml(n)}</td><td class="num">${Number(v).toLocaleString('zh-CN',{maximumFractionDigits:0})}</td></tr>`).join('')||'<tr><td colspan=2 style="color:#9ca3af">无</td></tr>'}</tbody>
+      </table></div>
+      <div style="overflow-x:auto"><div class="card-title" style="margin-bottom:8px">🤝 达人贡献排行（含佣金）</div><table>
+        <thead><tr><th>达人</th><th class="num">GMV</th><th class="num">单</th><th class="num">件</th><th class="num">佣金</th></tr></thead>
+        <tbody>${tals.map(([n,d])=>`<tr><td style="white-space:nowrap">🤝 ${escHtml(n)}</td><td class="num">${d.gmv.toLocaleString('zh-CN',{maximumFractionDigits:0})}</td><td class="num">${d.ord}</td><td class="num">${d.u}</td><td class="num">${d.cm>0?d.cm.toFixed(2):'—'}</td></tr>`).join('')||'<tr><td colspan=5 style="color:#9ca3af">无</td></tr>'}</tbody>
+      </table></div>
+    </div>
+    <details style="margin-top:12px"><summary style="cursor:pointer;font-size:12px;color:var(--muted)">展开每日 GMV 明细（${days.length} 天）</summary>
+      <div style="overflow-x:auto;margin-top:8px"><table><thead><tr><th>日期</th><th class="num">GMV</th><th class="num">订单</th><th class="num">件数</th></tr></thead>
+      <tbody>${days.map(d=>`<tr><td>${d}</td><td class="num">${daily[d].gmv.toLocaleString('zh-CN',{maximumFractionDigits:0})}</td><td class="num">${daily[d].orders}</td><td class="num">${daily[d].units}</td></tr>`).join('')}</tbody></table></div>
+    </details>
+    <style>@media(max-width:900px){.dy-grid{grid-template-columns:1fr !important}}</style>`;
+}
+loadDouyin();
 </script>
 
 </body>
