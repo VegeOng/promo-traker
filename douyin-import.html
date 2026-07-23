@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MamaVege | 抖店订单导入</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+  :root{ --green:#166534; --red:#dc2626; --amber:#d97706; --blue:#2563eb; --text:#1a1a1a; --muted:#6b7280; --border:#e5e7eb; --card:#fff; --bg:#f4f6f3; }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+  .mv-top-main{display:flex;justify-content:space-between;align-items:center;padding:12px 24px;background:#166534}
+  .mv-top-left{display:flex;align-items:center;gap:12px}
+  .mv-top-logo{height:34px;background:#fff;border-radius:8px;padding:3px 8px;display:flex;align-items:center;text-decoration:none}
+  .mv-top-logo img{height:26px}
+  .mv-top-sep{width:1px;height:24px;background:rgba(255,255,255,.2)}
+  .mv-top-tool{color:#fff;font-size:14px;font-weight:700;letter-spacing:.3px}
+  .mv-top-back{color:rgba(255,255,255,.8);text-decoration:none;font-size:13px;font-weight:600}
+  .wrap{max-width:1100px;margin:0 auto;padding:1.5rem 1.5rem 3rem;}
+  .page-title{font-family:'DM Serif Display',serif;font-size:1.6rem;color:var(--green);margin-bottom:4px;}
+  .page-sub{font-size:13px;color:var(--muted);margin-bottom:20px;}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:16px;}
+  .card-title{font-size:14px;font-weight:700;margin-bottom:14px;}
+  .drop{border:2px dashed var(--border);border-radius:12px;padding:40px 20px;text-align:center;cursor:pointer;transition:.2s;}
+  .drop:hover,.drop.over{border-color:var(--green);background:#f0fdf4;}
+  .drop-icon{font-size:40px;margin-bottom:10px;}
+  .btn{background:var(--green);color:#fff;border:none;padding:10px 22px;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;}
+  .btn:disabled{background:#9ca3af;cursor:not-allowed;}
+  .btn.sec{background:#fff;color:var(--text);border:1.5px solid var(--border);}
+  table{width:100%;border-collapse:collapse;font-size:12px;}
+  th{text-align:left;padding:7px 8px;font-size:10px;text-transform:uppercase;letter-spacing:.4px;color:#9ca3af;font-weight:700;border-bottom:1px solid var(--border);white-space:nowrap;}
+  td{padding:7px 8px;border-bottom:1px solid #f3f4f6;}
+  .num{text-align:right;font-variant-numeric:tabular-nums;}
+  .msg{padding:12px 14px;border-radius:8px;font-size:13px;margin-top:12px;}
+  .msg.ok{background:#dcfce7;color:var(--green);}
+  .msg.err{background:#fee2e2;color:var(--red);}
+  .msg.info{background:#dbeafe;color:var(--blue);}
+  .maprow{display:flex;align-items:center;gap:10px;margin-bottom:8px;font-size:13px;}
+  .maprow label{width:110px;font-weight:600;color:var(--muted);}
+  .maprow select{flex:1;padding:7px 10px;border:1.5px solid var(--border);border-radius:8px;font-family:inherit;font-size:13px;}
+  .pill{display:inline-block;padding:2px 8px;border-radius:12px;font-size:10px;font-weight:700;background:#dbeafe;color:var(--blue);}
+  .steps{font-size:12px;color:var(--muted);line-height:1.9;}
+</style>
+</head>
+<body>
+<div class="mv-top-main">
+  <div class="mv-top-left">
+    <a href="index.html" class="mv-top-logo"><img src="Mamavege_Logo.png" alt="MamaVege"></a>
+    <div class="mv-top-sep"></div>
+    <span class="mv-top-tool">🎵 抖店订单导入</span>
+  </div>
+  <a href="china-dashboard.html" class="mv-top-back">← 返回中国仪表板</a>
+</div>
+
+<div class="wrap">
+  <div class="page-title">抖店订单导入</div>
+  <div class="page-sub">从抖店后台导出订单 Excel，拖到下方上传。系统自动识别列、去重入库，与微信数据并排显示。</div>
+
+  <div class="card">
+    <div class="card-title">① 如何从抖店导出订单</div>
+    <div class="steps">
+      1. 登录抖店商家后台 <b>fxg.jinritemai.com</b> → 「订单」→「订单管理」<br>
+      2. 选好时间范围（建议按周/月）→ 点「导出」<br>
+      3. 到「导出记录」下载生成的 Excel 文件<br>
+      4. 把下载的 .xlsx / .csv 文件拖到下面 👇
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">② 上传文件</div>
+    <div class="drop" id="drop">
+      <div class="drop-icon">📄</div>
+      <div style="font-weight:700;margin-bottom:4px">点击选择 或 拖拽 Excel/CSV 文件</div>
+      <div style="font-size:12px;color:var(--muted)">支持 .xlsx / .xls / .csv</div>
+      <input type="file" id="file" accept=".xlsx,.xls,.csv" style="display:none">
+    </div>
+    <div id="fileMsg"></div>
+  </div>
+
+  <div class="card" id="mapCard" style="display:none">
+    <div class="card-title">③ 确认列对应（系统已自动识别，如有错请手动改）</div>
+    <div id="mapRows"></div>
+  </div>
+
+  <div class="card" id="previewCard" style="display:none">
+    <div class="card-title">④ 数据预览（前 8 行）· 共 <span id="rowCount">0</span> 笔订单</div>
+    <div style="overflow-x:auto"><table id="previewTable"></table></div>
+    <div style="margin-top:16px;display:flex;gap:10px">
+      <button class="btn" id="importBtn" onclick="doImport()">✓ 确认导入 Supabase</button>
+      <button class="btn sec" onclick="location.reload()">取消</button>
+    </div>
+    <div id="importMsg"></div>
+  </div>
+</div>
+
+<script>
+const SUPABASE_URL = 'https://wjhgezvrxlhpexocfsea.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndqaGdlenZyeGxocGV4b2Nmc2VhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg1MDU4NzgsImV4cCI6MjA5NDA4MTg3OH0.jENcrgEDYDlSRUCqve-T6rxYRJfz-dnZQHnXpPLJ_RE';
+
+// 目标字段 → 抖店导出可能的列名（模糊匹配关键词）
+const FIELD_HINTS = {
+  order_id:   ['主订单编号','订单编号','订单号','order'],
+  pay_time:   ['支付完成时间','支付时间','下单时间','订单提交时间','成交时间','付款时间'],
+  status:     ['订单状态','状态'],
+  revenue:    ['订单实付金额','实付金额','订单应付金额','买家实付','实收','订单金额','支付金额'],
+  title:      ['商品名称','商品标题','宝贝名称'],
+  spec:       ['商品规格','规格','sku','商品属性'],
+  qty:        ['商品数量','购买数量','数量','件数'],
+  province:   ['收件人所在省','收货省份','省','收货地址-省','收件省'],
+  source_name:['达人昵称','推广者','流量来源','带货达人','作者昵称','分销达人'],
+};
+const FIELD_LABELS = {
+  order_id:'订单编号 *', pay_time:'支付时间 *', status:'订单状态', revenue:'实付金额 *',
+  title:'商品名称', spec:'商品规格', qty:'商品数量', province:'收货省份', source_name:'流量来源/达人',
+};
+
+let rawRows = [], headers = [], mapping = {};
+
+const drop = document.getElementById('drop');
+const fileInput = document.getElementById('file');
+drop.onclick = ()=>fileInput.click();
+drop.ondragover = e=>{e.preventDefault();drop.classList.add('over');};
+drop.ondragleave = ()=>drop.classList.remove('over');
+drop.ondrop = e=>{e.preventDefault();drop.classList.remove('over');if(e.dataTransfer.files[0])handleFile(e.dataTransfer.files[0]);};
+fileInput.onchange = e=>{if(e.target.files[0])handleFile(e.target.files[0]);};
+
+function handleFile(file){
+  const fm = document.getElementById('fileMsg');
+  fm.innerHTML = `<div class="msg info">正在解析 <b>${file.name}</b>…</div>`;
+  const reader = new FileReader();
+  reader.onload = e=>{
+    try{
+      const wb = XLSX.read(e.target.result, {type:'array'});
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      const json = XLSX.utils.sheet_to_json(ws, {header:1, defval:'', raw:false});
+      // 找表头行（第一行非空且列数最多的）
+      let headerIdx = 0;
+      for(let i=0;i<Math.min(5,json.length);i++){ if(json[i].filter(c=>String(c).trim()).length > json[headerIdx].filter(c=>String(c).trim()).length) headerIdx=i; }
+      headers = json[headerIdx].map(h=>String(h).trim());
+      rawRows = json.slice(headerIdx+1).filter(r=>r.some(c=>String(c).trim()));
+      if(!rawRows.length){ fm.innerHTML = `<div class="msg err">文件里没读到数据行</div>`; return; }
+      fm.innerHTML = `<div class="msg ok">✓ 解析成功：${rawRows.length} 行数据，${headers.length} 列</div>`;
+      autoMap();
+      buildMapUI();
+      buildPreview();
+    }catch(err){ fm.innerHTML = `<div class="msg err">解析失败：${err.message}</div>`; }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function autoMap(){
+  mapping = {};
+  for(const [field, hints] of Object.entries(FIELD_HINTS)){
+    const idx = headers.findIndex(h=> hints.some(k=> h.toLowerCase().includes(k.toLowerCase())));
+    if(idx>=0) mapping[field] = idx;
+  }
+}
+
+function buildMapUI(){
+  document.getElementById('mapCard').style.display='block';
+  const opts = ['<option value="-1">（不使用）</option>'].concat(headers.map((h,i)=>`<option value="${i}">${escH(h)}</option>`)).join('');
+  document.getElementById('mapRows').innerHTML = Object.keys(FIELD_LABELS).map(f=>`
+    <div class="maprow">
+      <label>${FIELD_LABELS[f]}</label>
+      <select data-field="${f}" onchange="onMapChange(this)">${opts}</select>
+    </div>`).join('');
+  Object.entries(mapping).forEach(([f,i])=>{ const s=document.querySelector(`select[data-field="${f}"]`); if(s)s.value=i; });
+}
+function onMapChange(sel){ const f=sel.dataset.field, v=parseInt(sel.value); if(v<0)delete mapping[f]; else mapping[f]=v; buildPreview(); }
+
+function parseRows(){
+  return rawRows.map(r=>{
+    const g = f=> mapping[f]!=null ? String(r[mapping[f]]??'').trim() : '';
+    const revNum = parseFloat(String(g('revenue')).replace(/[^0-9.]/g,''))||0;
+    const qtyNum = parseInt(String(g('qty')).replace(/[^0-9]/g,''))||1;
+    let pt = g('pay_time');
+    return {
+      order_id: g('order_id'),
+      pay_time: pt,
+      status: g('status')||null,
+      revenue: revNum,
+      products: [{ title:g('title'), spec:g('spec'), qty:qtyNum, price: qtyNum? +(revNum/qtyNum).toFixed(2):revNum }],
+      province: g('province')||null,
+      source_name: g('source_name')||'未知',
+    };
+  }).filter(r=>r.order_id);
+}
+
+// 抖店导出每个SKU一行，同一主订单需合并
+function mergeByOrder(rows){
+  const m = {};
+  rows.forEach(r=>{
+    if(!m[r.order_id]){ m[r.order_id] = {...r, products:[...r.products]}; }
+    else {
+      // 同订单：累加商品，金额取该行（抖店实付金额通常是子订单级，累加）
+      m[r.order_id].products.push(...r.products);
+      m[r.order_id].revenue += r.revenue;
+    }
+  });
+  return Object.values(m);
+}
+
+function buildPreview(){
+  const parsed = mergeByOrder(parseRows());
+  document.getElementById('previewCard').style.display='block';
+  document.getElementById('rowCount').textContent = parsed.length;
+  const head = ['订单编号','支付时间','状态','实付','商品','省份','来源'];
+  let html = '<thead><tr>'+head.map(h=>`<th>${h}</th>`).join('')+'</tr></thead><tbody>';
+  parsed.slice(0,8).forEach(r=>{
+    const prod = r.products.map(p=>`${p.title||''} ${p.spec||''} ×${p.qty}`).join('；');
+    html += `<tr><td>${escH(r.order_id)}</td><td>${escH(r.pay_time)}</td><td>${escH(r.status||'')}</td><td class="num">${r.revenue.toFixed(2)}</td><td style="max-width:280px">${escH(prod)}</td><td>${escH(r.province||'')}</td><td>${escH(r.source_name)}</td></tr>`;
+  });
+  html += '</tbody>';
+  document.getElementById('previewTable').innerHTML = html;
+  window._parsed = parsed;
+}
+
+async function doImport(){
+  const btn = document.getElementById('importBtn');
+  const msg = document.getElementById('importMsg');
+  const parsed = window._parsed||[];
+  if(!parsed.length){ msg.innerHTML=`<div class="msg err">没有可导入的数据</div>`; return; }
+  if(!mapping.order_id || mapping.pay_time==null || mapping.revenue==null){
+    msg.innerHTML=`<div class="msg err">请先确认「订单编号 / 支付时间 / 实付金额」三个必填列都对应上了</div>`; return;
+  }
+  btn.disabled=true; msg.innerHTML=`<div class="msg info">正在导入 ${parsed.length} 笔…</div>`;
+  // 规范化时间为 ISO（抖店导出多为「2026-07-01 14:30:22」，按北京时间处理）
+  const records = parsed.map(r=>{
+    let iso=null;
+    const t = (r.pay_time||'').replace(/\//g,'-').trim();
+    const d = new Date(t.includes('T')? t : t.replace(' ','T')+'+08:00');
+    if(!isNaN(d)) iso = d.toISOString();
+    return { ...r, pay_time: iso, imported_at: new Date().toISOString() };
+  });
+  try{
+    // 分批 upsert
+    let done=0;
+    for(let i=0;i<records.length;i+=200){
+      const batch = records.slice(i,i+200);
+      const r = await fetch(`${SUPABASE_URL}/rest/v1/douyin_orders?on_conflict=order_id`,{
+        method:'POST',
+        headers:{ apikey:SUPABASE_KEY, Authorization:'Bearer '+SUPABASE_KEY, 'Content-Type':'application/json', Prefer:'resolution=merge-duplicates' },
+        body: JSON.stringify(batch),
+      });
+      if(!r.ok){ throw new Error(await r.text()); }
+      done+=batch.length;
+    }
+    msg.innerHTML=`<div class="msg ok">✅ 成功导入 ${done} 笔抖店订单！<a href="china-dashboard.html" style="color:var(--green);font-weight:700">→ 去仪表板查看</a></div>`;
+  }catch(err){ btn.disabled=false; msg.innerHTML=`<div class="msg err">导入失败：${escH(err.message)}</div>`; }
+}
+
+function escH(s){ return String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+</script>
+</body>
+</html>
