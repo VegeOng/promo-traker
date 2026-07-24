@@ -896,31 +896,27 @@ function renderSPTab() {
     </tr>
   `).join('') || '<tr><td colspan="6" class="empty">No data</td></tr>';
 
-  // Customer breakdown when a specific salesperson is selected
+  // Customer breakdown — always show, filtered by selected SP if any
   const selectedSP = document.getElementById('filterSP').value;
-  const breakdown = document.getElementById('sp-customer-breakdown');
-  if (selectedSP) {
-    const custMap = {};
-    filteredData.forEach(r => {
-      const c = r['COMPANY'] || 'Unknown';
-      if (!custMap[c]) custMap[c] = { total: 0, orders: 0, type: r['TYPE'] || '' };
-      custMap[c].total += getTotalField(r);
-      custMap[c].orders++;
-    });
-    const custSorted = Object.entries(custMap).sort((a,b) => b[1].total - a[1].total);
-    document.getElementById('sp-breakdown-title').textContent = `${selectedSP} — Customer Breakdown (${custSorted.length})`;
-    document.getElementById('sp-customer-tbody').innerHTML = custSorted.map(([cust, d], i) => `
-      <tr>
-        <td>${i+1}</td>
-        <td><strong>${cust}</strong></td>
-        <td><span class="tag tag-gold" style="font-size:11px">${d.type}</span></td>
-        <td>${d.orders}</td>
-        <td style="text-align:right;font-weight:600">RM ${Number(d.total).toLocaleString('en-MY',{minimumFractionDigits:2,maximumFractionDigits:2})}</td>
-      </tr>`).join('') || '<tr><td colspan="5" class="empty">No data</td></tr>';
-    breakdown.style.display = 'block';
-  } else {
-    breakdown.style.display = 'none';
-  }
+  const custMap = {};
+  filteredData.forEach(r => {
+    const c = r['COMPANY'] || 'Unknown';
+    if (!custMap[c]) custMap[c] = { total: 0, orders: 0, type: r['TYPE'] || '' };
+    custMap[c].total += getTotalField(r);
+    custMap[c].orders++;
+  });
+  const custSorted = Object.entries(custMap).sort((a,b) => b[1].total - a[1].total);
+  const breakdownTitle = selectedSP ? `${selectedSP} — Customer Breakdown (${custSorted.length})` : `All Salespersons — Customer Breakdown (${custSorted.length})`;
+  document.getElementById('sp-breakdown-title').textContent = breakdownTitle;
+  document.getElementById('sp-customer-tbody').innerHTML = custSorted.map(([cust, d], i) => `
+    <tr>
+      <td>${i+1}</td>
+      <td><strong>${cust}</strong></td>
+      <td><span class="tag tag-gold" style="font-size:11px">${d.type}</span></td>
+      <td>${d.orders}</td>
+      <td style="text-align:right;font-weight:600">RM ${Number(d.total).toLocaleString('en-MY',{minimumFractionDigits:2,maximumFractionDigits:2})}</td>
+    </tr>`).join('') || '<tr><td colspan="5" class="empty">No data</td></tr>';
+  document.getElementById('sp-customer-breakdown').style.display = 'block';
 }
 
 function renderOutletTab() {
