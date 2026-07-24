@@ -948,15 +948,126 @@ function renderOutletTab() {
   const maxTotal = sorted.length ? sorted[0][1].total : 1;
 
   document.getElementById('outletTableBody').innerHTML = sorted.map(([name,d],i) => `
-    <tr>
+    <tr style="cursor:pointer" onclick="drillCustomer('${name.replace(/'/g,"\\'")}')" title="Click to view annual trend">
       <td class="rank rank-${i+1}">${i+1}</td>
-      <td><strong>${name}</strong></td>
+      <td><strong>${name}</strong> <span style="font-size:10px;color:var(--text-muted)">📈</span></td>
       <td><span class="tag tag-gold">${d.type}</span></td>
       <td>${d.orders}</td>
       <td class="amount">RM ${fmt(d.total)}</td>
       <td><div class="progress-bar" style="min-width:120px"><div class="progress-fill" style="width:${(d.total/maxTotal*100).toFixed(1)}%"></div></div></td>
     </tr>
   `).join('') || '<tr><td colspan="6" class="empty">No data</td></tr>';
+}
+
+function drillCustomer(company) {
+  const mNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  // gather all years in full dataset
+  const years = [...new Set(allData.map(r => parseInt(r['YEAR'])).filter(Boolean))].sort();
+  const thisYear = years[years.length - 1];
+  const lastYear = years.length > 1 ? years[years.length - 2] : null;
+
+  // monthly totals per year for this company
+  function monthlyTotals(year) {
+    const m = Array(12).fill(0);
+    allData.filter(r => r['COMPANY'] === company && parseInt(r['YEAR']) === year)
+           .forEach(r => { const mo = parseInt(r['MONTH']); if (mo >= 1 && mo <= 12) m[mo-1] += getTotalField(r); });
+    return m;
+  }
+
+  const thisYearData = monthlyTotals(thisYear);
+  const lastYearData = lastYear ? monthlyTotals(lastYear) : null;
+  const totalThis = thisYearData.reduce((s,v)=>s+v,0);
+  const totalLast = lastYearData ? lastYearData.reduce((s,v)=>s+v,0) : 0;
+  const yoy = totalLast > 0 ? ((totalThis - totalLast) / totalLast * 100).toFixed(1) : null;
+  const allOrders = allData.filter(r => r['COMPANY'] === company).length;
+
+  // avatar
+  document.getElementById('drillAvatar').textContent = company.charAt(0);
+  document.getElementById('drillAvatar').style.cssText = 'width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:1.2rem;flex-shrink:0;background:#3b82f620;color:#3b82f6';
+  document.getElementById('drillName').textContent = company;
+  document.getElementById('drillSub').textContent = `${allOrders} total orders · All years`;
+
+  // YoY summary
+  const yoyHtml = yoy !== null
+    ? `<div style="display:flex;gap:12px;margin-bottom:18px;flex-wrap:wrap">
+        <div style="flex:1;min-width:120px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:12px 16px">
+          <div style="font-size:11px;color:#166534;font-weight:700;margin-bottom:4px">${thisYear} Total</div>
+          <div style="font-size:18px;font-weight:800;color:#166534">RM ${Number(totalThis).toLocaleString('en-MY',{minimumFractionDigits:2,maximumFractionDigits:2})}</div>
+        </div>
+        <div style="flex:1;min-width:120px;background:#f8fafc;border:1px solid var(--border);border-radius:10px;padding:12px 16px">
+          <div style="font-size:11px;color:var(--text-muted);font-weight:700;margin-bottom:4px">${lastYear} Total</div>
+          <div style="font-size:18px;font-weight:800">RM ${Number(totalLast).toLocaleString('en-MY',{minimumFractionDigits:2,maximumFractionDigits:2})}</div>
+        </div>
+        <div style="flex:1;min-width:120px;background:${parseFloat(yoy)>=0?'#f0fdf4':'#fef2f2'};border:1px solid ${parseFloat(yoy)>=0?'#bbf7d0':'#fecaca'};border-radius:10px;padding:12px 16px">
+          <div style="font-size:11px;font-weight:700;margin-bottom:4px;color:${parseFloat(yoy)>=0?'#166534':'#dc2626'}">YoY Change</div>
+          <div style="font-size:18px;font-weight:800;color:${parseFloat(yoy)>=0?'#166534':'#dc2626'}">${parseFloat(yoy)>=0?'▲':'▼'} ${Math.abs(yoy)}%</div>
+        </div>
+      </div>`
+    : `<div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:12px 16px;margin-bottom:18px">
+        <div style="font-size:11px;color:#166534;font-weight:700;margin-bottom:4px">${thisYear} Total</div>
+        <div style="font-size:18px;font-weight:800;color:#166534">RM ${Number(totalThis).toLocaleString('en-MY',{minimumFractionDigits:2,maximumFractionDigits:2})}</div>
+      </div>`;
+
+  // monthly comparison table
+  const tableRows = mNames.map((mn, i) => {
+    const ty = thisYearData[i], ly = lastYearData ? lastYearData[i] : null;
+    const diff = ly !== null ? ty - ly : null;
+    const pct = (ly !== null && ly > 0) ? ((ty-ly)/ly*100).toFixed(0) : null;
+    return `<tr>
+      <td>${mn}</td>
+      <td style="text-align:right">${ty > 0 ? 'RM '+fmt(ty) : '<span style="color:var(--text-muted)">—</span>'}</td>
+      ${lastYear ? `<td style="text-align:right">${ly > 0 ? 'RM '+fmt(ly) : '<span style="color:var(--text-muted)">—</span>'}</td>
+      <td style="text-align:right">${diff !== null && (ty>0||ly>0) ? `<span style="color:${diff>=0?'#166534':'#dc2626'};font-weight:700">${diff>=0?'+':''}RM ${fmt(Math.abs(diff))}</span>` : '—'}</td>
+      <td style="text-align:right">${pct !== null ? `<span style="color:${parseFloat(pct)>=0?'#166534':'#dc2626'};font-weight:700">${parseFloat(pct)>=0?'▲':'▼'}${Math.abs(pct)}%</span>` : '—'}</td>` : ''}
+    </tr>`;
+  }).join('');
+
+  const html = `
+    ${yoyHtml}
+    <div class="modal-section">
+      <div class="modal-section-title">📈 Annual Sales Trend</div>
+      <div style="height:220px;margin-bottom:16px"><canvas id="custTrendChart"></canvas></div>
+    </div>
+    <div class="modal-section">
+      <div class="modal-section-title">📅 Monthly Breakdown</div>
+      <table class="modal-table" style="width:100%">
+        <thead><tr>
+          <th>Month</th><th style="text-align:right">${thisYear}</th>
+          ${lastYear ? `<th style="text-align:right">${lastYear}</th><th style="text-align:right">Change (RM)</th><th style="text-align:right">YoY %</th>` : ''}
+        </tr></thead>
+        <tbody>${tableRows}</tbody>
+      </table>
+    </div>`;
+
+  document.getElementById('drillBody').innerHTML = html;
+  document.getElementById('drillModal').style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+
+  // draw chart after DOM insert
+  setTimeout(() => {
+    destroyChart('custTrendChart');
+    const datasets = [{
+      label: String(thisYear),
+      data: thisYearData,
+      borderColor: '#166534', backgroundColor: '#16653420',
+      fill: true, tension: 0.4, pointBackgroundColor: '#166534', pointRadius: 4
+    }];
+    if (lastYearData) datasets.push({
+      label: String(lastYear),
+      data: lastYearData,
+      borderColor: '#dc2626', backgroundColor: '#dc262615',
+      fill: false, tension: 0.4, pointBackgroundColor: '#dc2626', pointRadius: 4,
+      borderDash: [5,4]
+    });
+    charts.custTrend = new Chart(document.getElementById('custTrendChart'), {
+      type: 'line',
+      data: { labels: mNames, datasets },
+      options: { responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { position: 'top', labels: { font: { size: 11 } } } },
+        scales: { y: { beginAtZero: true, ticks: { callback: v => 'RM '+fmtInt(v) } } }
+      }
+    });
+  }, 50);
 }
 
 function renderProductTab() {
