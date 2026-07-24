@@ -864,7 +864,7 @@ function renderSPTab() {
   spColorMap = {};
   sorted.forEach(([name],i) => spColorMap[name] = colors[i%colors.length]);
   document.getElementById('spGrid').innerHTML = sorted.map(([name, d], i) => `
-    <div class="sp-card" onclick="drillDown('${name.replace(/'/g,"\\'")}'" title="Click to view ${name}'s customer & SKU details">
+    <div class="sp-card" onclick="showSPDetail('${name.replace(/'/g,"\\'")}',${i})" style="cursor:pointer" title="Click to view ${name}'s customer details">
       <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:0.75rem">
         <div style="width:40px;height:40px;border-radius:50%;background:${colors[i%colors.length]}20;color:${colors[i%colors.length]};display:flex;align-items:center;justify-content:center;font-weight:700;font-size:1rem">${name.charAt(0)}</div>
         <div>
@@ -896,18 +896,32 @@ function renderSPTab() {
     </tr>
   `).join('') || '<tr><td colspan="6" class="empty">No data</td></tr>';
 
-  // Customer breakdown — always show, filtered by selected SP if any
-  const selectedSP = document.getElementById('filterSP').value;
+  document.getElementById('sp-customer-breakdown').style.display = 'none';
+}
+
+let _activeSPName = null;
+
+function showSPDetail(name, colorIdx) {
+  const colors = ['#166534','#dc2626','#d97706','#3b82f6','#8b5cf6','#0891b2'];
+  const color = colors[colorIdx % colors.length];
+  _activeSPName = name;
+
+  // highlight active card
+  document.querySelectorAll('#spGrid .sp-card').forEach(c => c.style.outline = '');
+  event.currentTarget.style.outline = `2px solid ${color}`;
+
+  const spData = filteredData.filter(r => r['SALES PERSON'] === name);
   const custMap = {};
-  filteredData.forEach(r => {
+  spData.forEach(r => {
     const c = r['COMPANY'] || 'Unknown';
     if (!custMap[c]) custMap[c] = { total: 0, orders: 0, type: r['TYPE'] || '' };
     custMap[c].total += getTotalField(r);
     custMap[c].orders++;
   });
   const custSorted = Object.entries(custMap).sort((a,b) => b[1].total - a[1].total);
-  const breakdownTitle = selectedSP ? `${selectedSP} — Customer Breakdown (${custSorted.length})` : `All Salespersons — Customer Breakdown (${custSorted.length})`;
-  document.getElementById('sp-breakdown-title').textContent = breakdownTitle;
+
+  document.getElementById('sp-breakdown-title').innerHTML =
+    `<span style="color:${color}">${name}</span> — Customer Breakdown (${custSorted.length} customers)`;
   document.getElementById('sp-customer-tbody').innerHTML = custSorted.map(([cust, d], i) => `
     <tr>
       <td>${i+1}</td>
@@ -916,7 +930,10 @@ function renderSPTab() {
       <td>${d.orders}</td>
       <td style="text-align:right;font-weight:600">RM ${Number(d.total).toLocaleString('en-MY',{minimumFractionDigits:2,maximumFractionDigits:2})}</td>
     </tr>`).join('') || '<tr><td colspan="5" class="empty">No data</td></tr>';
-  document.getElementById('sp-customer-breakdown').style.display = 'block';
+
+  const box = document.getElementById('sp-customer-breakdown');
+  box.style.display = 'block';
+  box.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 function renderOutletTab() {
