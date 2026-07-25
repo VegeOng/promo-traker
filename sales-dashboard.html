@@ -32,38 +32,20 @@
     min-height: 100vh;
   }
 
-  /* HEADER */
-  .header {
-    background: var(--green);
-    color: white;
-    padding: 0 2rem;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    height: 64px;
-    position: sticky;
-    top: 0;
-    z-index: 100;
-    box-shadow: 0 2px 12px rgba(22,101,52,0.3);
-  }
-  .header-left { display: flex; align-items: center; gap: 1rem; }
-  .logo { font-family: 'DM Serif Display', serif; font-size: 1.4rem; letter-spacing: 0.5px; }
-  .logo span { color: #dc2626; }
-  .badge { background: rgba(255,255,255,0.15); padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 500; }
-  .header-right { display: flex; align-items: center; gap: 1rem; }
-  .last-updated { font-size: 0.75rem; opacity: 0.7; }
-  .btn-refresh {
-    background: rgba(255,255,255,0.15);
-    border: 1px solid rgba(255,255,255,0.3);
-    color: white;
-    padding: 6px 16px;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 0.8rem;
-    font-family: 'DM Sans', sans-serif;
-    transition: all 0.2s;
-  }
-  .btn-refresh:hover { background: rgba(255,255,255,0.25); }
+  /* HEADER — 标准绿色横幅（与其他页面统一） */
+  .mv-top{overflow:hidden;position:sticky;top:0;z-index:100;box-shadow:0 2px 12px rgba(22,101,52,0.3)}
+  .mv-top-main{display:flex;justify-content:space-between;align-items:center;padding:12px 24px;background:#166534}
+  .mv-top-left{display:flex;align-items:center;gap:12px}
+  .mv-top-logo{height:34px;background:#fff;border-radius:8px;padding:3px 8px;display:flex;align-items:center;text-decoration:none}
+  .mv-top-logo img{height:26px}
+  .mv-top-sep{width:1px;height:24px;background:rgba(255,255,255,.2)}
+  .mv-top-tool{color:#fff;font-size:14px;font-weight:700;letter-spacing:.3px}
+  .mv-top-right{display:flex;align-items:center;gap:12px}
+  .mv-top-back{color:rgba(255,255,255,.8);text-decoration:none;font-size:13px;font-weight:600}
+  .mv-top-back:hover{color:#fff}
+  .mv-top-btn{background:rgba(255,255,255,.12);border:none;color:rgba(255,255,255,.8);padding:5px 14px;border-radius:6px;font-size:12px;cursor:pointer;font-family:inherit}
+  .mv-top-btn:hover{background:rgba(255,255,255,.2);color:#fff}
+  .mv-top-sub{display:flex;justify-content:space-between;align-items:center;padding:5px 24px;background:#15532d;color:rgba(255,255,255,.6);font-size:11px}
 
   /* NAV */
   .nav {
@@ -339,16 +321,24 @@
 </head>
 <body>
 
-<div class="header">
-  <div class="header-left">
-    <div class="logo" style="color:#dc2626">Mama<span style="color:#dc2626">Vege</span></div>
-    <div class="badge">Sales Dashboard</div>
+<div class="mv-top">
+  <div class="mv-top-main">
+    <div class="mv-top-left">
+      <a href="index.html" class="mv-top-logo"><img src="Mamavege_Logo.png" alt="MamaVege"></a>
+      <div class="mv-top-sep"></div>
+      <span class="mv-top-tool">Sales Dashboard</span>
+    </div>
+    <div class="mv-top-right">
+      <a href="index.html" class="mv-top-back">← Hub</a>
+      <button class="mv-top-btn" onclick="loadData()">⟳</button>
+    </div>
   </div>
-  <div class="header-right"><a href="index.html" style="color:var(--green);text-decoration:none;font-size:13px;font-weight:600;">← Hub</a>
-    <span class="last-updated" id="lastUpdated">—</span>
-    <button class="btn-refresh" onclick="loadData()">⟳ Refresh</button>
+  <div class="mv-top-sub">
+    <span class="mv-top-date"></span> · <span id="lastUpdated">—</span>
+    <span>MamaVege Management Hub</span>
   </div>
 </div>
+<script>document.querySelectorAll('.mv-top-date').forEach(e=>e.textContent=new Date().toLocaleDateString('en-MY',{weekday:'short',year:'numeric',month:'short',day:'numeric'}));</script>
 
 <div class="nav">
   <button class="nav-btn active" onclick="switchTab('overview', this)">📊 Overview</button>
