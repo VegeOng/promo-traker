@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MamaVege | 业绩管理中心</title>
+<title>MamaVege | 利润 & 目标管理</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Serif+Display&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
@@ -157,7 +157,7 @@ table.dt tr.clickable:hover td{background:var(--primary-light)}
     <div class="mv-top-left">
       <a href="index.html" class="mv-top-logo"><img src="Mamavege_Logo.png" alt="MamaVege"></a>
       <div class="mv-top-sep"></div>
-      <span class="mv-top-tool">业绩管理中心</span>
+      <span class="mv-top-tool">利润 & 目标管理 <span style="font-size:11px;font-weight:500;opacity:.75">· 管理层专用</span></span>
     </div>
     <div class="mv-top-right">
       <a href="index.html" class="mv-top-back">← Hub</a>
@@ -172,12 +172,7 @@ table.dt tr.clickable:hover td{background:var(--primary-light)}
 <script>document.querySelectorAll('.mv-top-date').forEach(e=>e.textContent=new Date().toLocaleDateString('en-MY',{weekday:'short',year:'numeric',month:'short',day:'numeric'}));</script>
 
 <nav class="tabs">
-  <button class="active" onclick="go('overview',this)">📊 总览</button>
-  <button onclick="go('customers',this)">👥 客户</button>
-  <button onclick="go('products',this)">🏷️ 产品</button>
-  <button onclick="go('skutop',this)">🔍 SKU客户</button>
-  <button onclick="go('team',this)">👤 团队</button>
-  <button onclick="go('profit',this)">💰 利润</button>
+  <button class="active" onclick="go('profit',this)">💰 利润</button>
   <button onclick="go('admin',this)">⚙️ 设置</button>
 </nav>
 
@@ -251,7 +246,7 @@ const PDD={
   'SHCR':{items:[['Fix Rebate','2.0%'],['A/P','2.0%']],total:'4.0%'}}}
 };
 
-let allData=[], profitDB=[], state={year:0,month:0,tab:'overview',targets:{monthly:500000,annual:6000000}};
+let allData=[], profitDB=[], state={year:0,month:0,tab:'profit',targets:{monthly:500000,annual:6000000}};
 let custSearchTerm='', custSPFilter='', cfgForm=null, cfgMonth='';
 
 async function loadProfitConfig(){
@@ -558,6 +553,7 @@ function profitStats(){
 }
 
 function rProfit(){
+  if(sessionStorage.getItem('hq_auth')!=='1'){document.getElementById('authModal').classList.add('show');return'<div class="empty">🔐 请先验证 HQ 密码</div>';}
   const custs=profitStats();
   if(!custs.length){
     const data=filtered();
@@ -859,7 +855,7 @@ async function verifyHQ(){
     if(d.length&&d[0].value===pwd){sessionStorage.setItem('hq_auth','1');closeAuth();render();}else toast('密码错误','err');
   }catch(e){toast('验证失败','err');}
 }
-function closeAuth(){document.getElementById('authModal').classList.remove('show');document.getElementById('authPwd').value='';if(state.tab==='admin'&&sessionStorage.getItem('hq_auth')!=='1')go('overview',document.querySelector('nav.tabs button'));}
+function closeAuth(){document.getElementById('authModal').classList.remove('show');document.getElementById('authPwd').value='';if(state.tab==='admin'&&sessionStorage.getItem('hq_auth')!=='1')go('profit',document.querySelector('nav.tabs button'));}
 
 function go(tab,btn){state.tab=tab;custSearchTerm='';custSPFilter='';document.querySelectorAll('nav.tabs button').forEach(b=>b.classList.remove('active'));if(btn)btn.classList.add('active');render();}
 function toast(msg,t){const el=document.getElementById('toast');el.textContent=msg;el.className='toast show '+t;setTimeout(()=>el.classList.remove('show'),3000);}
