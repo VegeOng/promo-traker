@@ -433,6 +433,7 @@
             <thead><tr>
               <th>#</th><th>Customer</th>
               <th style="text-align:right">2026 YTD</th>
+              <th style="text-align:right">2025 YTD</th>
               <th style="text-align:right">Δ RM</th>
               <th style="text-align:right">Δ %</th>
             </tr></thead>
@@ -449,6 +450,7 @@
             <thead><tr>
               <th>#</th><th>Customer</th>
               <th style="text-align:right">2026 YTD</th>
+              <th style="text-align:right">2025 YTD</th>
               <th style="text-align:right">Δ RM</th>
               <th style="text-align:right">Δ %</th>
             </tr></thead>
@@ -760,6 +762,9 @@ function renderOverviewMovers() {
   for (let i = 0; i < 12; i++) if (curMonthly[i] > 0) lastCur = i + 1;
   if (lastCur === 0) lastCur = 12;
 
+  // Customers excluded from the movers ranking (special / non-comparable accounts)
+  const moversExclude = c => { const u = (c || '').toUpperCase(); return u.startsWith('VGENERATION MARKETING') || u.startsWith('DAMA'); };
+
   // Per-customer YTD totals for both years, months 1..lastCur
   const cy = {}, py = {};
   allData.forEach(r => {
@@ -767,8 +772,9 @@ function renderOverviewMovers() {
     if (!(mo >= 1 && mo <= lastCur)) return;
     if (ctx.type && r['TYPE'] !== ctx.type) return;
     if (ctx.sp && r['SALES PERSON'] !== ctx.sp) return;
-    const y = parseInt(r['YEAR']);
     const c = r['COMPANY'] || 'Unknown';
+    if (moversExclude(c)) return;
+    const y = parseInt(r['YEAR']);
     if (y === ty) cy[c] = (cy[c] || 0) + getTotalField(r);
     else if (y === ty - 1) py[c] = (py[c] || 0) + getTotalField(r);
   });
@@ -791,6 +797,7 @@ function renderOverviewMovers() {
       <td><span class="rk">${i+1}</span></td>
       <td>${r.c} <span style="color:#3b82f6;font-size:11px">🔍</span></td>
       <td style="text-align:right">${fmt(r.cur)}</td>
+      <td style="text-align:right;color:var(--text-muted)">${fmt(r.prev)}</td>
       <td style="text-align:right;font-weight:700;color:${color}">${r.diff>=0?'+':'−'}${fmt(Math.abs(r.diff))}</td>
       <td style="text-align:right;font-weight:700;color:${color}">${pctTxt}</td>
     </tr>`;
@@ -798,10 +805,10 @@ function renderOverviewMovers() {
 
   declBody.innerHTML = decliners.length
     ? decliners.map((r, i) => rowHtml(r, i, false)).join('')
-    : '<tr><td colspan="5" class="empty" style="text-align:center;color:var(--text-muted)">No decline vs last year 🎉</td></tr>';
+    : '<tr><td colspan="6" class="empty" style="text-align:center;color:var(--text-muted)">No decline vs last year 🎉</td></tr>';
   gainBody.innerHTML = gainers.length
     ? gainers.map((r, i) => rowHtml(r, i, true)).join('')
-    : '<tr><td colspan="5" class="empty" style="text-align:center;color:var(--text-muted)">No gain vs last year</td></tr>';
+    : '<tr><td colspan="6" class="empty" style="text-align:center;color:var(--text-muted)">No gain vs last year</td></tr>';
 }
 
 // Top 10 Customers for the current period (respects the active filter)
