@@ -337,7 +337,10 @@ async function loadAll(){
     if(!allRows.length){ throw new Error('No IB records found in sheet'); }
     populateMonthSelect();
     populateYearSelect();
-    render(allRows, getCurrentPeriod());
+    // Default to the current-YEAR view: international orders are sparse (a few per
+    // month), so landing on the current month often shows an empty page. setMode
+    // flips the tab/controls and triggers the initial render.
+    setMode('year');
     document.getElementById('loading').style.display='none';
     document.getElementById('content').style.display='block';
   }catch(e){
