@@ -146,6 +146,10 @@
   .kpi-card.gold .kpi-value { color: var(--gold); }
   .kpi-card.blue .kpi-value { color: #3b82f6; }
   .kpi-sub { font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem; }
+  .ytd-summary { font-size:0.82rem; color:var(--text-muted); margin:-6px 0 10px; }
+  .ytd-summary strong { color:var(--text); }
+  .ytd-tag { display:inline-block; font-weight:800; padding:1px 8px; border-radius:10px; margin-left:4px; font-size:0.78rem; }
+  .ytd-tag.up { background:#dcfce7; color:#166534; } .ytd-tag.dn { background:#fee2e2; color:#dc2626; } .ytd-tag.na { background:#f1f5f9; color:#94a3b8; }
   .yoy-chip { display:inline-block; font-size:0.72rem; font-weight:800; padding:1px 7px; border-radius:10px; margin-top:5px; }
   .yoy-chip.up { background:#dcfce7; color:#166534; }
   .yoy-chip.dn { background:#fee2e2; color:#dc2626; }
@@ -393,6 +397,7 @@
     <div class="grid-2">
       <div class="chart-card">
         <div class="chart-title"><span class="dot"></span>Monthly Sales — This Year vs Last Year</div>
+        <div id="ytdSummary" class="ytd-summary"></div>
         <div class="chart-wrap"><canvas id="chartMonthly"></canvas></div>
       </div>
       <div class="chart-card">
@@ -887,6 +892,26 @@ function renderCharts() {
       scales: { y: { beginAtZero: true, ticks: { callback: v => 'RM '+fmtInt(v) } } }
     }
   });
+
+  // YTD cumulative YoY — Jan .. latest month with data this year
+  let lastCur = 0;
+  for (let i = 0; i < 12; i++) if (curYear[i] > 0) lastCur = i + 1;
+  const ytdEl = document.getElementById('ytdSummary');
+  if (ytdEl) {
+    if (lastCur === 0) {
+      ytdEl.innerHTML = '';
+    } else {
+      const ytdThis = curYear.slice(0, lastCur).reduce((a, b) => a + b, 0);
+      const ytdPrev = prevYear.slice(0, lastCur).reduce((a, b) => a + b, 0);
+      const diff = ytdThis - ytdPrev;
+      const up = diff >= 0;
+      const range = 'Jan–' + mNames[lastCur - 1];
+      const badge = ytdPrev > 0
+        ? `<span class="ytd-tag ${up?'up':'dn'}">${up?'▲':'▼'} ${Math.abs(diff/ytdPrev*100).toFixed(1)}% (${up?'+':'−'}RM ${fmtInt(Math.abs(diff))})</span>`
+        : '<span class="ytd-tag na">no LY data</span>';
+      ytdEl.innerHTML = `<strong>YTD ${range}</strong> · ${ty}: RM ${fmtInt(ytdThis)} vs ${ty-1}: RM ${fmtInt(ytdPrev)} ${badge}`;
+    }
+  }
 
   // SP Pie
   const spData = {};
