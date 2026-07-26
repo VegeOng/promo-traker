@@ -763,7 +763,8 @@ function renderOverviewMovers() {
   if (lastCur === 0) lastCur = 12;
 
   // Customers excluded from the movers ranking (special / non-comparable accounts)
-  const moversExclude = c => { const u = (c || '').toUpperCase(); return u.startsWith('VGENERATION MARKETING') || u.startsWith('DAMA'); };
+  const moversExcludeExact = new Set(['VGENERATION MARKETING', 'FO GUANG SHAN', 'CHUAN HONG SENG PTE LTD', 'JOMAMA LIVE']);
+  const moversExclude = c => { const u = (c || '').trim().toUpperCase(); return moversExcludeExact.has(u) || u.startsWith('DAMA'); };
 
   // Per-customer YTD totals for both years, months 1..lastCur
   const cy = {}, py = {};
