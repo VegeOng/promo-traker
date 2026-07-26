@@ -460,8 +460,8 @@
       </div>
     </div>
     <div class="chart-card">
-      <div class="chart-title"><span class="dot" style="background:#3b82f6"></span>Top 5 Products</div>
-      <div class="chart-wrap"><canvas id="chartProduct"></canvas></div>
+      <div class="chart-title"><span class="dot" style="background:#3b82f6"></span>All Products</div>
+      <div class="chart-wrap" id="chartProductWrap"><canvas id="chartProduct"></canvas></div>
     </div>
     <div class="table-card">
       <div class="table-header">
@@ -471,7 +471,7 @@
         <table>
           <thead><tr>
             <th>#</th><th>Salesperson</th><th style="text-align:right">Orders</th><th style="text-align:right">Customers</th>
-            <th style="text-align:right">Sales (RM)</th><th style="text-align:right">Share</th><th>YoY</th>
+            <th style="text-align:right" id="spPeriodLabel">This Month (RM)</th><th style="text-align:right">YTD (RM)</th><th style="text-align:right">Share</th><th>YoY</th>
           </tr></thead>
           <tbody id="ovDetailBody"></tbody>
         </table>
@@ -857,14 +857,19 @@ function renderOverviewDetail() {
     cur[sp].orders++; cur[sp].outlets.add(r['COMPANY']); cur[sp].total += getTotalField(r);
   });
   // Last-year totals per salesperson (same months, prior year, same type filter)
-  const ly = {};
+  // and full-year (YTD) totals per salesperson for the target year
+  const ly = {}, ytd = {};
   allData.forEach(r => {
-    if (parseInt(r['YEAR']) !== ty - 1) return;
     if (ctx.type && r['TYPE'] !== ctx.type) return;
-    if (!monthsInView.has(String(parseInt(r['MONTH'])))) return;
     const sp = r['SALES PERSON'] || 'Unknown';
-    ly[sp] = (ly[sp] || 0) + getTotalField(r);
+    const yr = parseInt(r['YEAR']);
+    if (yr === ty) ytd[sp] = (ytd[sp] || 0) + getTotalField(r);
+    if (yr === ty - 1 && monthsInView.has(String(parseInt(r['MONTH'])))) ly[sp] = (ly[sp] || 0) + getTotalField(r);
   });
+
+  // Column label reflects the current mode
+  const plabel = document.getElementById('spPeriodLabel');
+  if (plabel) plabel.textContent = currentMode === 'month' ? 'This Month (RM)' : (currentMode === 'year' ? 'This Year (RM)' : 'Period (RM)');
 
   const rows = Object.entries(cur).sort((a, b) => b[1].total - a[1].total);
   body.innerHTML = rows.map(([sp, d], i) => {
@@ -882,6 +887,7 @@ function renderOverviewDetail() {
       <td style="text-align:right">${d.orders}</td>
       <td style="text-align:right">${d.outlets.size}</td>
       <td style="text-align:right;font-weight:700">${fmt(d.total)}</td>
+      <td style="text-align:right;color:var(--green);font-weight:700">${fmt(ytd[sp] || 0)}</td>
       <td style="text-align:right">${share}%</td>
       <td>${tag}</td>
     </tr>`;
@@ -1038,7 +1044,10 @@ function renderCharts() {
   PRODUCTS.forEach(p => {
     prodData[p] = filteredData.reduce((s,r)=>s+(parseFloat(r[p])||0),0);
   });
-  const prodSorted = Object.entries(prodData).filter(p=>p[1]>0).sort((a,b)=>b[1]-a[1]).slice(0,5);
+  const prodSorted = Object.entries(prodData).filter(p=>p[1]>0).sort((a,b)=>b[1]-a[1]);
+  // Grow the chart height so every product bar stays readable
+  const pWrap = document.getElementById('chartProductWrap');
+  if (pWrap) pWrap.style.height = Math.max(200, prodSorted.length * 30 + 30) + 'px';
   destroyChart('chartProduct');
   charts.product = new Chart(document.getElementById('chartProduct'), {
     type: 'bar',
