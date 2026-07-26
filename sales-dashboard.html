@@ -1062,9 +1062,9 @@ function showSPDetail(name, colorIdx) {
   document.getElementById('sp-breakdown-title').innerHTML =
     `<span style="color:${color}">${name}</span> — Customer Breakdown (${custSorted.length} customers)`;
   document.getElementById('sp-customer-tbody').innerHTML = custSorted.map(([cust, d], i) => `
-    <tr>
+    <tr style="cursor:pointer" onclick="drillCustomer('${cust.replace(/'/g,"\\'")}')" title="Click to view annual trend">
       <td>${i+1}</td>
-      <td><strong>${cust}</strong></td>
+      <td><strong>${cust}</strong> <span style="color:#3b82f6;font-size:11px">🔍</span></td>
       <td><span class="tag tag-gold" style="font-size:11px">${d.type}</span></td>
       <td>${d.orders}</td>
       <td style="text-align:right;font-weight:600">RM ${Number(d.total).toLocaleString('en-MY',{minimumFractionDigits:2,maximumFractionDigits:2})}</td>
