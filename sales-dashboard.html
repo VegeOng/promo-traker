@@ -723,9 +723,9 @@ function renderOverviewCustomers() {
   const rows = Object.entries(cur).sort((a, b) => b[1] - a[1]).slice(0, 10);
   body.innerHTML = rows.map(([c, val], i) => {
     const share = (val / total * 100).toFixed(1);
-    return `<tr>
+    return `<tr style="cursor:pointer" onclick="drillCustomer('${c.replace(/'/g,"\\'")}')" title="Click to view annual trend">
       <td><span class="rk">${i+1}</span></td>
-      <td>${c}</td>
+      <td>${c} <span style="color:#3b82f6;font-size:11px">🔍</span></td>
       <td style="text-align:right;font-weight:700">${fmt(val)}</td>
       <td style="text-align:right">${share}%</td>
     </tr>`;
