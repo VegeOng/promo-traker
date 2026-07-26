@@ -350,7 +350,7 @@
 <div class="nav">
   <button class="nav-btn active" onclick="switchTab('overview', this)">📊 Overview</button>
   <button class="nav-btn" onclick="switchTab('salesperson', this)">👤 Salesperson</button>
-  <button class="nav-btn" onclick="switchTab('outlet', this)">🏪 Outlets</button>
+  <button class="nav-btn" onclick="switchTab('outlet', this)">🏪 Customers</button>
   <button class="nav-btn" onclick="switchTab('product', this)">📦 Products</button>
   <button class="nav-btn" onclick="switchTab('trend', this)">📈 Trends</button>
   <a href="performance-hub.html" class="nav-btn" style="color:#dc2626;font-weight:700" title="管理层专用：利润分析 & 目标设置">💰 利润管理 🔒</a>
@@ -400,15 +400,25 @@
         <div class="chart-wrap"><canvas id="chartSPPie"></canvas></div>
       </div>
     </div>
-    <div class="grid-2">
-      <div class="chart-card">
-        <div class="chart-title"><span class="dot" style="background:var(--red)"></span>Top 5 Outlets</div>
-        <div class="chart-wrap"><canvas id="chartTopOutlet"></canvas></div>
+    <!-- Top 10 Customers: this period + full-year (YTD) -->
+    <div class="table-card">
+      <div class="table-header">
+        <span class="table-title">Top 10 Customers</span>
       </div>
-      <div class="chart-card">
-        <div class="chart-title"><span class="dot" style="background:#3b82f6"></span>Top 5 Products</div>
-        <div class="chart-wrap"><canvas id="chartProduct"></canvas></div>
+      <div style="overflow-x:auto">
+        <table>
+          <thead><tr>
+            <th>#</th><th>Customer</th>
+            <th style="text-align:right" id="custThisLabel">Sales (RM)</th>
+            <th style="text-align:right">Share</th>
+          </tr></thead>
+          <tbody id="ovCustBody"></tbody>
+        </table>
       </div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title"><span class="dot" style="background:#3b82f6"></span>Top 5 Products</div>
+      <div class="chart-wrap"><canvas id="chartProduct"></canvas></div>
     </div>
     <div class="table-card">
       <div class="table-header">
@@ -417,7 +427,7 @@
       <div style="overflow-x:auto">
         <table>
           <thead><tr>
-            <th>#</th><th>Salesperson</th><th style="text-align:right">Orders</th><th style="text-align:right">Outlets</th>
+            <th>#</th><th>Salesperson</th><th style="text-align:right">Orders</th><th style="text-align:right">Customers</th>
             <th style="text-align:right">Sales (RM)</th><th style="text-align:right">Share</th><th>YoY</th>
           </tr></thead>
           <tbody id="ovDetailBody"></tbody>
@@ -437,7 +447,7 @@
       <div style="overflow-x:auto">
         <table id="spTable">
           <thead><tr>
-            <th>#</th><th>Salesperson</th><th>Orders</th><th>Outlets</th>
+            <th>#</th><th>Salesperson</th><th>Orders</th><th>Customers</th>
             <th onclick="sortTable('spTable',4)">Total (RM) ↕</th>
             <th>Share</th>
           </tr></thead>
@@ -461,18 +471,18 @@
     </div>
   </div>
 
-  <!-- OUTLET TAB -->
+  <!-- CUSTOMER TAB -->
   <div class="tab-content" id="tab-outlet">
-    <div class="section-title">Outlet Performance Ranking</div>
+    <div class="section-title">Customer Performance Ranking</div>
     <div class="table-card">
       <div class="table-header">
-        <span class="table-title">Outlet List</span>
-        <input type="text" class="table-search" id="outletSearch" placeholder="Search outlets..." oninput="filterTable('outletSearch','outletTableBody')">
+        <span class="table-title">Customer List</span>
+        <input type="text" class="table-search" id="outletSearch" placeholder="Search customers..." oninput="filterTable('outletSearch','outletTableBody')">
       </div>
       <div style="overflow-x:auto">
         <table id="outletTable">
           <thead><tr>
-            <th>#</th><th>Company/Outlet</th><th>Type</th><th>Orders</th>
+            <th>#</th><th>Customer</th><th>Type</th><th>Orders</th>
             <th onclick="sortTable('outletTable',4)">Total (RM) ↕</th>
             <th>Performance Bar</th>
           </tr></thead>
@@ -687,10 +697,39 @@ function applyFilters() {
 function renderAll() {
   renderKPI();
   renderCharts();
+  renderOverviewCustomers();
   renderOverviewDetail();
   renderSPTab();
   renderOutletTab();
   renderProductTab();
+}
+
+// Top 10 Customers for the current period (respects the active filter)
+function renderOverviewCustomers() {
+  const body = document.getElementById('ovCustBody');
+  if (!body) return;
+
+  const cur = {};
+  filteredData.forEach(r => {
+    const c = r['COMPANY'] || 'Unknown';
+    cur[c] = (cur[c] || 0) + getTotalField(r);
+  });
+  const total = Object.values(cur).reduce((a, b) => a + b, 0) || 1;
+
+  // Header label reflects the current mode
+  const lbl = document.getElementById('custThisLabel');
+  if (lbl) lbl.textContent = currentMode === 'month' ? 'This Month (RM)' : (currentMode === 'year' ? 'This Year (RM)' : 'Sales (RM)');
+
+  const rows = Object.entries(cur).sort((a, b) => b[1] - a[1]).slice(0, 10);
+  body.innerHTML = rows.map(([c, val], i) => {
+    const share = (val / total * 100).toFixed(1);
+    return `<tr>
+      <td><span class="rk">${i+1}</span></td>
+      <td>${c}</td>
+      <td style="text-align:right;font-weight:700">${fmt(val)}</td>
+      <td style="text-align:right">${share}%</td>
+    </tr>`;
+  }).join('');
 }
 
 // Overview salesperson breakdown table (with YoY vs same period last year)
@@ -795,7 +834,7 @@ function renderKPI() {
   document.getElementById('kpiGrid').innerHTML = `
     <div class="kpi-card green"><div class="kpi-icon">💰</div><div class="kpi-label">Total Sales</div><div class="kpi-value">RM ${fmt(total)}</div>${yoyChip(salesYoY)}</div>
     <div class="kpi-card gold"><div class="kpi-icon">🧾</div><div class="kpi-label">Orders</div><div class="kpi-value">${orders}</div>${yoyChip(ordersYoY)}</div>
-    <div class="kpi-card blue"><div class="kpi-icon">🏪</div><div class="kpi-label">Outlets</div><div class="kpi-value">${outlets}</div><div class="kpi-sub">active outlets</div></div>
+    <div class="kpi-card blue"><div class="kpi-icon">🏪</div><div class="kpi-label">Customers</div><div class="kpi-value">${outlets}</div><div class="kpi-sub">active customers</div></div>
     <div class="kpi-card green"><div class="kpi-icon">👤</div><div class="kpi-label">Salespersons</div><div class="kpi-value">${sps}</div><div class="kpi-sub">people</div></div>
     <div class="kpi-card red"><div class="kpi-icon">📊</div><div class="kpi-label">Avg Order</div><div class="kpi-value">RM ${fmt(avgOrder)}</div><div class="kpi-sub">per order</div></div>
   `;
@@ -864,23 +903,6 @@ function renderCharts() {
       datasets: [{ data: spSorted.map(s=>s[1]), backgroundColor: ['#166534','#16a34a','#22c55e','#4ade80','#86efac','#dc2626','#f87171','#d97706','#fbbf24','#3b82f6'] }]
     },
     options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { font: { size: 11 } } } } }
-  });
-
-  // Top outlets
-  const outletData = {};
-  filteredData.forEach(r => {
-    const o = r['COMPANY'] || 'Unknown';
-    outletData[o] = (outletData[o] || 0) + getTotalField(r);
-  });
-  const outletSorted = Object.entries(outletData).sort((a,b)=>b[1]-a[1]).slice(0,5);
-  destroyChart('chartTopOutlet');
-  charts.outlet = new Chart(document.getElementById('chartTopOutlet'), {
-    type: 'bar',
-    data: {
-      labels: outletSorted.map(o=>o[0].length>20?o[0].substring(0,18)+'...':o[0]),
-      datasets: [{ label: 'RM', data: outletSorted.map(o=>o[1]), backgroundColor: '#dc262699', borderColor: '#dc2626', borderWidth: 1, borderRadius: 4 }]
-    },
-    options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { beginAtZero: true, ticks: { callback: v => 'RM '+fmtInt(v) } } } }
   });
 
   // Product chart
@@ -992,7 +1014,7 @@ function renderSPTab() {
       <div class="sp-total">RM ${fmt(d.total)}</div>
       <div class="sp-stats">
         <div class="sp-stat"><span>${d.orders}</span>Orders</div>
-        <div class="sp-stat"><span>${d.outlets.size}</span>Outlets</div>
+        <div class="sp-stat"><span>${d.outlets.size}</span>Customers</div>
         <div class="sp-stat"><span>${grandTotal>0?(d.total/grandTotal*100).toFixed(1):0}%</span>Share</div>
       </div>
       <div class="sp-bar">
