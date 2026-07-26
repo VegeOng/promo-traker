@@ -196,7 +196,10 @@ async function fetchIBData(){
     const date = parseSheetDate(r['PO DATE']) || parseSheetDate(r['INVOICE DATE']);
     return {
       company: (r['COMPANY']||'').toString().trim() || 'Unknown',
-      rm: parseFloat(r['IB (RM)']) || 0,
+      // IB orders should carry their value in IB (RM); some rows have it filled
+      // in TOTAL (RM) instead. The two columns are mutually exclusive for IB rows,
+      // so falling back to TOTAL (RM) recovers those without any double-counting.
+      rm: parseFloat(r['IB (RM)']) || parseFloat(r['TOTAL (RM)']) || 0,
       usd: parseFloat(r['IB (USD)']) || 0,
       date,
       products: skuCols.reduce((acc,p)=>{ acc[p]=parseFloat(r[p])||0; return acc; },{}),
