@@ -1151,25 +1151,37 @@ function drillCustomer(company) {
   document.getElementById('drillName').textContent = company;
   document.getElementById('drillSub').textContent = `${allOrders} total orders · All years`;
 
-  // YoY summary
-  const yoyHtml = yoy !== null
-    ? `<div style="display:flex;gap:12px;margin-bottom:18px;flex-wrap:wrap">
+  // YTD same-period comparison (Jan .. latest month with data this year) — fair YoY
+  let lastCur = 0;
+  for (let i = 0; i < 12; i++) if (thisYearData[i] > 0) lastCur = i + 1;
+  const range = lastCur > 0 ? 'Jan–' + mNames[lastCur - 1] : 'YTD';
+  const ytdThis = lastCur > 0 ? thisYearData.slice(0, lastCur).reduce((a, b) => a + b, 0) : totalThis;
+  const ytdPrev = (lastCur > 0 && lastYearData) ? lastYearData.slice(0, lastCur).reduce((a, b) => a + b, 0) : totalLast;
+  const ytdYoy = ytdPrev > 0 ? ((ytdThis - ytdPrev) / ytdPrev * 100) : null;
+  const ytdDiff = ytdThis - ytdPrev;
+  const money = n => 'RM ' + Number(n).toLocaleString('en-MY', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+  // YoY summary — all cards on the same YTD basis so they agree
+  const yoyHtml = (lastYear !== null && ytdYoy !== null)
+    ? `<div style="display:flex;gap:12px;margin-bottom:8px;flex-wrap:wrap">
         <div style="flex:1;min-width:120px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:12px 16px">
-          <div style="font-size:11px;color:#166534;font-weight:700;margin-bottom:4px">${thisYear} Total</div>
-          <div style="font-size:18px;font-weight:800;color:#166534">RM ${Number(totalThis).toLocaleString('en-MY',{minimumFractionDigits:2,maximumFractionDigits:2})}</div>
+          <div style="font-size:11px;color:#166534;font-weight:700;margin-bottom:4px">${thisYear} YTD (${range})</div>
+          <div style="font-size:18px;font-weight:800;color:#166534">${money(ytdThis)}</div>
         </div>
         <div style="flex:1;min-width:120px;background:#f8fafc;border:1px solid var(--border);border-radius:10px;padding:12px 16px">
-          <div style="font-size:11px;color:var(--text-muted);font-weight:700;margin-bottom:4px">${lastYear} Total</div>
-          <div style="font-size:18px;font-weight:800">RM ${Number(totalLast).toLocaleString('en-MY',{minimumFractionDigits:2,maximumFractionDigits:2})}</div>
+          <div style="font-size:11px;color:var(--text-muted);font-weight:700;margin-bottom:4px">${lastYear} same period</div>
+          <div style="font-size:18px;font-weight:800">${money(ytdPrev)}</div>
         </div>
-        <div style="flex:1;min-width:120px;background:${parseFloat(yoy)>=0?'#f0fdf4':'#fef2f2'};border:1px solid ${parseFloat(yoy)>=0?'#bbf7d0':'#fecaca'};border-radius:10px;padding:12px 16px">
-          <div style="font-size:11px;font-weight:700;margin-bottom:4px;color:${parseFloat(yoy)>=0?'#166534':'#dc2626'}">YoY Change</div>
-          <div style="font-size:18px;font-weight:800;color:${parseFloat(yoy)>=0?'#166534':'#dc2626'}">${parseFloat(yoy)>=0?'▲':'▼'} ${Math.abs(yoy)}%</div>
+        <div style="flex:1;min-width:120px;background:${ytdYoy>=0?'#f0fdf4':'#fef2f2'};border:1px solid ${ytdYoy>=0?'#bbf7d0':'#fecaca'};border-radius:10px;padding:12px 16px">
+          <div style="font-size:11px;font-weight:700;margin-bottom:4px;color:${ytdYoy>=0?'#166534':'#dc2626'}">YTD YoY</div>
+          <div style="font-size:18px;font-weight:800;color:${ytdYoy>=0?'#166534':'#dc2626'}">${ytdYoy>=0?'▲':'▼'} ${Math.abs(ytdYoy).toFixed(1)}%</div>
+          <div style="font-size:11px;font-weight:700;color:${ytdYoy>=0?'#166534':'#dc2626'}">${ytdDiff>=0?'+':'−'}${money(Math.abs(ytdDiff))}</div>
         </div>
-      </div>`
+      </div>
+      <div style="font-size:11px;color:var(--text-muted);margin-bottom:16px">${lastYear} full-year total: ${money(totalLast)}</div>`
     : `<div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:12px 16px;margin-bottom:18px">
-        <div style="font-size:11px;color:#166534;font-weight:700;margin-bottom:4px">${thisYear} Total</div>
-        <div style="font-size:18px;font-weight:800;color:#166534">RM ${Number(totalThis).toLocaleString('en-MY',{minimumFractionDigits:2,maximumFractionDigits:2})}</div>
+        <div style="font-size:11px;color:#166534;font-weight:700;margin-bottom:4px">${thisYear} YTD (${range})</div>
+        <div style="font-size:18px;font-weight:800;color:#166534">${money(ytdThis)}</div>
       </div>`;
 
   // monthly comparison table
