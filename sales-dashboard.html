@@ -542,10 +542,11 @@
     <div class="table-card">
       <div class="table-header">
         <span class="table-title">Product Sales Ranking</span>
+        <span style="font-size:0.72rem;color:var(--text-muted)">Revenue ≈ estimated (allocated from order totals)</span>
       </div>
       <div style="overflow-x:auto">
         <table>
-          <thead><tr><th>#</th><th>Product</th><th>Total Qty</th><th>Share</th><th>Qty Bar</th></tr></thead>
+          <thead><tr><th>#</th><th>Product</th><th style="text-align:right">Total Qty</th><th style="text-align:right">Est. Revenue (RM)</th><th style="text-align:right">Rev %</th><th>Revenue Bar</th></tr></thead>
           <tbody id="productTableBody"></tbody>
         </table>
       </div>
@@ -1361,36 +1362,71 @@ function drillCustomer(company) {
   }, 50);
 }
 
-function renderProductTab() {
-  const prodData = {};
-  PRODUCTS.forEach(p => {
-    const qty = filteredData.reduce((s,r)=>s+(parseFloat(r[p])||0),0);
-    if (qty > 0) prodData[p] = qty;
+// Reference unit price per SKU, derived from single-SKU orders (median).
+// Price-less SKUs fall back to the global median. Cached per dataset.
+let _skuPrices = null, _skuPricesN = -1;
+function getSkuPrices() {
+  if (_skuPrices && _skuPricesN === allData.length) return _skuPrices;
+  const px = {};
+  allData.forEach(r => {
+    const filled = PRODUCTS.filter(p => parseFloat(r[p]) > 0);
+    if (filled.length === 1) {
+      const p = filled[0], qty = parseFloat(r[p]), tot = getTotalField(r);
+      if (qty > 0 && tot > 0) (px[p] = px[p] || []).push(tot / qty);
+    }
   });
-  const sorted = Object.entries(prodData).sort((a,b)=>b[1]-a[1]);
-  const total = sorted.reduce((s,e)=>s+e[1],0);
-  const maxQty = sorted.length ? sorted[0][1] : 1;
+  const median = a => { a = a.slice().sort((x, y) => x - y); const m = a.length >> 1; return a.length % 2 ? a[m] : (a[m-1] + a[m]) / 2; };
+  const prices = {}, derived = [];
+  PRODUCTS.forEach(p => { if (px[p] && px[p].length) { prices[p] = median(px[p]); derived.push(prices[p]); } });
+  const globalMed = derived.length ? median(derived) : 1;
+  PRODUCTS.forEach(p => { if (!(p in prices)) prices[p] = globalMed; });
+  _skuPrices = prices; _skuPricesN = allData.length;
+  return prices;
+}
 
-  // Top 3 KPI
-  const top3 = sorted.slice(0,3);
-  document.getElementById('productKpi').innerHTML = top3.map((p,i) => `
+function renderProductTab() {
+  const prices = getSkuPrices();
+  // Allocate each order's real TOTAL (RM) across its SKUs by qty × reference price
+  const prodQty = {}, prodRev = {};
+  filteredData.forEach(r => {
+    const filled = PRODUCTS.filter(p => parseFloat(r[p]) > 0);
+    if (!filled.length) return;
+    const tot = getTotalField(r);
+    const qtySum = filled.reduce((s, p) => s + parseFloat(r[p]), 0);
+    let refSum = 0; const refVal = {};
+    filled.forEach(p => { const v = parseFloat(r[p]) * (prices[p] || 0); refVal[p] = v; refSum += v; });
+    filled.forEach(p => {
+      const qty = parseFloat(r[p]);
+      prodQty[p] = (prodQty[p] || 0) + qty;
+      const alloc = refSum > 0 ? tot * (refVal[p] / refSum) : (qtySum > 0 ? tot * qty / qtySum : 0);
+      prodRev[p] = (prodRev[p] || 0) + alloc;
+    });
+  });
+  const sorted = Object.entries(prodRev).filter(([p]) => prodQty[p] > 0).sort((a, b) => b[1] - a[1]);
+  const totalRev = sorted.reduce((s, e) => s + e[1], 0) || 1;
+  const maxRev = sorted.length ? sorted[0][1] : 1;
+
+  // Top 3 KPI — by estimated revenue
+  const top3 = sorted.slice(0, 3);
+  document.getElementById('productKpi').innerHTML = top3.map((p, i) => `
     <div class="kpi-card ${['green','gold','red'][i]}">
       <div class="kpi-icon">${['🥇','🥈','🥉'][i]}</div>
-      <div class="kpi-label">#${i+1} Product</div>
-      <div class="kpi-value">${fmtInt(p[1])}</div>
-      <div class="kpi-sub">${p[0]}</div>
+      <div class="kpi-label">#${i+1} by Revenue</div>
+      <div class="kpi-value">RM ${fmtInt(p[1])}</div>
+      <div class="kpi-sub">${p[0]} · ${fmtInt(prodQty[p[0]])} units</div>
     </div>
   `).join('');
 
-  document.getElementById('productTableBody').innerHTML = sorted.map(([name,qty],i) => `
+  document.getElementById('productTableBody').innerHTML = sorted.map(([name, rev], i) => `
     <tr>
       <td class="rank rank-${i+1}">${i+1}</td>
       <td><strong>${name}</strong></td>
-      <td>${fmtInt(qty)}</td>
-      <td><span class="tag tag-green">${total>0?(qty/total*100).toFixed(1):0}%</span></td>
-      <td><div class="progress-bar" style="min-width:120px"><div class="progress-fill" style="width:${(qty/maxQty*100).toFixed(1)}%"></div></div></td>
+      <td style="text-align:right">${fmtInt(prodQty[name])}</td>
+      <td style="text-align:right;font-weight:700;color:var(--green)">${fmtInt(rev)}</td>
+      <td style="text-align:right"><span class="tag tag-green">${(rev/totalRev*100).toFixed(1)}%</span></td>
+      <td><div class="progress-bar" style="min-width:120px"><div class="progress-fill" style="width:${(rev/maxRev*100).toFixed(1)}%"></div></div></td>
     </tr>
-  `).join('') || '<tr><td colspan="5" class="empty">No data</td></tr>';
+  `).join('') || '<tr><td colspan="6" class="empty">No data</td></tr>';
 }
 
 function destroyChart(id) {
