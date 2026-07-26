@@ -146,6 +146,13 @@
   .kpi-card.gold .kpi-value { color: var(--gold); }
   .kpi-card.blue .kpi-value { color: #3b82f6; }
   .kpi-sub { font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem; }
+  .yoy-chip { display:inline-block; font-size:0.72rem; font-weight:800; padding:1px 7px; border-radius:10px; margin-top:5px; }
+  .yoy-chip.up { background:#dcfce7; color:#166534; }
+  .yoy-chip.dn { background:#fee2e2; color:#dc2626; }
+  /* Overview detail table badges */
+  .rk { display:inline-flex; width:20px; height:20px; border-radius:5px; background:#e8f3ec; color:var(--green); font-weight:800; font-size:0.7rem; align-items:center; justify-content:center; }
+  .tag { padding:2px 8px; border-radius:12px; font-size:0.7rem; font-weight:800; }
+  .tag.up { background:#dcfce7; color:#166534; } .tag.dn { background:#fee2e2; color:#dc2626; } .tag.na { background:#f1f5f9; color:#94a3b8; }
 
   /* GRID 2-COL */
   .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem; }
@@ -385,7 +392,7 @@
     </div>
     <div class="grid-2">
       <div class="chart-card">
-        <div class="chart-title"><span class="dot"></span>Monthly Sales (RM)</div>
+        <div class="chart-title"><span class="dot"></span>Monthly Sales — This Year vs Last Year</div>
         <div class="chart-wrap"><canvas id="chartMonthly"></canvas></div>
       </div>
       <div class="chart-card">
@@ -395,12 +402,26 @@
     </div>
     <div class="grid-2">
       <div class="chart-card">
-        <div class="chart-title"><span class="dot" style="background:var(--red)"></span>Top 10 Outlets</div>
+        <div class="chart-title"><span class="dot" style="background:var(--red)"></span>Top 5 Outlets</div>
         <div class="chart-wrap"><canvas id="chartTopOutlet"></canvas></div>
       </div>
       <div class="chart-card">
-        <div class="chart-title"><span class="dot" style="background:#3b82f6"></span>Product Sales Ranking</div>
+        <div class="chart-title"><span class="dot" style="background:#3b82f6"></span>Top 5 Products</div>
         <div class="chart-wrap"><canvas id="chartProduct"></canvas></div>
+      </div>
+    </div>
+    <div class="table-card">
+      <div class="table-header">
+        <span class="table-title">Salesperson Breakdown</span>
+      </div>
+      <div style="overflow-x:auto">
+        <table>
+          <thead><tr>
+            <th>#</th><th>Salesperson</th><th style="text-align:right">Orders</th><th style="text-align:right">Outlets</th>
+            <th style="text-align:right">Sales (RM)</th><th style="text-align:right">Share</th><th>YoY</th>
+          </tr></thead>
+          <tbody id="ovDetailBody"></tbody>
+        </table>
       </div>
     </div>
   </div>
@@ -666,9 +687,87 @@ function applyFilters() {
 function renderAll() {
   renderKPI();
   renderCharts();
+  renderOverviewDetail();
   renderSPTab();
   renderOutletTab();
   renderProductTab();
+}
+
+// Overview salesperson breakdown table (with YoY vs same period last year)
+function renderOverviewDetail() {
+  const body = document.getElementById('ovDetailBody');
+  if (!body) return;
+  const ctx = getFilterCtx();
+  const ty = getTargetYear();
+  const monthsInView = new Set(filteredData.map(r => String(parseInt(r['MONTH']))).filter(s => s !== 'NaN'));
+  const grandTotal = filteredData.reduce((s, r) => s + getTotalField(r), 0) || 1;
+
+  // Current-period stats per salesperson
+  const cur = {};
+  filteredData.forEach(r => {
+    const sp = r['SALES PERSON'] || 'Unknown';
+    if (!cur[sp]) cur[sp] = { orders: 0, outlets: new Set(), total: 0 };
+    cur[sp].orders++; cur[sp].outlets.add(r['COMPANY']); cur[sp].total += getTotalField(r);
+  });
+  // Last-year totals per salesperson (same months, prior year, same type filter)
+  const ly = {};
+  allData.forEach(r => {
+    if (parseInt(r['YEAR']) !== ty - 1) return;
+    if (ctx.type && r['TYPE'] !== ctx.type) return;
+    if (!monthsInView.has(String(parseInt(r['MONTH'])))) return;
+    const sp = r['SALES PERSON'] || 'Unknown';
+    ly[sp] = (ly[sp] || 0) + getTotalField(r);
+  });
+
+  const rows = Object.entries(cur).sort((a, b) => b[1].total - a[1].total);
+  body.innerHTML = rows.map(([sp, d], i) => {
+    const share = (d.total / grandTotal * 100).toFixed(1);
+    const prev = ly[sp] || 0;
+    let tag = '<span class="tag na">—</span>';
+    if (prev > 0) {
+      const pct = (d.total - prev) / prev * 100;
+      const up = pct >= 0;
+      tag = `<span class="tag ${up?'up':'dn'}">${up?'▲':'▼'} ${Math.abs(pct).toFixed(0)}%</span>`;
+    }
+    return `<tr>
+      <td><span class="rk">${i+1}</span></td>
+      <td>${sp}</td>
+      <td style="text-align:right">${d.orders}</td>
+      <td style="text-align:right">${d.outlets.size}</td>
+      <td style="text-align:right;font-weight:700">${fmt(d.total)}</td>
+      <td style="text-align:right">${share}%</td>
+      <td>${tag}</td>
+    </tr>`;
+  }).join('');
+}
+
+// Filter context (type / salesperson) shared by YoY calculations
+function getFilterCtx() {
+  return { type: document.getElementById('filterType').value, sp: document.getElementById('filterSP').value };
+}
+// Target year = max year present in the current view (fallback: latest year in all data)
+function getTargetYear() {
+  const ys = filteredData.map(r => parseInt(r['YEAR'])).filter(Boolean);
+  if (ys.length) return Math.max(...ys);
+  const all = allData.map(r => parseInt(r['YEAR'])).filter(Boolean);
+  return all.length ? Math.max(...all) : new Date().getFullYear();
+}
+// Monthly totals (index 0=Jan) for a given year, honouring type/sp filters
+function monthTotalsForYear(year, ctx) {
+  const arr = Array(12).fill(0);
+  allData.forEach(r => {
+    if (parseInt(r['YEAR']) !== year) return;
+    if (ctx.type && r['TYPE'] !== ctx.type) return;
+    if (ctx.sp && r['SALES PERSON'] !== ctx.sp) return;
+    const m = parseInt(r['MONTH']); if (!m) return;
+    arr[m-1] += getTotalField(r);
+  });
+  return arr;
+}
+function yoyChip(pct) {
+  if (pct === null || !isFinite(pct)) return '<div class="kpi-sub">vs LY: n/a</div>';
+  const up = pct >= 0;
+  return `<div class="yoy-chip ${up?'up':'dn'}">${up?'▲':'▼'} ${Math.abs(pct).toFixed(1)}% vs LY</div>`;
 }
 
 function renderKPI() {
@@ -678,10 +777,25 @@ function renderKPI() {
   const sps = new Set(filteredData.map(r => r['SALES PERSON']).filter(Boolean)).size;
   const avgOrder = orders > 0 ? total / orders : 0;
 
+  // Same-period last-year total: same months present in view, prior year, same type/sp
+  const ctx = getFilterCtx();
+  const ty = getTargetYear();
+  const monthsInView = new Set(filteredData.map(r => String(parseInt(r['MONTH']))).filter(s => s !== 'NaN'));
+  let lyTotal = 0, lyOrders = 0;
+  allData.forEach(r => {
+    if (parseInt(r['YEAR']) !== ty - 1) return;
+    if (ctx.type && r['TYPE'] !== ctx.type) return;
+    if (ctx.sp && r['SALES PERSON'] !== ctx.sp) return;
+    if (!monthsInView.has(String(parseInt(r['MONTH'])))) return;
+    lyTotal += getTotalField(r); lyOrders += 1;
+  });
+  const salesYoY = lyTotal > 0 ? (total - lyTotal) / lyTotal * 100 : null;
+  const ordersYoY = lyOrders > 0 ? (orders - lyOrders) / lyOrders * 100 : null;
+
   document.getElementById('kpiGrid').innerHTML = `
-    <div class="kpi-card green"><div class="kpi-icon">💰</div><div class="kpi-label">Total Sales</div><div class="kpi-value">RM ${fmt(total)}</div><div class="kpi-sub">TOTAL (RM)</div></div>
-    <div class="kpi-card gold"><div class="kpi-icon">🧾</div><div class="kpi-label">Orders</div><div class="kpi-value">${orders}</div><div class="kpi-sub">records</div></div>
-    <div class="kpi-card blue"><div class="kpi-icon">🏪</div><div class="kpi-label">Outlets</div><div class="kpi-value">${outlets}</div><div class="kpi-sub">outlets</div></div>
+    <div class="kpi-card green"><div class="kpi-icon">💰</div><div class="kpi-label">Total Sales</div><div class="kpi-value">RM ${fmt(total)}</div>${yoyChip(salesYoY)}</div>
+    <div class="kpi-card gold"><div class="kpi-icon">🧾</div><div class="kpi-label">Orders</div><div class="kpi-value">${orders}</div>${yoyChip(ordersYoY)}</div>
+    <div class="kpi-card blue"><div class="kpi-icon">🏪</div><div class="kpi-label">Outlets</div><div class="kpi-value">${outlets}</div><div class="kpi-sub">active outlets</div></div>
     <div class="kpi-card green"><div class="kpi-icon">👤</div><div class="kpi-label">Salespersons</div><div class="kpi-value">${sps}</div><div class="kpi-sub">people</div></div>
     <div class="kpi-card red"><div class="kpi-icon">📊</div><div class="kpi-label">Avg Order</div><div class="kpi-value">RM ${fmt(avgOrder)}</div><div class="kpi-sub">per order</div></div>
   `;
@@ -697,29 +811,42 @@ function getTotalField(r) {
 function getIBField(r) { return 0; }
 
 function renderCharts() {
-  // Monthly chart
-  const monthData = {};
-  filteredData.forEach(r => {
-    const m = r['MONTH'];
-    if (!m) return;
-    monthData[m] = (monthData[m] || 0) + getTotalField(r);
-  });
-  const months = Object.keys(monthData).sort((a,b)=>a-b);
+  // Monthly chart — This year (bars) vs Last year (red curve)
+  const ctx0 = getFilterCtx();
+  const ty = getTargetYear();
+  const curYear = monthTotalsForYear(ty, ctx0);
+  const prevYear = monthTotalsForYear(ty - 1, ctx0);
+  // Show Jan..last month that has any data across either year
+  let lastM = 0;
+  for (let i = 0; i < 12; i++) if (curYear[i] > 0 || prevYear[i] > 0) lastM = i + 1;
+  if (lastM === 0) lastM = 12;
+  const mLabels = mNames.slice(0, lastM);
   destroyChart('chartMonthly');
   charts.monthly = new Chart(document.getElementById('chartMonthly'), {
-    type: 'bar',
     data: {
-      labels: months.map(m => mNames[m-1]),
-      datasets: [{
-        label: 'Total (RM)',
-        data: months.map(m => monthData[m]),
-        backgroundColor: '#166534cc',
-        borderColor: '#166534',
-        borderWidth: 1,
-        borderRadius: 6
-      }]
+      labels: mLabels,
+      datasets: [
+        {
+          type: 'bar', label: String(ty),
+          data: curYear.slice(0, lastM),
+          backgroundColor: '#166534cc', borderColor: '#166534', borderWidth: 1, borderRadius: 6, order: 2
+        },
+        {
+          type: 'line', label: String(ty - 1),
+          data: prevYear.slice(0, lastM),
+          borderColor: '#dc2626', backgroundColor: '#dc2626', borderWidth: 3, tension: 0.4,
+          pointBackgroundColor: '#fff', pointBorderColor: '#dc2626', pointBorderWidth: 2, pointRadius: 4, order: 1
+        }
+      ]
     },
-    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { callback: v => 'RM '+fmtInt(v) } } } }
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { display: true, position: 'top', labels: { boxWidth: 14, font: { size: 11 } } },
+        tooltip: { callbacks: { label: c => c.dataset.label + ': RM ' + fmtInt(c.parsed.y) } }
+      },
+      scales: { y: { beginAtZero: true, ticks: { callback: v => 'RM '+fmtInt(v) } } }
+    }
   });
 
   // SP Pie
@@ -745,7 +872,7 @@ function renderCharts() {
     const o = r['COMPANY'] || 'Unknown';
     outletData[o] = (outletData[o] || 0) + getTotalField(r);
   });
-  const outletSorted = Object.entries(outletData).sort((a,b)=>b[1]-a[1]).slice(0,10);
+  const outletSorted = Object.entries(outletData).sort((a,b)=>b[1]-a[1]).slice(0,5);
   destroyChart('chartTopOutlet');
   charts.outlet = new Chart(document.getElementById('chartTopOutlet'), {
     type: 'bar',
@@ -761,7 +888,7 @@ function renderCharts() {
   PRODUCTS.forEach(p => {
     prodData[p] = filteredData.reduce((s,r)=>s+(parseFloat(r[p])||0),0);
   });
-  const prodSorted = Object.entries(prodData).filter(p=>p[1]>0).sort((a,b)=>b[1]-a[1]).slice(0,10);
+  const prodSorted = Object.entries(prodData).filter(p=>p[1]>0).sort((a,b)=>b[1]-a[1]).slice(0,5);
   destroyChart('chartProduct');
   charts.product = new Chart(document.getElementById('chartProduct'), {
     type: 'bar',
