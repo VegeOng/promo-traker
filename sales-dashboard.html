@@ -356,8 +356,7 @@
   <button class="nav-btn" onclick="switchTab('salesperson', this)">👤 Salesperson</button>
   <button class="nav-btn" onclick="switchTab('outlet', this)">🏪 Customers</button>
   <button class="nav-btn" onclick="switchTab('product', this)">📦 Products</button>
-  <button class="nav-btn" onclick="switchTab('trend', this)">📈 Trends</button>
-  <a href="performance-hub.html" class="nav-btn" style="color:#dc2626;font-weight:700" title="管理层专用：利润分析 & 目标设置">💰 利润管理 🔒</a>
+  <a href="performance-hub.html" class="nav-btn" style="color:#dc2626;font-weight:700" title="Management only: profit analysis & target settings">💰 Profit & Targets 🔒</a>
 </div>
 
 <div class="filters">
@@ -553,24 +552,6 @@
     </div>
   </div>
 
-  <!-- TREND TAB -->
-  <div class="tab-content" id="tab-trend">
-    <div class="section-title">Sales Trend</div>
-    <div class="chart-card" style="margin-bottom:1.5rem">
-      <div class="chart-title"><span class="dot"></span>Weekly Sales Trend</div>
-      <div class="chart-wrap" style="height:300px"><canvas id="chartWeekly"></canvas></div>
-    </div>
-    <div class="grid-2">
-      <div class="chart-card">
-        <div class="chart-title"><span class="dot" style="background:var(--gold)"></span>Sales Share by Type</div>
-        <div class="chart-wrap"><canvas id="chartType"></canvas></div>
-      </div>
-      <div class="chart-card">
-        <div class="chart-title"><span class="dot" style="background:var(--red)"></span>Monthly Order Count</div>
-        <div class="chart-wrap"><canvas id="chartOrders"></canvas></div>
-      </div>
-    </div>
-  </div>
 
 </div>
 
@@ -1057,67 +1038,6 @@ function renderCharts() {
       datasets: [{ label: 'Qty', data: prodSorted.map(p=>p[1]), backgroundColor: '#3b82f699', borderColor: '#3b82f6', borderWidth: 1, borderRadius: 4 }]
     },
     options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { beginAtZero: true } } }
-  });
-
-  // Weekly trend
-  const weekData = {};
-  filteredData.forEach(r => {
-    const key = `Y${r['YEAR']}-W${String(r['WEEK']).padStart(2,'0')}`;
-    weekData[key] = (weekData[key] || 0) + getTotalField(r);
-  });
-  const weeks = Object.keys(weekData).sort();
-  destroyChart('chartWeekly');
-  charts.weekly = new Chart(document.getElementById('chartWeekly'), {
-    type: 'line',
-    data: {
-      labels: weeks,
-      datasets: [{
-        label: 'Total (RM)',
-        data: weeks.map(w=>weekData[w]),
-        borderColor: '#166534',
-        backgroundColor: '#16653420',
-        fill: true,
-        tension: 0.4,
-        pointBackgroundColor: '#166534',
-        pointRadius: 4
-      }]
-    },
-    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { callback: v=>'RM '+fmtInt(v) } } } }
-  });
-
-  // Type pie
-  const typeData = {};
-  filteredData.forEach(r => {
-    const t = r['TYPE'] || 'Unknown';
-    typeData[t] = (typeData[t] || 0) + getTotalField(r);
-  });
-  const typeSorted = Object.entries(typeData).sort((a,b)=>b[1]-a[1]);
-  destroyChart('chartType');
-  charts.type = new Chart(document.getElementById('chartType'), {
-    type: 'pie',
-    data: {
-      labels: typeSorted.map(t=>t[0]),
-      datasets: [{ data: typeSorted.map(t=>t[1]), backgroundColor: ['#166534','#dc2626','#d97706','#3b82f6','#8b5cf6'] }]
-    },
-    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
-  });
-
-  // Orders by month
-  const ordersData = {};
-  filteredData.forEach(r => {
-    const m = r['MONTH'];
-    if (!m) return;
-    ordersData[m] = (ordersData[m] || 0) + 1;
-  });
-  const oMonths = Object.keys(ordersData).sort((a,b)=>a-b);
-  destroyChart('chartOrders');
-  charts.orders = new Chart(document.getElementById('chartOrders'), {
-    type: 'bar',
-    data: {
-      labels: oMonths.map(m=>mNames[m-1]),
-      datasets: [{ label: 'Orders', data: oMonths.map(m=>ordersData[m]), backgroundColor: '#dc262699', borderColor: '#dc2626', borderWidth: 1, borderRadius: 4 }]
-    },
-    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
   });
 }
 
