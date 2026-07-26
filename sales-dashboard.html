@@ -421,6 +421,42 @@
         </table>
       </div>
     </div>
+    <!-- YTD Movers vs 2025 (same period) -->
+    <div class="grid-2">
+      <div class="table-card">
+        <div class="table-header">
+          <span class="table-title" style="color:#dc2626">📉 Top 10 YTD Decliners</span>
+          <span id="moversRange" style="font-size:0.75rem;color:var(--text-muted)"></span>
+        </div>
+        <div style="overflow-x:auto">
+          <table>
+            <thead><tr>
+              <th>#</th><th>Customer</th>
+              <th style="text-align:right">2026 YTD</th>
+              <th style="text-align:right">Δ RM</th>
+              <th style="text-align:right">Δ %</th>
+            </tr></thead>
+            <tbody id="declBody"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="table-card">
+        <div class="table-header">
+          <span class="table-title" style="color:#166534">📈 Top 10 YTD Gainers</span>
+        </div>
+        <div style="overflow-x:auto">
+          <table>
+            <thead><tr>
+              <th>#</th><th>Customer</th>
+              <th style="text-align:right">2026 YTD</th>
+              <th style="text-align:right">Δ RM</th>
+              <th style="text-align:right">Δ %</th>
+            </tr></thead>
+            <tbody id="gainBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
     <div class="chart-card">
       <div class="chart-title"><span class="dot" style="background:#3b82f6"></span>Top 5 Products</div>
       <div class="chart-wrap"><canvas id="chartProduct"></canvas></div>
@@ -703,10 +739,69 @@ function renderAll() {
   renderKPI();
   renderCharts();
   renderOverviewCustomers();
+  renderOverviewMovers();
   renderOverviewDetail();
   renderSPTab();
   renderOutletTab();
   renderProductTab();
+}
+
+// YTD Movers — biggest decliners & gainers vs same period last year (by RM change)
+function renderOverviewMovers() {
+  const declBody = document.getElementById('declBody');
+  const gainBody = document.getElementById('gainBody');
+  if (!declBody || !gainBody) return;
+  const ctx = getFilterCtx();
+  const ty = getTargetYear();
+
+  // Latest month with data this year (respects type/sp filter) = YTD cut-off
+  const curMonthly = monthTotalsForYear(ty, ctx);
+  let lastCur = 0;
+  for (let i = 0; i < 12; i++) if (curMonthly[i] > 0) lastCur = i + 1;
+  if (lastCur === 0) lastCur = 12;
+
+  // Per-customer YTD totals for both years, months 1..lastCur
+  const cy = {}, py = {};
+  allData.forEach(r => {
+    const mo = parseInt(r['MONTH']);
+    if (!(mo >= 1 && mo <= lastCur)) return;
+    if (ctx.type && r['TYPE'] !== ctx.type) return;
+    if (ctx.sp && r['SALES PERSON'] !== ctx.sp) return;
+    const y = parseInt(r['YEAR']);
+    const c = r['COMPANY'] || 'Unknown';
+    if (y === ty) cy[c] = (cy[c] || 0) + getTotalField(r);
+    else if (y === ty - 1) py[c] = (py[c] || 0) + getTotalField(r);
+  });
+
+  const names = new Set([...Object.keys(cy), ...Object.keys(py)]);
+  const rows = [...names].map(c => {
+    const cur = cy[c] || 0, prev = py[c] || 0;
+    return { c, cur, prev, diff: cur - prev, pct: prev > 0 ? (cur - prev) / prev * 100 : null };
+  });
+  const decliners = rows.filter(r => r.diff < 0).sort((a, b) => a.diff - b.diff).slice(0, 10);
+  const gainers = rows.filter(r => r.diff > 0).sort((a, b) => b.diff - a.diff).slice(0, 10);
+
+  const rangeEl = document.getElementById('moversRange');
+  if (rangeEl) rangeEl.textContent = `YTD Jan–${mNames[lastCur-1]} · vs ${ty-1}`;
+
+  const rowHtml = (r, i, up) => {
+    const color = up ? '#166534' : '#dc2626';
+    const pctTxt = r.pct === null ? 'new' : `${r.pct>=0?'▲':'▼'} ${Math.abs(r.pct).toFixed(0)}%`;
+    return `<tr style="cursor:pointer" onclick="drillCustomer('${r.c.replace(/'/g,"\\'")}')" title="Click to view annual trend">
+      <td><span class="rk">${i+1}</span></td>
+      <td>${r.c} <span style="color:#3b82f6;font-size:11px">🔍</span></td>
+      <td style="text-align:right">${fmt(r.cur)}</td>
+      <td style="text-align:right;font-weight:700;color:${color}">${r.diff>=0?'+':'−'}${fmt(Math.abs(r.diff))}</td>
+      <td style="text-align:right;font-weight:700;color:${color}">${pctTxt}</td>
+    </tr>`;
+  };
+
+  declBody.innerHTML = decliners.length
+    ? decliners.map((r, i) => rowHtml(r, i, false)).join('')
+    : '<tr><td colspan="5" class="empty" style="text-align:center;color:var(--text-muted)">No decline vs last year 🎉</td></tr>';
+  gainBody.innerHTML = gainers.length
+    ? gainers.map((r, i) => rowHtml(r, i, true)).join('')
+    : '<tr><td colspan="5" class="empty" style="text-align:center;color:var(--text-muted)">No gain vs last year</td></tr>';
 }
 
 // Top 10 Customers for the current period (respects the active filter)
