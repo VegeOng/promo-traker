@@ -71,7 +71,9 @@ body{background:var(--bg);color:var(--t1);font-family:var(--font);min-height:100
 .tl-store{font-weight:700;color:var(--t1);}
 .tl-activity{font-size:11px;color:var(--t3);margin-top:1px;}
 .tl-track{position:relative;height:40px;}
-.tl-bar{position:absolute;top:7px;height:26px;border-radius:6px;display:flex;align-items:center;padding:0 8px;font-size:11px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:default;box-shadow:0 1px 3px rgba(0,0,0,.15);}
+.tl-bar{position:absolute;top:5px;height:32px;border-radius:6px;display:flex;flex-direction:column;justify-content:center;padding:0 8px;font-size:11px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,.15);}
+.tl-bar-store{font-size:11px;font-weight:800;line-height:1.2;overflow:hidden;text-overflow:ellipsis;}
+.tl-bar-type{font-size:9px;font-weight:600;opacity:.85;line-height:1.2;overflow:hidden;text-overflow:ellipsis;}
 .tl-empty{text-align:center;padding:30px;color:var(--t3);font-size:13px;}
 
 /* Calendar (agenda / list style) */
@@ -588,7 +590,7 @@ function renderTimeline(data){
     const leftPct=((startDay-1)/daysInMonth*100);
     const widthPct=(span/daysInMonth*100);
     const title=`${escHtml(r.store)} — ${catLabel(r)} — ${escHtml(r.activity_name||'')} (${fmtDate(r._start)} → ${fmtDate(r._end)})`;
-    html+=`<div class="tl-bar" title="${title}" onclick="openDetail('${r.id}')" style="left:${leftPct}%;width:${widthPct}%;background:${catColor((r.promo_type||'OTHER').toUpperCase())};cursor:pointer;">${escHtml(catLabel(r))}</div>`;
+    html+=`<div class="tl-bar" title="${title}" onclick="openDetail('${r.id}')" style="left:${leftPct}%;width:${widthPct}%;background:${catColor((r.promo_type||'OTHER').toUpperCase())};"><div class="tl-bar-store">${escHtml(r.store)}</div><div class="tl-bar-type">${escHtml(catLabel(r))}</div></div>`;
     html+='</div>';
     html+='</div>';
   });
@@ -666,7 +668,7 @@ function renderTimelineProportional(data, label){
     const leftPct=(startOffset/totalDays*100);
     const widthPct=(span/totalDays*100);
     const title=`${escHtml(r.store)} — ${catLabel(r)} — ${escHtml(r.activity_name||'')} (${fmtDate(r._start)} → ${fmtDate(r._end)})`;
-    html+=`<div class="tl-bar" title="${title}" onclick="openDetail('${r.id}')" style="left:${leftPct}%;width:${widthPct}%;background:${catColor((r.promo_type||'OTHER').toUpperCase())};cursor:pointer;">${escHtml(catLabel(r))}</div>`;
+    html+=`<div class="tl-bar" title="${title}" onclick="openDetail('${r.id}')" style="left:${leftPct}%;width:${widthPct}%;background:${catColor((r.promo_type||'OTHER').toUpperCase())};"><div class="tl-bar-store">${escHtml(r.store)}</div><div class="tl-bar-type">${escHtml(catLabel(r))}</div></div>`;
     html+='</div>';
     html+='</div>';
   });
