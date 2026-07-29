@@ -80,6 +80,18 @@ textarea{resize:vertical;min-height:72px;line-height:1.5;}
 .kol-fail{color:#dc2626;background:#fef2f2;border:1px solid #fecaca;}
 .kol-na{color:var(--t3);}
 .kol-badge{display:inline-block;padding:2px 8px;border-radius:99px;font-size:10px;font-weight:700;letter-spacing:.05em;}
+
+/* Results card */
+.results-card{background:var(--s1);border:2px solid #3b82f6;border-radius:var(--r2);padding:18px;margin-bottom:14px;}
+.results-title{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#1d4ed8;margin-bottom:14px;display:flex;align-items:center;gap:8px;}
+.results-title::after{content:'';flex:1;height:1px;background:#bfdbfe;}
+.star-btn{background:none;border:none;font-size:22px;cursor:pointer;padding:1px 2px;line-height:1;transition:transform .1s;color:#f59e0b;}
+.star-btn:hover{transform:scale(1.2);}
+.stars-wrap{display:flex;gap:2px;margin-top:4px;}
+.roi-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:12px;}
+.roi-stat{background:#f0fdf4;border:1px solid #bbf7d0;border-radius:var(--r);padding:10px;text-align:center;}
+.roi-label{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#15803d;margin-bottom:3px;}
+.roi-val{font-size:18px;font-weight:800;font-family:var(--mono);}
 .badge-pass{background:#dcfce7;color:#15803d;}
 .badge-fail{background:#fee2e2;color:#b91c1c;}
 .badge-na{background:var(--s2);color:var(--t3);}
@@ -177,8 +189,12 @@ textarea{resize:vertical;min-height:72px;line-height:1.5;}
       </div>
       <div class="field" id="w-cost">
         <label>Cost (RM) <span class="req">*</span></label>
-        <input type="number" id="f-cost" placeholder="0.00" min="0" step="0.01" oninput="calcKolMetrics()">
+        <input type="number" id="f-cost" placeholder="0.00" min="0" step="0.01" oninput="calcKolMetrics();calcResults()">
         <span class="err" id="e-cost">Please enter cost</span>
+      </div>
+      <div class="field" id="w-target">
+        <label>Sales Target (RM)</label>
+        <input type="number" id="f-target" placeholder="0.00" min="0" step="0.01" oninput="calcResults()">
       </div>
       <div class="field full" id="w-support-products">
         <label>Off Invoice / Scan Sale — Per Product</label>
@@ -195,10 +211,10 @@ textarea{resize:vertical;min-height:72px;line-height:1.5;}
         <textarea id="f-discount" placeholder="e.g. Buy 2 Free 1, 20% off, RM5 off with min spend RM30..."></textarea>
         <span class="err" id="e-discount">Please describe the promo / discount</span>
       </div>
-      <div class="field full" id="w-manager">
-        <label>Submitted By <span class="req">*</span></label>
-        <input type="text" id="f-manager" placeholder="Your full name">
-        <span class="err" id="e-manager">Please enter your name</span>
+      <div class="field full" id="w-pic">
+        <label>PIC (Promoter In Charge) <span class="req">*</span></label>
+        <input type="text" id="f-pic" placeholder="Your full name">
+        <span class="err" id="e-pic">Please enter PIC name</span>
       </div>
     </div>
   </div>
@@ -273,6 +289,58 @@ textarea{resize:vertical;min-height:72px;line-height:1.5;}
         <button type="button" class="audience-btn" id="aud-yes" onclick="setAudience('yes')">✅ 相关</button>
         <button type="button" class="audience-btn" id="aud-partial" onclick="setAudience('partial')">⚠️ 部分相关</button>
         <button type="button" class="audience-btn" id="aud-no" onclick="setAudience('no')">❌ 不相关</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Activity Results -->
+  <p class="sec-label" style="margin-top:4px;">Activity Results <span style="font-size:9px;font-weight:400;text-transform:none;letter-spacing:0;color:var(--t3);">(fill after event ends)</span></p>
+  <div class="results-card">
+    <div class="results-title">Post-Event Results</div>
+    <div class="grid2">
+      <div class="field">
+        <label>Actual Sales (RM)</label>
+        <input type="number" id="f-actual-sales" placeholder="0.00" min="0" step="0.01" oninput="calcResults()">
+      </div>
+      <div class="field">
+        <label>Footfall</label>
+        <input type="number" id="f-footfall" placeholder="e.g. 150" min="0">
+      </div>
+      <div class="field">
+        <label>Units Sold</label>
+        <input type="number" id="f-units-sold" placeholder="e.g. 80" min="0">
+      </div>
+      <div class="field">
+        <label>New Customers</label>
+        <input type="number" id="f-new-customers" placeholder="e.g. 5" min="0">
+      </div>
+      <div class="field">
+        <label>Overall Rating</label>
+        <div class="stars-wrap" id="stars-wrap">
+          <button type="button" class="star-btn" data-v="1" onclick="setRating(1)">☆</button>
+          <button type="button" class="star-btn" data-v="2" onclick="setRating(2)">☆</button>
+          <button type="button" class="star-btn" data-v="3" onclick="setRating(3)">☆</button>
+          <button type="button" class="star-btn" data-v="4" onclick="setRating(4)">☆</button>
+          <button type="button" class="star-btn" data-v="5" onclick="setRating(5)">☆</button>
+        </div>
+      </div>
+      <div class="field full">
+        <label>Result Notes / Learnings</label>
+        <textarea id="f-result-notes" placeholder="e.g. High footfall on weekends, restock needed, customer feedback..."></textarea>
+      </div>
+    </div>
+    <div class="roi-grid" id="roi-display" style="display:none;">
+      <div class="roi-stat">
+        <div class="roi-label">Achievement</div>
+        <div class="roi-val" id="roi-achieve">—</div>
+      </div>
+      <div class="roi-stat">
+        <div class="roi-label">ROI</div>
+        <div class="roi-val" id="roi-pct">—</div>
+      </div>
+      <div class="roi-stat" style="background:#f0f9ff;border-color:#bae6fd;">
+        <div class="roi-label" style="color:#0369a1;">Net Gain</div>
+        <div class="roi-val" id="roi-net">—</div>
       </div>
     </div>
   </div>
@@ -422,9 +490,9 @@ const back = document.getElementById('back-link');
 back.href = userRole === 'hq' ? 'index.html' : 'my-dashboard.html';
 back.textContent = userRole === 'hq' ? '← Hub' : '← My Dashboard';
 
-// Lock submitter name for sales role
+// Lock PIC for sales role
 if (userRole === 'member') {
-  const m = document.getElementById('f-manager');
+  const m = document.getElementById('f-pic');
   m.value = loggedUser;
   m.setAttribute('readonly', 'readonly');
   m.placeholder = '';
@@ -432,6 +500,28 @@ if (userRole === 'member') {
 
 // Recent title
 document.getElementById('rec-title').textContent = userRole === 'member' ? 'My Recent Submissions' : 'Recent Submissions (All)';
+
+// ── Member scope: derive customer list from Google Sheets ──
+const SALES_API = 'https://script.google.com/macros/s/AKfycbwxt23ZB0od7EeBSNvjurKTbkDcM7HLgrWhuoqHc3meKWmhbB0XQzfOdB-X2Pj5O_MY/exec';
+let memberCustomerNames = null; // null = no filter (HQ), Set = filtered names for member
+
+async function initMemberScope() {
+  if (userRole !== 'member') return;
+  try {
+    const res = await fetch(SALES_API);
+    const json = await res.json();
+    const upper = loggedUser.trim().toUpperCase();
+    const names = new Set(
+      (json.data || [])
+        .filter(r => (r['SALES PERSON']||'').trim().toUpperCase() === upper)
+        .map(r => (r['COMPANY']||'').trim())
+        .filter(Boolean)
+    );
+    memberCustomerNames = names;
+  } catch(e) {
+    console.warn('Could not load member customer scope:', e);
+  }
+}
 
 // Init
 const todayStr = new Date().toISOString().slice(0,10);
@@ -444,7 +534,11 @@ async function loadCustomers(keepValue){
   try{
     const {data,error}=await sb.from('customers').select('*').order('name',{ascending:true});
     if(error) throw error;
-    availableCustomers=(data||[]).map(c=>c.name);
+    let names=(data||[]).map(c=>c.name);
+    if(memberCustomerNames!==null){
+      names=names.filter(n=>memberCustomerNames.has(n.trim()));
+    }
+    availableCustomers=names;
     renderCustomerOptions(keepValue);
   }catch(e){
     console.error('Failed to load customers', e);
@@ -476,7 +570,7 @@ async function addNewCustomer(){
   }
   btn.disabled=false;btn.textContent='+ Add Customer';
 }
-loadCustomers();
+(async()=>{ await initMemberScope(); loadCustomers(); })();
 
 // ── Products list (for Off Invoice / Scan Sale, per-product detail) ──
 let availableProducts=[];
@@ -544,6 +638,46 @@ function getSupportProductsData(){
     .map(r=>({product:r.product, detail:(r.detail||'').trim()}));
 }
 
+// ── Star Rating + Results Calculator ─────────────────────
+let currentRating = 0;
+function setRating(v) {
+  currentRating = (currentRating === v) ? 0 : v;
+  renderStars();
+  calcResults();
+}
+function renderStars() {
+  document.querySelectorAll('.star-btn').forEach(b => {
+    b.textContent = parseInt(b.dataset.v) <= currentRating ? '★' : '☆';
+  });
+}
+function calcResults() {
+  const cost = parseFloat(document.getElementById('f-cost').value) || 0;
+  const actual = parseFloat(document.getElementById('f-actual-sales').value) || 0;
+  const target = parseFloat(document.getElementById('f-target').value) || 0;
+  const hasData = actual > 0 || (cost > 0 && actual > 0);
+  document.getElementById('roi-display').style.display = (actual > 0) ? 'grid' : 'none';
+  if (!actual) return;
+  const achieveEl = document.getElementById('roi-achieve');
+  if (target > 0) {
+    const pct = actual / target * 100;
+    achieveEl.textContent = pct.toFixed(0) + '%';
+    achieveEl.style.color = pct >= 100 ? '#16a34a' : '#dc2626';
+  } else {
+    achieveEl.textContent = '—';
+    achieveEl.style.color = '';
+  }
+  const roiEl = document.getElementById('roi-pct');
+  if (cost > 0) {
+    const roi = (actual - cost) / cost * 100;
+    roiEl.textContent = (roi >= 0 ? '+' : '') + roi.toFixed(0) + '%';
+    roiEl.style.color = roi >= 0 ? '#16a34a' : '#dc2626';
+  } else { roiEl.textContent = '—'; roiEl.style.color = ''; }
+  const net = actual - cost;
+  const netEl = document.getElementById('roi-net');
+  netEl.textContent = (net >= 0 ? '+' : '-') + 'RM ' + Math.abs(net).toFixed(0);
+  netEl.style.color = net >= 0 ? '#16a34a' : '#dc2626';
+}
+
 // ── Helpers ──────────────────────────────────────────────
 function diffDays(startStr, endStr){
   const a = new Date(startStr+'T00:00:00');
@@ -579,7 +713,7 @@ function validate(){
    ['f-type','e-type','w-type'],
    ['f-start','e-start','w-start'],
    ['f-discount','e-discount','w-discount'],
-   ['f-manager','e-manager','w-manager']
+   ['f-pic','e-pic','w-pic']
   ].forEach(([fid,eid,wid])=>{
     const v=document.getElementById(fid).value.toString().trim();
     document.getElementById(eid).classList.toggle('show',!v);
@@ -621,13 +755,21 @@ async function submitForm(){
   const userNote = g('f-discount').trim();
   const noteVal = isKol ? encodeKolNote(getKolData(), userNote) : userNote;
 
+  const actualSales=parseFloat(g('f-actual-sales'))||0;
+  const targetVal=parseFloat(g('f-target'))||0;
+  const footfall=parseInt(g('f-footfall'))||null;
+  const unitsSold=parseInt(g('f-units-sold'))||null;
+  const newCustomers=parseInt(g('f-new-customers'))||null;
+  const resultNotes=g('f-result-notes').trim()||null;
+
   const payload={
     date:start,
     region:'',
     promo_type:g('f-type')||'OTHER',
     promo_type_other:g('f-type')==='OTHER'?g('f-type-other').trim():'',
     store:g('f-store').trim(),
-    manager:g('f-manager').trim(),
+    pic:g('f-pic').trim(),
+    salesperson:loggedUser,
     activity_name:g('f-name').trim(),
     duration:`${days} day${days>1?'s':''}`,
     note:noteVal,
@@ -636,8 +778,13 @@ async function submitForm(){
     other_cost:cost,
     rent_cost:0,
     staff_cost:0,
-    target:0,
-    actual_sales:0,
+    target:targetVal,
+    actual_sales:actualSales,
+    footfall,
+    units_sold:unitsSold,
+    new_customers:newCustomers,
+    rating:currentRating||null,
+    result_notes:resultNotes,
     products_data:supportData,
     sampling_qty:0,
     total_target_qty:0,
@@ -672,15 +819,18 @@ function resetForm(){
   document.getElementById('success-title').textContent='Submitted successfully!';
   document.getElementById('edit-banner').style.display='none';
   editingId=null;
-  ['f-store','f-name','f-cost','f-discount','f-type','f-type-other'].forEach(id=>document.getElementById(id).value='');
+  ['f-store','f-name','f-cost','f-target','f-discount','f-type','f-type-other',
+   'f-actual-sales','f-footfall','f-units-sold','f-new-customers','f-result-notes'
+  ].forEach(id=>document.getElementById(id).value='');
   document.getElementById('f-type-other-wrap').style.display='none';
   document.getElementById('kol-card').classList.remove('show');
   document.getElementById('w-store').style.display = '';
+  document.getElementById('roi-display').style.display='none';
+  currentRating=0; renderStars();
   clearKolData();
   supportRows=[];supportRowId=0;
   renderSupportRows();
-  // 提交者名字保持锁定，HQ 清空
-  if (userRole !== 'member') document.getElementById('f-manager').value='';
+  if (userRole !== 'member') document.getElementById('f-pic').value='';
   document.getElementById('f-start').value=todayStr;
   document.getElementById('f-end').value=todayStr;
 }
@@ -702,7 +852,15 @@ function editRecord(id){
   document.getElementById('f-discount').value=decoded.note;
   if (isKolEdit) { clearKolData(); setKolData(decoded.kol); }
   document.getElementById('f-cost').value=r.total_cost||r.other_cost||0;
-  if (userRole !== 'member') document.getElementById('f-manager').value=r.manager||'';
+  document.getElementById('f-target').value=r.target||'';
+  if (userRole !== 'member') document.getElementById('f-pic').value=r.pic||r.manager||'';
+  // Results
+  document.getElementById('f-actual-sales').value=r.actual_sales||'';
+  document.getElementById('f-footfall').value=r.footfall||'';
+  document.getElementById('f-units-sold').value=r.units_sold||'';
+  document.getElementById('f-new-customers').value=r.new_customers||'';
+  document.getElementById('f-result-notes').value=r.result_notes||'';
+  currentRating=r.rating||0; renderStars(); calcResults();
 
   const start=r.date;
   const days=parseDurationDays(r.duration);
@@ -735,7 +893,7 @@ async function deleteRecord(id){
 // ── Recent Records ────────────────────────────────────────
 async function loadRecords(){
   let q = sb.from('promotions').select('*').order('created_at',{ascending:false}).limit(5);
-  if (userRole === 'member') q = q.eq('manager', loggedUser);
+  if (userRole === 'member') q = q.eq('pic', loggedUser);
   const{data}=await q;
   recentRecords=data||[];
   const wrap=document.getElementById('my-records');

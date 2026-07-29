@@ -199,6 +199,10 @@ body{background:var(--bg);color:var(--t1);font-family:var(--font);min-height:100
         <label>Category</label>
         <select id="f-category"><option value="">All Categories</option></select>
       </div>
+      <div class="filter-field" id="f-sp-wrap" style="display:none;">
+        <label>Salesperson</label>
+        <select id="f-sp"><option value="">All Salespersons</option></select>
+      </div>
       <button class="reset-btn" onclick="resetFilters()">Reset</button>
     </div>
   </div>
@@ -238,7 +242,8 @@ body{background:var(--bg);color:var(--t1);font-family:var(--font);min-height:100
         <thead>
           <tr>
             <th>Start Date</th><th>End Date</th><th>Duration</th><th>Region</th>
-            <th>Store / Customer</th><th>Category</th><th>Activity</th><th>Promoter</th>
+            <th>Store / Customer</th><th>Category</th><th>Activity</th><th>PIC</th>
+            <th>Target (RM)</th><th>Actual (RM)</th><th>Achievement</th>
           </tr>
         </thead>
         <tbody id="table-body"></tbody>
@@ -308,6 +313,27 @@ const back = document.getElementById('back-link');
 back.href = userRole === 'hq' ? 'index.html' : 'my-dashboard.html';
 back.textContent = userRole === 'hq' ? '← Hub' : '← My Dashboard';
 
+// ── Member scope: customer names from Google Sheets ────────
+const SALES_API = 'https://script.google.com/macros/s/AKfycbwxt23ZB0od7EeBSNvjurKTbkDcM7HLgrWhuoqHc3meKWmhbB0XQzfOdB-X2Pj5O_MY/exec';
+let memberCustomerNames = null; // null = HQ (no filter), Set = member's customers
+
+async function initMemberScope() {
+  if (userRole !== 'member') return;
+  try {
+    const res = await fetch(SALES_API);
+    const json = await res.json();
+    const upper = loggedUser.trim().toUpperCase();
+    memberCustomerNames = new Set(
+      (json.data || [])
+        .filter(r => (r['SALES PERSON']||'').trim().toUpperCase() === upper)
+        .map(r => (r['COMPANY']||'').trim())
+        .filter(Boolean)
+    );
+  } catch(e) {
+    console.warn('Could not load member scope:', e);
+  }
+}
+
 // ── Category styling ──────────────────────────────────────
 const CAT_COLORS = {
   PROMOTER:'#dc2626', GE:'#2563eb', ISLAND:'#16a34a', BLOCK:'#9333ea',
@@ -362,21 +388,32 @@ document.getElementById('f-month').value=new Date().toISOString().slice(0,7);
 
 async function loadData(){
   try{
+    await initMemberScope();
     const [{data,error}, custRes] = await Promise.all([
       sb.from('promotions')
-        .select('id,date,store,region,activity_name,promo_type,promo_type_other,duration,manager,note,total_cost,rent_cost,staff_cost,other_cost,target,actual_sales')
+        .select('id,date,store,region,activity_name,promo_type,promo_type_other,duration,pic,salesperson,note,total_cost,rent_cost,staff_cost,other_cost,target,actual_sales,footfall,units_sold,new_customers,rating,result_notes')
         .order('date',{ascending:true}),
       sb.from('customers').select('*').order('name',{ascending:true})
     ]);
     if(error) throw error;
-    allPromos=(data||[]).map(r=>{
+    let promos=(data||[]).map(r=>{
       const days=parseDurationDays(r.duration);
       const start=new Date(r.date+'T00:00:00');
       const end=addDays(r.date, days-1);
       return {...r, _start:start, _end:end, _days:days};
     });
-    allCustomers=(custRes && custRes.data) || [];
+    let customers=(custRes && custRes.data) || [];
+    // Filter to member's customers only
+    if(memberCustomerNames!==null){
+      const norm=s=>(s||'').trim().toLowerCase();
+      const myNorms=new Set([...memberCustomerNames].map(n=>norm(n)));
+      promos=promos.filter(r=>myNorms.has(norm(r.store)));
+      customers=customers.filter(c=>myNorms.has(norm(c.name)));
+    }
+    allPromos=promos;
+    allCustomers=customers;
     populateFilterOptions();
+    populateSpFilter();
     renderLegend();
     renderAll();
   }catch(e){
@@ -408,25 +445,39 @@ function escHtml(s){ return (s||'').toString().replace(/[&<>"']/g, m=>({'&':'&am
 function escAttr(s){ return escHtml(s); }
 
 // ── Filters ──────────────────────────────────────────────
-['f-month','f-region','f-store','f-category','f-range-start','f-range-end'].forEach(id=>{
-  document.getElementById(id).addEventListener('change', renderAll);
+['f-month','f-region','f-store','f-category','f-range-start','f-range-end','f-sp'].forEach(id=>{
+  const el=document.getElementById(id); if(el) el.addEventListener('change', renderAll);
 });
 function resetFilters(){
   document.getElementById('f-month').value=new Date().toISOString().slice(0,7);
   document.getElementById('f-region').value='';
   document.getElementById('f-store').value='';
   document.getElementById('f-category').value='';
+  const spEl=document.getElementById('f-sp'); if(spEl) spEl.value='';
   renderAll();
+}
+
+function populateSpFilter(){
+  const wrap=document.getElementById('f-sp-wrap');
+  const sel=document.getElementById('f-sp');
+  if(userRole!=='hq'){ wrap.style.display='none'; return; }
+  const sps=[...new Set(allPromos.map(r=>r.salesperson).filter(Boolean))].sort();
+  if(!sps.length){ wrap.style.display='none'; return; }
+  wrap.style.display='';
+  sel.innerHTML='<option value="">All Salespersons</option>'+sps.map(s=>`<option value="${escAttr(s)}">${escHtml(s)}</option>`).join('');
 }
 
 function getFilteredByCategory(){
   const region=document.getElementById('f-region').value;
   const store=document.getElementById('f-store').value;
   const cat=document.getElementById('f-category').value;
+  const spEl=document.getElementById('f-sp');
+  const sp=spEl?spEl.value:'';
   return allPromos.filter(r=>{
     if(region && r.region!==region) return false;
     if(store && r.store!==store) return false;
     if(cat && (r.promo_type||'OTHER').toUpperCase()!==cat) return false;
+    if(sp && r.salesperson!==sp) return false;
     return true;
   });
 }
@@ -741,6 +792,14 @@ function renderTable(data){
   empty.style.display='none';
   tbody.innerHTML=inMonth.map(r=>{
     const cat=(r.promo_type||'OTHER').toUpperCase();
+    const tgt=r.target?Number(r.target).toLocaleString('en-MY',{minimumFractionDigits:0}):'—';
+    const act=r.actual_sales?Number(r.actual_sales).toLocaleString('en-MY',{minimumFractionDigits:0}):'—';
+    let achieve='—';
+    if(r.target>0 && r.actual_sales>0){
+      const pct=(r.actual_sales/r.target*100).toFixed(0);
+      const color=r.actual_sales>=r.target?'#16a34a':'#dc2626';
+      achieve=`<span style="font-weight:700;color:${color}">${pct}%</span>`;
+    }
     return `<tr onclick="openDetail('${r.id}')" style="cursor:pointer;">
       <td>${fmtDate(r._start)}</td>
       <td>${fmtDate(r._end)}</td>
@@ -749,7 +808,10 @@ function renderTable(data){
       <td><strong>${escHtml(r.store)}</strong></td>
       <td><span class="cat-pill" style="background:${catColor(cat)}">${escHtml(catLabel(r))}</span></td>
       <td>${escHtml(r.activity_name||'—')}</td>
-      <td>${escHtml(r.manager||'—')}</td>
+      <td>${escHtml(r.pic||r.manager||'—')}</td>
+      <td style="font-family:var(--mono)">${tgt}</td>
+      <td style="font-family:var(--mono)">${act}</td>
+      <td>${achieve}</td>
     </tr>`;
   }).join('');
 }
@@ -845,7 +907,8 @@ function openDetail(id){
     ['Start', fmtDate(r._start)],
     ['End', fmtDate(r._end)],
     ['Duration', r.duration],
-    ['Promoter', r.manager],
+    ['PIC', r.pic||r.manager],
+    ['Salesperson', userRole==='hq'?r.salesperson:''],
   ];
   const basicHtml = rows.filter(([,v])=>v)
     .map(([l,v])=>`<div class="modal-row"><span class="lbl">${l}</span><span class="val">${escHtml(v)}</span></div>`)
@@ -869,7 +932,38 @@ function openDetail(id){
       ${r.total_cost ? `<div class="modal-row" style="margin-bottom:0;padding-top:6px;border-top:1px solid var(--b1)"><span class="lbl" style="font-weight:800">Total Cost</span><span class="val" style="font-weight:800;color:#dc2626">${fmtRM(r.total_cost)}</span></div>` : ''}
     </div>` : '';
 
-  document.getElementById('modal-body').innerHTML = basicHtml + discountHtml + costHtml;
+  // Activity Results
+  const hasResults = r.actual_sales||r.footfall||r.units_sold||r.new_customers||r.rating||r.result_notes;
+  const stars = r.rating ? '★'.repeat(r.rating)+'☆'.repeat(5-r.rating) : '';
+  let achieveStr='', roiStr='', netStr='';
+  if(r.actual_sales>0){
+    if(r.target>0){
+      const pct=(r.actual_sales/r.target*100).toFixed(0);
+      const col=r.actual_sales>=r.target?'#16a34a':'#dc2626';
+      achieveStr=`<div style="text-align:center;flex:1;padding:8px;background:#f9fafb;border-radius:8px;"><div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#6b7280;margin-bottom:2px;">Achievement</div><div style="font-size:18px;font-weight:800;color:${col}">${pct}%</div></div>`;
+    }
+    if(r.total_cost>0){
+      const roi=((r.actual_sales-r.total_cost)/r.total_cost*100).toFixed(0);
+      const net=r.actual_sales-r.total_cost;
+      const col=net>=0?'#16a34a':'#dc2626';
+      roiStr=`<div style="text-align:center;flex:1;padding:8px;background:#f9fafb;border-radius:8px;"><div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#6b7280;margin-bottom:2px;">ROI</div><div style="font-size:18px;font-weight:800;color:${col}">${roi>=0?'+':''}${roi}%</div></div>`;
+      netStr=`<div style="text-align:center;flex:1;padding:8px;background:#f9fafb;border-radius:8px;"><div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#6b7280;margin-bottom:2px;">Net Gain</div><div style="font-size:18px;font-weight:800;color:${col}">${net>=0?'+':'-'}RM${Math.abs(net).toFixed(0)}</div></div>`;
+    }
+  }
+  const resultsHtml = hasResults ? `
+    <div style="margin-top:12px;padding:12px 14px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;">
+      <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#1d4ed8;margin-bottom:8px;">📊 Activity Results</div>
+      ${r.target ? `<div class="modal-row" style="margin-bottom:4px"><span class="lbl">Target</span><span class="val">${fmtRM(r.target)}</span></div>` : ''}
+      ${r.actual_sales ? `<div class="modal-row" style="margin-bottom:4px"><span class="lbl">Actual Sales</span><span class="val" style="font-weight:700">${fmtRM(r.actual_sales)}</span></div>` : ''}
+      ${achieveStr||roiStr||netStr ? `<div style="display:flex;gap:6px;margin:8px 0;">${achieveStr}${roiStr}${netStr}</div>` : ''}
+      ${r.footfall ? `<div class="modal-row" style="margin-bottom:4px"><span class="lbl">Footfall</span><span class="val">${r.footfall}</span></div>` : ''}
+      ${r.units_sold ? `<div class="modal-row" style="margin-bottom:4px"><span class="lbl">Units Sold</span><span class="val">${r.units_sold}</span></div>` : ''}
+      ${r.new_customers ? `<div class="modal-row" style="margin-bottom:4px"><span class="lbl">New Customers</span><span class="val">${r.new_customers}</span></div>` : ''}
+      ${r.rating ? `<div class="modal-row" style="margin-bottom:4px"><span class="lbl">Rating</span><span class="val" style="color:#f59e0b;letter-spacing:2px;">${stars}</span></div>` : ''}
+      ${r.result_notes ? `<div style="margin-top:6px;font-size:12px;color:#374151;line-height:1.5;white-space:pre-wrap;">${escHtml(r.result_notes)}</div>` : ''}
+    </div>` : '';
+
+  document.getElementById('modal-body').innerHTML = basicHtml + discountHtml + costHtml + resultsHtml;
   document.getElementById('detail-modal').style.display = 'flex';
 }
 function closeModal(){
