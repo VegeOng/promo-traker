@@ -563,6 +563,8 @@ async function addNewCustomer(){
   try{
     const {error}=await sb.from('customers').insert({name});
     if(error) throw error;
+    // If member scope is active, register new customer so it passes the filter
+    if(memberCustomerNames!==null) memberCustomerNames.add(name.trim());
     await loadCustomers(name);
     input.value='';
   }catch(e){
