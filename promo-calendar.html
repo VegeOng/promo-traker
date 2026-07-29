@@ -461,9 +461,9 @@ function populateSpFilter(){
   const wrap=document.getElementById('f-sp-wrap');
   const sel=document.getElementById('f-sp');
   if(userRole!=='hq'){ wrap.style.display='none'; return; }
-  const sps=[...new Set(allPromos.map(r=>r.salesperson).filter(Boolean))].sort();
-  if(!sps.length){ wrap.style.display='none'; return; }
   wrap.style.display='';
+  // salesperson field for new records; fall back to pic for legacy records
+  const sps=[...new Set(allPromos.map(r=>r.salesperson||r.pic).filter(Boolean))].sort();
   sel.innerHTML='<option value="">All Salespersons</option>'+sps.map(s=>`<option value="${escAttr(s)}">${escHtml(s)}</option>`).join('');
 }
 
@@ -477,7 +477,7 @@ function getFilteredByCategory(){
     if(region && r.region!==region) return false;
     if(store && r.store!==store) return false;
     if(cat && (r.promo_type||'OTHER').toUpperCase()!==cat) return false;
-    if(sp && r.salesperson!==sp) return false;
+    if(sp && (r.salesperson||r.pic)!==sp) return false;
     return true;
   });
 }
