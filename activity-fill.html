@@ -1085,12 +1085,18 @@ async function loadSummary(activityId, activityName) {
     });
 
     // Units sold & revenue per SKU
-    const soldMap = {}, skuRevMap = {};
+    const soldMap = {}, skuRevMap = {}, giftMap = {}, sampleMap = {};
     salesArr.forEach(s => {
       (s.items || []).forEach(i => {
         if (!i.bundle) {
-          soldMap[i.name] = (soldMap[i.name] || 0) + (i.qty || 0);
-          skuRevMap[i.name] = (skuRevMap[i.name] || 0) + parseFloat(i.price || 0) * (i.qty || 1);
+          if (i.gift) {
+            giftMap[i.name] = (giftMap[i.name] || 0) + (i.qty || 0);
+          } else if (i.sample) {
+            sampleMap[i.name] = (sampleMap[i.name] || 0) + (i.qty || 0);
+          } else {
+            soldMap[i.name] = (soldMap[i.name] || 0) + (i.qty || 0);
+            skuRevMap[i.name] = (skuRevMap[i.name] || 0) + parseFloat(i.price || 0) * (i.qty || 1);
+          }
         } else {
           const totalUnits = (i.contents || []).reduce((a, c) => a + (c.qty || 0) * (i.qty || 1), 0);
           (i.contents || []).forEach(c => {
@@ -1146,10 +1152,14 @@ async function loadSummary(activityId, activityName) {
       const loadedQty = loaded ? parseFloat(loaded.loaded_qty) : null;
       const sold = soldMap[name] || 0;
       const remaining = loadedQty !== null ? loadedQty - sold : null;
+      const gift = giftMap[name] || 0;
+      const sample = sampleMap[name] || 0;
       return `<tr>
         <td style="padding:7px 8px;font-size:13px;border-bottom:1px solid var(--border)">${escHtml(name)}</td>
         <td style="padding:7px 8px;font-size:13px;border-bottom:1px solid var(--border);text-align:center">${loadedQty !== null ? loadedQty : '—'}</td>
         <td style="padding:7px 8px;font-size:13px;border-bottom:1px solid var(--border);text-align:center;font-weight:700">${sold || 0}</td>
+        <td style="padding:7px 8px;font-size:13px;border-bottom:1px solid var(--border);text-align:center;color:#166534">${gift || '—'}</td>
+        <td style="padding:7px 8px;font-size:13px;border-bottom:1px solid var(--border);text-align:center;color:#1e40af">${sample || '—'}</td>
         <td style="padding:7px 8px;font-size:13px;border-bottom:1px solid var(--border);text-align:center;color:${remaining !== null && remaining < 0 ? 'var(--red)' : 'inherit'}">${remaining !== null ? remaining : '—'}</td>
         <td style="padding:7px 8px;font-size:13px;border-bottom:1px solid var(--border);text-align:right;color:#166534;font-weight:700">${skuRevMap[name] ? fmtRM(skuRevMap[name]) : '—'}</td>
       </tr>`;
@@ -1262,6 +1272,8 @@ async function loadSummary(activityId, activityName) {
             <th style="padding:6px 8px;text-align:left;border-bottom:2px solid var(--border)">SKU</th>
             <th style="padding:6px 8px;text-align:center;border-bottom:2px solid var(--border)">Loaded</th>
             <th style="padding:6px 8px;text-align:center;border-bottom:2px solid var(--border)">Sold</th>
+            <th style="padding:6px 8px;text-align:center;border-bottom:2px solid var(--border)">🎁 Gift</th>
+            <th style="padding:6px 8px;text-align:center;border-bottom:2px solid var(--border)">🧪 Sample</th>
             <th style="padding:6px 8px;text-align:center;border-bottom:2px solid var(--border)">Remaining</th>
             <th style="padding:6px 8px;text-align:right;border-bottom:2px solid var(--border)">Revenue</th>
           </tr></thead>
