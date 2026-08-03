@@ -22,6 +22,10 @@
       "schedule": "0 23 * * 0-4"
     },
     {
+      "path": "/api/daily-ecom-report",
+      "schedule": "0 0 * * *"
+    },
+    {
       "path": "/api/weekly-ecom-report",
       "schedule": "0 23 * * 0"
     },
