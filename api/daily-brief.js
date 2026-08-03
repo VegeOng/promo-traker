@@ -12,7 +12,8 @@ const ANTHROPIC_KEY = process.env.ANTHROPIC_API_KEY;
 module.exports = async function handler(req, res) {
   // 安全验证：只接受 Vercel Cron 或带正确 secret 的请求
   const authHeader = req.headers.authorization;
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+  const querySecret = req.query?.secret;
+  if (authHeader !== `Bearer ${process.env.CRON_SECRET}` && querySecret !== process.env.CRON_SECRET) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
 
