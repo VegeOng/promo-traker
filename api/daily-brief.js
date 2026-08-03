@@ -6,6 +6,7 @@ const SUPABASE_URL = 'https://wjhgezvrxlhpexocfsea.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndqaGdlenZyeGxocGV4b2Nmc2VhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg1MDU4NzgsImV4cCI6MjA5NDA4MTg3OH0.jENcrgEDYDlSRUCqve-T6rxYRJfz-dnZQHnXpPLJ_RE';
 const TELEGRAM_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID;
+const TELEGRAM_CHAT_ID_2 = process.env.TELEGRAM_CHAT_ID_2;
 const ANTHROPIC_KEY = process.env.ANTHROPIC_API_KEY;
 
 module.exports = async function handler(req, res) {
@@ -240,15 +241,18 @@ async function sendToTelegram(text) {
     remaining = remaining.slice(4000);
   }
 
+  const recipients = [TELEGRAM_CHAT_ID, TELEGRAM_CHAT_ID_2].filter(Boolean);
   for (const chunk of chunks) {
-    await fetch(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        chat_id: TELEGRAM_CHAT_ID,
-        text: chunk,
-        parse_mode: 'Markdown',
-      }),
-    });
+    for (const chatId of recipients) {
+      await fetch(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          chat_id: chatId,
+          text: chunk,
+          parse_mode: 'Markdown',
+        }),
+      });
+    }
   }
 }
