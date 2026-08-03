@@ -337,12 +337,14 @@ async function loadAll(){
     if(!allRows.length){ throw new Error('No IB records found in sheet'); }
     populateMonthSelect();
     populateYearSelect();
+    // Reveal #content BEFORE rendering: Chart.js measures the canvas at creation
+    // time, so charts built while #content is display:none draw empty bars.
+    document.getElementById('loading').style.display='none';
+    document.getElementById('content').style.display='block';
     // Default to the current-YEAR view: international orders are sparse (a few per
     // month), so landing on the current month often shows an empty page. setMode
     // flips the tab/controls and triggers the initial render.
     setMode('year');
-    document.getElementById('loading').style.display='none';
-    document.getElementById('content').style.display='block';
   }catch(e){
     console.error(e);
     document.getElementById('loading').style.display='none';
