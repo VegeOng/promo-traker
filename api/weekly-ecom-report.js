@@ -5,6 +5,7 @@
 const ECOM_API = 'https://script.google.com/macros/s/AKfycbyqZ8w-aNLDSjFvySTXL_zVYQty0U7-HS-6Nw2EWz5ulqexPNoc1-q_V3WL0h1EEDXz/exec';
 const TELEGRAM_TOKEN = process.env.DIANDIAN_TELEGRAM_BOT_TOKEN;
 const TELEGRAM_CHAT_ID = process.env.DIANDIAN_TELEGRAM_CHAT_ID;
+const TELEGRAM_CHAT_ID_2 = process.env.TELEGRAM_CHAT_ID_2;
 const ANTHROPIC_KEY = process.env.ANTHROPIC_API_KEY;
 
 const SHEET_MONTH_NAMES = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
@@ -181,15 +182,19 @@ async function sendToTelegram(text) {
     remaining = remaining.slice(4000);
   }
 
-  for (const chunk of chunks) {
-    await fetch(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        chat_id: TELEGRAM_CHAT_ID,
-        text: chunk,
-        parse_mode: 'Markdown',
-      }),
-    });
+  const recipients = [
+    { chatId: TELEGRAM_CHAT_ID, name: 'vege' },
+    { chatId: TELEGRAM_CHAT_ID_2, name: 'steve' },
+  ].filter(r => r.chatId);
+
+  for (const { chatId, name } of recipients) {
+    for (const chunk of chunks) {
+      const personalizedChunk = chunk.replace(/^vege，/, `${name}，`);
+      await fetch(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ chat_id: chatId, text: personalizedChunk, parse_mode: 'Markdown' }),
+      });
+    }
   }
 }

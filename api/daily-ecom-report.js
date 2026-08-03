@@ -163,13 +163,18 @@ async function sendToTelegram(text) {
     chunks.push(remaining.slice(0, 4000));
     remaining = remaining.slice(4000);
   }
-  const recipients = [TELEGRAM_CHAT_ID, TELEGRAM_CHAT_ID_2].filter(Boolean);
-  for (const chunk of chunks) {
-    for (const chatId of recipients) {
+  const recipients = [
+    { chatId: TELEGRAM_CHAT_ID, name: 'vege' },
+    { chatId: TELEGRAM_CHAT_ID_2, name: 'steve' },
+  ].filter(r => r.chatId);
+
+  for (const { chatId, name } of recipients) {
+    for (const chunk of chunks) {
+      const personalizedChunk = chunk.replace(/^vege，/, `${name}，`);
       const tgRes = await fetch(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ chat_id: chatId, text: chunk, parse_mode: 'Markdown' }),
+        body: JSON.stringify({ chat_id: chatId, text: personalizedChunk, parse_mode: 'Markdown' }),
       });
       const tgJson = await tgRes.json();
       console.log(`Telegram chat_id=${chatId} ok=${tgJson.ok} desc=${tgJson.description}`);
