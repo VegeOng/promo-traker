@@ -245,7 +245,7 @@ async function sendToTelegram(text) {
   const recipients = [TELEGRAM_CHAT_ID, TELEGRAM_CHAT_ID_2].filter(Boolean);
   for (const chunk of chunks) {
     for (const chatId of recipients) {
-      await fetch(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`, {
+      const tgRes = await fetch(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -254,6 +254,8 @@ async function sendToTelegram(text) {
           parse_mode: 'Markdown',
         }),
       });
+      const tgJson = await tgRes.json();
+      console.log(`Telegram chat_id=${chatId} ok=${tgJson.ok} desc=${tgJson.description}`);
     }
   }
 }
