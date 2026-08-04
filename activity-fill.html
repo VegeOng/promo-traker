@@ -1154,6 +1154,7 @@ async function loadSummary(activityId, activityName) {
       const remaining = loadedQty !== null ? loadedQty - sold : null;
       const gift = giftMap[name] || 0;
       const sample = sampleMap[name] || 0;
+      const remaining = loadedQty !== null ? loadedQty - sold - gift - sample : null;
       return `<tr>
         <td style="padding:7px 8px;font-size:13px;border-bottom:1px solid var(--border)">${escHtml(name)}</td>
         <td style="padding:7px 8px;font-size:13px;border-bottom:1px solid var(--border);text-align:center">${loadedQty !== null ? loadedQty : '—'}</td>
