@@ -708,7 +708,7 @@ async function checkout() {
   const sale = {
     event_name: eventInfo.name || null,
     activity_id: eventInfo.activity_id || null,
-    items: cart.map(c => ({ name: c.name, qty: c.qty, price: c.price, bundle: c.bundle, items: c.items || null, contents: c.contents || null })),
+    items: cart.map(c => ({ name: c.name, qty: c.qty, price: c.price, bundle: c.bundle, gift: c.gift || false, sample: c.sample || false, items: c.items || null, contents: c.contents || null })),
     total: cartTotal(),
     discount: cartDiscount || 0,
     payment_method: payMethod,
