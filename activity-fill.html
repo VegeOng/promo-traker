@@ -1068,10 +1068,13 @@ async function loadSummary(activityId, activityName) {
   box.innerHTML = '<div class="loading-text">Loading summary…</div>';
 
   try {
-    const [sales, stockRows] = await Promise.all([
+    const [sales, stockRows, skuCosts] = await Promise.all([
       sdb(`pos_sales?activity_id=eq.${encodeURIComponent(activityId)}&order=created_at.asc`),
-      sdb(`pos_stock?event_name=eq.${encodeURIComponent(activityName)}`)
+      sdb(`pos_stock?event_name=eq.${encodeURIComponent(activityName)}`),
+      sdb(`sample_skus?select=sku_name,cost_price`)
     ]);
+    const costMap = {};
+    (skuCosts || []).forEach(r => { costMap[r.sku_name] = parseFloat(r.cost_price || 0); });
 
     const salesArr = sales || [];
     const stockArr = stockRows || [];
@@ -1147,6 +1150,7 @@ async function loadSummary(activityId, activityName) {
 
     // Stock table
     const skuNames = [...new Set([...stockArr.map(r => r.sku_name), ...Object.keys(soldMap)])].sort();
+    let totalProfit = 0, hasCost = false;
     const stockRows2 = skuNames.map(name => {
       const loaded = stockArr.find(r => r.sku_name === name);
       const loadedQty = loaded ? parseFloat(loaded.loaded_qty) : null;
@@ -1154,6 +1158,11 @@ async function loadSummary(activityId, activityName) {
       const gift = giftMap[name] || 0;
       const sample = sampleMap[name] || 0;
       const remaining = loadedQty !== null ? loadedQty - sold - gift - sample : null;
+      const rev = skuRevMap[name] || 0;
+      const cost = costMap[name];
+      const profit = cost != null ? rev - (sold * cost) : null;
+      if (profit !== null) { totalProfit += profit; hasCost = true; }
+      const profitColor = profit !== null && profit < 0 ? 'var(--red)' : '#7c3aed';
       return `<tr>
         <td style="padding:7px 8px;font-size:13px;border-bottom:1px solid var(--border)">${escHtml(name)}</td>
         <td style="padding:7px 8px;font-size:13px;border-bottom:1px solid var(--border);text-align:center">${loadedQty !== null ? loadedQty : '—'}</td>
@@ -1161,7 +1170,8 @@ async function loadSummary(activityId, activityName) {
         <td style="padding:7px 8px;font-size:13px;border-bottom:1px solid var(--border);text-align:center;color:#166534">${gift || '—'}</td>
         <td style="padding:7px 8px;font-size:13px;border-bottom:1px solid var(--border);text-align:center;color:#1e40af">${sample || '—'}</td>
         <td style="padding:7px 8px;font-size:13px;border-bottom:1px solid var(--border);text-align:center;color:${remaining !== null && remaining < 0 ? 'var(--red)' : 'inherit'}">${remaining !== null ? remaining : '—'}</td>
-        <td style="padding:7px 8px;font-size:13px;border-bottom:1px solid var(--border);text-align:right;color:#166534;font-weight:700">${skuRevMap[name] ? fmtRM(skuRevMap[name]) : '—'}</td>
+        <td style="padding:7px 8px;font-size:13px;border-bottom:1px solid var(--border);text-align:right;color:#166534;font-weight:700">${rev ? fmtRM(rev) : '—'}</td>
+        <td style="padding:7px 8px;font-size:13px;border-bottom:1px solid var(--border);text-align:right;color:${profitColor};font-weight:700">${profit !== null ? fmtRM(profit) : '—'}</td>
       </tr>`;
     }).join('');
 
@@ -1215,11 +1225,18 @@ async function loadSummary(activityId, activityName) {
         📄 Download PDF / Share to Finance
       </button>
 
-      <!-- Revenue summary -->
-      <div style="background:var(--green-light);border:1.5px solid var(--green);border-radius:var(--radius);padding:18px;margin-bottom:12px;text-align:center">
-        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--green);margin-bottom:4px">Total Revenue</div>
-        <div style="font-size:32px;font-weight:900;color:var(--green)">${fmtRM(totalRev)}</div>
-        <div style="font-size:12px;color:var(--muted);margin-top:4px">${salesArr.length} transaction${salesArr.length!==1?'s':''}</div>
+      <!-- Revenue + Profit summary -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
+        <div style="background:var(--green-light);border:1.5px solid var(--green);border-radius:var(--radius);padding:16px;text-align:center">
+          <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--green);margin-bottom:4px">Total Revenue</div>
+          <div style="font-size:24px;font-weight:900;color:var(--green)">${fmtRM(totalRev)}</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:4px">${salesArr.length} transaction${salesArr.length!==1?'s':''}</div>
+        </div>
+        <div style="background:#f5f3ff;border:1.5px solid #7c3aed;border-radius:var(--radius);padding:16px;text-align:center">
+          <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#7c3aed;margin-bottom:4px">💰 Total Profit</div>
+          <div style="font-size:24px;font-weight:900;color:${hasCost?(totalProfit<0?'var(--red)':'#7c3aed'):'var(--muted)'}">${hasCost?fmtRM(totalProfit):'—'}</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:4px">${hasCost?(totalRev>0?Math.round(totalProfit/totalRev*100)+'% margin':'—'):'No cost data'}</div>
+        </div>
       </div>
 
       <!-- Payment breakdown — FINANCE KEY VIEW -->
@@ -1276,6 +1293,7 @@ async function loadSummary(activityId, activityName) {
             <th style="padding:6px 8px;text-align:center;border-bottom:2px solid var(--border)">🧪 Sample</th>
             <th style="padding:6px 8px;text-align:center;border-bottom:2px solid var(--border)">Remaining</th>
             <th style="padding:6px 8px;text-align:right;border-bottom:2px solid var(--border)">Revenue</th>
+            <th style="padding:6px 8px;text-align:right;border-bottom:2px solid var(--border)">💰 Profit</th>
           </tr></thead>
           <tbody>${stockRows2}</tbody>
         </table>
