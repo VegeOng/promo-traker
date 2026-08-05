@@ -410,7 +410,7 @@ async function loadActivitiesDropdown() {
     const acts = await db('activities?select=activity_id,name&order=created_at.desc&limit=30');
     _allActivities = acts || [];
     const opts = _allActivities.map(a =>
-      `<option value="${esc(a.activity_id)}" data-name="${esc(a.name)}"${a.activity_id===eventInfo.activity_id?' selected':''}>${a.name}</option>`).join('');
+      `<option value="${esc(a.name)}" data-name="${esc(a.name)}"${a.activity_id===eventInfo.activity_id?' selected':''}>${a.name}</option>`).join('');
     // POS event selector
     document.getElementById('su-activity').innerHTML = '<option value="">— Select Activity —</option>' + opts;
     // Stock activity selector — default to current event
