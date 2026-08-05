@@ -1151,7 +1151,6 @@ async function loadSummary(activityId, activityName) {
       const loaded = stockArr.find(r => r.sku_name === name);
       const loadedQty = loaded ? parseFloat(loaded.loaded_qty) : null;
       const sold = soldMap[name] || 0;
-      const remaining = loadedQty !== null ? loadedQty - sold : null;
       const gift = giftMap[name] || 0;
       const sample = sampleMap[name] || 0;
       const remaining = loadedQty !== null ? loadedQty - sold - gift - sample : null;
