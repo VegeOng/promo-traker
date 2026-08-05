@@ -126,7 +126,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   </div>
 </div>
 
-<div class="offline-badge" id="offline-badge">⏳ <span id="offline-n">0</span> pending sync</div>
+<div class="offline-badge" id="offline-badge" onclick="syncOfflineManual()" style="cursor:pointer">⏳ <span id="offline-n">0</span> pending sync — tap to retry</div>
 
 <div class="tabs">
   <div class="tab active" id="tab-sell" onclick="showPage('sell')">🛒 Sell</div>
@@ -765,6 +765,20 @@ async function syncOffline() {
   localStorage.setItem('mv_pos_queue', JSON.stringify(remaining));
   updateOfflineBadge();
   if (q.length > remaining.length) toast(`✓ Synced ${q.length - remaining.length} offline sale(s)`);
+}
+
+async function syncOfflineManual() {
+  const q = JSON.parse(localStorage.getItem('mv_pos_queue') || '[]');
+  if (!q.length) { toast('No pending sales'); return; }
+  toast('Syncing ' + q.length + ' pending sale(s)…');
+  const remaining = [];
+  for (const sale of q) {
+    try { await db('pos_sales', { method: 'POST', body: JSON.stringify(sale) }); }
+    catch(e) { remaining.push(sale); toast('⚠️ Sync error: ' + e.message, true); break; }
+  }
+  localStorage.setItem('mv_pos_queue', JSON.stringify(remaining));
+  updateOfflineBadge();
+  if (q.length > remaining.length) toast(`✓ Synced ${q.length - remaining.length} sale(s)`);
 }
 setInterval(syncOffline, 60000);
 
