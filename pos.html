@@ -409,13 +409,15 @@ async function loadActivitiesDropdown() {
   try {
     const acts = await db('activities?select=activity_id,name&order=created_at.desc&limit=30');
     _allActivities = acts || [];
-    const opts = _allActivities.map(a =>
-      `<option value="${esc(a.name)}" data-name="${esc(a.name)}"${a.activity_id===eventInfo.activity_id?' selected':''}>${a.name}</option>`).join('');
-    // POS event selector
-    document.getElementById('su-activity').innerHTML = '<option value="">— Select Activity —</option>' + opts;
-    // Stock activity selector — default to current event
+    // POS event selector — value = activity_id (UUID) for DB writes
+    const optsById = _allActivities.map(a =>
+      `<option value="${esc(a.activity_id)}" data-name="${esc(a.name)}"${a.activity_id===eventInfo.activity_id?' selected':''}>${a.name}</option>`).join('');
+    document.getElementById('su-activity').innerHTML = '<option value="">— Select Activity —</option>' + optsById;
+    // Stock activity selector — value = name (used as event_name in pos_stock)
+    const optsByName = _allActivities.map(a =>
+      `<option value="${esc(a.name)}" data-name="${esc(a.name)}"${a.name===eventInfo.name?' selected':''}>${a.name}</option>`).join('');
     const stockSel = document.getElementById('su-stock-activity');
-    stockSel.innerHTML = '<option value="">— Select Activity —</option>' + opts;
+    stockSel.innerHTML = '<option value="">— Select Activity —</option>' + optsByName;
     if (eventInfo.name) {
       stockSel.value = eventInfo.name;
       stockEventName = eventInfo.name;
@@ -768,8 +770,17 @@ async function syncOffline() {
 }
 
 async function syncOfflineManual() {
-  const q = JSON.parse(localStorage.getItem('mv_pos_queue') || '[]');
+  let q = JSON.parse(localStorage.getItem('mv_pos_queue') || '[]');
   if (!q.length) { toast('No pending sales'); return; }
+  // Fix any queued sales where activity_id is a name instead of UUID
+  if (_allActivities && _allActivities.length) {
+    q = q.map(sale => {
+      const byName = _allActivities.find(a => a.name === sale.activity_id);
+      if (byName) return { ...sale, activity_id: byName.activity_id };
+      return sale;
+    });
+    localStorage.setItem('mv_pos_queue', JSON.stringify(q));
+  }
   toast('Syncing ' + q.length + ' pending sale(s)…');
   const remaining = [];
   for (const sale of q) {
