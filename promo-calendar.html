@@ -306,6 +306,7 @@ function lsGet(key) {
 }
 const loggedUser = lsGet('userName');
 const userRole = lsGet('userRole');
+const memberRole = lsGet('memberRole');
 if (!loggedUser) { location.href = 'index.html'; }
 
 // Back link
@@ -318,7 +319,8 @@ const SALES_API = 'https://script.google.com/macros/s/AKfycbwxt23ZB0od7EeBSNvjur
 let memberCustomerNames = null; // null = HQ (no filter), Set = member's customers
 
 async function initMemberScope() {
-  if (userRole !== 'member') return;
+  if (userRole !== 'member') return;          // HQ: no filter (see all)
+  if (memberRole === 'marketing') return;     // Marketing members: no filter (see full calendar)
   try {
     const res = await fetch(SALES_API);
     const json = await res.json();
@@ -403,7 +405,7 @@ async function loadData(){
       return {...r, _start:start, _end:end, _days:days};
     });
     let customers=(custRes && custRes.data) || [];
-    // Filter to member's customers only
+    // Filter to member's customers only (skipped for HQ and marketing → null = see all)
     if(memberCustomerNames!==null){
       const norm=s=>(s||'').trim().toLowerCase();
       const myNorms=new Set([...memberCustomerNames].map(n=>norm(n)));
