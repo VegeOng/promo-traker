@@ -388,6 +388,8 @@
 
 <div class="main">
 
+  <div id="noDataBanner" style="display:none;background:#fffbeb;border:1px solid #fde68a;color:#92400e;border-radius:12px;padding:14px 18px;margin-bottom:1.25rem;font-size:0.9rem;line-height:1.5;"></div>
+
   <!-- OVERVIEW TAB -->
   <div class="tab-content active" id="tab-overview">
     <div class="kpi-grid" id="kpiGrid">
@@ -719,7 +721,41 @@ function applyFilters() {
   renderAll();
 }
 
+// Show a clear message when the current filter returns no orders (e.g. future dates)
+function updateNoDataBanner() {
+  const el = document.getElementById('noDataBanner');
+  if (!el) return;
+  if (filteredData.length > 0) { el.style.display = 'none'; return; }
+
+  const now = new Date();
+  const curYM = now.getFullYear() * 100 + (now.getMonth() + 1);
+  const todayYmd = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0') + '-' + String(now.getDate()).padStart(2,'0');
+  let periodTxt = '', future = false;
+
+  if (currentMode === 'month') {
+    const sel = document.getElementById('month-select');
+    periodTxt = sel.selectedOptions[0] ? sel.selectedOptions[0].textContent : sel.value;
+    const [y, m] = (sel.value || '').split('-').map(Number);
+    if (y && m) future = (y * 100 + m) > curYM;
+  } else if (currentMode === 'year') {
+    const y = document.getElementById('year-select').value;
+    periodTxt = 'year ' + y;
+    future = Number(y) > now.getFullYear();
+  } else {
+    const s = document.getElementById('range-start').value, e = document.getElementById('range-end').value;
+    periodTxt = (s || '?') + ' → ' + (e || '?');
+    if (s && s > todayYmd) future = true;
+  }
+
+  el.innerHTML = `⚠️ <strong>No orders found for ${periodTxt}.</strong> ` +
+    (future
+      ? 'These dates are in the <strong>future</strong> — did you pick the wrong year? (e.g. 2026 instead of 2025)'
+      : 'Try another period, or double-check the year in the date picker.');
+  el.style.display = 'block';
+}
+
 function renderAll() {
+  updateNoDataBanner();
   renderKPI();
   renderCharts();
   renderOverviewCustomers();
