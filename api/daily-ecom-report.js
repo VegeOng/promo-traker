@@ -38,8 +38,9 @@ async function fetchTwoDays() {
   const myt = new Date(now.getTime() + 8 * 60 * 60 * 1000);
   const todayMid = new Date(Date.UTC(myt.getUTCFullYear(), myt.getUTCMonth(), myt.getUTCDate()));
   const yesterdayMid = new Date(todayMid.getTime() - 86400000);
+  const twoDaysAgoMid = new Date(todayMid.getTime() - 2 * 86400000);
 
-  const sheetNames = new Set([sheetNameOf(todayMid), sheetNameOf(yesterdayMid)]);
+  const sheetNames = new Set([sheetNameOf(yesterdayMid), sheetNameOf(twoDaysAgoMid)]);
 
   const allRecords = [];
   for (const sheetName of sheetNames) {
@@ -61,8 +62,8 @@ async function fetchTwoDays() {
   const matchDay = (rec, day) => rec._day.getTime() === day.getTime();
 
   return {
-    today: summarize(parsed.filter(r => matchDay(r, todayMid)), todayMid),
-    yesterday: summarize(parsed.filter(r => matchDay(r, yesterdayMid)), yesterdayMid),
+    today: summarize(parsed.filter(r => matchDay(r, yesterdayMid)), yesterdayMid),
+    yesterday: summarize(parsed.filter(r => matchDay(r, twoDaysAgoMid)), twoDaysAgoMid),
   };
 }
 
@@ -103,22 +104,22 @@ async function generateBrief(today, yesterday) {
   const pct = (a, b) => b > 0 ? (((a - b) / b) * 100).toFixed(1) + '%' : 'N/A';
 
   const dataContext = `
-昨天（${yesterday.date}）电商数据${yesterday.hasData ? '' : '（无数据）'}：
-- Shopee：销售 RM ${yesterday.totals.shopee.sales.toFixed(2)}，广告 RM ${yesterday.totals.shopee.ads.toFixed(2)}
-- Lazada：销售 RM ${yesterday.totals.lazada.sales.toFixed(2)}，广告 RM ${yesterday.totals.lazada.ads.toFixed(2)}
-- TikTok：销售 RM ${yesterday.totals.tiktok.sales.toFixed(2)}，广告 RM ${yesterday.totals.tiktok.ads.toFixed(2)}
-- Website：销售 RM ${yesterday.totals.website.sales.toFixed(2)}
-- Other：销售 RM ${yesterday.totals.other.sales.toFixed(2)}
-- 总销售额：RM ${yesterday.totalSales.toFixed(2)}
-- 总广告花费：RM ${yesterday.totalAds.toFixed(2)}
-- ROAS：${yesterday.roas.toFixed(2)}x
+昨天（${today.date}）电商数据${today.hasData ? '' : '（无数据）'}：
+- Shopee：销售 RM ${today.totals.shopee.sales.toFixed(2)}，广告 RM ${today.totals.shopee.ads.toFixed(2)}
+- Lazada：销售 RM ${today.totals.lazada.sales.toFixed(2)}，广告 RM ${today.totals.lazada.ads.toFixed(2)}
+- TikTok：销售 RM ${today.totals.tiktok.sales.toFixed(2)}，广告 RM ${today.totals.tiktok.ads.toFixed(2)}
+- Website：销售 RM ${today.totals.website.sales.toFixed(2)}
+- Other：销售 RM ${today.totals.other.sales.toFixed(2)}
+- 总销售额：RM ${today.totalSales.toFixed(2)}
+- 总广告花费：RM ${today.totalAds.toFixed(2)}
+- ROAS：${today.roas.toFixed(2)}x
 
-前天（${today.date}）对比${today.hasData ? '' : '（无数据）'}：
-- 总销售额：RM ${today.totalSales.toFixed(2)}（环比 ${pct(yesterday.totalSales, today.totalSales)}）
-- Shopee 环比：${pct(yesterday.totals.shopee.sales, today.totals.shopee.sales)}
-- Lazada 环比：${pct(yesterday.totals.lazada.sales, today.totals.lazada.sales)}
-- TikTok 环比：${pct(yesterday.totals.tiktok.sales, today.totals.tiktok.sales)}
-- ROAS 环比：${pct(yesterday.roas, today.roas)}
+前天（${yesterday.date}）对比${yesterday.hasData ? '' : '（无数据）'}：
+- 总销售额：RM ${yesterday.totalSales.toFixed(2)}（环比 ${pct(today.totalSales, yesterday.totalSales)}）
+- Shopee 环比：${pct(today.totals.shopee.sales, yesterday.totals.shopee.sales)}
+- Lazada 环比：${pct(today.totals.lazada.sales, yesterday.totals.lazada.sales)}
+- TikTok 环比：${pct(today.totals.tiktok.sales, yesterday.totals.tiktok.sales)}
+- ROAS 环比：${pct(today.roas, yesterday.roas)}
 `;
 
   const systemPrompt = `你是电电，MamaVege 的电商总监。每天早上为 vege（老板）产出简洁的电商日报。
