@@ -10,8 +10,8 @@ const ANTHROPIC_KEY = process.env.ANTHROPIC_API_KEY;
 
 const SHEET_MONTH_NAMES = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 function sheetNameOf(date) {
-  const y = date.getFullYear() % 100;
-  return SHEET_MONTH_NAMES[date.getMonth()] + ' ' + (y < 10 ? '0' + y : y);
+  const y = date.getUTCFullYear() % 100;
+  return SHEET_MONTH_NAMES[date.getUTCMonth()] + ' ' + (y < 10 ? '0' + y : y);
 }
 
 module.exports = async function handler(req, res) {
@@ -22,8 +22,8 @@ module.exports = async function handler(req, res) {
   }
 
   try {
-    const { today, yesterday } = await fetchTwoDays();
-    const brief = await generateBrief(today, yesterday);
+    const { yesterday, mtd } = await fetchData();
+    const brief = await generateBrief(yesterday, mtd);
     await sendToTelegram(brief);
     return res.status(200).json({ message: '电电日报已发送 ✅' });
   } catch (error) {
@@ -33,14 +33,17 @@ module.exports = async function handler(req, res) {
   }
 };
 
-async function fetchTwoDays() {
+async function fetchData() {
   const now = new Date();
   const myt = new Date(now.getTime() + 8 * 60 * 60 * 1000);
   const todayMid = new Date(Date.UTC(myt.getUTCFullYear(), myt.getUTCMonth(), myt.getUTCDate()));
   const yesterdayMid = new Date(todayMid.getTime() - 86400000);
-  const twoDaysAgoMid = new Date(todayMid.getTime() - 2 * 86400000);
 
-  const sheetNames = new Set([sheetNameOf(yesterdayMid), sheetNameOf(twoDaysAgoMid)]);
+  // 本月1号
+  const monthStart = new Date(Date.UTC(yesterdayMid.getUTCFullYear(), yesterdayMid.getUTCMonth(), 1));
+
+  // 需要的 sheet（可能跨月）
+  const sheetNames = new Set([sheetNameOf(monthStart), sheetNameOf(yesterdayMid)]);
 
   const allRecords = [];
   for (const sheetName of sheetNames) {
@@ -60,14 +63,15 @@ async function fetchTwoDays() {
   });
 
   const matchDay = (rec, day) => rec._day.getTime() === day.getTime();
+  const inRange = (rec, start, end) => rec._day >= start && rec._day <= end;
 
   return {
-    today: summarize(parsed.filter(r => matchDay(r, yesterdayMid)), yesterdayMid),
-    yesterday: summarize(parsed.filter(r => matchDay(r, twoDaysAgoMid)), twoDaysAgoMid),
+    yesterday: summarize(parsed.filter(r => matchDay(r, yesterdayMid)), yesterdayMid),
+    mtd: summarize(parsed.filter(r => inRange(r, monthStart, yesterdayMid)), monthStart, yesterdayMid),
   };
 }
 
-function summarize(records, day) {
+function summarize(records, start, end) {
   const totals = {
     shopee: { sales: 0, ads: 0 },
     lazada: { sales: 0, ads: 0 },
@@ -91,7 +95,7 @@ function summarize(records, day) {
   const fmtDate = d => `${d.getUTCFullYear()}-${String(d.getUTCMonth()+1).padStart(2,'0')}-${String(d.getUTCDate()).padStart(2,'0')}`;
 
   return {
-    date: fmtDate(day),
+    dateLabel: end ? `${fmtDate(start)} ~ ${fmtDate(end)}` : fmtDate(start),
     hasData: records.length > 0,
     totals,
     totalSales,
@@ -100,26 +104,27 @@ function summarize(records, day) {
   };
 }
 
-async function generateBrief(today, yesterday) {
-  const pct = (a, b) => b > 0 ? (((a - b) / b) * 100).toFixed(1) + '%' : 'N/A';
-
+async function generateBrief(yesterday, mtd) {
   const dataContext = `
-昨天（${today.date}）电商数据${today.hasData ? '' : '（无数据）'}：
-- Shopee：销售 RM ${today.totals.shopee.sales.toFixed(2)}，广告 RM ${today.totals.shopee.ads.toFixed(2)}
-- Lazada：销售 RM ${today.totals.lazada.sales.toFixed(2)}，广告 RM ${today.totals.lazada.ads.toFixed(2)}
-- TikTok：销售 RM ${today.totals.tiktok.sales.toFixed(2)}，广告 RM ${today.totals.tiktok.ads.toFixed(2)}
-- Website：销售 RM ${today.totals.website.sales.toFixed(2)}
-- Other：销售 RM ${today.totals.other.sales.toFixed(2)}
-- 总销售额：RM ${today.totalSales.toFixed(2)}
-- 总广告花费：RM ${today.totalAds.toFixed(2)}
-- ROAS：${today.roas.toFixed(2)}x
+【昨天 ${yesterday.dateLabel}】${yesterday.hasData ? '' : '（无数据）'}
+- Shopee：销售 RM ${yesterday.totals.shopee.sales.toFixed(2)}，广告 RM ${yesterday.totals.shopee.ads.toFixed(2)}
+- Lazada：销售 RM ${yesterday.totals.lazada.sales.toFixed(2)}，广告 RM ${yesterday.totals.lazada.ads.toFixed(2)}
+- TikTok：销售 RM ${yesterday.totals.tiktok.sales.toFixed(2)}，广告 RM ${yesterday.totals.tiktok.ads.toFixed(2)}
+- Website：销售 RM ${yesterday.totals.website.sales.toFixed(2)}
+- Other：销售 RM ${yesterday.totals.other.sales.toFixed(2)}
+- 总销售额：RM ${yesterday.totalSales.toFixed(2)}
+- 总广告费：RM ${yesterday.totalAds.toFixed(2)}
+- ROAS：${yesterday.roas.toFixed(2)}x
 
-前天（${yesterday.date}）对比${yesterday.hasData ? '' : '（无数据）'}：
-- 总销售额：RM ${yesterday.totalSales.toFixed(2)}（环比 ${pct(today.totalSales, yesterday.totalSales)}）
-- Shopee 环比：${pct(today.totals.shopee.sales, yesterday.totals.shopee.sales)}
-- Lazada 环比：${pct(today.totals.lazada.sales, yesterday.totals.lazada.sales)}
-- TikTok 环比：${pct(today.totals.tiktok.sales, yesterday.totals.tiktok.sales)}
-- ROAS 环比：${pct(today.roas, yesterday.roas)}
+【本月累计 ${mtd.dateLabel}】${mtd.hasData ? '' : '（无数据）'}
+- Shopee：销售 RM ${mtd.totals.shopee.sales.toFixed(2)}，广告 RM ${mtd.totals.shopee.ads.toFixed(2)}
+- Lazada：销售 RM ${mtd.totals.lazada.sales.toFixed(2)}，广告 RM ${mtd.totals.lazada.ads.toFixed(2)}
+- TikTok：销售 RM ${mtd.totals.tiktok.sales.toFixed(2)}，广告 RM ${mtd.totals.tiktok.ads.toFixed(2)}
+- Website：销售 RM ${mtd.totals.website.sales.toFixed(2)}
+- Other：销售 RM ${mtd.totals.other.sales.toFixed(2)}
+- 总销售额：RM ${mtd.totalSales.toFixed(2)}
+- 总广告费：RM ${mtd.totalAds.toFixed(2)}
+- ROAS：${mtd.roas.toFixed(2)}x
 `;
 
   const systemPrompt = `你是电电，MamaVege 的电商总监。每天早上为 vege（老板）产出简洁的电商日报。
@@ -129,8 +134,8 @@ async function generateBrief(today, yesterday) {
   const userPrompt = `根据以下数据，产出今天的电商日报：\n${dataContext}
 
 日报格式（固定）：
-1. 📊 昨日渠道总览（各渠道销售额）
-2. 📈 环比前天（涨跌情况，ROAS 变化）
+1. 📊 昨日渠道总览（各渠道销售额 + ROAS）
+2. 📅 本月累计（总销售额 + 总广告费 + ROAS）
 3. ✅ 今日需关注 1 件事`;
 
   const r = await fetch('https://api.anthropic.com/v1/messages', {
