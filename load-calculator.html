@@ -69,9 +69,11 @@ input::placeholder{color:var(--ml)}
 
 .sku-list{display:flex;flex-direction:column;gap:.6rem;margin-bottom:.5rem}
 .sku-row{background:#fafafa;border:1.5px solid var(--border);border-radius:10px;padding:.75rem .8rem;position:relative}
-.sku-row-top{display:grid;grid-template-columns:1fr 80px 70px 100px 90px 26px;gap:.5rem;align-items:end}
+.sku-row-head{display:flex;gap:.5rem;align-items:end;margin-bottom:.55rem}
+.sku-row-head > div{flex:1;min-width:0}
+.sku-row-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(84px,1fr));gap:.5rem;align-items:end}
 .total-display{padding:.55rem .7rem;border:1.5px solid var(--gl);border-radius:7px;font-size:.82rem;font-weight:700;color:var(--green);background:var(--gxl);white-space:nowrap;min-width:0;overflow:hidden;text-overflow:ellipsis;}
-.sku-row-top label{font-size:.72rem}
+.sku-row label{font-size:.72rem}
 .sku-del{width:24px;height:24px;border-radius:5px;border:1.5px solid #fca5a5;background:var(--white);color:var(--red);font-size:.95rem;cursor:pointer;display:grid;place-items:center;align-self:end;transition:background .12s}
 .sku-del:hover{background:var(--rl)}
 
@@ -224,14 +226,17 @@ function addSkuRow() {
   div.className = 'sku-row';
   div.id = 'srow-' + id;
   div.innerHTML = `
-    <div class="sku-row-top">
+    <div class="sku-row-head">
       <div>
         <label>SKU <span class="req">*</span></label>
-        <select id="${id}-sku" onchange="recalc()">
+        <select id="${id}-sku" onchange="onSkuChange('${id}')">
           <option value="">— Select SKU —</option>
           ${skuOptions('')}
         </select>
       </div>
+      <button class="sku-del" onclick="document.getElementById('srow-${id}').remove();recalc()" title="Remove">×</button>
+    </div>
+    <div class="sku-row-grid">
       <div>
         <label>UOM</label>
         <select id="${id}-uom" onchange="recalc()">
@@ -244,18 +249,29 @@ function addSkuRow() {
         <input type="number" id="${id}-qty" placeholder="0" min="1" step="1" oninput="recalc()">
       </div>
       <div>
-        <label>RM/unit <span class="req">*</span></label>
-        <div class="pfx"><span class="sym">RM</span>
-          <input type="number" id="${id}-price" placeholder="0.00" min="0" step="0.01" oninput="recalc()">
-        </div>
+        <label>Sell RM/unit <span class="req">*</span></label>
+        <input type="number" id="${id}-price" placeholder="0.00" min="0" step="0.01" oninput="recalc()">
+      </div>
+      <div>
+        <label>Cost RM/unit</label>
+        <input type="number" id="${id}-cost" placeholder="0.00" min="0" step="0.01" oninput="recalc()">
       </div>
       <div>
         <label>Total</label>
         <div class="total-display" id="${id}-total">—</div>
       </div>
-      <button class="sku-del" onclick="document.getElementById('srow-${id}').remove();recalc()" title="Remove">×</button>
     </div>`;
   document.getElementById('sku-list').appendChild(div);
+}
+
+// Auto-fill the cost input with the selected SKU's DB cost (still editable)
+function onSkuChange(id) {
+  const sel = document.getElementById(id + '-sku');
+  const opt = sel.options[sel.selectedIndex];
+  const c = document.getElementById(id + '-cost');
+  const dbCost = opt ? (parseFloat(opt.dataset.cost) || 0) : 0;
+  if (c) c.value = dbCost > 0 ? dbCost : '';
+  recalc();
 }
 
 function getRowData(id) {
@@ -267,7 +283,7 @@ function getRowData(id) {
   const price = parseFloat(document.getElementById(id + '-price').value) || 0;
   const uom   = document.getElementById(id + '-uom').value;
   const upc   = parseInt(opt.dataset.upc) || 0;
-  const cost  = parseFloat(opt.dataset.cost) || 0;
+  const cost  = parseFloat(document.getElementById(id + '-cost').value) || 0;
   const totalUnits = uom === 'carton' ? qty * upc : qty;
   return {
     id, name: opt.value, qty, price, uom, upc, cost,
