@@ -501,6 +501,7 @@
     </div>
     <!-- Customer breakdown (shown when a specific salesperson is selected) -->
     <div id="sp-customer-breakdown" style="display:none">
+      <div id="sp-churn-box"></div>
       <div class="table-card">
         <div class="table-header">
           <span class="table-title" id="sp-breakdown-title">Customer Orders</span>
@@ -1114,6 +1115,7 @@ function renderSPTab() {
       <div class="sp-bar">
         <div class="progress-bar"><div class="progress-fill" style="width:${(d.total/maxTotal*100).toFixed(1)}%;background:${colors[i%colors.length]}"></div></div>
       </div>
+      ${(()=>{const n=spNotOrderedThisMonth(name).missing.length;return `<div style="margin-top:8px;font-size:11px;font-weight:700">${n?`<span style="color:#b45309">⚠️ ${n} customer${n>1?'s':''} not ordered this month</span>`:`<span style="color:#16a34a">✅ all reordered this month</span>`}</div>`;})()}
     </div>
   `).join('') || '<div class="empty">No data</div>';
 
@@ -1134,6 +1136,33 @@ function renderSPTab() {
 
 let _activeSPName = null;
 
+// Latest year-month present in the data = the current active month
+function latestYM() {
+  let best = 0, y = 0, m = 0;
+  allData.forEach(r => {
+    const yy = parseInt(r['YEAR']), mm = parseInt(r['MONTH']);
+    if (yy && mm) { const k = yy*100 + mm; if (k > best) { best = k; y = yy; m = mm; } }
+  });
+  return { y, m };
+}
+// Customers who ordered LAST month but have NOT ordered THIS month (for a salesperson)
+function spNotOrderedThisMonth(spName) {
+  const { y, m } = latestYM();
+  let py = y, pm = m - 1; if (pm < 1) { pm = 12; py = y - 1; }
+  const norm = s => (s || '').trim();
+  const thisM = new Set(), lastMap = {};
+  allData.forEach(r => {
+    if (norm(r['SALES PERSON']) !== spName) return;
+    const yy = parseInt(r['YEAR']), mm = parseInt(r['MONTH']), c = norm(r['COMPANY']);
+    if (!c) return;
+    if (yy === y && mm === m) thisM.add(c);
+    if (yy === py && mm === pm) lastMap[c] = (lastMap[c] || 0) + getTotalField(r);
+  });
+  const missing = Object.keys(lastMap).filter(c => !thisM.has(c))
+    .map(c => ({ c, amt: lastMap[c] })).sort((a, b) => b.amt - a.amt);
+  return { missing, y, m, py, pm };
+}
+
 function showSPDetail(name, colorIdx) {
   const colors = ['#166534','#dc2626','#d97706','#3b82f6','#8b5cf6','#0891b2'];
   const color = colors[colorIdx % colors.length];
@@ -1152,6 +1181,19 @@ function showSPDetail(name, colorIdx) {
     custMap[c].orders++;
   });
   const custSorted = Object.entries(custMap).sort((a,b) => b[1].total - a[1].total);
+
+  // ⚠️ Customers not ordered this month (ordered last month, silent this month)
+  const ch = spNotOrderedThisMonth(name);
+  const churnBox = document.getElementById('sp-churn-box');
+  if (ch.missing.length) {
+    churnBox.innerHTML = `<div class="table-card" style="border-left:5px solid #d97706;background:#fffbeb;margin-bottom:12px">
+      <div style="font-size:15px;font-weight:800;color:#b45309;margin-bottom:4px">⚠️ ${ch.missing.length} customer${ch.missing.length>1?'s':''} NOT ordered this month (${mNames[ch.m-1]} ${ch.y})</div>
+      <div style="font-size:12px;color:#92400e;margin-bottom:10px">Ordered in ${mNames[ch.pm-1]} ${ch.py} but no order yet this month — follow up 👇</div>
+      <div>${ch.missing.map(x=>`<span onclick="drillCustomer('${x.c.replace(/'/g,"\\'")}')" style="cursor:pointer;display:inline-block;background:#fef3c7;border:1px solid #f59e0b;border-radius:8px;padding:4px 11px;margin:3px 5px 3px 0;font-size:12.5px;color:#92400e;font-weight:600">${x.c} · RM ${fmtInt(x.amt)} 🔍</span>`).join('')}</div>
+    </div>`;
+  } else {
+    churnBox.innerHTML = `<div class="table-card" style="border-left:5px solid #16a34a;background:#f0fdf4;margin-bottom:12px;font-size:13px;font-weight:700;color:#166534">✅ All of last month's customers have reordered this month (${mNames[ch.m-1]} ${ch.y})</div>`;
+  }
 
   document.getElementById('sp-breakdown-title').innerHTML =
     `<span style="color:${color}">${name}</span> — Customer Breakdown (${custSorted.length} customers)`;
