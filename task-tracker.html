@@ -308,7 +308,7 @@ function taskItemHtml(t){
         </div>
         <div class="ti-actions">
           <button class="btn-add-note" onclick="saveManagerNote('${t.task_id}')">💾 Save Note</button>
-          ${['overdue','escalated'].includes(t.status)?`<button class="btn-confirm" onclick="forceComplete('${t.task_id}')">✅ Mark Complete</button>`:''}
+          ${['overdue','escalated','pending'].includes(t.status)?`<button class="btn-confirm" onclick="forceComplete('${t.task_id}','${t.due_date||''}')">✅ Mark Complete</button>`:''}
           <button class="btn-delete-task" onclick="deleteTask('${t.task_id}')">🗑 Delete</button>
         </div>
       </div>
@@ -419,7 +419,7 @@ function showCalDayPanel(dateStr, tasks){
 function toggleTask(id){document.getElementById('tibody-'+id).classList.toggle('open');}
 async function saveManagerNote(taskId){const note=document.getElementById('note-'+taskId).value.trim();try{await fetch(SUPA_URL+'/rest/v1/tasks?task_id=eq.'+taskId,{method:'PATCH',headers:Hmin,body:JSON.stringify({manager_note:note})});await loadTasks();}catch(e){alert('Failed.');}}
 async function updateDueDate(taskId){const due=document.getElementById('due-'+taskId).value;if(!due)return;try{await fetch(SUPA_URL+'/rest/v1/tasks?task_id=eq.'+taskId,{method:'PATCH',headers:Hmin,body:JSON.stringify({due_date:due,status:'pending'})});await loadTasks();}catch(e){alert('Failed.');}}
-async function forceComplete(taskId){if(!confirm('Mark this task as completed?'))return;try{await fetch(SUPA_URL+'/rest/v1/tasks?task_id=eq.'+taskId,{method:'PATCH',headers:Hmin,body:JSON.stringify({status:'completed_late',completed_at:new Date().toISOString()})});await loadTasks();}catch(e){alert('Failed.');}}
+async function forceComplete(taskId,dueDate){if(!confirm('Mark this task as completed?'))return;const now=new Date();const isLate=dueDate&&now>new Date(dueDate+'T23:59:59');const completionStatus=isLate?'completed_late':'completed_ontime';try{await fetch(SUPA_URL+'/rest/v1/tasks?task_id=eq.'+taskId,{method:'PATCH',headers:Hmin,body:JSON.stringify({status:completionStatus,completed_at:now.toISOString()})});await loadTasks();}catch(e){alert('Failed.');}}
 async function deleteTask(taskId){if(!confirm('Delete this task permanently?'))return;try{await fetch(SUPA_URL+'/rest/v1/tasks?task_id=eq.'+taskId,{method:'DELETE',headers:H});await loadTasks();}catch(e){alert('Failed.');}}
 function toggleNewTaskForm(){document.getElementById('new-task-form').classList.toggle('open');}
 async function saveNewTask(){const desc=document.getElementById('ntf-desc').value.trim();const assignee=document.getElementById('ntf-assignee').value;const due=document.getElementById('ntf-due').value||null;const customer=document.getElementById('ntf-customer').value.trim()||null;if(!desc){alert('Please enter a task description.');return;}if(!assignee){alert('Please select a team member.');return;}try{await db('tasks',{method:'POST',body:JSON.stringify({description:desc,assigned_to:assignee,created_by:'HQ',source:'manager_created',linked_customer:customer,due_date:due,status:'pending'})});document.getElementById('ntf-desc').value='';document.getElementById('ntf-assignee').value='';document.getElementById('ntf-due').value='';document.getElementById('ntf-customer').value='';document.getElementById('new-task-form').classList.remove('open');await loadTasks();}catch(e){console.error(e);alert('Failed.');}}
