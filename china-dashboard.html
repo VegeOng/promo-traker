@@ -201,6 +201,11 @@
       <div id="douyin-live" style="font-size:13px;color:var(--muted)">加载中…</div>
     </div>
 
+    <div class="card" style="margin-bottom:16px">
+      <div class="card-title" style="flex-wrap:wrap">👥 客户洞察 · 微信小店 <span style="color:var(--muted);font-weight:500">（复购率 · 下单时段 · 复购客画像 · 滚动90天，每日06:30自动更新）</span></div>
+      <div id="insight-live" style="font-size:13px;color:var(--muted)">加载中…</div>
+    </div>
+
     <div class="grid-2b">
       <div class="card">
         <div class="card-title">🏆 客户 / 达人业绩排行榜 TOP 15 <span id="lbl-customers" style="color:var(--muted);font-weight:500"></span></div>
@@ -907,6 +912,69 @@ function renderDouyin(){
     <style>@media(max-width:900px){.dy-grid{grid-template-columns:1fr !important}}</style>`;
 }
 loadDouyin();
+
+// ── 客户洞察（微信小店，滚动90天）──
+async function loadInsight(){
+  const box=document.getElementById('insight-live');
+  try{
+    const since=new Date(Date.now()-90*86400000).toISOString();
+    const r=await fetch(`${SUPABASE_URL}/rest/v1/wechat_orders?select=openid,pay_time,status,products,province&pay_time=gte.${since}&order=pay_time.desc&limit=10000`, {
+      headers:{ apikey:SUPABASE_KEY, Authorization:'Bearer '+SUPABASE_KEY } });
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    let rows=await r.json();
+    const VALID=new Set([20,21,30,100]);
+    rows=rows.filter(o=>VALID.has(o.status));
+    const withId=rows.filter(o=>o.openid);
+    if(!withId.length){ box.innerHTML='还没有带买家标识(openid)的订单——请先跑 openid 回填。'; return; }
+
+    // 复购
+    const buyer={}; withId.forEach(o=>{ buyer[o.openid]=(buyer[o.openid]||0)+1; });
+    const total=Object.keys(buyer).length;
+    const repeatIds=new Set(Object.keys(buyer).filter(k=>buyer[k]>=2));
+    const orders=withId.length;
+    const rate=total?(repeatIds.size/total*100):0;
+    const per=total?(orders/total):0;
+
+    // 时段（北京时间）
+    const hv=new Array(24).fill(0), wv=new Array(7).fill(0);
+    rows.forEach(o=>{ if(!o.pay_time)return; const d=new Date(new Date(o.pay_time).getTime()+8*3600000); hv[d.getUTCHours()]++; wv[d.getUTCDay()]++; });
+    const hmax=Math.max(...hv,1), wmax=Math.max(...wv,1);
+    const hoursHtml=hv.map((v,i)=>`<div title="${i}点 ${v}单" style="flex:1;height:${Math.round(v/hmax*100)}%;min-height:2px;background:${v>=hmax*0.8?'#166534':'#d1d5db'};border-radius:2px 2px 0 0"></div>`).join('');
+    const wn=['周日','周一','周二','周三','周四','周五','周六'];
+    const wdaysHtml=[1,2,3,4,5,6,0].map(i=>`<div style="display:flex;align-items:center;gap:8px;font-size:12px;margin-bottom:4px"><span style="width:32px;color:var(--muted)">${wn[i]}</span><div style="height:12px;width:${Math.round(wv[i]/wmax*72)}%;background:${wv[i]>=wmax*0.8?'#166534':'#63992255'};border-radius:3px"></div><span style="color:var(--muted)">${wv[i]}</span></div>`).join('');
+
+    // 复购客画像
+    const rOrders=withId.filter(o=>repeatIds.has(o.openid));
+    const pm={}; rOrders.forEach(o=>{ if(o.province)pm[o.province]=(pm[o.province]||0)+1; });
+    const provs=Object.entries(pm).sort((a,b)=>b[1]-a[1]).slice(0,6);
+    const pmax=provs.length?provs[0][1]:1;
+    const provHtml=provs.length?provs.map(([n,v])=>`<div style="display:flex;align-items:center;gap:8px;font-size:13px;margin-bottom:6px"><span style="width:64px">${escHtml(n)}</span><div style="height:14px;width:${Math.round(v/pmax*90)}%;background:#2563eb;border-radius:3px"></div><span style="color:var(--muted)">${v}</span></div>`).join(''):'<div style="color:#9ca3af">暂无</div>';
+    const sm={}; rOrders.forEach(o=>{ (o.products||[]).forEach(p=>{ const n=mapWxSku(p).name; sm[n]=(sm[n]||0)+(Number(p.sku_cnt)||0); }); });
+    const skus=Object.entries(sm).sort((a,b)=>b[1]-a[1]).slice(0,6);
+    const smax=skus.length?skus[0][1]:1;
+    const skuHtml=skus.length?skus.map(([n,v])=>`<div style="display:flex;align-items:center;gap:8px;font-size:13px;margin-bottom:6px"><span style="width:120px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escHtml(n)}</span><div style="height:14px;width:${Math.round(v/smax*60)}%;background:#0f6e56;border-radius:3px"></div><span style="color:var(--muted)">${v}</span></div>`).join(''):'<div style="color:#9ca3af">暂无</div>';
+
+    box.innerHTML=`
+      <div style="display:flex;gap:24px;flex-wrap:wrap;margin-bottom:16px">
+        <div><span style="font-size:11px;color:#9ca3af;font-weight:700;text-transform:uppercase">复购率</span><div style="font-size:24px;font-weight:800;color:#2563eb">${rate.toFixed(1)}%</div></div>
+        <div><span style="font-size:11px;color:#9ca3af;font-weight:700;text-transform:uppercase">独立买家</span><div style="font-size:24px;font-weight:800">${total}</div></div>
+        <div><span style="font-size:11px;color:#9ca3af;font-weight:700;text-transform:uppercase">复购客(≥2单)</span><div style="font-size:24px;font-weight:800">${repeatIds.size}</div></div>
+        <div><span style="font-size:11px;color:#9ca3af;font-weight:700;text-transform:uppercase">人均下单</span><div style="font-size:24px;font-weight:800">${per.toFixed(2)}</div></div>
+      </div>
+      <div style="border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:14px">
+        <div style="font-size:13px;font-weight:700;margin-bottom:10px">🕐 下单时段热力（北京时间）</div>
+        <div style="display:flex;align-items:flex-end;gap:2px;height:60px;margin-bottom:4px">${hoursHtml}</div>
+        <div style="display:flex;justify-content:space-between;font-size:11px;color:#9ca3af;margin-bottom:12px"><span>0点</span><span>6点</span><span>12点</span><span>18点</span><span>23点</span></div>
+        ${wdaysHtml}
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px" class="ins-grid">
+        <div><div style="font-size:13px;font-weight:700;margin-bottom:10px">📍 复购客 TOP 省份</div>${provHtml}</div>
+        <div><div style="font-size:13px;font-weight:700;margin-bottom:10px">🍜 复购客爱买 SKU</div>${skuHtml}</div>
+      </div>
+      <style>@media(max-width:900px){.ins-grid{grid-template-columns:1fr !important}}</style>`;
+  }catch(e){ box.innerHTML=`<span style="color:var(--red)">客户洞察加载失败：${escHtml(e.message)}</span>`; }
+}
+loadInsight();
 </script>
 
 </body>

@@ -42,6 +42,7 @@ module.exports = async function handler(req, res) {
         source_name: sourceName,
         commission,
         source: sources,
+        openid: o.openid || null,
         synced_at: new Date().toISOString(),
       };
     });
