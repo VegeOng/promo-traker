@@ -517,7 +517,7 @@ async function initMemberScope() {
         .map(r => (r['COMPANY']||'').trim())
         .filter(Boolean)
     );
-    memberCustomerNames = names;
+    memberCustomerNames = names.size > 0 ? names : null;
   } catch(e) {
     console.warn('Could not load member customer scope:', e);
   }
