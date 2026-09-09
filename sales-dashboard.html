@@ -389,6 +389,7 @@
 <div class="main">
 
   <div id="noDataBanner" style="display:none;background:#fffbeb;border:1px solid #fde68a;color:#92400e;border-radius:12px;padding:14px 18px;margin-bottom:1.25rem;font-size:0.9rem;line-height:1.5;"></div>
+  <div id="mtdBanner" style="display:none;background:#eff6ff;border:1px solid #bfdbfe;color:#1e40af;border-radius:12px;padding:12px 18px;margin-bottom:1.25rem;font-size:0.85rem;line-height:1.5;"></div>
 
   <!-- OVERVIEW TAB -->
   <div class="tab-content active" id="tab-overview">
@@ -657,14 +658,7 @@ function populateMonthSelect() {
     opts.push(`<option value="${y}-${m}">${mNames[m-1]} ${y}</option>`);
   }
   sel.innerHTML = opts.join('');
-  if (cur) {
-    sel.value = cur;
-  } else {
-    // Default to previous month when early in the month (≤ day 15) to avoid showing partial data
-    const defaultOffset = now.getDate() <= 15 ? 1 : 0;
-    const def = new Date(now.getFullYear(), now.getMonth() - defaultOffset, 1);
-    sel.value = `${def.getFullYear()}-${def.getMonth()+1}`;
-  }
+  if (cur) sel.value = cur;
 }
 
 function populateYearSelect() {
@@ -762,8 +756,35 @@ function updateNoDataBanner() {
   el.style.display = 'block';
 }
 
+// Show MTD in-progress notice when viewing the current (incomplete) month
+function updateMTDBanner() {
+  const el = document.getElementById('mtdBanner');
+  if (!el) return;
+  if (currentMode !== 'month') { el.style.display = 'none'; return; }
+  const now = new Date();
+  const curY = now.getFullYear(), curM = now.getMonth() + 1;
+  const sel = document.getElementById('month-select');
+  const [selY, selM] = (sel.value || '').split('-').map(Number);
+  if (selY === curY && selM === curM) {
+    const day = now.getDate();
+    // Find the latest date in allData for this month
+    let latestDay = day;
+    allData.forEach(r => {
+      if (parseInt(r['YEAR']) === curY && parseInt(r['MONTH']) === curM) {
+        const pd = parseSheetDate(r['PO DATE']);
+        if (pd && pd.day > latestDay) latestDay = pd.day;
+      }
+    });
+    el.innerHTML = `📅 <strong>${mNames[curM-1]} ${curY} — Month in progress</strong> · Data up to Day ${latestDay} of ${new Date(curY, curM, 0).getDate()} · Numbers will grow as more orders come in`;
+    el.style.display = 'block';
+  } else {
+    el.style.display = 'none';
+  }
+}
+
 function renderAll() {
   updateNoDataBanner();
+  updateMTDBanner();
   renderKPI();
   renderCharts();
   renderOverviewCustomers();

@@ -118,10 +118,10 @@
 
     <!-- Period Picker -->
     <div class="period-picker">
-      <button class="pp-btn" data-period="month" onclick="setPeriod('month',this)">This Month</button>
-      <button class="pp-btn" data-period="lastmonth" onclick="setPeriod('lastmonth',this)">Last Month</button>
-      <button class="pp-btn" data-period="year" onclick="setPeriod('year',this)">This Year</button>
-      <button class="pp-btn" data-period="custom" onclick="setPeriod('custom',this)">Custom</button>
+      <button class="pp-btn active" onclick="setPeriod('month',this)">This Month</button>
+      <button class="pp-btn" onclick="setPeriod('lastmonth',this)">Last Month</button>
+      <button class="pp-btn" onclick="setPeriod('year',this)">This Year</button>
+      <button class="pp-btn" onclick="setPeriod('custom',this)">Custom</button>
       <div class="custom-range" id="custom-range" style="display:none">
         <select id="custom-year" onchange="renderPeriod()"></select>
         <select id="custom-month" onchange="renderPeriod()">
@@ -270,8 +270,7 @@
 
   // Global state
   let allMyData = [], kpiTarget = 0, visitsThis = 0, visitsLast = 0, overdueTasks = [];
-  // Default to last month when early in the month (≤ day 15) so partial-month data isn't misleading
-  let activePeriod = now.getDate() <= 15 ? 'lastmonth' : 'month'; // month | lastmonth | year | custom
+  let activePeriod = 'month'; // month | lastmonth | year | custom
   let chartInstance = null;
 
   // ── Period picker ──
@@ -328,8 +327,10 @@
     const prevCusts = new Set(prevData.map(r => r['COMPANY']).filter(Boolean));
     const churnList = [...prevCusts].filter(c => !curCusts.has(c));
 
-    // Section title
-    document.getElementById('s-period-title').textContent = selM ? `📊 ${label} Performance` : `📊 ${label} Performance`;
+    // Section title — show MTD note when viewing the current incomplete month
+    const isCurMonth = selM === thisM && selY === thisY;
+    const mtdNote = isCurMonth ? ` · MTD Day ${now.getDate()}/${new Date(thisY, thisM, 0).getDate()} — data up to ${now.toLocaleDateString('en-MY',{day:'2-digit',month:'short'})}` : '';
+    document.getElementById('s-period-title').textContent = `📊 ${label} Performance${mtdNote}`;
 
     // Progress bar (only meaningful for monthly periods)
     const achPct = (kpiTarget > 0 && selM) ? Math.min(Math.round(curTotal/kpiTarget*100),100) : 0;
@@ -499,8 +500,6 @@
       document.getElementById('main-loading').style.display='none';
       document.getElementById('main-content').style.display='block';
 
-      // Sync the active button with the initial period
-      document.querySelectorAll('.pp-btn').forEach(b => b.classList.toggle('active', b.dataset.period === activePeriod));
       renderPeriod();
     } catch(e) {
       console.error(e);
