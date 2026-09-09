@@ -506,6 +506,7 @@
       const userNameUpper = userName.trim().toUpperCase();
       detectProducts(salesRes);
       allMyData = salesRes.filter(r=>(r['SALES PERSON']||'').trim().toUpperCase()===userNameUpper);
+      allMyData.sort((a,b)=>{const da=a['INVOICE DATE']||a['PO DATE']||'';const db=b['INVOICE DATE']||b['PO DATE']||'';return da<db?-1:da>db?1:0;});
 
       // Populate year dropdown
       const years=[...new Set(allMyData.map(r=>parseInt(r['YEAR'])).filter(Boolean))].sort((a,b)=>b-a);
