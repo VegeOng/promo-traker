@@ -657,7 +657,14 @@ function populateMonthSelect() {
     opts.push(`<option value="${y}-${m}">${mNames[m-1]} ${y}</option>`);
   }
   sel.innerHTML = opts.join('');
-  if (cur) sel.value = cur;
+  if (cur) {
+    sel.value = cur;
+  } else {
+    // Default to previous month when early in the month (≤ day 15) to avoid showing partial data
+    const defaultOffset = now.getDate() <= 15 ? 1 : 0;
+    const def = new Date(now.getFullYear(), now.getMonth() - defaultOffset, 1);
+    sel.value = `${def.getFullYear()}-${def.getMonth()+1}`;
+  }
 }
 
 function populateYearSelect() {
