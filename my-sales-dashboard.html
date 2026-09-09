@@ -434,7 +434,7 @@
     // Exclude last month's customers (they're shown in the section above)
     const prevMonthCustSet = new Set(Object.keys(prevMonthCustMap));
     const allLastOrder = {};
-    allMyData.forEach(r=>{const c=r['COMPANY']||'?';const yr=parseInt(r['YEAR']),mo=parseInt(r['MONTH']);if(!allLastOrder[c]||yr>allLastOrder[c].y||(yr===allLastOrder[c].y&&mo>allLastOrder[c].m)){allLastOrder[c]={y:yr,m:mo,rawDate:r['INVOICE DATE']||r['PO DATE']||''};}});
+    allMyData.forEach(r=>{const c=r['COMPANY']||'?';const yr=parseInt(r['YEAR']),mo=parseInt(r['MONTH']);const rawD=r['INVOICE DATE']||r['PO DATE']||'';if(!allLastOrder[c]||yr>allLastOrder[c].y||(yr===allLastOrder[c].y&&mo>allLastOrder[c].m)||(yr===allLastOrder[c].y&&mo===allLastOrder[c].m&&rawD>allLastOrder[c].rawDate)){allLastOrder[c]={y:yr,m:mo,rawDate:rawD};}});
     const refY=selY,refM=selM||thisM;
     const inactiveList=[...recentCusts].filter(c=>!curCusts.has(c)&&!prevMonthCustSet.has(c)).map(c=>{
       const lo=allLastOrder[c]||{};
