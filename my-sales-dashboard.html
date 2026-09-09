@@ -193,11 +193,23 @@
     <div id="s-overdue-box"></div>
     <div id="s-churn-box"></div>
 
-    <!-- 4. Not Ordered This Month -->
-    <div class="section-title">🔔 Not Ordered This Month</div>
+    <!-- 4a. Last Month Customer Status -->
+    <div class="section-title" id="s-lastmonth-title">📋 Last Month's Customers</div>
+    <div class="table-card" id="s-lastmonth-card">
+      <div class="period-bar">
+        <span class="period-title" id="s-lastmonth-label">Aug customers — reorder status this month</span>
+      </div>
+      <table class="data-table" id="s-lastmonth-customers">
+        <thead><tr><th>#</th><th>Customer</th><th>Last Month (RM)</th><th>This Month</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <!-- 4b. Not Ordered This Month -->
+    <div class="section-title">🔔 Wider Follow-up (2–3 months silent)</div>
     <div class="table-card">
       <div class="period-bar">
-        <span class="period-title">Active customers with no order yet</span>
+        <span class="period-title">Ordered 2–3 months ago but still quiet</span>
         <span id="s-inactive-count" style="font-size:12px;color:#6b7280"></span>
       </div>
       <table class="data-table" id="s-inactive-customers">
@@ -390,26 +402,52 @@
         scales:{y:{beginAtZero:true,ticks:{callback:v=>'RM '+fmt(v)}}}}
     });
 
-    // Not ordered this period
+    // ── Section: Last Month Customer Status ──
+    // Always shows previous month customers + whether they've reordered this period
+    const prevMRef = (selM||thisM)===1?12:(selM||thisM)-1;
+    const prevYRef = (selM||thisM)===1?selY-1:selY;
+    const prevMonthData = allMyData.filter(r=>parseInt(r['YEAR'])===prevYRef&&parseInt(r['MONTH'])===prevMRef);
+    const prevMonthCustMap = {};
+    prevMonthData.forEach(r=>{const c=r['COMPANY']||'?';if(!prevMonthCustMap[c])prevMonthCustMap[c]=0;prevMonthCustMap[c]+=getTotalField(r);});
+    const prevMonthCusts = Object.entries(prevMonthCustMap).sort((a,b)=>b[1]-a[1]);
+    const lastMonthLabel = `${mNames[prevMRef-1]} ${prevYRef}`;
+    const curPeriodLabel = selM ? label : `${thisY} YTD`;
+    document.getElementById('s-lastmonth-title').textContent = `📋 ${lastMonthLabel} Customers`;
+    document.getElementById('s-lastmonth-label').textContent = `${lastMonthLabel} customers — reorder status in ${curPeriodLabel}`;
+    document.querySelector('#s-lastmonth-customers tbody').innerHTML = prevMonthCusts.length
+      ? prevMonthCusts.map(([cust, amt], i) => {
+          const reordered = curCusts.has(cust);
+          return `<tr>
+            <td class="rank">${i+1}</td>
+            <td><strong>${escHtml(cust)}</strong></td>
+            <td class="amount">${fmtRM(amt)}</td>
+            <td style="font-size:12px;font-weight:700;color:${reordered?'#166534':'#d97706'}">${reordered?'✅ Reordered':'⚠️ Not yet'}</td>
+          </tr>`;
+        }).join('')
+      : '<tr><td colspan="4" class="empty">No orders last month</td></tr>';
+
+    // ── Section: Wider follow-up (2–3 months silent, excluding last month) ──
     const last3 = [];
-    for(let i=1;i<=3;i++){let m=(selM||thisM)-i,y=selY;if(m<=0){m+=12;y--;}last3.push({y,m});}
+    for(let i=2;i<=3;i++){let m=(selM||thisM)-i,y=selY;if(m<=0){m+=12;y--;}last3.push({y,m});}
     const recentData = allMyData.filter(r=>last3.some(p=>parseInt(r['YEAR'])===p.y&&parseInt(r['MONTH'])===p.m));
     const recentCusts = new Set(recentData.map(r=>r['COMPANY']).filter(Boolean));
+    // Exclude last month's customers (they're shown in the section above)
+    const prevMonthCustSet = new Set(Object.keys(prevMonthCustMap));
     const allLastOrder = {};
     allMyData.forEach(r=>{const c=r['COMPANY']||'?';const yr=parseInt(r['YEAR']),mo=parseInt(r['MONTH']);if(!allLastOrder[c]||yr>allLastOrder[c].y||(yr===allLastOrder[c].y&&mo>allLastOrder[c].m)){allLastOrder[c]={y:yr,m:mo,rawDate:r['INVOICE DATE']||r['PO DATE']||''};}});
     const refY=selY,refM=selM||thisM;
-    const inactiveList=[...recentCusts].filter(c=>!curCusts.has(c)).map(c=>{
+    const inactiveList=[...recentCusts].filter(c=>!curCusts.has(c)&&!prevMonthCustSet.has(c)).map(c=>{
       const lo=allLastOrder[c]||{};
       const monthsAgo=lo.y&&lo.m?(refY-lo.y)*12+(refM-lo.m):1;
       const lastDateStr=lo.rawDate?new Date(lo.rawDate).toLocaleDateString('en-MY',{day:'2-digit',month:'short',year:'2-digit'}):`${mNames[(lo.m||1)-1]} ${lo.y||''}`;
       return {name:c,lastDateStr,monthsAgo:monthsAgo||1};
     }).sort((a,b)=>a.monthsAgo-b.monthsAgo);
-    const urgencyColor=n=>n<=1?'#dc2626':n<=2?'#d97706':'#6b7280';
-    const urgencyLabel=n=>n<=1?'🔴 1 month':n<=2?'🟠 2 months':`⚪ ${n} months`;
+    const urgencyColor=n=>n<=2?'#d97706':'#6b7280';
+    const urgencyLabel=n=>n<=2?'🟠 2 months':`⚪ ${n} months`;
     document.getElementById('s-inactive-count').textContent=inactiveList.length?`${inactiveList.length} customer${inactiveList.length>1?'s':''} to follow up`:'';
     document.querySelector('#s-inactive-customers tbody').innerHTML=inactiveList.length
       ?inactiveList.map((c,i)=>`<tr><td class="rank">${i+1}</td><td><strong>${escHtml(c.name)}</strong></td><td class="last-date">${c.lastDateStr}</td><td style="font-size:12px;font-weight:600;color:${urgencyColor(c.monthsAgo)}">${urgencyLabel(c.monthsAgo)}</td></tr>`).join('')
-      :'<tr><td colspan="4" class="empty">🎉 All recent customers ordered this period!</td></tr>';
+      :'<tr><td colspan="4" class="empty">No older silent customers — great coverage!</td></tr>';
 
     // Tables follow main period
     const plabel = document.getElementById('cust-period-label');
