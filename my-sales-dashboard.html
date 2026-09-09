@@ -206,10 +206,10 @@
     </div>
 
     <!-- 4b. Not Ordered This Month -->
-    <div class="section-title">🔔 Wider Follow-up (2–3 months silent)</div>
+    <div class="section-title">🔔 Wider Follow-up (silent customers)</div>
     <div class="table-card">
       <div class="period-bar">
-        <span class="period-title">Ordered 2–3 months ago but still quiet</span>
+        <span class="period-title">Ordered before last month but still quiet</span>
         <span id="s-inactive-count" style="font-size:12px;color:#6b7280"></span>
       </div>
       <table class="data-table" id="s-inactive-customers">
@@ -410,6 +410,8 @@
     const prevMonthCustMap = {};
     prevMonthData.forEach(r=>{const c=r['COMPANY']||'?';if(!prevMonthCustMap[c])prevMonthCustMap[c]=0;prevMonthCustMap[c]+=getTotalField(r);});
     const prevMonthCusts = Object.entries(prevMonthCustMap).sort((a,b)=>b[1]-a[1]);
+    const prevMonthLastDate = {};
+    prevMonthData.forEach(r=>{const c=r['COMPANY']||'?';const d=r['INVOICE DATE']||r['PO DATE']||'';if(d&&(!prevMonthLastDate[c]||d>prevMonthLastDate[c]))prevMonthLastDate[c]=d;});
     const lastMonthLabel = `${mNames[prevMRef-1]} ${prevYRef}`;
     const curPeriodLabel = selM ? label : `${thisY} YTD`;
     document.getElementById('s-lastmonth-title').textContent = `📋 ${lastMonthLabel} Customers`;
@@ -417,11 +419,15 @@
     document.querySelector('#s-lastmonth-customers tbody').innerHTML = prevMonthCusts.length
       ? prevMonthCusts.map(([cust, amt], i) => {
           const reordered = curCusts.has(cust);
+          const lastD = prevMonthLastDate[cust];
+          const daysAgo = lastD ? Math.floor((now - new Date(lastD)) / 86400000) : null;
+          const statusText = reordered ? '✅ Reordered' : (daysAgo ? `⚠️ ${daysAgo} days` : '⚠️ Not yet');
+          const statusColor = reordered ? '#166534' : (daysAgo > 30 ? '#dc2626' : '#d97706');
           return `<tr>
             <td class="rank">${i+1}</td>
             <td><strong>${escHtml(cust)}</strong></td>
             <td class="amount">${fmtRM(amt)}</td>
-            <td style="font-size:12px;font-weight:700;color:${reordered?'#166534':'#d97706'}">${reordered?'✅ Reordered':'⚠️ Not yet'}</td>
+            <td style="font-size:12px;font-weight:700;color:${statusColor}">${statusText}</td>
           </tr>`;
         }).join('')
       : '<tr><td colspan="4" class="empty">No orders last month</td></tr>';
@@ -438,15 +444,16 @@
     const refY=selY,refM=selM||thisM;
     const inactiveList=[...recentCusts].filter(c=>!curCusts.has(c)&&!prevMonthCustSet.has(c)).map(c=>{
       const lo=allLastOrder[c]||{};
-      const monthsAgo=lo.y&&lo.m?(refY-lo.y)*12+(refM-lo.m):1;
+      const rawDate=lo.rawDate?new Date(lo.rawDate):null;
+      const daysAgo=rawDate?Math.floor((now-rawDate)/86400000):60;
       const lastDateStr=lo.rawDate?new Date(lo.rawDate).toLocaleDateString('en-MY',{day:'2-digit',month:'short',year:'2-digit'}):`${mNames[(lo.m||1)-1]} ${lo.y||''}`;
-      return {name:c,lastDateStr,monthsAgo:monthsAgo||1};
-    }).sort((a,b)=>a.monthsAgo-b.monthsAgo);
-    const urgencyColor=n=>n<=2?'#d97706':'#6b7280';
-    const urgencyLabel=n=>n<=2?'🟠 2 months':`⚪ ${n} months`;
+      return {name:c,lastDateStr,daysAgo};
+    }).sort((a,b)=>a.daysAgo-b.daysAgo);
+    const urgencyColor=d=>d<=45?'#d97706':d<=90?'#dc2626':'#6b7280';
+    const urgencyLabel=d=>`${d<=45?'🟠':d<=90?'🔴':'⚪'} ${d} days`;
     document.getElementById('s-inactive-count').textContent=inactiveList.length?`${inactiveList.length} customer${inactiveList.length>1?'s':''} to follow up`:'';
     document.querySelector('#s-inactive-customers tbody').innerHTML=inactiveList.length
-      ?inactiveList.map((c,i)=>`<tr><td class="rank">${i+1}</td><td><strong>${escHtml(c.name)}</strong></td><td class="last-date">${c.lastDateStr}</td><td style="font-size:12px;font-weight:600;color:${urgencyColor(c.monthsAgo)}">${urgencyLabel(c.monthsAgo)}</td></tr>`).join('')
+      ?inactiveList.map((c,i)=>`<tr><td class="rank">${i+1}</td><td><strong>${escHtml(c.name)}</strong></td><td class="last-date">${c.lastDateStr}</td><td style="font-size:12px;font-weight:600;color:${urgencyColor(c.daysAgo)}">${urgencyLabel(c.daysAgo)}</td></tr>`).join('')
       :'<tr><td colspan="4" class="empty">No older silent customers — great coverage!</td></tr>';
 
     // Tables follow main period
