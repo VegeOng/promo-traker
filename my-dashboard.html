@@ -249,7 +249,7 @@
     </a>
 
 
-    <a class="tool" href="outlet-stock-check.html">
+    <a class="tool" id="tool-stock-check" href="outlet-stock-check.html">
       <div class="tool-icon">📦</div>
       <div class="tool-name">Outlet Stock Check</div>
       <span class="tbadge">LIVE</span>
@@ -274,7 +274,7 @@
       <div class="tool-name">Load Calculator</div>
       <span class="tbadge">NEW</span>
     </a>
-    <a class="tool" href="pos.html">
+    <a class="tool" id="tool-pos" href="pos.html">
       <div class="tool-icon">🧾</div>
       <div class="tool-name">Event POS</div>
       <span class="tbadge">NEW</span>
@@ -505,7 +505,6 @@
 
   if (!userName || userRole !== 'member') { location.href = 'index.html'; }
   if (lsGet('memberRole') === 'china') { location.href = 'china-hub.html'; }
-  if (lsGet('memberRole') === 'merchandiser') { location.href = 'pos.html'; }
   document.getElementById('userLabel').textContent = `Welcome back, ${userName}`;
 
   function logout() { lsClear(); location.href = 'index.html'; }
@@ -908,6 +907,10 @@
     if (salesTab) salesTab.style.display = 'none';
     const dailyReportsTab = document.getElementById('tab-daily-reports');
     if (dailyReportsTab) dailyReportsTab.style.display = 'block';
+  } else if (memberRole === 'merchandiser') {
+    document.querySelectorAll('.tools-grid .tool').forEach(el => {
+      if (el.id !== 'tool-pos' && el.id !== 'tool-stock-check') el.style.display = 'none';
+    });
   }
   loadMyTasks();
   loadWeekly();

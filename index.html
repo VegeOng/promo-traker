@@ -474,8 +474,6 @@ const userRole = lsGet("userRole");
 if (userName && userRole === 'member') {
   if (lsGet('memberRole') === 'china') {
     location.href = 'china-hub.html';
-  } else if (lsGet('memberRole') === 'merchandiser') {
-    location.href = 'pos.html';
   } else {
     location.href = 'my-dashboard.html';
   }
@@ -538,8 +536,6 @@ async function doLogin() {
       lsSet('memberRole', member.role || 'sales');
       if ((member.role || '') === 'china') {
         location.href = 'china-hub.html';
-      } else if ((member.role || '') === 'merchandiser') {
-        location.href = 'pos.html';
       } else {
         location.href = 'my-dashboard.html';
       }
