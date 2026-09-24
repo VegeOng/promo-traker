@@ -216,6 +216,7 @@
   .role-badge { font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 20px; text-transform: uppercase; }
   .role-badge.sales { background: var(--blue-light); color: var(--blue); }
   .role-badge.marketing { background: #fdf4ff; color: #7e22ce; }
+  .role-badge.merchandiser { background: #fff7ed; color: #c2410c; }
   .btn-editname { background: #3b82f6; border: none; color: white; padding: 5px 10px; border-radius: 6px; font-size: 12px; cursor: pointer; font-weight: 600; }
   .btn-setpw { background: var(--green); border: none; color: white; padding: 5px 10px; border-radius: 6px; font-size: 12px; cursor: pointer; font-weight: 600; }
   .btn-kpi { background: #d97706; border: none; color: white; padding: 5px 10px; border-radius: 6px; font-size: 12px; cursor: pointer; font-weight: 600; }
@@ -564,6 +565,7 @@
           <option value="sales">Sales</option>
           <option value="marketing">Marketing</option>
           <option value="china">China</option>
+          <option value="merchandiser">Merchandiser</option>
         </select>
         <button class="btn-add" onclick="addMember()">+ Add</button>
       </div>
@@ -1114,7 +1116,7 @@ function renderMembers(){
   list.innerHTML=members.map(m=>`
     <div class="member-row" id="mrow-${m.id}" style="${m.active===false?'opacity:.5;background:#f9fafb':''}">
       <span class="m-name">${m.name}${m.active===false?' <span style="font-size:10px;background:#fee2e2;color:#dc2626;padding:2px 7px;border-radius:10px;font-weight:700">INACTIVE</span>':''}</span>
-      <span class="role-badge ${m.role||'sales'}">${m.role==='marketing'?'Marketing':m.role==='china'?'China':'Sales'}</span>
+      <span class="role-badge ${m.role||'sales'}">${m.role==='marketing'?'Marketing':m.role==='china'?'China':m.role==='merchandiser'?'Merchandiser':'Sales'}</span>
       <span class="pw-badge ${m.password?'set':'unset'}">${m.password?'✓ Password':'⚠ No password'}</span>
       <span class="kpi-badge">KPI: RM ${Number(m.monthly_kpi||0).toLocaleString()}</span>
       ${m.active===false
@@ -1135,6 +1137,7 @@ function renderMembers(){
           <option value="sales" ${(m.role||'sales')==='sales'?'selected':''}>Sales</option>
           <option value="marketing" ${m.role==='marketing'?'selected':''}>Marketing</option>
           <option value="china" ${m.role==='china'?'selected':''}>China</option>
+          <option value="merchandiser" ${m.role==='merchandiser'?'selected':''}>Merchandiser</option>
         </select>
         <button class="btn-save" onclick="saveRole(${m.id})">Save</button>
         <button class="btn-cancel" onclick="toggleRoleEdit(${m.id})">Cancel</button>
