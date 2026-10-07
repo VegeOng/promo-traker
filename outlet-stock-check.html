@@ -535,7 +535,7 @@ async function loadSalesMembers() {
   const data = await sbGet('members?select=id,name,role&order=name.asc&active=neq.false');
   const sel = document.getElementById('f-checkby');
   if(!Array.isArray(data)) return;
-  const sales = data.filter(m=>(m.role||'sales')==='sales');
+  const sales = data.filter(m=>['sales','merchandiser'].includes(m.role||'sales'));
   sel.innerHTML = '<option value="">— Select Agent —</option>';
   sales.forEach(m=>{ const o=document.createElement('option'); o.value=m.name; o.textContent=m.name; sel.appendChild(o); });
 }
@@ -977,9 +977,9 @@ async function loadHQStats() {
   const firstDay = `${year}-${mon}-01`;
   const lastDay = `${year}-${mon}-${new Date(year,mon,0).getDate()}`;
 
-  // load members (sales only)
+  // load members (sales + merchandiser — both do outlet checks)
   const membersData = await sbGet('members?select=*&order=name&active=neq.false');
-  hqMembers = Array.isArray(membersData) ? membersData.filter(m=>(m.role||'sales')==='sales') : [];
+  hqMembers = Array.isArray(membersData) ? membersData.filter(m=>['sales','merchandiser'].includes(m.role||'sales')) : [];
 
   // load checks for this month
   const checks = await sbGet(`outlet_stock_checks?check_date=gte.${firstDay}&check_date=lte.${lastDay}&select=agent_name,outlet_id,quantity,expiry_date`);
