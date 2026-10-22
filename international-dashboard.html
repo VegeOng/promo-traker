@@ -77,6 +77,14 @@
   .tchip.dn{background:var(--red-light);color:var(--red);}
   .tchip.na{background:#f1f5f9;color:#94a3b8;}
 
+  /* YTD summary line under the This-Year-vs-Last-Year chart */
+  .ytd-summary{font-size:13px;color:var(--muted);margin:-4px 0 12px;}
+  .ytd-summary strong{color:var(--text);}
+  .ytd-tag{display:inline-block;font-weight:800;padding:2px 9px;border-radius:12px;margin-left:4px;font-size:12px;}
+  .ytd-tag.up{background:var(--green-light);color:var(--green);}
+  .ytd-tag.dn{background:var(--red-light);color:var(--red);}
+  .ytd-tag.na{background:#f1f5f9;color:#94a3b8;}
+
   .loading{text-align:center;padding:60px 20px;color:var(--muted);font-size:14px;}
   .spinner{width:30px;height:30px;border:3px solid #e5e7eb;border-top-color:var(--purple);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 12px;}
   @keyframes spin{to{transform:rotate(360deg);}}
@@ -141,6 +149,12 @@
 
     <div class="kpi-grid" id="kpi-grid"></div>
 
+    <div class="card" style="margin-bottom:16px">
+      <div class="card-title">📊 Monthly Sales — This Year vs Last Year (IB, RM)</div>
+      <div id="ytdSummary" class="ytd-summary"></div>
+      <div class="chart-box"><canvas id="chartMonthly"></canvas></div>
+    </div>
+
     <div class="grid-2">
       <div class="card">
         <div class="card-title">📈 Monthly Trend (Last 12 Months, RM)</div>
@@ -180,6 +194,7 @@ let allRows = [];
 const mNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
 function fmtRM(n){ return 'RM ' + Number(n||0).toLocaleString('en-MY',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+function fmtInt(n){ return Math.round(Number(n)||0).toLocaleString('en-MY'); }
 function fmtUSD(n){ return n ? '$' + Number(n).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}) : '—'; }
 function escHtml(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
@@ -411,6 +426,52 @@ function render(rows, period){
     <div class="kpi-card red"><div class="kpi-label">Avg Order Value</div><div class="kpi-val red">${fmtRM(avgCur)}</div>${momChip(avgMoM)}<div class="kpi-sub">Prev period: ${fmtRM(avgPrev)}</div></div>
     <div class="kpi-card green"><div class="kpi-label">All-Time Total</div><div class="kpi-val green">${fmtRM(allTimeRM)}</div><div class="kpi-sub">${allTimeUSD?`Plus USD orders: ${fmtUSD(allTimeUSD)}`:'Cumulative international business revenue'}</div></div>
   `;
+
+  // ── This Year vs Last Year monthly chart (IB revenue) ──
+  // Target year follows the selection: Year mode → selected year; Month mode →
+  // that month's year; Range mode → year of the range end; else current year.
+  let targetYear;
+  if(period.mode==='year'){ targetYear = parseInt(document.getElementById('year-select').value,10); }
+  else if(period.mode==='month'){ targetYear = parseInt(document.getElementById('month-select').value.split('-')[0],10); }
+  else if(period.mode==='range'){ const e=document.getElementById('range-end').value; targetYear = e ? new Date(e+'T00:00:00').getFullYear() : new Date().getFullYear(); }
+  else { targetYear = new Date().getFullYear(); }
+
+  const monthTotalsForYear = (yr)=>{ const arr=new Array(12).fill(0); rows.forEach(r=>{ if(r.date.y===yr) arr[r.date.m-1]+=r.rm; }); return arr; };
+  const curYear = monthTotalsForYear(targetYear);
+  const prevYear = monthTotalsForYear(targetYear-1);
+  let lastM = 0; for(let i=0;i<12;i++) if(curYear[i]>0 || prevYear[i]>0) lastM = i+1;
+  if(lastM===0) lastM = 12;
+  if(charts.monthly) charts.monthly.destroy();
+  charts.monthly = new Chart(document.getElementById('chartMonthly'), {
+    data:{ labels: mNames.slice(0,lastM),
+      datasets:[
+        { type:'bar', label:String(targetYear), data:curYear.slice(0,lastM),
+          backgroundColor:'#166534cc', borderColor:'#166534', borderWidth:1, borderRadius:6, order:2 },
+        { type:'line', label:String(targetYear-1), data:prevYear.slice(0,lastM),
+          borderColor:'#dc2626', backgroundColor:'#dc2626', borderWidth:3, tension:0.4,
+          pointBackgroundColor:'#fff', pointBorderColor:'#dc2626', pointBorderWidth:2, pointRadius:4, order:1 }
+      ] },
+    options:{ responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{display:true, position:'top', labels:{boxWidth:14, font:{size:11}}},
+        tooltip:{ callbacks:{ label:c=>c.dataset.label+': RM '+fmtInt(c.parsed.y) } } },
+      scales:{ y:{ beginAtZero:true, ticks:{ callback:v=>'RM '+fmtInt(v) } } } }
+  });
+
+  // YTD cumulative YoY — Jan .. latest month with data in the target year
+  let lastCur = 0; for(let i=0;i<12;i++) if(curYear[i]>0) lastCur = i+1;
+  const ytdEl = document.getElementById('ytdSummary');
+  if(lastCur===0){
+    ytdEl.innerHTML = `<span style="color:#9ca3af">No ${targetYear} international business data yet</span>`;
+  } else {
+    const ytdThis = curYear.slice(0,lastCur).reduce((a,b)=>a+b,0);
+    const ytdPrev = prevYear.slice(0,lastCur).reduce((a,b)=>a+b,0);
+    const diff = ytdThis - ytdPrev; const up = diff>=0;
+    const range = 'Jan–'+mNames[lastCur-1];
+    const badge = ytdPrev>0
+      ? `<span class="ytd-tag ${up?'up':'dn'}">${up?'▲':'▼'} ${Math.abs(diff/ytdPrev*100).toFixed(1)}% (${up?'+':'−'}RM ${fmtInt(Math.abs(diff))})</span>`
+      : `<span class="ytd-tag na">no ${targetYear-1} data</span>`;
+    ytdEl.innerHTML = `<strong>YTD ${range}</strong> · ${targetYear}: RM ${fmtInt(ytdThis)} vs ${targetYear-1}: RM ${fmtInt(ytdPrev)} ${badge}`;
+  }
 
   // ── Trend chart: always last 12 months (relative to today) ──
   const now = new Date();
