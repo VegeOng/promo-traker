@@ -568,7 +568,7 @@ function profitStats(){
     if(r['SALES PERSON'])cm.sp=r['SALES PERSON'];
   });
   Object.values(custMap).forEach(c=>{c.margin=c.netRev?c.profit/c.netRev:0;Object.values(c.skus).forEach(s=>{s.margin=s.net?s.profit/s.net:0;});});
-  return Object.values(custMap).sort((a,b)=>b.profit-a.profit);
+  return Object.values(custMap).sort((a,b)=>b.margin-a.margin);
 }
 
 // Total profit per calendar month for a given year, ignoring the current month/filter
@@ -663,7 +663,7 @@ function rProfit(){
     h+=`<div class="alert-card red" style="margin-bottom:12px"><div><div class="alert-title">⚠️ ${lossCusts.length} 家客户在亏钱</div><div class="alert-sub">${lossCusts.map(c=>c.name+' ('+fmt(c.profit)+')').join(' · ')}</div></div></div>`;
   }
 
-  h+=`<div class="card"><h3><span class="dot"></span>客户利润排名 · 点击查看 SKU 明细</h3>
+  h+=`<div class="card"><h3><span class="dot"></span>客户利润排名（按 Margin 排序）· 点击查看 SKU 明细</h3>
     <div style="overflow-x:auto"><table class="dt" id="profitTable"><tr><th>客户</th><th>扣款明细</th><th>毛收入</th><th>扣款额</th><th>净收入</th><th>成本</th><th>毛利</th><th>Margin</th></tr>`;
   const ms=monthlyStats();
   const latestYM=state.month>0?state.year+'-'+String(state.month).padStart(2,'0'):state.year+'-'+String(ms.length?Math.max(...ms.map(m=>m.m)):1).padStart(2,'0');
