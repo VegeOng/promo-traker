@@ -212,10 +212,34 @@ function parseSheetDate(raw){
 
 function monthKey(y,m){ return `${y}-${String(m).padStart(2,'0')}`; }
 
+// The Apps Script endpoint is slow (2–2.5MB payload) and intermittently returns
+// 404/5xx or times out while Google warms the script. Retry with backoff so a
+// transient failure recovers on its own instead of showing an error page.
+async function fetchJSONWithRetry(url, attempts=4){
+  let lastErr;
+  for(let i=0;i<attempts;i++){
+    try{
+      const ctrl = new AbortController();
+      const timer = setTimeout(()=>ctrl.abort(), 90000); // cold start can take ~65s
+      try{
+        const res = await fetch(url, { signal: ctrl.signal, redirect:'follow' });
+        if(!res.ok) throw new Error('HTTP ' + res.status);
+        return await res.json();
+      } finally { clearTimeout(timer); }
+    }catch(e){
+      lastErr = e;
+      if(i < attempts-1){
+        const loadEl = document.getElementById('loading');
+        if(loadEl) loadEl.innerHTML = `<div class="spinner"></div>Data source is slow, retrying… (${i+2}/${attempts})`;
+        await new Promise(r=>setTimeout(r, 2000*(i+1)));
+      }
+    }
+  }
+  throw lastErr;
+}
+
 async function fetchIBData(){
-  const res = await fetch(API_URL);
-  if(!res.ok) throw new Error('HTTP ' + res.status);
-  const json = await res.json();
+  const json = await fetchJSONWithRetry(API_URL);
   const rows = json.data || [];
   const skuCols = Object.keys(rows[0]||{}).filter(k=>!NON_SKU_COLS.has(k));
   return rows.filter(r=>r['TYPE']==='IB').map(r=>{
