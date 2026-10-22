@@ -1122,11 +1122,35 @@ function renderSPTab() {
   const maxTotal = sorted.length ? sorted[0][1].total : 1;
   const grandTotal = sorted.reduce((s,e)=>s+e[1].total,0);
 
+  // Build last-year same-period data per SP
+  const spMapLY = {};
+  let lyData = [];
+  const typeFilter = document.getElementById('filterType').value;
+  if (currentMode === 'month') {
+    const val = document.getElementById('month-select').value;
+    if (val) { const [y,m] = val.split('-').map(Number); lyData = allData.filter(r=>parseInt(r['YEAR'])===y-1&&parseInt(r['MONTH'])===m); }
+  } else if (currentMode === 'year') {
+    const y = parseInt(document.getElementById('year-select').value);
+    if (y) lyData = allData.filter(r=>parseInt(r['YEAR'])===y-1);
+  }
+  if (typeFilter) lyData = lyData.filter(r=>r['TYPE']===typeFilter);
+  lyData.forEach(r=>{const sp=r['SALES PERSON']||'Unknown';spMapLY[sp]=(spMapLY[sp]||0)+getTotalField(r);});
+
   // SP Cards
   const colors = ['#166534','#dc2626','#d97706','#3b82f6','#8b5cf6','#0891b2'];
   spColorMap = {};
   sorted.forEach(([name],i) => spColorMap[name] = colors[i%colors.length]);
-  document.getElementById('spGrid').innerHTML = sorted.map(([name, d], i) => `
+  document.getElementById('spGrid').innerHTML = sorted.map(([name, d], i) => {
+    const lyTotal = spMapLY[name] || 0;
+    let yoyHtml = '';
+    if (lyTotal > 0) {
+      const pct = (d.total - lyTotal) / lyTotal * 100;
+      const up = pct >= 0;
+      yoyHtml = `<div style="font-size:11px;margin-top:5px;color:${up?'#166534':'#dc2626'};font-weight:700">${up?'▲':'▼'} ${Math.abs(pct).toFixed(1)}% vs LY &nbsp;<span style="font-weight:400;color:var(--text-muted)">RM ${fmt(lyTotal)}</span></div>`;
+    } else if (currentMode==='month'||currentMode==='year') {
+      yoyHtml = `<div style="font-size:11px;margin-top:5px;color:var(--text-muted)">— no LY data</div>`;
+    }
+    return `
     <div class="sp-card" onclick="showSPDetail('${name.replace(/'/g,"\\'")}',${i})" style="cursor:pointer" title="Click to view ${name}'s customer details">
       <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:0.75rem">
         <div style="width:40px;height:40px;border-radius:50%;background:${colors[i%colors.length]}20;color:${colors[i%colors.length]};display:flex;align-items:center;justify-content:center;font-weight:700;font-size:1rem">${name.charAt(0)}</div>
@@ -1136,7 +1160,8 @@ function renderSPTab() {
         </div>
       </div>
       <div class="sp-total">RM ${fmt(d.total)}</div>
-      <div class="sp-stats">
+      ${yoyHtml}
+      <div class="sp-stats" style="margin-top:8px">
         <div class="sp-stat"><span>${d.orders}</span>Orders</div>
         <div class="sp-stat"><span>${d.outlets.size}</span>Customers</div>
         <div class="sp-stat"><span>${grandTotal>0?(d.total/grandTotal*100).toFixed(1):0}%</span>Share</div>
@@ -1146,7 +1171,7 @@ function renderSPTab() {
       </div>
       ${(()=>{const n=spNotOrderedThisMonth(name).missing.length;return `<div style="margin-top:8px;font-size:11px;font-weight:700">${n?`<span style="color:#b45309">⚠️ ${n} customer${n>1?'s':''} not ordered this month</span>`:`<span style="color:#16a34a">✅ all reordered this month</span>`}</div>`;})()}
     </div>
-  `).join('') || '<div class="empty">No data</div>';
+  `;}).join('') || '<div class="empty">No data</div>';
 
   // SP Table
   document.getElementById('spTableBody').innerHTML = sorted.map(([name,d],i) => `
