@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>MamaVege | 利润 & 目标管理</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Serif+Display&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 :root{--bg:#f4f6f3;--primary:#166534;--primary-light:#dcfce7;--primary-mid:#16a34a;--danger:#dc2626;--danger-light:#fee2e2;--warn:#d97706;--warn-light:#fef3c7;--text:#1a1a1a;--text2:#6b7280;--text3:#9ca3af;--border:#e5e7eb;--card:#ffffff;--white:#fafafa}
@@ -93,6 +94,14 @@ table.dt tr.clickable:hover td{background:var(--primary-light)}
 .team-bar{width:100%;height:6px;background:var(--border);border-radius:3px;margin-top:6px}
 .team-bar-fill{height:100%;border-radius:3px;transition:width .6s}
 .team-pct{font-size:20px;font-weight:700;font-family:'DM Serif Display',serif}
+
+.chart-box{position:relative;height:260px}
+.ytd-summary{font-size:13px;color:var(--text2);margin:-4px 0 12px}
+.ytd-summary strong{color:var(--text)}
+.ytd-tag{display:inline-block;font-weight:800;padding:2px 9px;border-radius:12px;margin-left:4px;font-size:12px}
+.ytd-tag.up{background:var(--primary-light);color:var(--primary)}
+.ytd-tag.dn{background:var(--danger-light);color:var(--danger)}
+.ytd-tag.na{background:#f1f5f9;color:var(--text3)}
 
 .section-title{font-family:'DM Serif Display',serif;font-size:1.1rem;color:var(--text);margin:20px 0 10px;padding-bottom:6px;border-bottom:2px solid var(--primary-light)}
 .inline-filters{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
@@ -381,7 +390,7 @@ function render(){
     case'customers':c.innerHTML=rCustomers();break;
     case'products':c.innerHTML=rProducts();break;
     case'skutop':c.innerHTML=rSkuTop();break;
-    case'profit':c.innerHTML=rProfit();break;
+    case'profit':c.innerHTML=rProfit();renderProfitMonthlyChart();break;
     case'team':c.innerHTML=rTeam();break;
     case'admin':rAdmin();break;
   }
@@ -557,6 +566,59 @@ function profitStats(){
   return Object.values(custMap).sort((a,b)=>b.profit-a.profit);
 }
 
+// Total profit per calendar month for a given year, ignoring the current month/filter
+// selection — used for the "this year vs last year" monthly chart.
+function monthlyProfitForYear(yr){
+  const arr=new Array(12).fill(0);
+  allData.filter(r=>String(r['YEAR'])===String(yr)).forEach(r=>{
+    const m=getMonth(r);if(!m)return;
+    const cust=r['COMPANY']||'Unknown';
+    const ym=yr+'-'+String(m).padStart(2,'0');
+    const eff=getEffectiveConfig(cust,ym);if(!eff||!eff.skus)return;
+    const cfg=eff.skus;
+    SKUS.forEach(sku=>{
+      const qty=parseFloat(r[sku])||0;if(!qty||!cfg[sku])return;
+      const s=cfg[sku],gross=qty*s.w,ded=gross*s.d,net=gross-ded,cst=qty*s.c;
+      arr[m-1]+=(net-cst);
+    });
+  });
+  return arr;
+}
+
+let _profitChart=null;
+function renderProfitMonthlyChart(){
+  const canvas=document.getElementById('profitMonthlyChart');
+  if(!canvas||typeof Chart==='undefined')return;
+  const ty=state.year;
+  const curY=monthlyProfitForYear(ty);
+  const prevY=monthlyProfitForYear(ty-1);
+  const hasPrev=prevY.some(v=>v!==0);
+  let lastM=0;for(let i=0;i<12;i++)if(curY[i]!==0||prevY[i]!==0)lastM=i+1;
+  if(!lastM)lastM=12;
+  const mns=['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
+  if(_profitChart){_profitChart.destroy();_profitChart=null;}
+  _profitChart=new Chart(canvas,{
+    data:{labels:mns.slice(0,lastM),
+      datasets:[
+        {type:'bar',label:ty+'年',data:curY.slice(0,lastM),backgroundColor:'#166534cc',borderColor:'#166534',borderWidth:1,borderRadius:6,order:2},
+        ...(hasPrev?[{type:'line',label:(ty-1)+'年',data:prevY.slice(0,lastM),borderColor:'#dc2626',backgroundColor:'#dc2626',borderWidth:3,tension:.4,pointBackgroundColor:'#fff',pointBorderColor:'#dc2626',pointBorderWidth:2,pointRadius:4,order:1}]:[])
+      ]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:true,position:'top',labels:{boxWidth:14,font:{size:11}}},
+        tooltip:{callbacks:{label:c=>c.dataset.label+': '+fmtK(c.parsed.y)}}},
+      scales:{y:{beginAtZero:true,ticks:{callback:v=>fmtK(v),font:{size:10}}}}}
+  });
+  const el=document.getElementById('profitMonthlyYtd');if(!el)return;
+  let lastCur=0;for(let i=0;i<12;i++)if(curY[i]!==0)lastCur=i+1;
+  if(!lastCur){el.innerHTML=`<span style="color:var(--text3)">暂无 ${ty}年 毛利数据</span>`;return;}
+  const ytdThis=curY.slice(0,lastCur).reduce((a,b)=>a+b,0);
+  const ytdPrev=prevY.slice(0,lastCur).reduce((a,b)=>a+b,0);
+  const diff=ytdThis-ytdPrev,up=diff>=0;
+  const range='1月–'+mns[lastCur-1];
+  const badge=hasPrev?`<span class="ytd-tag ${up?'up':'dn'}">${up?'▲':'▼'} ${Math.abs(ytdPrev?diff/ytdPrev*100:0).toFixed(1)}% (${up?'+':'−'}${fmtK(Math.abs(diff))})</span>`:`<span class="ytd-tag na">无 ${ty-1}年 数据</span>`;
+  el.innerHTML=`<strong>YTD ${range}</strong> · ${ty}年: ${fmtK(ytdThis)} vs ${ty-1}年: ${fmtK(ytdPrev)} ${badge}`;
+}
+
 function rProfit(){
   if(sessionStorage.getItem('hq_auth')!=='1'){document.getElementById('authModal').classList.add('show');return'<div class="empty">🔐 请先验证 HQ 密码</div>';}
   const custs=profitStats();
@@ -585,6 +647,11 @@ function rProfit(){
     <div class="kpi gold"><div class="label">总净收入</div><div class="value">${fmtK(totalNet)}</div><div class="sub">扣款后</div></div>
     <div class="kpi blue"><div class="label">总成本</div><div class="value">${fmtK(totalCost)}</div></div>
     <div class="kpi ${totalProfit>=0?'green':'red'}"><div class="label">总毛利</div><div class="value">${fmt(totalProfit)}</div><div class="sub">综合 Margin ${(totalMargin*100).toFixed(1)}%</div></div>
+  </div>`;
+
+  h+=`<div class="card"><h3><span class="dot"></span>📊 月度毛利 — 本年 vs 去年</h3>
+    <div id="profitMonthlyYtd" class="ytd-summary"></div>
+    <div class="chart-box"><canvas id="profitMonthlyChart"></canvas></div>
   </div>`;
 
   if(lossCusts.length){
