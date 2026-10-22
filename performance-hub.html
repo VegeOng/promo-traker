@@ -675,7 +675,13 @@ function toggleProfitDetail(name,row){
 
 function rProfitCfgList(){
   if(!cfgMonth)cfgMonth=state.year+'-'+String(state.month>0?state.month:1).padStart(2,'0');
-  const allCusts=[...new Set([...Object.keys(PC),...profitDB.map(r=>r.customer_name)])].sort();
+  // Auto-detect every real customer name ever seen in the sales data (COMPANY column),
+  // so admins pick from actual names instead of retyping them one by one.
+  const realNames=[...new Set(allData.map(r=>r['COMPANY']||'').filter(Boolean))];
+  const configuredNames=[...new Set([...Object.keys(PC),...profitDB.map(r=>r.customer_name)])];
+  const allCusts=[...new Set([...configuredNames,...realNames])].sort();
+  const cfgM=parseInt(cfgMonth.split('-')[1]);
+  const monthSales=new Set(allData.filter(r=>String(r['YEAR'])===String(state.year)&&String(r['MONTH']).trim()===String(cfgM)).map(r=>r['COMPANY']||''));
   const months=[];for(let i=1;i<=12;i++)months.push(state.year+'-'+String(i).padStart(2,'0'));
 
   let h=`<div class="section-title">💰 利润配置管理（按月份）</div>
@@ -687,13 +693,29 @@ function rProfitCfgList(){
         return`<button class="btn ${ym===cfgMonth?'btn-primary':'btn-outline'}" style="font-size:11px;padding:4px 10px;position:relative" onclick="cfgMonth='${ym}';cfgForm=null;render()">${parseInt(ym.split('-')[1])}月${hasData?' ✏️':''}</button>`;
       }).join('')}
     </div>
-    <h3 style="margin-top:10px"><span class="dot"></span>客户配置 — ${parseInt(cfgMonth.split('-')[1])}月</h3>`;
+    <h3 style="margin-top:10px"><span class="dot"></span>客户配置 — ${parseInt(cfgMonth.split('-')[1])}月</h3>
+    <p style="font-size:11px;color:var(--text3);margin-bottom:8px">以下客户名单已根据销售数据自动抓取，无需手动逐个添加。</p>`;
 
+  let unconfigured=0;
   allCusts.forEach(name=>{
-    const eff=getEffectiveConfig(name,cfgMonth);if(!eff)return;
+    const eff=getEffectiveConfig(name,cfgMonth);
+    const esc=name.replace(/'/g,"\\'");
+    const hasSalesThisMonth=monthSales.has(name);
+    if(!eff){
+      unconfigured++;
+      h+=`<div style="display:flex;align-items:center;justify-content:space-between;padding:8px;border-bottom:1px solid var(--border);background:var(--warn-light)">
+        <div><strong>${name}</strong>
+          <span style="font-size:10px;padding:2px 6px;border-radius:3px;margin-left:4px;background:var(--danger-light);color:var(--danger)">⚠️ 未配置利润参数</span>
+          <br><span style="font-size:11px;color:var(--text2)">${hasSalesThisMonth?'本月有销售数据':'历史出现过，本月无销售'}</span>
+        </div>
+        <div style="display:flex;gap:4px">
+          <button class="btn btn-primary" style="font-size:11px;padding:4px 10px" onclick="initCfgForm('${esc}',false)">⚡ 自动配置</button>
+        </div>
+      </div>`;
+      return;
+    }
     const skuCount=Object.keys(eff.skus).length;
     const dedSummary=eff.deds?(eff.deds.uniform?eff.deds.total:(eff.deds.bysku?'按产品不同':'—')):'—';
-    const esc=name.replace(/'/g,"\\'");
     const exactMatch=profitDB.some(r=>r.customer_name===name&&r.year_month===cfgMonth);
     const sourceLabel=exactMatch?'✏️ 本月自定义':eff.isDB?'⬆️ 继承自 '+eff.from:'📌 内置默认';
     const sourceBg=exactMatch?'background:#dbeafe;color:#1e40af':eff.isDB?'background:#fef3c7;color:#92400e':'background:#f3f4f6;color:var(--text3)';
@@ -708,7 +730,8 @@ function rProfitCfgList(){
       </div>
     </div>`;
   });
-  h+=`<button class="btn btn-primary" style="margin-top:10px;width:100%" onclick="initCfgForm('',false)">➕ 添加新客户 (${parseInt(cfgMonth.split('-')[1])}月)</button></div>`;
+  if(unconfigured)h+=`<p style="font-size:11px;color:var(--danger);margin-top:8px">⚠️ ${unconfigured} 家客户在销售数据中出现过但还没有利润配置，点击"⚡ 自动配置"直接设置（客户名已自动带入，不会打错字）。</p>`;
+  h+=`<button class="btn btn-outline" style="margin-top:10px;width:100%" onclick="initCfgForm('',false)">➕ 手动添加客户（非销售数据中的客户，${parseInt(cfgMonth.split('-')[1])}月）</button></div>`;
   if(cfgForm)h+=rProfitCfgForm();
   h+=`<div class="card" style="margin-top:10px"><p style="font-size:11px;color:var(--text2)">⚠️ 需先在 Supabase 创建 profit_config 表（含 year_month 列）才能保存。SQL 在下方。</p></div>`;
   return h;
@@ -724,7 +747,7 @@ function initCfgForm(name,isEdit){
         dd:pdd&&pdd.bysku&&pdd.bysku[sku]?pdd.bysku[sku].items.map(i=>i[0]+' '+i[1]).join(' + '):''}))};
     if(!cfgForm.skus.length)cfgForm.skus=[{sku:'',w:'',c:'',d:'',dd:''}];
     if(!cfgForm.deds.length)cfgForm.deds=[{n:'',r:''}];
-  }else{cfgForm={name:'',isEdit:false,uniform:true,deds:[{n:'',r:''}],skus:[{sku:'',w:'',c:'',d:'',dd:''}]};}
+  }else{cfgForm={name:name||'',isEdit:false,locked:!!name,uniform:true,deds:[{n:'',r:''}],skus:[{sku:'',w:'',c:'',d:'',dd:''}]};}
   render();
 }
 
@@ -732,8 +755,8 @@ function rProfitCfgForm(){
   const f=cfgForm;const mLabel=parseInt(cfgMonth.split('-')[1])+'月';
   let h=`<div class="card" style="border:2px solid var(--primary);margin-top:10px">
     <h3><span class="dot"></span>${f.isEdit?'✏️ 编辑':'➕ 添加'}客户利润配置 — <span style="color:var(--danger)">${mLabel}起生效</span></h3>
-    <div class="form-group"><label>客户名称（必须与 Google Sheet 的 COMPANY 列完全一致）</label>
-      <input id="cfgName" value="${f.name}" ${f.isEdit?'disabled':''}></div>
+    <div class="form-group"><label>客户名称${f.locked?'（已自动带入，与销售数据完全一致）':'（必须与 Google Sheet 的 COMPANY 列完全一致）'}</label>
+      <input id="cfgName" value="${f.name}" ${f.isEdit||f.locked?'disabled':''}></div>
     <div style="margin-bottom:10px"><label style="font-size:12px;font-weight:600;color:var(--text2)">扣款模式</label>
       <div style="display:flex;gap:8px;margin-top:4px">
         <button class="btn ${f.uniform?'btn-primary':'btn-outline'}" style="font-size:12px" onclick="cfgForm.uniform=true;render()">统一扣款</button>
@@ -773,7 +796,7 @@ function rProfitCfgForm(){
 }
 
 async function saveProfitCfg(){
-  const name=cfgForm.isEdit?cfgForm.name:(document.getElementById('cfgName').value||'').trim();
+  const name=(cfgForm.isEdit||cfgForm.locked)?cfgForm.name:(document.getElementById('cfgName').value||'').trim();
   if(!name){toast('请填写客户名称','err');return;}
   const skus={};const totDR=cfgForm.uniform?cfgForm.deds.reduce((s,d)=>s+(parseFloat(d.r)||0),0)/100:0;
   cfgForm.skus.forEach(s=>{if(!s.sku)return;skus[s.sku]={w:parseFloat(s.w)||0,c:parseFloat(s.c)||0,d:cfgForm.uniform?totDR:(parseFloat(s.d)||0)/100};});
