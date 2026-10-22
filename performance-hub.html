@@ -255,11 +255,15 @@ const PDD={
   'SHCR':{items:[['Fix Rebate','2.0%'],['A/P','2.0%']],total:'4.0%'}}}
 };
 
-let allData=[], profitDB=[], state={year:0,month:0,tab:'profit',targets:{monthly:500000,annual:6000000}};
+let allData=[], profitDB=[], ignoredDB=[], state={year:0,month:0,tab:'profit',targets:{monthly:500000,annual:6000000}};
 let custSearchTerm='', custSPFilter='', cfgForm=null, cfgMonth='';
 
 async function loadProfitConfig(){
   try{const r=await fetch(SB+'/profit_config?order=year_month.asc',{headers:SB_HDR});if(r.ok)profitDB=await r.json();else profitDB=[];}catch(e){profitDB=[];}
+}
+// Customers the admin has dismissed from the profit-config list (no longer doing business with them)
+async function loadIgnoredCustomers(){
+  try{const r=await fetch(SB+'/profit_ignored_customers',{headers:SB_HDR});if(r.ok)ignoredDB=await r.json();else ignoredDB=[];}catch(e){ignoredDB=[];}
 }
 // Find effective config for a customer in a given year-month (e.g. "2026-03")
 // Priority: 1) exact month match in DB, 2) most recent previous month in DB, 3) hardcoded PC/PDD
@@ -292,6 +296,7 @@ async function loadData(){
     document.getElementById('lastUpdated').textContent='更新: '+new Date().toLocaleTimeString('zh-MY');
     populateYears();
     await loadProfitConfig();
+    await loadIgnoredCustomers();
     render();
     loadTargets();
   }catch(e){document.getElementById('content').innerHTML='<div class="empty">❌ 无法加载数据<br><small>'+e.message+'</small></div>';}
@@ -751,7 +756,8 @@ function rProfitCfgList(){
   // so admins pick from actual names instead of retyping them one by one.
   const realNames=[...new Set(allData.map(r=>r['COMPANY']||'').filter(Boolean))];
   const configuredNames=[...new Set([...Object.keys(PC),...profitDB.map(r=>r.customer_name)])];
-  const allCusts=[...new Set([...configuredNames,...realNames])].sort();
+  const ignoredNames=new Set(ignoredDB.map(r=>r.customer_name));
+  const allCusts=[...new Set([...configuredNames,...realNames])].filter(n=>!ignoredNames.has(n)).sort();
   const cfgM=parseInt(cfgMonth.split('-')[1]);
   const monthSales=new Set(allData.filter(r=>String(r['YEAR'])===String(state.year)&&String(r['MONTH']).trim()===String(cfgM)).map(r=>r['COMPANY']||''));
   const months=[];for(let i=1;i<=12;i++)months.push(state.year+'-'+String(i).padStart(2,'0'));
@@ -782,6 +788,7 @@ function rProfitCfgList(){
         </div>
         <div style="display:flex;gap:4px">
           <button class="btn btn-primary" style="font-size:11px;padding:4px 10px" onclick="initCfgForm('${esc}',false)">⚡ 自动配置</button>
+          <button class="btn" style="font-size:11px;padding:4px 10px;color:var(--text2);border:1px solid var(--border);background:none" onclick="ignoreCustomer('${esc}')">🚫 不再显示</button>
         </div>
       </div>`;
       return;
@@ -805,8 +812,34 @@ function rProfitCfgList(){
   if(unconfigured)h+=`<p style="font-size:11px;color:var(--danger);margin-top:8px">⚠️ ${unconfigured} 家客户在销售数据中出现过但还没有利润配置，点击"⚡ 自动配置"直接设置（客户名已自动带入，不会打错字）。</p>`;
   h+=`<button class="btn btn-outline" style="margin-top:10px;width:100%" onclick="initCfgForm('',false)">➕ 手动添加客户（非销售数据中的客户，${parseInt(cfgMonth.split('-')[1])}月）</button></div>`;
   if(cfgForm)h+=rProfitCfgForm();
-  h+=`<div class="card" style="margin-top:10px"><p style="font-size:11px;color:var(--text2)">⚠️ 需先在 Supabase 创建 profit_config 表（含 year_month 列）才能保存。SQL 在下方。</p></div>`;
+  if(ignoredDB.length){
+    h+=`<div class="card" style="margin-top:10px"><h3><span class="dot" style="background:var(--text3)"></span>🚫 已忽略客户 (${ignoredDB.length}) · 不会出现在上方列表</h3>`;
+    ignoredDB.forEach(r=>{
+      const esc=r.customer_name.replace(/'/g,"\\'");
+      h+=`<div style="display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);font-size:12px">
+        <span>${r.customer_name}</span>
+        <button class="btn btn-outline" style="font-size:11px;padding:3px 8px" onclick="restoreCustomer('${esc}')">↩️ 恢复显示</button>
+      </div>`;
+    });
+    h+=`</div>`;
+  }
+  h+=`<div class="card" style="margin-top:10px"><p style="font-size:11px;color:var(--text2)">⚠️ 需先在 Supabase 创建 profit_config 和 profit_ignored_customers 表才能保存。SQL 在下方。</p></div>`;
   return h;
+}
+
+async function ignoreCustomer(name){
+  if(!confirm('确定不再显示「'+name+'」吗？\n以后它在"已忽略客户"列表里，可以随时恢复。'))return;
+  try{
+    const r=await fetch(SB+'/profit_ignored_customers',{method:'POST',headers:{...SB_HDR,'Prefer':'return=minimal'},body:JSON.stringify([{customer_name:name}])});
+    if(!r.ok)throw new Error();
+    toast('✅ 已隐藏 '+name,'ok');await loadIgnoredCustomers();render();
+  }catch(e){toast('操作失败（profit_ignored_customers 表可能未创建）','err');}
+}
+async function restoreCustomer(name){
+  try{
+    await fetch(SB+'/profit_ignored_customers?customer_name=eq.'+encodeURIComponent(name),{method:'DELETE',headers:SB_HDR});
+    toast('✅ 已恢复 '+name,'ok');await loadIgnoredCustomers();render();
+  }catch(e){toast('恢复失败','err');}
 }
 
 // Which SKUs a customer actually bought, and how much — so the config form can be
@@ -959,7 +992,16 @@ CREATE TABLE IF NOT EXISTS profit_config (
   UNIQUE(customer_name, year_month)
 );
 ALTER TABLE profit_config ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "Allow all" ON profit_config FOR ALL USING (true) WITH CHECK (true);</pre>
+CREATE POLICY "Allow all" ON profit_config FOR ALL USING (true) WITH CHECK (true);
+
+-- 忽略客户表（永久不在利润配置界面显示）
+CREATE TABLE IF NOT EXISTS profit_ignored_customers (
+  id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+  customer_name text NOT NULL UNIQUE,
+  created_at timestamptz DEFAULT now()
+);
+ALTER TABLE profit_ignored_customers ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Allow all" ON profit_ignored_customers FOR ALL USING (true) WITH CHECK (true);</pre>
     <button class="btn btn-outline" style="margin-top:8px" onclick="navigator.clipboard.writeText(document.getElementById('sqlPre').textContent);toast('已复制','ok')">📋 复制 SQL</button></div>`;
 }
 
