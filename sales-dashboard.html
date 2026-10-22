@@ -1170,7 +1170,7 @@ function renderSPTab() {
       <div class="sp-bar">
         <div class="progress-bar"><div class="progress-fill" style="width:${(d.total/maxTotal*100).toFixed(1)}%;background:${colors[i%colors.length]}"></div></div>
       </div>
-      ${(()=>{const n=spNotOrderedThisMonth(name).missing.length;return `<div style="margin-top:8px;font-size:11px;font-weight:700">${n?`<span style="color:#b45309">⚠️ ${n} customer${n>1?'s':''} not ordered this month</span>`:`<span style="color:#16a34a">✅ all reordered this month</span>`}</div>`;})()}
+      ${(()=>{const s=spAllSilent(name);const n1=s.lastMonthSilent.length,n2=s.widerSilent.length,tot=n1+n2;return `<div style="margin-top:8px;font-size:11px;font-weight:700">${tot?`<span style="color:#b45309">⚠️ ${tot} silent</span><span style="color:var(--text-muted);font-weight:400"> (${n1} last mo · ${n2} older)</span>`:`<span style="color:#16a34a">✅ all active</span>`}</div>`;})()}
     </div>
   `;}).join('') || '<div class="empty">No data</div>';
 
@@ -1201,23 +1201,38 @@ function latestYM() {
   });
   return { y, m };
 }
-// Customers who ordered LAST month but have NOT ordered THIS month (for a salesperson)
-function spNotOrderedThisMonth(spName) {
+// All silent customers for a salesperson — last month + wider (2-3 months), with days
+function spAllSilent(spName) {
   const { y, m } = latestYM();
-  let py = y, pm = m - 1; if (pm < 1) { pm = 12; py = y - 1; }
+  const now = new Date();
   const norm = s => (s || '').trim();
-  const thisM = new Set(), lastMap = {};
-  allData.forEach(r => {
-    if (norm(r['SALES PERSON']) !== spName) return;
-    const yy = parseInt(r['YEAR']), mm = parseInt(r['MONTH']), c = norm(r['COMPANY']);
-    if (!c) return;
-    if (yy === y && mm === m) thisM.add(c);
-    if (yy === py && mm === pm) lastMap[c] = (lastMap[c] || 0) + getTotalField(r);
+  const prevMRef = m===1?12:m-1, prevYRef = m===1?y-1:y;
+  const widerMonths = [];
+  for (let i=2;i<=3;i++){let wm=m-i,wy=y;if(wm<=0){wm+=12;wy--;}widerMonths.push({y:wy,m:wm});}
+  const curCusts=new Set(), prevMonthMap={}, widerCustSet=new Set(), lastOrderMap={};
+  allData.forEach(r=>{
+    if(norm(r['SALES PERSON'])!==spName)return;
+    const yy=parseInt(r['YEAR']),mm=parseInt(r['MONTH']),c=norm(r['COMPANY']);
+    if(!c)return;
+    const rawD=r['INVOICE DATE']||r['PO DATE']||'';
+    if(rawD&&(!lastOrderMap[c]||rawD>lastOrderMap[c]))lastOrderMap[c]=rawD;
+    if(yy===y&&mm===m)curCusts.add(c);
+    if(yy===prevYRef&&mm===prevMRef){if(!prevMonthMap[c])prevMonthMap[c]=0;prevMonthMap[c]+=getTotalField(r);}
+    if(widerMonths.some(p=>yy===p.y&&mm===p.m))widerCustSet.add(c);
   });
-  const missing = Object.keys(lastMap).filter(c => !thisM.has(c))
-    .map(c => ({ c, amt: lastMap[c] })).sort((a, b) => b.amt - a.amt);
-  return { missing, y, m, py, pm };
+  const prevMonthCustSet=new Set(Object.keys(prevMonthMap));
+  const lastMonthSilent=Object.entries(prevMonthMap).filter(([c])=>!curCusts.has(c)).map(([c,amt])=>{
+    const rawD=lastOrderMap[c];const daysAgo=rawD?Math.floor((now-new Date(rawD))/86400000):null;
+    return{c,amt,daysAgo};
+  }).sort((a,b)=>b.amt-a.amt);
+  const widerSilent=[...widerCustSet].filter(c=>!curCusts.has(c)&&!prevMonthCustSet.has(c)).map(c=>{
+    const rawD=lastOrderMap[c];const daysAgo=rawD?Math.floor((now-new Date(rawD))/86400000):60;
+    return{c,daysAgo};
+  }).sort((a,b)=>a.daysAgo-b.daysAgo);
+  return{lastMonthSilent,widerSilent,y,m,prevYRef,prevMRef,curCusts};
 }
+// Kept for backward compat (card count only)
+function spNotOrderedThisMonth(spName){const s=spAllSilent(spName);return{missing:s.lastMonthSilent,y:s.y,m:s.m,py:s.prevYRef,pm:s.prevMRef};}
 
 function showSPDetail(name, colorIdx) {
   const colors = ['#166534','#dc2626','#d97706','#3b82f6','#8b5cf6','#0891b2'];
@@ -1238,18 +1253,27 @@ function showSPDetail(name, colorIdx) {
   });
   const custSorted = Object.entries(custMap).sort((a,b) => b[1].total - a[1].total);
 
-  // ⚠️ Customers not ordered this month (ordered last month, silent this month)
-  const ch = spNotOrderedThisMonth(name);
+  // ⚠️ Silent customers — last month + wider follow-up (with days)
+  const si = spAllSilent(name);
   const churnBox = document.getElementById('sp-churn-box');
-  if (ch.missing.length) {
-    churnBox.innerHTML = `<div class="table-card" style="border-left:5px solid #d97706;background:#fffbeb;margin-bottom:12px">
-      <div style="font-size:15px;font-weight:800;color:#b45309;margin-bottom:4px">⚠️ ${ch.missing.length} customer${ch.missing.length>1?'s':''} NOT ordered this month (${mNames[ch.m-1]} ${ch.y})</div>
-      <div style="font-size:12px;color:#92400e;margin-bottom:10px">Ordered in ${mNames[ch.pm-1]} ${ch.py} but no order yet this month — follow up 👇</div>
-      <div>${ch.missing.map(x=>`<span onclick="drillCustomer('${x.c.replace(/'/g,"\\'")}')" style="cursor:pointer;display:inline-block;background:#fef3c7;border:1px solid #f59e0b;border-radius:8px;padding:4px 11px;margin:3px 5px 3px 0;font-size:12.5px;color:#92400e;font-weight:600">${x.c} · RM ${fmtInt(x.amt)} 🔍</span>`).join('')}</div>
+  const urgC = d=>d<=45?'#d97706':d<=90?'#dc2626':'#6b7280';
+  const urgL = d=>`${d<=45?'🟠':d<=90?'🔴':'⚪'} ${d}d`;
+  let churnHtml = '';
+  if (si.lastMonthSilent.length) {
+    churnHtml += `<div class="table-card" style="border-left:5px solid #d97706;background:#fffbeb;margin-bottom:10px">
+      <div style="font-size:13px;font-weight:800;color:#b45309;margin-bottom:8px">📋 ${mNames[si.prevMRef-1]} ${si.prevYRef} customers — not yet reordered</div>
+      <table style="width:100%;font-size:12px;border-collapse:collapse">${si.lastMonthSilent.map((x,i)=>`<tr><td style="padding:3px 6px;color:#6b7280">${i+1}</td><td style="padding:3px 6px"><strong>${x.c}</strong></td><td style="padding:3px 6px;color:#6b7280">RM ${fmtInt(x.amt)}</td><td style="padding:3px 6px;font-weight:700;color:${urgC(x.daysAgo||0)}">${x.daysAgo?urgL(x.daysAgo):'⚠️'}</td></tr>`).join('')}</table>
     </div>`;
   } else {
-    churnBox.innerHTML = `<div class="table-card" style="border-left:5px solid #16a34a;background:#f0fdf4;margin-bottom:12px;font-size:13px;font-weight:700;color:#166534">✅ All of last month's customers have reordered this month (${mNames[ch.m-1]} ${ch.y})</div>`;
+    churnHtml += `<div class="table-card" style="border-left:5px solid #16a34a;background:#f0fdf4;margin-bottom:10px;font-size:13px;font-weight:700;color:#166534">✅ All ${mNames[si.prevMRef-1]} customers reordered this month</div>`;
   }
+  if (si.widerSilent.length) {
+    churnHtml += `<div class="table-card" style="border-left:5px solid #6b7280;background:#f9fafb;margin-bottom:10px">
+      <div style="font-size:13px;font-weight:800;color:#374151;margin-bottom:8px">🔔 Wider Follow-up — silent older customers</div>
+      <table style="width:100%;font-size:12px;border-collapse:collapse">${si.widerSilent.map((x,i)=>`<tr><td style="padding:3px 6px;color:#6b7280">${i+1}</td><td style="padding:3px 6px"><strong>${x.c}</strong></td><td style="padding:3px 6px;font-weight:700;color:${urgC(x.daysAgo)}">${urgL(x.daysAgo)}</td></tr>`).join('')}</table>
+    </div>`;
+  }
+  churnBox.innerHTML = churnHtml;
 
   document.getElementById('sp-breakdown-title').innerHTML =
     `<span style="color:${color}">${name}</span> — Customer Breakdown (${custSorted.length} customers)`;
