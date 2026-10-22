@@ -265,7 +265,12 @@ function getMergedPDD(){return PDD;} // kept for backward compat in rProfit disp
 
 function getTotal(r){for(const k of Object.keys(r)){if(k.replace(/[^A-Za-z]/g,'').toUpperCase()==='TOTALRM')return parseFloat(r[k])||0;}return 0;}
 function fmt(n){return'RM '+Number(n).toLocaleString('en',{minimumFractionDigits:0,maximumFractionDigits:0});}
-function fmtK(n){return n>=10000?'RM '+(n/1000).toFixed(0)+'K':fmt(n);}
+function fmtK(n){
+  const k=Math.round(n/1000);
+  if(Math.abs(k)>=1000)return'RM '+(n/1000000).toFixed(2)+'M';
+  if(Math.abs(n)>=10000)return'RM '+k+'K';
+  return fmt(n);
+}
 function fi(n){return n?Math.round(n).toLocaleString():'—';}
 
 // ===== DATA =====
