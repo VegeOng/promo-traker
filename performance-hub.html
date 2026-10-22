@@ -737,6 +737,19 @@ function rProfitCfgList(){
   return h;
 }
 
+// Which SKUs a customer actually bought, and how much — so the config form can be
+// pre-filled with real products instead of making the admin guess from the full SKU list.
+function customerPurchasedSkus(name,ym){
+  const y=ym.split('-')[0],m=parseInt(ym.split('-')[1]);
+  let rows=allData.filter(r=>(r['COMPANY']||'')===name&&String(r['YEAR'])===y&&String(r['MONTH']).trim()===String(m));
+  let scope='本月';
+  if(!rows.length){rows=allData.filter(r=>(r['COMPANY']||'')===name&&String(r['YEAR'])===y);scope='本年其他月份';}
+  if(!rows.length){rows=allData.filter(r=>(r['COMPANY']||'')===name);scope='历史';}
+  const map={};
+  rows.forEach(r=>{SKUS.forEach(sku=>{const q=parseFloat(r[sku])||0;if(!q)return;map[sku]=(map[sku]||0)+q;});});
+  return{scope,items:Object.entries(map).map(([sku,qty])=>({sku,qty})).sort((a,b)=>b.qty-a.qty)};
+}
+
 function initCfgForm(name,isEdit){
   if(isEdit){
     const eff=getEffectiveConfig(name,cfgMonth);
@@ -747,7 +760,16 @@ function initCfgForm(name,isEdit){
         dd:pdd&&pdd.bysku&&pdd.bysku[sku]?pdd.bysku[sku].items.map(i=>i[0]+' '+i[1]).join(' + '):''}))};
     if(!cfgForm.skus.length)cfgForm.skus=[{sku:'',w:'',c:'',d:'',dd:''}];
     if(!cfgForm.deds.length)cfgForm.deds=[{n:'',r:''}];
-  }else{cfgForm={name:name||'',isEdit:false,locked:!!name,uniform:true,deds:[{n:'',r:''}],skus:[{sku:'',w:'',c:'',d:'',dd:''}]};}
+  }else{
+    cfgForm={name:name||'',isEdit:false,locked:!!name,uniform:true,deds:[{n:'',r:''}],skus:[{sku:'',w:'',c:'',d:'',dd:''}]};
+    if(name){
+      const purchased=customerPurchasedSkus(name,cfgMonth);
+      if(purchased.items.length){
+        cfgForm.purchased=purchased;
+        cfgForm.skus=purchased.items.map(p=>({sku:p.sku,w:'',c:'',d:'',dd:'',qty:p.qty}));
+      }
+    }
+  }
   render();
 }
 
@@ -757,6 +779,10 @@ function rProfitCfgForm(){
     <h3><span class="dot"></span>${f.isEdit?'✏️ 编辑':'➕ 添加'}客户利润配置 — <span style="color:var(--danger)">${mLabel}起生效</span></h3>
     <div class="form-group"><label>客户名称${f.locked?'（已自动带入，与销售数据完全一致）':'（必须与 Google Sheet 的 COMPANY 列完全一致）'}</label>
       <input id="cfgName" value="${f.name}" ${f.isEdit||f.locked?'disabled':''}></div>
+    ${f.purchased?`<div style="background:#dbeafe;padding:8px 10px;border-radius:8px;margin-bottom:10px;font-size:12px">
+      <strong>📦 ${f.name} 采购产品（${f.purchased.scope}）：</strong>
+      ${f.purchased.items.map(p=>p.sku+' <span style="color:var(--text2)">×'+p.qty.toLocaleString()+'</span>').join(' · ')}
+      <br><span style="color:#1e40af">已自动带入下方产品配置，按每个产品填批发价/成本/扣款率即可。</span></div>`:''}
     <div style="margin-bottom:10px"><label style="font-size:12px;font-weight:600;color:var(--text2)">扣款模式</label>
       <div style="display:flex;gap:8px;margin-top:4px">
         <button class="btn ${f.uniform?'btn-primary':'btn-outline'}" style="font-size:12px" onclick="cfgForm.uniform=true;render()">统一扣款</button>
@@ -781,6 +807,7 @@ function rProfitCfgForm(){
     h+=`<div style="display:flex;gap:4px;align-items:center;margin-top:4px;flex-wrap:wrap">
       <select style="flex:2;min-width:100px;padding:6px;border:1px solid var(--border);border-radius:4px;font-size:12px" onchange="cfgForm.skus[${i}].sku=this.value">
         <option value="">选择SKU</option>${SKUS.map(sk=>`<option value="${sk}"${sk===s.sku?' selected':''}>${sk}</option>`).join('')}</select>
+      ${s.qty?`<span style="font-size:10px;color:var(--primary);background:var(--primary-light);padding:2px 6px;border-radius:3px;white-space:nowrap">采购 ×${s.qty.toLocaleString()}</span>`:''}
       <input style="width:60px;padding:6px;border:1px solid var(--border);border-radius:4px;font-size:12px;text-align:right" placeholder="批发价" value="${s.w}" onchange="cfgForm.skus[${i}].w=this.value">
       <input style="width:60px;padding:6px;border:1px solid var(--border);border-radius:4px;font-size:12px;text-align:right" placeholder="成本" value="${s.c}" onchange="cfgForm.skus[${i}].c=this.value">`;
     if(!f.uniform){
