@@ -69,6 +69,7 @@
   .ah-90 { background:#ffedd5; color:#9a3412; border-color:#fdba74; }
   .ah-120 { background:#fef3c7; color:#92400e; border-color:#fcd34d; }
   .ah-180 { background:#fefce8; color:#713f12; border-color:#fde68a; }
+  .ah-later { background:#eff6ff; color:#1e3a8a; border-color:#bfdbfe; }
   .alert-body { border:1px solid var(--border); border-top:none; border-radius:0 0 8px 8px; overflow:hidden; }
   .alert-row { display:grid; grid-template-columns:2fr 1.2fr 1.4fr 1.2fr 1fr; gap:8px; padding:10px 14px; font-size:12.5px; border-bottom:1px solid var(--border); align-items:center; }
   .alert-row:last-child { border-bottom:none; }
@@ -122,8 +123,14 @@
   <div class="hqs-summary" id="os-summary"></div>
 
   <div class="card">
-    <div class="card-title" style="justify-content:space-between;flex-wrap:wrap">
-      <span>⏰ Expiry Alerts</span>
+    <div class="card-title">⏰ Expiry Alerts</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">
+      <select id="os-alert-month" onchange="renderAlerts()" style="padding:6px 10px;border:1.5px solid var(--border);border-radius:8px;font-family:inherit;font-size:12px;background:white;">
+        <option value="">All Months</option>
+      </select>
+      <select id="os-alert-customer" onchange="renderAlerts()" style="padding:6px 10px;border:1.5px solid var(--border);border-radius:8px;font-family:inherit;font-size:12px;background:white;max-width:220px;">
+        <option value="">All Customers</option>
+      </select>
       <select id="os-alert-state" onchange="renderAlerts()" style="padding:6px 10px;border:1.5px solid var(--border);border-radius:8px;font-family:inherit;font-size:12px;background:white;">
         <option value="">All States</option>
         <option>Perlis</option>
@@ -310,21 +317,37 @@ async function loadOutletStats() {
 
 // ===== EXPIRY ALERTS =====
 let allAlertData = [];
+function monthLabel(ym){ const [y,m]=ym.split('-'); return new Date(y,m-1,1).toLocaleString('en',{year:'numeric',month:'long'}); }
 async function loadAlerts() {
   const data = await db('outlet_stock_checks?expiry_date=not.is.null&select=product_name,lot_number,expiry_date,outlet_name,agent_name,check_date,region&order=expiry_date.asc');
   if(!Array.isArray(data)) return;
   const today=new Date(); today.setHours(0,0,0,0);
   function days(d){ const dt=new Date(d); dt.setHours(0,0,0,0); return Math.ceil((dt-today)/86400000); }
   allAlertData = data.map(r=>({...r, days:days(r.expiry_date)})).sort((a,b)=>a.days-b.days);
+  populateAlertFilters();
   renderAlerts();
 }
+function populateAlertFilters() {
+  const monthSel = document.getElementById('os-alert-month');
+  const months = [...new Set(allAlertData.map(r=>(r.expiry_date||'').slice(0,7)).filter(Boolean))].sort();
+  monthSel.innerHTML = '<option value="">All Months</option>' + months.map(m=>`<option value="${m}">${monthLabel(m)}</option>`).join('');
+
+  const custSel = document.getElementById('os-alert-customer');
+  const customers = [...new Set(allAlertData.map(r=>r.outlet_name).filter(Boolean))].sort();
+  custSel.innerHTML = '<option value="">All Customers</option>' + customers.map(c=>`<option value="${escHtml(c)}">${escHtml(c)}</option>`).join('');
+}
 function renderAlerts() {
+  const month = document.getElementById('os-alert-month')?.value || '';
+  const customer = document.getElementById('os-alert-customer')?.value || '';
   const state = document.getElementById('os-alert-state')?.value || '';
-  let filtered = allAlertData.filter(r=> r.days <= 180);
+  let filtered = month
+    ? allAlertData.filter(r=> (r.expiry_date||'').slice(0,7) === month)
+    : allAlertData.filter(r=> r.days <= 180);
+  if(customer) filtered = filtered.filter(r=> r.outlet_name === customer);
   if(state) filtered = filtered.filter(r=> r.region === state);
-  filtered.sort((a,b)=>a.days-b.days);
-  const zones={z30:[],z90:[],z120:[],z180:[]};
-  filtered.forEach(r=>{ if(r.days<=30) zones.z30.push(r); else if(r.days<=90) zones.z90.push(r); else if(r.days<=120) zones.z120.push(r); else zones.z180.push(r); });
+  filtered = [...filtered].sort((a,b)=>a.days-b.days);
+  const zones={z30:[],z90:[],z120:[],z180:[],later:[]};
+  filtered.forEach(r=>{ if(r.days<=30) zones.z30.push(r); else if(r.days<=90) zones.z90.push(r); else if(r.days<=120) zones.z120.push(r); else if(r.days<=180) zones.z180.push(r); else zones.later.push(r); });
   function renderZone(items,cls,label){
     if(!items.length) return '';
     return '<div class="alert-section">'
@@ -343,8 +366,9 @@ function renderAlerts() {
   const html=renderZone(zones.z30,'ah-30','⛔ Critical — Expired or ≤30 days')
     +renderZone(zones.z90,'ah-90','🔴 High — 31–90 days to expiry')
     +renderZone(zones.z120,'ah-120','🟠 Medium — 91–120 days to expiry')
-    +renderZone(zones.z180,'ah-180','🟡 Low — 121–180 days to expiry');
-  document.getElementById('os-alerts-content').innerHTML=html||'<div class="empty-text">✅ No products expiring within 180 days.</div>';
+    +renderZone(zones.z180,'ah-180','🟡 Low — 121–180 days to expiry')
+    +renderZone(zones.later,'ah-later','📅 Later — 181+ days to expiry');
+  document.getElementById('os-alerts-content').innerHTML=html||'<div class="empty-text">✅ No matching products.</div>';
 }
 
 function lsGet(key){
