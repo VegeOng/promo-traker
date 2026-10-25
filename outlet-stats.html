@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Outlet Stats — MamaVege</title>
+<style>
+  :root {
+    --bg: #fafafa; --green: #166534; --green-light: #dcfce7; --green-mid: #15803d;
+    --red: #dc2626; --red-light: #fee2e2; --amber: #d97706; --amber-light: #fef3c7;
+    --blue: #3b82f6; --blue-light: #eff6ff;
+    --text: #1a1a1a; --muted: #6b7280; --border: #e5e7eb; --card: #ffffff; --radius: 12px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; min-height: 100vh; }
+
+  .pw-overlay { position: fixed; inset: 0; background: var(--green); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 24px; }
+  .pw-box { background: white; border-radius: 16px; padding: 32px 28px; width: 100%; max-width: 360px; text-align: center; }
+  .pw-logo { width: 52px; height: 52px; background: var(--green); border-radius: 14px; display: flex; align-items: center; justify-content: center; font-weight: 900; color: white; font-size: 22px; margin: 0 auto 16px; }
+  .pw-title { font-size: 20px; font-weight: 900; color: var(--text); margin-bottom: 4px; }
+  .pw-sub { font-size: 13px; color: var(--muted); margin-bottom: 24px; }
+  .pw-input { width: 100%; padding: 13px 16px; border: 1.5px solid var(--border); border-radius: 10px; font-size: 15px; font-family: inherit; text-align: center; letter-spacing: 0.1em; margin-bottom: 12px; }
+  .pw-input:focus { outline: none; border-color: var(--green); }
+  .pw-input.error { border-color: var(--red); animation: shake 0.3s; }
+  @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-6px)} 75%{transform:translateX(6px)} }
+  .pw-btn { width: 100%; padding: 13px; background: var(--green); color: white; border: none; border-radius: 10px; font-size: 15px; font-weight: 700; cursor: pointer; }
+  .pw-btn:hover { background: var(--green-mid); }
+  .pw-error { font-size: 13px; color: var(--red); margin-top: 8px; display: none; }
+  .pw-error.visible { display: block; }
+
+  .mv-top{overflow:hidden}
+  .mv-top-main{display:flex;justify-content:space-between;align-items:center;padding:12px 24px;background:#166534}
+  .mv-top-left{display:flex;align-items:center;gap:12px}
+  .mv-top-logo{height:34px;background:#fff;border-radius:8px;padding:3px 8px;display:flex;align-items:center;text-decoration:none}
+  .mv-top-logo img{height:26px}
+  .mv-top-sep{width:1px;height:24px;background:rgba(255,255,255,.2)}
+  .mv-top-tool{color:#fff;font-size:14px;font-weight:700;letter-spacing:.3px}
+  .mv-top-right{display:flex;align-items:center;gap:12px}
+  .mv-top-back{color:rgba(255,255,255,.8);text-decoration:none;font-size:13px;font-weight:600}
+  .mv-top-back:hover{color:#fff}
+  .mv-top-btn{background:rgba(255,255,255,.12);border:none;color:rgba(255,255,255,.8);padding:5px 14px;border-radius:6px;font-size:12px;cursor:pointer;font-family:inherit}
+  .mv-top-btn:hover{background:rgba(255,255,255,.2);color:#fff}
+  .mv-top-sub{display:flex;justify-content:space-between;align-items:center;padding:5px 24px;background:#15532d;color:rgba(255,255,255,.6);font-size:11px}
+
+  .container { max-width: 900px; margin: 0 auto; padding: 24px 16px 60px; }
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; margin-bottom: 16px; }
+  .card-title { font-size: 15px; font-weight: 800; color: var(--text); margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+  .loading-text, .empty-text { text-align: center; padding: 20px; color: var(--muted); font-size: 13px; }
+
+  .os-topbar { display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; flex-wrap:wrap; gap:10px; }
+  .os-topbar select { padding:8px 12px; border:1.5px solid var(--border); border-radius:8px; font-family:inherit; font-size:13px; background:white; }
+
+  .hqs-summary { display: grid; grid-template-columns: repeat(auto-fill,minmax(140px,1fr)); gap: 10px; margin-bottom: 20px; }
+  .hqs-card { background: white; border: 1px solid var(--border); border-radius: 10px; padding: 14px; text-align: center; }
+  .hqs-val { font-size: 24px; font-weight: 900; line-height: 1; }
+  .hqs-label { font-size: 11px; color: var(--muted); margin-top: 4px; text-transform: uppercase; letter-spacing: 0.04em; }
+  .hqs-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .hqs-table th { text-align: center; padding: 8px 10px; font-size: 11px; text-transform: uppercase; letter-spacing: .4px; color: var(--muted); font-weight: 700; background: #f3f4f6; }
+  .hqs-table th:first-child { text-align: left; }
+  .hqs-table td { padding: 10px; border-top: 1px solid var(--border); text-align: center; font-size: 13px; }
+  .hqs-table td:first-child { text-align: left; font-weight: 600; }
+  .unchecked-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; background: #fff9f9; border: 1px solid #fca5a5; border-radius: 8px; margin-bottom: 6px; flex-wrap: wrap; gap: 6px; }
+  .lastvisit-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; background: white; border: 1px solid var(--border); border-radius: 8px; margin-bottom: 6px; flex-wrap: wrap; gap: 6px; }
+</style>
+</head>
+<body>
+
+<div class="pw-overlay" id="pwOverlay">
+  <div class="pw-box">
+    <div class="pw-logo">M</div>
+    <div class="pw-title">Outlet Stats</div>
+    <div class="pw-sub">Enter password to access</div>
+    <input type="password" class="pw-input" id="pwInput" placeholder="Password" onkeydown="if(event.key==='Enter')checkPw()">
+    <button class="pw-btn" onclick="checkPw()">Enter</button>
+    <div class="pw-error" id="pwError">Incorrect password. Please try again.</div>
+  </div>
+</div>
+
+<div class="mv-top">
+  <div class="mv-top-main">
+    <div class="mv-top-left">
+      <a href="index.html" class="mv-top-logo"><img src="Mamavege_Logo.png" alt="MamaVege"></a>
+      <div class="mv-top-sep"></div>
+      <span class="mv-top-tool">🏪 Outlet Stats</span>
+    </div>
+    <div class="mv-top-right">
+      <a href="index.html" class="mv-top-back">← Hub</a>
+      <button class="mv-top-btn" onclick="location.reload()">⟳</button>
+    </div>
+  </div>
+  <div class="mv-top-sub">
+    <span class="mv-top-date"></span>
+    <span>MamaVege Management Hub</span>
+  </div>
+</div>
+<script>document.querySelectorAll('.mv-top-date').forEach(e=>e.textContent=new Date().toLocaleDateString('en-MY',{weekday:'short',year:'numeric',month:'short',day:'numeric'}));</script>
+
+<div class="container">
+  <div class="os-topbar">
+    <div style="font-size:18px;font-weight:800;color:var(--text)">🏪 Outlet Stats — <span id="os-month-label">—</span></div>
+    <select id="os-month-select" onchange="loadOutletStats()"></select>
+  </div>
+
+  <div class="hqs-summary" id="os-summary"></div>
+
+  <div class="card">
+    <div class="card-title">👤 Sales Agent Performance</div>
+    <div style="overflow-x:auto">
+      <table class="hqs-table">
+        <thead>
+          <tr>
+            <th style="text-align:left">Agent</th>
+            <th>KPI Target</th>
+            <th>Outlets Visited</th>
+            <th>Achievement</th>
+            <th>Items Checked</th>
+            <th>🔴 Red Alerts</th>
+          </tr>
+        </thead>
+        <tbody id="os-tbody"><tr><td colspan="6" class="loading-text">Loading…</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">❌ Outlets Not Checked This Month</div>
+    <div id="os-unchecked"><div class="loading-text">Loading…</div></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">🕐 Outlets by Last Check Date (Oldest First)</div>
+    <div id="os-lastvisit"><div class="loading-text">Loading…</div></div>
+  </div>
+</div>
+
+<script>
+const SUPA_URL = 'https://wjhgezvrxlhpexocfsea.supabase.co';
+const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndqaGdlenZyeGxocGV4b2Nmc2VhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg1MDU4NzgsImV4cCI6MjA5NDA4MTg3OH0.jENcrgEDYDlSRUCqve-T6rxYRJfz-dnZQHnXpPLJ_RE';
+const H = { 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY, 'Content-Type': 'application/json' };
+const REPORT_EXEMPT = ['VEGE']; // 老板账号不计入门店拜访统计
+
+async function db(path) {
+  const r = await fetch(SUPA_URL+'/rest/v1/'+path, {headers:H});
+  if(!r.ok){const e=await r.json().catch(()=>{});throw e||r.status;}
+  return r.status===204?null:r.json();
+}
+function escHtml(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+function populateMonthSelect() {
+  const sel = document.getElementById('os-month-select');
+  if (sel.options.length) return;
+  const now = new Date();
+  for (let i=0; i<12; i++) {
+    const d = new Date(now.getFullYear(), now.getMonth()-i, 1);
+    const o = document.createElement('option');
+    o.value = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+    o.textContent = d.toLocaleString('en', {year:'numeric', month:'long'});
+    sel.appendChild(o);
+  }
+}
+
+async function loadOutletStats() {
+  populateMonthSelect();
+  const sel = document.getElementById('os-month-select');
+  const month = sel.value;
+  const [year, mon] = month.split('-');
+  const firstDay = `${year}-${mon}-01`;
+  const lastDay = `${year}-${mon}-${new Date(year, mon, 0).getDate()}`;
+  document.getElementById('os-month-label').textContent = sel.options[sel.selectedIndex]?.textContent || '—';
+  const today = new Date(); today.setHours(0,0,0,0);
+
+  try {
+    const [membersData, outletsData, checks, allChecks] = await Promise.all([
+      db('members?select=*&order=name&active=neq.false'),
+      db('outlets?select=*&order=name.asc'),
+      db(`outlet_stock_checks?check_date=gte.${firstDay}&check_date=lte.${lastDay}&select=agent_name,outlet_id,quantity,expiry_date`),
+      db('outlet_stock_checks?select=outlet_id,outlet_name,check_date&order=check_date.desc')
+    ]);
+
+    const agents = (membersData||[]).filter(m=>(m.role||'sales')==='sales' && m.active!==false && !REPORT_EXEMPT.includes((m.name||'').toUpperCase()));
+    const allOutlets = outletsData||[];
+    const checksData = checks||[];
+
+    function daysLeft(d){ const dt=new Date(d); dt.setHours(0,0,0,0); return Math.ceil((dt-today)/86400000); }
+
+    const agentStats = {};
+    agents.forEach(m=>{ agentStats[m.name]={visited:new Set(),items:0,redAlerts:0,kpi:m.outlet_visit_kpi||0}; });
+    checksData.forEach(c=>{
+      const a=c.agent_name;
+      if(!agentStats[a]) agentStats[a]={visited:new Set(),items:0,redAlerts:0,kpi:0};
+      if(c.outlet_id) agentStats[a].visited.add(String(c.outlet_id));
+      agentStats[a].items+=(c.quantity||0);
+      if(c.expiry_date&&daysLeft(c.expiry_date)<=90) agentStats[a].redAlerts++;
+    });
+
+    const totalVisited=new Set(checksData.map(c=>c.outlet_id)).size;
+    const totalRed=checksData.filter(c=>c.expiry_date&&daysLeft(c.expiry_date)<=90).length;
+    document.getElementById('os-summary').innerHTML=`
+      <div class="hqs-card"><div class="hqs-val" style="color:var(--green)">${agents.length}</div><div class="hqs-label">Sales Agents</div></div>
+      <div class="hqs-card"><div class="hqs-val" style="color:var(--green)">${allOutlets.length}</div><div class="hqs-label">Total Outlets</div></div>
+      <div class="hqs-card"><div class="hqs-val" style="color:var(--blue)">${totalVisited}</div><div class="hqs-label">Outlets Visited</div></div>
+      <div class="hqs-card"><div class="hqs-val" style="color:var(--red)">${totalRed}</div><div class="hqs-label">🔴 Red Alerts</div></div>
+    `;
+
+    const tbody=document.getElementById('os-tbody');
+    tbody.innerHTML = !agents.length ? '<tr><td colspan="6" class="empty-text">No sales members.</td></tr>' :
+      agents.map(m=>{
+        const s=agentStats[m.name]||{visited:new Set(),items:0,redAlerts:0,kpi:m.outlet_visit_kpi||0};
+        const visited=s.visited.size, kpi=s.kpi;
+        const pct=kpi>0?Math.round(visited/kpi*100):null;
+        const pctColor=pct===null?'var(--muted)':pct>=100?'var(--green)':pct>=60?'var(--amber)':'var(--red)';
+        return `<tr>
+          <td>${escHtml(m.name)}</td>
+          <td>${kpi||'—'}</td>
+          <td style="font-weight:700">${visited}</td>
+          <td>${pct!==null?`<span style="font-weight:700;color:${pctColor}">${pct}%</span>`:'<span style="color:var(--muted)">—</span>'}</td>
+          <td>${s.items}</td>
+          <td>${s.redAlerts>0?`<span style="color:var(--red);font-weight:700">🔴 ${s.redAlerts}</span>`:'<span style="color:var(--green)">✓ 0</span>'}</td>
+        </tr>`;
+      }).join('');
+
+    const checkedIds=new Set(checksData.map(c=>String(c.outlet_id)));
+    const unchecked=allOutlets.filter(o=>!checkedIds.has(String(o.id)));
+    document.getElementById('os-unchecked').innerHTML=unchecked.length===0
+      ?'<div class="empty-text">✅ All outlets checked this month!</div>'
+      :unchecked.map(o=>`<div class="unchecked-row">
+          <div><span style="font-weight:600;font-size:13px">${escHtml(o.name)}</span>${o.region?` <span style="font-size:11px;color:var(--muted)">(${escHtml(o.region)})</span>`:''}</div>
+          <div style="display:flex;align-items:center;gap:8px">
+            ${o.assigned_to?`<span style="font-size:11px;background:var(--green-light);color:var(--green);padding:2px 8px;border-radius:20px;font-weight:600">${escHtml(o.assigned_to)}</span>`:'<span style="font-size:11px;color:var(--muted)">Unassigned</span>'}
+            <span style="font-size:11px;font-weight:700;color:var(--red)">NOT CHECKED</span>
+          </div>
+        </div>`).join('');
+
+    const lastVisitMap={};
+    if(Array.isArray(allChecks)) allChecks.forEach(c=>{if(!lastVisitMap[c.outlet_id])lastVisitMap[c.outlet_id]={date:c.check_date,name:c.outlet_name};});
+    const sorted=[...allOutlets].map(o=>{
+      const last=lastVisitMap[o.id];
+      const daysSince=last?Math.ceil((today-new Date(last.date))/86400000):null;
+      return {...o,lastDate:last?.date||null,daysSince};
+    }).sort((a,b)=>{
+      if(a.daysSince===null&&b.daysSince===null)return 0;
+      if(a.daysSince===null)return -1;
+      if(b.daysSince===null)return 1;
+      return b.daysSince-a.daysSince;
+    });
+    document.getElementById('os-lastvisit').innerHTML=sorted.map((o,i)=>{
+      const ds=o.daysSince;
+      const color=ds===null?'var(--red)':ds>60?'var(--red)':ds>30?'var(--amber)':'var(--green)';
+      const label=ds===null?'Never checked':`${ds} days ago`;
+      return `<div class="lastvisit-row">
+        <div style="display:flex;align-items:center;gap:10px">
+          <span style="font-size:12px;font-weight:700;color:var(--muted);width:22px">${i+1}</span>
+          <div><span style="font-weight:600;font-size:13px">${escHtml(o.name)}</span>${o.region?` <span style="font-size:11px;color:var(--muted)">(${escHtml(o.region)})</span>`:''}</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          ${o.assigned_to?`<span style="font-size:11px;background:var(--green-light);color:var(--green);padding:2px 8px;border-radius:20px;font-weight:600">${escHtml(o.assigned_to)}</span>`:''}
+          <span style="font-size:12px;font-weight:700;color:${color}">${label}</span>
+          ${o.lastDate?`<span style="font-size:11px;color:var(--muted)">${o.lastDate}</span>`:''}
+        </div>
+      </div>`;
+    }).join('');
+  } catch(e) {
+    console.error('Outlet stats error:', e);
+  }
+}
+
+function lsGet(key){
+  const raw = localStorage.getItem(key);
+  if(!raw) return null;
+  try{
+    const item = JSON.parse(raw);
+    if(Date.now() > item.expiry){ localStorage.removeItem(key); return null; }
+    return item.value;
+  }catch{ return null; }
+}
+
+(async()=>{
+  if(sessionStorage.getItem('userRole')==='hq'||sessionStorage.getItem('hq_auth')==='1'||lsGet('userRole')==='hq'||lsGet('hq_auth')==='1'){
+    sessionStorage.setItem('hq_auth','1');
+    document.getElementById('pwOverlay').style.display='none';
+    loadOutletStats();
+  }
+})();
+
+async function checkPw(){
+  const inp=document.getElementById('pwInput');const pw=inp.value.trim();if(!pw)return;
+  const btn=document.querySelector('.pw-btn');btn.disabled=true;btn.textContent='...';
+  try{
+    const data=await db("settings?key=eq.hq_password&select=value");
+    if(data.length&&data[0].value===pw){
+      sessionStorage.setItem('hq_auth','1');
+      document.getElementById('pwOverlay').style.display='none';
+      loadOutletStats();
+    }else{
+      inp.classList.add('error');document.getElementById('pwError').classList.add('visible');
+      inp.value='';setTimeout(()=>inp.classList.remove('error'),400);
+    }
+  }catch(e){document.getElementById('pwError').textContent='Connection error.';document.getElementById('pwError').classList.add('visible');}
+  btn.disabled=false;btn.textContent='Enter';
+}
+</script>
+</body>
+</html>
