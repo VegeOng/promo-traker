@@ -161,6 +161,9 @@
           <div class="ms-list" id="os-cust-list"></div>
         </div>
       </div>
+      <select id="os-alert-agent" onchange="renderAlerts()" style="padding:6px 10px;border:1.5px solid var(--border);border-radius:8px;font-family:inherit;font-size:12px;background:white;">
+        <option value="">All Agents</option>
+      </select>
       <select id="os-alert-state" onchange="renderAlerts()" style="padding:6px 10px;border:1.5px solid var(--border);border-radius:8px;font-family:inherit;font-size:12px;background:white;">
         <option value="">All States</option>
         <option>Perlis</option>
@@ -270,6 +273,7 @@ async function loadOutletStats() {
     ]);
 
     const agents = (membersData||[]).filter(m=>['sales','merchandiser'].includes(m.role||'sales') && m.active!==false && !REPORT_EXEMPT.includes((m.name||'').toUpperCase()));
+    allMemberNames = new Set((membersData||[]).map(m=>m.name).filter(Boolean));
     const allOutlets = outletsData||[];
     const checksData = checks||[];
 
@@ -351,6 +355,8 @@ async function loadOutletStats() {
         </div>
       </div>`;
     }).join('');
+
+    if (allAlertData.length) { populateAlertFilters(); renderAlerts(); }
   } catch(e) {
     console.error('Outlet stats error:', e);
   }
@@ -358,6 +364,7 @@ async function loadOutletStats() {
 
 // ===== EXPIRY ALERTS =====
 let allAlertData = [];
+let allMemberNames = new Set();
 function monthLabel(ym){ const [y,m]=ym.split('-'); return new Date(y,m-1,1).toLocaleString('en',{year:'numeric',month:'long'}); }
 async function loadAlerts() {
   const data = await db('outlet_stock_checks?expiry_date=not.is.null&select=product_name,lot_number,expiry_date,outlet_name,agent_name,check_date,region&order=expiry_date.asc');
@@ -379,6 +386,13 @@ function populateAlertFilters() {
   selectedCustomers = new Set([...selectedCustomers].filter(c=>allCustomerNames.includes(c)));
   renderCustList();
   updateCustButton();
+
+  const agentSel = document.getElementById('os-alert-agent');
+  const prevAgent = agentSel.value;
+  let agents = [...new Set(allAlertData.map(r=>r.agent_name).filter(Boolean))].sort();
+  if (allMemberNames.size) agents = agents.filter(a=>allMemberNames.has(a));
+  agentSel.innerHTML = '<option value="">All Agents</option>' + agents.map(a=>`<option value="${escHtml(a)}">${escHtml(a)}</option>`).join('');
+  agentSel.value = prevAgent;
 }
 
 // ----- Customer multi-select panel -----
@@ -436,11 +450,13 @@ function updateCustButton(){
 }
 function renderAlerts() {
   const month = document.getElementById('os-alert-month')?.value || '';
+  const agent = document.getElementById('os-alert-agent')?.value || '';
   const state = document.getElementById('os-alert-state')?.value || '';
   let filtered = month
     ? allAlertData.filter(r=> (r.expiry_date||'').slice(0,7) === month)
     : allAlertData.filter(r=> r.days <= 180);
   if(selectedCustomers.size) filtered = filtered.filter(r=> selectedCustomers.has(r.outlet_name));
+  if(agent) filtered = filtered.filter(r=> r.agent_name === agent);
   if(state) filtered = filtered.filter(r=> r.region === state);
   filtered = [...filtered].sort((a,b)=>a.days-b.days);
   const zones={z30:[],z90:[],z120:[],z180:[],later:[]};
