@@ -497,10 +497,28 @@
 
       <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">
         <input type="text" id="assign-search" placeholder="🔍 Search outlet / chain name…" oninput="renderAssignmentList()" style="flex:1;min-width:160px;padding:7px 10px;border:1.5px solid var(--border);border-radius:6px;font-family:inherit;font-size:12.5px">
-        <select id="assign-status-filter" onchange="renderAssignmentList()" style="padding:7px 10px;border:1.5px solid var(--border);border-radius:6px;font-family:inherit;font-size:12.5px;background:white">
-          <option value="">All</option>
-          <option value="unassigned">Unassigned only</option>
-          <option value="assigned">Assigned only</option>
+        <select id="assign-agent-filter" onchange="renderAssignmentList()" style="padding:7px 10px;border:1.5px solid var(--border);border-radius:6px;font-family:inherit;font-size:12.5px;background:white">
+          <option value="">All Agents</option>
+          <option value="__UNASSIGNED__">— Unassigned —</option>
+        </select>
+        <select id="assign-state-filter" onchange="renderAssignmentList()" style="padding:7px 10px;border:1.5px solid var(--border);border-radius:6px;font-family:inherit;font-size:12.5px;background:white">
+          <option value="">All States</option>
+          <option>Perlis</option>
+          <option>Kedah</option>
+          <option>Pulau Pinang</option>
+          <option>Perak</option>
+          <option>Selangor</option>
+          <option>Negeri Sembilan</option>
+          <option>Melaka</option>
+          <option>Johor</option>
+          <option>Pahang</option>
+          <option>Terengganu</option>
+          <option>Kelantan</option>
+          <option>Sabah</option>
+          <option>Sarawak</option>
+          <option>W.P. Kuala Lumpur</option>
+          <option>W.P. Putrajaya</option>
+          <option>W.P. Labuan</option>
         </select>
       </div>
 
@@ -927,6 +945,11 @@ async function loadOutletSettings() {
   const bulkSel = document.getElementById('bulk-assign-target');
   bulkSel.innerHTML = '<option value="">— Choose agent —</option><option value="__UNASSIGN__">— Unassign —</option>'
     + hqSalesMembers.map(m=>`<option value="${escHtml(m.name)}">${escHtml(m.name)}</option>`).join('');
+  const agentFilterSel = document.getElementById('assign-agent-filter');
+  const prevAgentFilter = agentFilterSel.value;
+  agentFilterSel.innerHTML = '<option value="">All Agents</option><option value="__UNASSIGNED__">— Unassigned —</option>'
+    + hqSalesMembers.map(m=>`<option value="${escHtml(m.name)}">${escHtml(m.name)}</option>`).join('');
+  agentFilterSel.value = prevAgentFilter;
   selectedOutletIds.clear();
   renderAssignmentList();
 
@@ -952,11 +975,13 @@ async function assignOutlet(outletId, agentName) {
 let selectedOutletIds = new Set();
 function filteredOutletsForAssignment(){
   const q = (document.getElementById('assign-search')?.value||'').toLowerCase();
-  const status = document.getElementById('assign-status-filter')?.value||'';
+  const agentFilter = document.getElementById('assign-agent-filter')?.value||'';
+  const stateFilter = document.getElementById('assign-state-filter')?.value||'';
   return allOutlets.filter(o=>{
     if(q && !(o.name||'').toLowerCase().includes(q)) return false;
-    if(status==='unassigned' && o.assigned_to) return false;
-    if(status==='assigned' && !o.assigned_to) return false;
+    if(agentFilter==='__UNASSIGNED__' && o.assigned_to) return false;
+    if(agentFilter && agentFilter!=='__UNASSIGNED__' && o.assigned_to!==agentFilter) return false;
+    if(stateFilter && o.region!==stateFilter) return false;
     return true;
   });
 }
