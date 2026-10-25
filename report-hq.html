@@ -522,6 +522,8 @@
         </select>
       </div>
 
+      <div id="assign-result-count" style="font-size:12px;color:var(--muted);margin-bottom:8px"></div>
+
       <div class="bulk-assign-bar" id="bulk-assign-bar">
         <label style="display:flex;align-items:center;gap:6px;font-size:12.5px;font-weight:600;cursor:pointer">
           <input type="checkbox" id="assign-select-all-cb" onchange="toggleSelectAllOutlets(this.checked)">
@@ -945,12 +947,8 @@ async function loadOutletSettings() {
   const bulkSel = document.getElementById('bulk-assign-target');
   bulkSel.innerHTML = '<option value="">— Choose agent —</option><option value="__UNASSIGN__">— Unassign —</option>'
     + hqSalesMembers.map(m=>`<option value="${escHtml(m.name)}">${escHtml(m.name)}</option>`).join('');
-  const agentFilterSel = document.getElementById('assign-agent-filter');
-  const prevAgentFilter = agentFilterSel.value;
-  agentFilterSel.innerHTML = '<option value="">All Agents</option><option value="__UNASSIGNED__">— Unassigned —</option>'
-    + hqSalesMembers.map(m=>`<option value="${escHtml(m.name)}">${escHtml(m.name)}</option>`).join('');
-  agentFilterSel.value = prevAgentFilter;
   selectedOutletIds.clear();
+  updateAgentFilterCounts();
   renderAssignmentList();
 
   // KPI settings
@@ -969,6 +967,19 @@ async function loadOutletSettings() {
 async function assignOutlet(outletId, agentName) {
   await fetch(SUPA_URL+'/rest/v1/outlets?id=eq.'+outletId,{method:'PATCH',headers:H,body:JSON.stringify({assigned_to:agentName||null})});
   const o=allOutlets.find(o=>o.id==outletId); if(o) o.assigned_to=agentName||null;
+  updateAgentFilterCounts();
+}
+
+function updateAgentFilterCounts(){
+  const agentFilterSel = document.getElementById('assign-agent-filter');
+  if(!agentFilterSel) return;
+  const prevAgentFilter = agentFilterSel.value;
+  const assignCounts = {};
+  allOutlets.forEach(o=>{ if(o.assigned_to) assignCounts[o.assigned_to]=(assignCounts[o.assigned_to]||0)+1; });
+  const unassignedCount = allOutlets.filter(o=>!o.assigned_to).length;
+  agentFilterSel.innerHTML = `<option value="">All Agents (${allOutlets.length})</option><option value="__UNASSIGNED__">— Unassigned — (${unassignedCount})</option>`
+    + hqSalesMembers.map(m=>`<option value="${escHtml(m.name)}">${escHtml(m.name)} (${assignCounts[m.name]||0})</option>`).join('');
+  agentFilterSel.value = prevAgentFilter;
 }
 
 // ----- Bulk outlet assignment -----
@@ -987,6 +998,7 @@ function filteredOutletsForAssignment(){
 }
 function renderAssignmentList(){
   const list = filteredOutletsForAssignment();
+  document.getElementById('assign-result-count').textContent = `Showing ${list.length} outlet${list.length!==1?'s':''}`;
   document.getElementById('hqs-assignment').innerHTML = list.length===0 ? '<div class="empty-text">No matching outlets.</div>' :
     list.map(o=>`<div class="assign-row ${selectedOutletIds.has(o.id)?'selected':''}">
       <input type="checkbox" ${selectedOutletIds.has(o.id)?'checked':''} onchange="toggleOutletSelect(${o.id},this)">
@@ -1028,6 +1040,7 @@ async function applyBulkAssign(){
   ids.forEach(id=>{ const o=allOutlets.find(o=>o.id===id); if(o) o.assigned_to=agentName; });
   selectedOutletIds.clear();
   document.getElementById('bulk-assign-target').value='';
+  updateAgentFilterCounts();
   renderAssignmentList();
   alert(`✅ Assigned ${ids.length} outlet(s) to ${agentName||'Unassigned'}.`);
 }
