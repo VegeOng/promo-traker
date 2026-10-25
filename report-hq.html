@@ -247,8 +247,10 @@
 
   /* Outlet Settings (assignment + KPI) */
   .assign-row { display: flex; align-items: center; gap: 10px; padding: 10px 12px; background: #f9fafb; border-radius: 8px; margin-bottom: 6px; flex-wrap: wrap; }
+  .assign-row.selected { background: var(--green-light); }
   .assign-row-name { flex: 1; font-weight: 500; font-size: 13px; min-width: 120px; }
   .assign-row select { padding: 6px 10px; border: 1.5px solid var(--border); border-radius: 6px; font-family: inherit; font-size: 12px; background: white; }
+  .bulk-assign-bar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; background: var(--green-light); border: 1px solid #bbf7d0; border-radius: 8px; padding: 10px 12px; margin-bottom: 10px; }
   .kpi-setting-row { display: flex; align-items: center; gap: 10px; padding: 10px 12px; background: #f9fafb; border-radius: 8px; margin-bottom: 6px; flex-wrap: wrap; }
   .kpi-setting-row-name { flex: 1; font-weight: 500; font-size: 13px; }
   .kpi-setting-row input[type=number] { width: 70px; padding: 6px 8px; border: 1.5px solid var(--border); border-radius: 6px; font-family: inherit; font-size: 13px; text-align: center; }
@@ -492,6 +494,28 @@
     <div class="card">
       <div class="card-title">🔗 Outlet Assignment</div>
       <div style="font-size:12px;color:var(--muted);margin-bottom:12px">Assign outlets to Sales agents. Agents will only see their assigned outlets in the check-in form.</div>
+
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">
+        <input type="text" id="assign-search" placeholder="🔍 Search outlet / chain name…" oninput="renderAssignmentList()" style="flex:1;min-width:160px;padding:7px 10px;border:1.5px solid var(--border);border-radius:6px;font-family:inherit;font-size:12.5px">
+        <select id="assign-status-filter" onchange="renderAssignmentList()" style="padding:7px 10px;border:1.5px solid var(--border);border-radius:6px;font-family:inherit;font-size:12.5px;background:white">
+          <option value="">All</option>
+          <option value="unassigned">Unassigned only</option>
+          <option value="assigned">Assigned only</option>
+        </select>
+      </div>
+
+      <div class="bulk-assign-bar" id="bulk-assign-bar">
+        <label style="display:flex;align-items:center;gap:6px;font-size:12.5px;font-weight:600;cursor:pointer">
+          <input type="checkbox" id="assign-select-all-cb" onchange="toggleSelectAllOutlets(this.checked)">
+          Select all filtered <span id="assign-selected-count" style="color:var(--green)">(0 selected)</span>
+        </label>
+        <select id="bulk-assign-target" style="padding:6px 10px;border:1.5px solid var(--border);border-radius:6px;font-family:inherit;font-size:12.5px;background:white">
+          <option value="">— Choose agent —</option>
+          <option value="__UNASSIGN__">— Unassign —</option>
+        </select>
+        <button class="btn-kpi-save" onclick="applyBulkAssign()">Assign Selected</button>
+      </div>
+
       <div id="hqs-assignment"><div class="loading-text">Loading…</div></div>
     </div>
 
@@ -900,14 +924,11 @@ async function loadOutletSettings() {
   allOutlets = Array.isArray(outletsData) ? outletsData : [];
 
   // Outlet assignment
-  document.getElementById('hqs-assignment').innerHTML=allOutlets.length===0?'<div class="empty-text">No outlets.</div>':
-    allOutlets.map(o=>`<div class="assign-row">
-      <div class="assign-row-name">${escHtml(o.name)}${o.region?` <span style="font-size:11px;color:var(--muted)">(${escHtml(o.region)})</span>`:''}</div>
-      <select onchange="assignOutlet(${o.id},this.value)">
-        <option value="">— Unassigned —</option>
-        ${hqSalesMembers.map(m=>`<option value="${escHtml(m.name)}" ${o.assigned_to===m.name?'selected':''}>${escHtml(m.name)}</option>`).join('')}
-      </select>
-    </div>`).join('');
+  const bulkSel = document.getElementById('bulk-assign-target');
+  bulkSel.innerHTML = '<option value="">— Choose agent —</option><option value="__UNASSIGN__">— Unassign —</option>'
+    + hqSalesMembers.map(m=>`<option value="${escHtml(m.name)}">${escHtml(m.name)}</option>`).join('');
+  selectedOutletIds.clear();
+  renderAssignmentList();
 
   // KPI settings
   document.getElementById('hqs-kpi').innerHTML=hqSalesMembers.length===0?'<div class="empty-text">No sales members.</div>':
@@ -925,6 +946,65 @@ async function loadOutletSettings() {
 async function assignOutlet(outletId, agentName) {
   await fetch(SUPA_URL+'/rest/v1/outlets?id=eq.'+outletId,{method:'PATCH',headers:H,body:JSON.stringify({assigned_to:agentName||null})});
   const o=allOutlets.find(o=>o.id==outletId); if(o) o.assigned_to=agentName||null;
+}
+
+// ----- Bulk outlet assignment -----
+let selectedOutletIds = new Set();
+function filteredOutletsForAssignment(){
+  const q = (document.getElementById('assign-search')?.value||'').toLowerCase();
+  const status = document.getElementById('assign-status-filter')?.value||'';
+  return allOutlets.filter(o=>{
+    if(q && !(o.name||'').toLowerCase().includes(q)) return false;
+    if(status==='unassigned' && o.assigned_to) return false;
+    if(status==='assigned' && !o.assigned_to) return false;
+    return true;
+  });
+}
+function renderAssignmentList(){
+  const list = filteredOutletsForAssignment();
+  document.getElementById('hqs-assignment').innerHTML = list.length===0 ? '<div class="empty-text">No matching outlets.</div>' :
+    list.map(o=>`<div class="assign-row ${selectedOutletIds.has(o.id)?'selected':''}">
+      <input type="checkbox" ${selectedOutletIds.has(o.id)?'checked':''} onchange="toggleOutletSelect(${o.id},this)">
+      <div class="assign-row-name">${escHtml(o.name)}${o.region?` <span style="font-size:11px;color:var(--muted)">(${escHtml(o.region)})</span>`:''}</div>
+      <select onchange="assignOutlet(${o.id},this.value)">
+        <option value="">— Unassigned —</option>
+        ${hqSalesMembers.map(m=>`<option value="${escHtml(m.name)}" ${o.assigned_to===m.name?'selected':''}>${escHtml(m.name)}</option>`).join('')}
+      </select>
+    </div>`).join('');
+  updateSelectedCount();
+}
+function toggleOutletSelect(id, checkboxEl){
+  const checked = checkboxEl.checked;
+  if(checked) selectedOutletIds.add(id); else selectedOutletIds.delete(id);
+  const row = checkboxEl.closest('.assign-row');
+  if(row) row.classList.toggle('selected', checked);
+  updateSelectedCount();
+}
+function toggleSelectAllOutlets(checked){
+  const list = filteredOutletsForAssignment();
+  list.forEach(o=> checked ? selectedOutletIds.add(o.id) : selectedOutletIds.delete(o.id));
+  renderAssignmentList();
+}
+function updateSelectedCount(){
+  document.getElementById('assign-selected-count').textContent = `(${selectedOutletIds.size} selected)`;
+  const list = filteredOutletsForAssignment();
+  const allSelected = list.length>0 && list.every(o=>selectedOutletIds.has(o.id));
+  const cb = document.getElementById('assign-select-all-cb');
+  if(cb) cb.checked = allSelected;
+}
+async function applyBulkAssign(){
+  const target = document.getElementById('bulk-assign-target').value;
+  if(!target){ alert('Please choose an agent, or — Unassign —.'); return; }
+  if(!selectedOutletIds.size){ alert('No outlets selected.'); return; }
+  const agentName = target==='__UNASSIGN__' ? null : target;
+  const ids = [...selectedOutletIds];
+  if(!confirm(`Assign ${ids.length} outlet(s) to ${agentName||'Unassigned'}?`)) return;
+  await fetch(SUPA_URL+'/rest/v1/outlets?id=in.('+ids.join(',')+')',{method:'PATCH',headers:H,body:JSON.stringify({assigned_to:agentName})});
+  ids.forEach(id=>{ const o=allOutlets.find(o=>o.id===id); if(o) o.assigned_to=agentName; });
+  selectedOutletIds.clear();
+  document.getElementById('bulk-assign-target').value='';
+  renderAssignmentList();
+  alert(`✅ Assigned ${ids.length} outlet(s) to ${agentName||'Unassigned'}.`);
 }
 
 async function saveOutletKPI(memberId) {
