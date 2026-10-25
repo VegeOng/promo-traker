@@ -80,6 +80,24 @@
     .alert-row { grid-template-columns:2fr 1fr 1fr; }
     .alert-row>*:nth-child(4),.alert-row>*:nth-child(5) { display:none; }
   }
+
+  /* Multi-select (customer) */
+  .ms-wrap { position: relative; }
+  .ms-btn { padding:6px 10px; border:1.5px solid var(--border); border-radius:8px; font-family:inherit; font-size:12px; background:white; cursor:pointer; max-width:220px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; text-align:left; }
+  .ms-btn:hover { border-color: var(--green); }
+  .ms-btn.active { border-color: var(--green); color: var(--green); font-weight:700; }
+  .ms-panel { display:none; position:absolute; top:calc(100% + 4px); left:0; z-index:50; width:280px; max-width:80vw; background:white; border:1px solid var(--border); border-radius:10px; box-shadow:0 8px 24px rgba(0,0,0,.12); padding:10px; }
+  .ms-panel.open { display:block; }
+  .ms-search { width:100%; padding:7px 10px; border:1.5px solid var(--border); border-radius:6px; font-family:inherit; font-size:12px; margin-bottom:8px; }
+  .ms-search:focus { outline:none; border-color:var(--green); }
+  .ms-actions { display:flex; align-items:center; gap:6px; margin-bottom:8px; }
+  .ms-actions button { padding:5px 10px; border:1px solid var(--border); background:#f9fafb; border-radius:6px; font-size:11px; font-weight:600; cursor:pointer; color: var(--muted); }
+  .ms-actions button:hover { border-color: var(--green); color: var(--green); }
+  .ms-list { max-height:220px; overflow-y:auto; border-top:1px solid var(--border); padding-top:6px; }
+  .ms-item { display:flex; align-items:center; gap:8px; padding:5px 4px; font-size:12.5px; cursor:pointer; border-radius:4px; }
+  .ms-item:hover { background:#f0fdf4; }
+  .ms-item input { flex-shrink:0; }
+  .ms-empty { font-size:12px; color: var(--muted); padding:8px 4px; text-align:center; }
 </style>
 </head>
 <body>
@@ -128,9 +146,19 @@
       <select id="os-alert-month" onchange="renderAlerts()" style="padding:6px 10px;border:1.5px solid var(--border);border-radius:8px;font-family:inherit;font-size:12px;background:white;">
         <option value="">All Months</option>
       </select>
-      <select id="os-alert-customer" onchange="renderAlerts()" style="padding:6px 10px;border:1.5px solid var(--border);border-radius:8px;font-family:inherit;font-size:12px;background:white;max-width:220px;">
-        <option value="">All Customers</option>
-      </select>
+      <div class="ms-wrap" id="os-cust-wrap">
+        <button type="button" class="ms-btn" id="os-cust-btn" onclick="toggleCustPanel()">All Customers ▾</button>
+        <div class="ms-panel" id="os-cust-panel">
+          <input type="text" class="ms-search" id="os-cust-search" placeholder="Search outlet / chain name…" oninput="renderCustList()">
+          <div class="ms-actions">
+            <button type="button" onclick="custSelectAllFiltered()">Select All</button>
+            <button type="button" onclick="custClearAll()">Clear</button>
+            <span style="flex:1"></span>
+            <button type="button" onclick="closeCustPanel()">Done</button>
+          </div>
+          <div class="ms-list" id="os-cust-list"></div>
+        </div>
+      </div>
       <select id="os-alert-state" onchange="renderAlerts()" style="padding:6px 10px;border:1.5px solid var(--border);border-radius:8px;font-family:inherit;font-size:12px;background:white;">
         <option value="">All States</option>
         <option>Perlis</option>
@@ -195,7 +223,7 @@ async function db(path) {
   if(!r.ok){const e=await r.json().catch(()=>{});throw e||r.status;}
   return r.status===204?null:r.json();
 }
-function escHtml(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function escHtml(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 
 function populateMonthSelect() {
   const sel = document.getElementById('os-month-select');
@@ -327,23 +355,79 @@ async function loadAlerts() {
   populateAlertFilters();
   renderAlerts();
 }
+let allCustomerNames = [];
+let selectedCustomers = new Set();
 function populateAlertFilters() {
   const monthSel = document.getElementById('os-alert-month');
   const months = [...new Set(allAlertData.map(r=>(r.expiry_date||'').slice(0,7)).filter(Boolean))].sort();
   monthSel.innerHTML = '<option value="">All Months</option>' + months.map(m=>`<option value="${m}">${monthLabel(m)}</option>`).join('');
 
-  const custSel = document.getElementById('os-alert-customer');
-  const customers = [...new Set(allAlertData.map(r=>r.outlet_name).filter(Boolean))].sort();
-  custSel.innerHTML = '<option value="">All Customers</option>' + customers.map(c=>`<option value="${escHtml(c)}">${escHtml(c)}</option>`).join('');
+  allCustomerNames = [...new Set(allAlertData.map(r=>r.outlet_name).filter(Boolean))].sort();
+  selectedCustomers = new Set([...selectedCustomers].filter(c=>allCustomerNames.includes(c)));
+  renderCustList();
+  updateCustButton();
+}
+
+// ----- Customer multi-select panel -----
+function toggleCustPanel(){
+  const panel = document.getElementById('os-cust-panel');
+  if (panel.classList.contains('open')) { closeCustPanel(); return; }
+  renderCustList();
+  panel.classList.add('open');
+}
+function closeCustPanel(){
+  document.getElementById('os-cust-panel').classList.remove('open');
+}
+document.addEventListener('click', (e) => {
+  const wrap = document.getElementById('os-cust-wrap');
+  if (wrap && !wrap.contains(e.target)) closeCustPanel();
+});
+function renderCustList(){
+  const q = (document.getElementById('os-cust-search').value||'').toLowerCase();
+  const filtered = q ? allCustomerNames.filter(c=>c.toLowerCase().includes(q)) : allCustomerNames;
+  const list = document.getElementById('os-cust-list');
+  list.innerHTML = filtered.length ? filtered.map(c=>{
+    const id = 'cust-'+btoa(unescape(encodeURIComponent(c))).replace(/[^a-zA-Z0-9]/g,'');
+    const checked = selectedCustomers.has(c) ? 'checked' : '';
+    return `<label class="ms-item" for="${id}">
+      <input type="checkbox" id="${id}" data-name="${escHtml(c)}" ${checked} onchange="toggleCustomer(this.dataset.name, this.checked)">
+      <span>${escHtml(c)}</span>
+    </label>`;
+  }).join('') : '<div class="ms-empty">No match.</div>';
+}
+function toggleCustomer(name, checked){
+  if (checked) selectedCustomers.add(name); else selectedCustomers.delete(name);
+  updateCustButton();
+  renderAlerts();
+}
+function custSelectAllFiltered(){
+  const q = (document.getElementById('os-cust-search').value||'').toLowerCase();
+  const filtered = q ? allCustomerNames.filter(c=>c.toLowerCase().includes(q)) : allCustomerNames;
+  filtered.forEach(c=>selectedCustomers.add(c));
+  renderCustList();
+  updateCustButton();
+  renderAlerts();
+}
+function custClearAll(){
+  selectedCustomers.clear();
+  renderCustList();
+  updateCustButton();
+  renderAlerts();
+}
+function updateCustButton(){
+  const btn = document.getElementById('os-cust-btn');
+  const n = selectedCustomers.size;
+  if (n === 0) { btn.textContent = 'All Customers ▾'; btn.classList.remove('active'); }
+  else if (n <= 2) { btn.textContent = [...selectedCustomers].join(', ') + ' ▾'; btn.classList.add('active'); }
+  else { btn.textContent = n + ' customers selected ▾'; btn.classList.add('active'); }
 }
 function renderAlerts() {
   const month = document.getElementById('os-alert-month')?.value || '';
-  const customer = document.getElementById('os-alert-customer')?.value || '';
   const state = document.getElementById('os-alert-state')?.value || '';
   let filtered = month
     ? allAlertData.filter(r=> (r.expiry_date||'').slice(0,7) === month)
     : allAlertData.filter(r=> r.days <= 180);
-  if(customer) filtered = filtered.filter(r=> r.outlet_name === customer);
+  if(selectedCustomers.size) filtered = filtered.filter(r=> selectedCustomers.has(r.outlet_name));
   if(state) filtered = filtered.filter(r=> r.region === state);
   filtered = [...filtered].sort((a,b)=>a.days-b.days);
   const zones={z30:[],z90:[],z120:[],z180:[],later:[]};
