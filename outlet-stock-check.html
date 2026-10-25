@@ -373,10 +373,10 @@
   <div class="card" id="hq-card-alerts">
     <div class="card-title">⏰ Expiry Alerts</div>
     <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">
-      <select id="hq-alert-month" onchange="renderHQAlerts()" style="padding:6px 10px;border:1.5px solid var(--border);border-radius:8px;font-family:inherit;font-size:12px;background:var(--bg);">
+      <select id="hq-alert-month" onchange="renderHQAlerts()" style="width:auto;flex:1;min-width:140px;padding:6px 10px;border:1.5px solid var(--border);border-radius:8px;font-family:inherit;font-size:12px;background:var(--bg);">
         <option value="">All Months</option>
       </select>
-      <div class="ms-wrap" id="hq-cust-wrap">
+      <div class="ms-wrap" id="hq-cust-wrap" style="flex:1;min-width:140px;">
         <button type="button" class="ms-btn" id="hq-cust-btn" onclick="toggleHQCustPanel()">All Customers ▾</button>
         <div class="ms-panel" id="hq-cust-panel">
           <input type="text" class="ms-search" id="hq-cust-search" placeholder="Search outlet / chain name…" oninput="renderHQCustList()">
@@ -389,10 +389,10 @@
           <div class="ms-list" id="hq-cust-list"></div>
         </div>
       </div>
-      <select id="hq-alert-agent" onchange="renderHQAlerts()" style="padding:6px 10px;border:1.5px solid var(--border);border-radius:8px;font-family:inherit;font-size:12px;background:var(--bg);">
+      <select id="hq-alert-agent" onchange="renderHQAlerts()" style="width:auto;flex:1;min-width:140px;padding:6px 10px;border:1.5px solid var(--border);border-radius:8px;font-family:inherit;font-size:12px;background:var(--bg);">
         <option value="">All Agents</option>
       </select>
-      <select id="hq-alert-state" onchange="renderHQAlerts()" style="padding:6px 10px;border:1.5px solid var(--border);border-radius:8px;font-family:inherit;font-size:12px;background:var(--bg);">
+      <select id="hq-alert-state" onchange="renderHQAlerts()" style="width:auto;flex:1;min-width:140px;padding:6px 10px;border:1.5px solid var(--border);border-radius:8px;font-family:inherit;font-size:12px;background:var(--bg);">
         <option value="">All States</option>
         <option>Perlis</option>
         <option>Kedah</option>
