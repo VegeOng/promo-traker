@@ -217,10 +217,14 @@
   .role-badge.sales { background: var(--blue-light); color: var(--blue); }
   .role-badge.marketing { background: #fdf4ff; color: #7e22ce; }
   .role-badge.merchandiser { background: #fff7ed; color: #c2410c; }
+  .phone-badge { font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 20px; }
+  .phone-badge.set { background: var(--blue-light); color: var(--blue); }
+  .phone-badge.unset { background: #f3f4f6; color: var(--muted); }
   .btn-editname { background: #3b82f6; border: none; color: white; padding: 5px 10px; border-radius: 6px; font-size: 12px; cursor: pointer; font-weight: 600; }
   .btn-setpw { background: var(--green); border: none; color: white; padding: 5px 10px; border-radius: 6px; font-size: 12px; cursor: pointer; font-weight: 600; }
   .btn-kpi { background: #d97706; border: none; color: white; padding: 5px 10px; border-radius: 6px; font-size: 12px; cursor: pointer; font-weight: 600; }
   .btn-role { background: #7e22ce; border: none; color: white; padding: 5px 10px; border-radius: 6px; font-size: 12px; cursor: pointer; font-weight: 600; }
+  .btn-phone { background: #0891b2; border: none; color: white; padding: 5px 10px; border-radius: 6px; font-size: 12px; cursor: pointer; font-weight: 600; }
   .btn-del { background: none; border: 1px solid var(--red); color: var(--red); padding: 4px 10px; border-radius: 6px; font-size: 12px; cursor: pointer; font-weight: 600; }
   .btn-del:hover { background: var(--red); color: white; }
   .pw-edit-row { width: 100%; display: none; gap: 8px; margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--border); flex-wrap: wrap; }
@@ -1080,18 +1084,25 @@ function renderMembers(){
       <span class="role-badge ${m.role||'sales'}">${m.role==='marketing'?'Marketing':m.role==='china'?'China':m.role==='merchandiser'?'Merchandiser':'Sales'}</span>
       <span class="pw-badge ${m.password?'set':'unset'}">${m.password?'✓ Password':'⚠ No password'}</span>
       <span class="kpi-badge">KPI: RM ${Number(m.monthly_kpi||0).toLocaleString()}</span>
+      <span class="phone-badge ${m.phone?'set':'unset'}">${m.phone?'📞 '+escHtml(m.phone):'⚠ No phone'}</span>
       ${m.active===false
         ? `<button class="btn-save" onclick="toggleActive(${m.id},true)" style="background:#dcfce7;color:#166534;border-color:#bbf7d0">✅ Reactivate</button>`
         : `<button class="btn-editname" onclick="toggleNameEdit(${m.id})">Name</button>
       <button class="btn-role" onclick="toggleRoleEdit(${m.id})">Role</button>
       <button class="btn-setpw" onclick="togglePwEdit(${m.id})">Password</button>
       <button class="btn-kpi" onclick="toggleKpiEdit(${m.id})">KPI</button>
+      <button class="btn-phone" onclick="togglePhoneEdit(${m.id})">Phone</button>
       <button class="btn-del" onclick="toggleActive(${m.id},false)" style="background:#fef3c7;color:#d97706;border-color:#fde68a">⏸ Deactivate</button>`}
       <button class="btn-del" onclick="deleteMember(${m.id},'${m.name.replace(/'/g,"\\'")}')">🗑 Remove</button>
       <div class="pw-edit-row" id="nameedit-${m.id}">
         <input type="text" id="nameval-${m.id}" value="${m.name.replace(/"/g,'&quot;')}" placeholder="New name">
         <button class="btn-save" onclick="saveName(${m.id})">Save</button>
         <button class="btn-cancel" onclick="toggleNameEdit(${m.id})">Cancel</button>
+      </div>
+      <div class="pw-edit-row" id="phoneedit-${m.id}">
+        <input type="text" id="phoneval-${m.id}" value="${(m.phone||'').replace(/"/g,'&quot;')}" placeholder="e.g. 012-3456789">
+        <button class="btn-save" onclick="savePhone(${m.id})">Save</button>
+        <button class="btn-cancel" onclick="togglePhoneEdit(${m.id})">Cancel</button>
       </div>
       <div class="pw-edit-row" id="roleedit-${m.id}">
         <select id="roleval-${m.id}">
@@ -1120,10 +1131,12 @@ function toggleNameEdit(id){const r=document.getElementById('nameedit-'+id);r.cl
 function toggleRoleEdit(id){document.getElementById('roleedit-'+id).classList.toggle('open');}
 function togglePwEdit(id){const r=document.getElementById('pwedit-'+id);r.classList.toggle('open');if(r.classList.contains('open'))document.getElementById('pwval-'+id).focus();}
 function toggleKpiEdit(id){const r=document.getElementById('kpiedit-'+id);r.classList.toggle('open');if(r.classList.contains('open'))document.getElementById('kpival-'+id).focus();}
+function togglePhoneEdit(id){const r=document.getElementById('phoneedit-'+id);r.classList.toggle('open');if(r.classList.contains('open'))document.getElementById('phoneval-'+id).focus();}
 async function saveName(id){const inp=document.getElementById('nameval-'+id);const newName=inp.value.trim();if(!newName){inp.style.borderColor='var(--red)';return;}const oldName=members.find(m=>m.id===id)?.name;if(newName===oldName){toggleNameEdit(id);return;}if(!confirm(`Change name from "${oldName}" to "${newName}"?\nAll past reports will be updated.`))return;try{await fetch(SUPA_URL+'/rest/v1/members?id=eq.'+id,{method:'PATCH',headers:H,body:JSON.stringify({name:newName})});await fetch(SUPA_URL+'/rest/v1/daily_reports?name=eq.'+encodeURIComponent(oldName),{method:'PATCH',headers:H,body:JSON.stringify({name:newName})});await fetch(SUPA_URL+'/rest/v1/weekly_reports?name=eq.'+encodeURIComponent(oldName),{method:'PATCH',headers:H,body:JSON.stringify({name:newName})});await loadMembers();renderMembers();}catch(e){alert('Failed.');}}
 async function saveRole(id){const val=document.getElementById('roleval-'+id).value;try{await fetch(SUPA_URL+'/rest/v1/members?id=eq.'+id,{method:'PATCH',headers:H,body:JSON.stringify({role:val})});await loadMembers();renderMembers();}catch(e){alert('Failed.');}}
 async function savePassword(id){const inp=document.getElementById('pwval-'+id);const pw=inp.value.trim();if(!pw){inp.style.borderColor='var(--red)';return;}try{await fetch(SUPA_URL+'/rest/v1/members?id=eq.'+id,{method:'PATCH',headers:H,body:JSON.stringify({password:pw})});await loadMembers();renderMembers();}catch(e){alert('Failed.');}}
 async function saveKpi(id){const inp=document.getElementById('kpival-'+id);const kpi=parseFloat(inp.value)||0;try{await fetch(SUPA_URL+'/rest/v1/members?id=eq.'+id,{method:'PATCH',headers:H,body:JSON.stringify({monthly_kpi:kpi})});await loadMembers();renderMembers();}catch(e){alert('Failed.');}}
+async function savePhone(id){const inp=document.getElementById('phoneval-'+id);const phone=inp.value.trim();try{await fetch(SUPA_URL+'/rest/v1/members?id=eq.'+id,{method:'PATCH',headers:H,body:JSON.stringify({phone:phone||null})});await loadMembers();renderMembers();}catch(e){alert('Failed. Make sure the "phone" column exists on the members table (see SQL in outlet-stock-check.html).');}}
 async function addMember(){const inp=document.getElementById('new-member-name');const pwInp=document.getElementById('new-member-pw');const roleInp=document.getElementById('new-member-role');const name=inp.value.trim();const pw=pwInp.value.trim();const role=roleInp.value;if(!name){inp.style.borderColor='var(--red)';return;}inp.style.borderColor='';try{await db('members',{method:'POST',body:JSON.stringify({name,password:pw||null,monthly_kpi:0,role})});inp.value='';pwInp.value='';roleInp.value='sales';await loadMembers();renderMembers();}catch(e){alert('Failed.');}}
 async function toggleActive(id, activate){
   const label = activate ? 'reactivate' : 'deactivate';

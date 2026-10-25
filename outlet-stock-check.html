@@ -929,21 +929,39 @@ function notifyAgentWhatsApp(){
   const label = OV_RECENCY_LABEL[ovRecencyFilter]||'flagged';
   const list = names.map(n=>'- '+n).join('\n');
   const text = `Hi ${agent}, please check these ${names.length} outlet(s) — ${label}:\n${list}`;
-  window.open('https://wa.me/?text='+encodeURIComponent(text), '_blank');
+  const phone = normalizePhoneMY(ovAgentPhones[agent]);
+  if(phone){
+    window.open('https://wa.me/'+phone+'?text='+encodeURIComponent(text), '_blank');
+  } else {
+    showToast(`No phone on file for ${agent} — opening WhatsApp, please pick the chat manually. (Add phone in Report HQ → Members)`);
+    window.open('https://wa.me/?text='+encodeURIComponent(text), '_blank');
+  }
 }
 function ovBadge(lv){ return {4:['exp-30','⛔ ≤30 days'],3:['exp-90','🔴 ≤90 days'],2:['exp-120','🟠 ≤120 days'],1:['exp-180','🟡 ≤180 days']}[lv]||null; }
 function setOvRecency(key){
   ovRecencyFilter = (ovRecencyFilter===key) ? '' : key;
   renderOverviewGrid();
 }
+let ovAgentPhones = {};
 async function populateOverviewAgentFilter() {
   const sel = document.getElementById('ov-agent-filter');
   if (sel.dataset.loaded) return;
-  const data = await sbGet('members?select=id,name,role&order=name.asc&active=neq.false');
+  // "phone" column may not exist yet (needs one-time SQL migration, see bottom of file) — fall back gracefully.
+  let data = await sbGet('members?select=id,name,role,phone&order=name.asc&active=neq.false');
+  if (!Array.isArray(data)) data = await sbGet('members?select=id,name,role&order=name.asc&active=neq.false');
   if (!Array.isArray(data)) return;
   const agents = data.filter(m=>['sales','merchandiser'].includes(m.role||'sales'));
+  agents.forEach(m=>{ if(m.phone) ovAgentPhones[m.name]=m.phone; });
   sel.innerHTML = '<option value="">All Agents</option>' + agents.map(m=>`<option value="${escH(m.name)}">${escH(m.name)}</option>`).join('');
   sel.dataset.loaded = '1';
+}
+
+function normalizePhoneMY(phone){
+  let digits = String(phone||'').replace(/\D/g,'');
+  if(!digits) return '';
+  if(digits.startsWith('0')) digits = '60'+digits.slice(1);
+  else if(!digits.startsWith('60')) digits = '60'+digits;
+  return digits;
 }
 
 async function loadOverview() {
@@ -1485,6 +1503,14 @@ function showToast(msg,err=false){ const t=document.getElementById('toast'); t.t
   -- Seed initial products:
   INSERT INTO products (code) VALUES
     ('KPM'),('CLM'),('SMTS'),('SMCL'),('SPTS'),('SPCL'),('BBQ'),('MALA'),('SHTY'),('SHCR');
+  ─────────────────────────────────────────────────────────────────────── -->
+
+<!--
+  ── SUPABASE: Add phone column to members (run once in SQL Editor) ───────
+  Needed for the "Share via WhatsApp" direct-link button on Outlet Overview.
+  Enter each member's phone in Report HQ → Members → Phone.
+
+  ALTER TABLE members ADD COLUMN IF NOT EXISTS phone TEXT;
   ─────────────────────────────────────────────────────────────────────── -->
 </body>
 </html>
