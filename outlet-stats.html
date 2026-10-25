@@ -52,6 +52,8 @@
 
   .hqs-summary { display: grid; grid-template-columns: repeat(auto-fill,minmax(140px,1fr)); gap: 10px; margin-bottom: 20px; }
   .hqs-card { background: white; border: 1px solid var(--border); border-radius: 10px; padding: 14px; text-align: center; }
+  .hqs-card.clickable { cursor: pointer; transition: box-shadow .15s, border-color .15s, transform .1s; }
+  .hqs-card.clickable:hover { border-color: var(--green); box-shadow: 0 4px 12px rgba(0,0,0,.08); transform: translateY(-1px); }
   .hqs-val { font-size: 24px; font-weight: 900; line-height: 1; }
   .hqs-label { font-size: 11px; color: var(--muted); margin-top: 4px; text-transform: uppercase; letter-spacing: 0.04em; }
   .hqs-table { width: 100%; border-collapse: collapse; font-size: 13px; }
@@ -140,7 +142,7 @@
 
   <div class="hqs-summary" id="os-summary"></div>
 
-  <div class="card">
+  <div class="card" id="os-card-alerts">
     <div class="card-title">⏰ Expiry Alerts</div>
     <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">
       <select id="os-alert-month" onchange="renderAlerts()" style="padding:6px 10px;border:1.5px solid var(--border);border-radius:8px;font-family:inherit;font-size:12px;background:white;">
@@ -182,7 +184,7 @@
     <div id="os-alerts-content"><div class="loading-text">Loading…</div></div>
   </div>
 
-  <div class="card">
+  <div class="card" id="os-card-agents">
     <div class="card-title">👤 Sales Agent Performance</div>
     <div style="overflow-x:auto">
       <table class="hqs-table">
@@ -206,7 +208,7 @@
     <div id="os-unchecked"><div class="loading-text">Loading…</div></div>
   </div>
 
-  <div class="card">
+  <div class="card" id="os-card-lastvisit">
     <div class="card-title">🕐 Outlets by Last Check Date (Oldest First)</div>
     <div id="os-lastvisit"><div class="loading-text">Loading…</div></div>
   </div>
@@ -224,6 +226,17 @@ async function db(path) {
   return r.status===204?null:r.json();
 }
 function escHtml(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+function jumpTo(id, resetAlertFilters){
+  if (resetAlertFilters) {
+    const m = document.getElementById('os-alert-month'); if(m) m.value='';
+    const s = document.getElementById('os-alert-state'); if(s) s.value='';
+    if (typeof selectedCustomers !== 'undefined') { selectedCustomers.clear(); updateCustButton(); }
+    if (typeof renderAlerts === 'function') renderAlerts();
+  }
+  const el = document.getElementById(id);
+  if (el) el.scrollIntoView({behavior:'smooth', block:'start'});
+}
 
 function populateMonthSelect() {
   const sel = document.getElementById('os-month-select');
@@ -275,10 +288,10 @@ async function loadOutletStats() {
     const totalVisited=new Set(checksData.map(c=>c.outlet_id)).size;
     const totalRed=checksData.filter(c=>c.expiry_date&&daysLeft(c.expiry_date)<=90).length;
     document.getElementById('os-summary').innerHTML=`
-      <div class="hqs-card"><div class="hqs-val" style="color:var(--green)">${agents.length}</div><div class="hqs-label">Sales Agents</div></div>
-      <div class="hqs-card"><div class="hqs-val" style="color:var(--green)">${allOutlets.length}</div><div class="hqs-label">Total Outlets</div></div>
-      <div class="hqs-card"><div class="hqs-val" style="color:var(--blue)">${totalVisited}</div><div class="hqs-label">Outlets Visited</div></div>
-      <div class="hqs-card"><div class="hqs-val" style="color:var(--red)">${totalRed}</div><div class="hqs-label">🔴 Red Alerts</div></div>
+      <div class="hqs-card clickable" onclick="jumpTo('os-card-agents')"><div class="hqs-val" style="color:var(--green)">${agents.length}</div><div class="hqs-label">Sales Agents</div></div>
+      <div class="hqs-card clickable" onclick="jumpTo('os-card-lastvisit')"><div class="hqs-val" style="color:var(--green)">${allOutlets.length}</div><div class="hqs-label">Total Outlets</div></div>
+      <div class="hqs-card clickable" onclick="jumpTo('os-card-agents')"><div class="hqs-val" style="color:var(--blue)">${totalVisited}</div><div class="hqs-label">Outlets Visited</div></div>
+      <div class="hqs-card clickable" onclick="jumpTo('os-card-alerts', true)"><div class="hqs-val" style="color:var(--red)">${totalRed}</div><div class="hqs-label">🔴 Red Alerts</div></div>
     `;
 
     const tbody=document.getElementById('os-tbody');
