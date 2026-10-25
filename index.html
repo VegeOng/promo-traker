@@ -118,6 +118,29 @@ body{background:var(--bg);color:var(--t1);font-family:var(--font);min-height:100
   .so-member-bar-fill{height:100%;border-radius:4px;transition:width 0.6s;}
   .so-member-amount{font-size:13px;font-weight:700;color:var(--green);text-align:right;min-width:80px;}
   .so-member-gap{font-size:11px;min-width:90px;text-align:right;}
+
+  /* Outlet Stats */
+  .os-wrap{background:white;border:1px solid var(--b1);border-radius:14px;padding:20px;margin-bottom:28px;display:none;}
+  .os-title{font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:14px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+  .os-title select{margin-left:auto;padding:6px 10px;border:1.5px solid var(--b1);border-radius:8px;font-family:var(--font);font-size:12px;background:var(--s2);color:var(--t1);text-transform:none;letter-spacing:normal;}
+  .os-summary{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:8px;}
+  @media(min-width:600px){.os-summary{grid-template-columns:repeat(4,1fr);}}
+  .os-card{background:#f9fafb;border-radius:10px;padding:14px;text-align:center;}
+  .os-val{font-size:20px;font-weight:900;line-height:1.1;}
+  .os-val.green{color:var(--green);}
+  .os-val.blue{color:var(--blue);}
+  .os-val.red{color:var(--red);}
+  .os-label{font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:0.04em;margin-top:4px;}
+  .os-sub-title{font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:0.06em;margin:18px 0 10px;}
+  .os-table{width:100%;border-collapse:collapse;font-size:13px;}
+  .os-table th{text-align:center;padding:8px 10px;font-size:10px;text-transform:uppercase;letter-spacing:.4px;color:var(--t3);font-weight:700;background:var(--s2);}
+  .os-table th:first-child{text-align:left;}
+  .os-table td{padding:9px 10px;border-top:1px solid var(--b1);text-align:center;font-size:13px;}
+  .os-table td:first-child{text-align:left;font-weight:600;}
+  .os-row{display:flex;align-items:center;justify-content:space-between;padding:9px 12px;border-radius:8px;margin-bottom:6px;flex-wrap:wrap;gap:6px;background:var(--s2);}
+  .os-row.warn{background:var(--red-bg);border:1px solid #fca5a5;}
+  .os-row-name{font-weight:600;font-size:13px;}
+  .os-badge{font-size:11px;padding:2px 8px;border-radius:20px;font-weight:600;}
 </style>
 <script>
 const SALES_API = 'https://script.google.com/macros/s/AKfycbwxt23ZB0od7EeBSNvjurKTbkDcM7HLgrWhuoqHc3meKWmhbB0XQzfOdB-X2Pj5O_MY/exec';
@@ -227,6 +250,129 @@ async function loadSalesOverview() {
     document.getElementById('so-loading').textContent = 'Failed to load';
   }
 }
+
+// ===== OUTLET STATS =====
+const OUTLET_EXEMPT = ['VEGE']; // 老板账号不计入门店拜访统计
+function escOs(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function populateOutletMonthSelect() {
+  const sel = document.getElementById('os-month-select');
+  if (sel.options.length) return;
+  const now = new Date();
+  for (let i=0; i<12; i++) {
+    const d = new Date(now.getFullYear(), now.getMonth()-i, 1);
+    const o = document.createElement('option');
+    o.value = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+    o.textContent = d.toLocaleString('en', {year:'numeric', month:'long'});
+    sel.appendChild(o);
+  }
+}
+
+async function loadOutletStats() {
+  populateOutletMonthSelect();
+  const sel = document.getElementById('os-month-select');
+  const month = sel.value;
+  const [year, mon] = month.split('-');
+  const firstDay = `${year}-${mon}-01`;
+  const lastDay = `${year}-${mon}-${new Date(year, mon, 0).getDate()}`;
+  document.getElementById('os-month-label').textContent = sel.options[sel.selectedIndex]?.textContent || '—';
+  const today = new Date(); today.setHours(0,0,0,0);
+
+  try {
+    const [membersRes, outletsRes, checksRes, allChecksRes] = await Promise.all([
+      supa.from('members').select('*').neq('active', false).order('name'),
+      supa.from('outlets').select('*').order('name', {ascending:true}),
+      supa.from('outlet_stock_checks').select('agent_name, outlet_id, quantity, expiry_date').gte('check_date', firstDay).lte('check_date', lastDay),
+      supa.from('outlet_stock_checks').select('outlet_id, outlet_name, check_date').order('check_date', {ascending:false})
+    ]);
+
+    const osAgents = (membersRes.data||[]).filter(m => (m.role||'sales')==='sales' && m.active!==false && !OUTLET_EXEMPT.includes((m.name||'').toUpperCase()));
+    const osAllOutlets = outletsRes.data || [];
+    const checksData = checksRes.data || [];
+    const allChecks = allChecksRes.data || [];
+
+    function daysLeft(d) { const dt=new Date(d); dt.setHours(0,0,0,0); return Math.ceil((dt-today)/86400000); }
+
+    const agentStats = {};
+    osAgents.forEach(m => { agentStats[m.name] = { visited:new Set(), items:0, redAlerts:0, kpi:m.outlet_visit_kpi||0 }; });
+    checksData.forEach(c => {
+      const a = c.agent_name;
+      if (!agentStats[a]) agentStats[a] = { visited:new Set(), items:0, redAlerts:0, kpi:0 };
+      if (c.outlet_id) agentStats[a].visited.add(String(c.outlet_id));
+      agentStats[a].items += (c.quantity||0);
+      if (c.expiry_date && daysLeft(c.expiry_date) <= 90) agentStats[a].redAlerts++;
+    });
+
+    const totalVisited = new Set(checksData.map(c=>c.outlet_id)).size;
+    const totalRed = checksData.filter(c=>c.expiry_date && daysLeft(c.expiry_date)<=90).length;
+    document.getElementById('os-summary').innerHTML = `
+      <div class="os-card"><div class="os-val green">${osAgents.length}</div><div class="os-label">Sales Agents</div></div>
+      <div class="os-card"><div class="os-val green">${osAllOutlets.length}</div><div class="os-label">Total Outlets</div></div>
+      <div class="os-card"><div class="os-val blue">${totalVisited}</div><div class="os-label">Outlets Visited</div></div>
+      <div class="os-card"><div class="os-val red">${totalRed}</div><div class="os-label">🔴 Red Alerts</div></div>
+    `;
+
+    const tbody = document.getElementById('os-tbody');
+    tbody.innerHTML = !osAgents.length ? '<tr><td colspan="6" style="text-align:center;padding:14px;color:var(--t3)">No sales members.</td></tr>' :
+      osAgents.map(m => {
+        const s = agentStats[m.name] || { visited:new Set(), items:0, redAlerts:0, kpi:m.outlet_visit_kpi||0 };
+        const visited = s.visited.size, kpi = s.kpi;
+        const pct = kpi>0 ? Math.round(visited/kpi*100) : null;
+        const pctColor = pct===null ? 'var(--t3)' : pct>=100 ? 'var(--green)' : pct>=60 ? 'var(--amber)' : 'var(--red)';
+        return `<tr>
+          <td>${escOs(m.name)}</td>
+          <td>${kpi||'—'}</td>
+          <td style="font-weight:700">${visited}</td>
+          <td>${pct!==null?`<span style="font-weight:700;color:${pctColor}">${pct}%</span>`:'<span style="color:var(--t3)">—</span>'}</td>
+          <td>${s.items}</td>
+          <td>${s.redAlerts>0?`<span style="color:var(--red);font-weight:700">🔴 ${s.redAlerts}</span>`:'<span style="color:var(--green)">✓ 0</span>'}</td>
+        </tr>`;
+      }).join('');
+
+    const checkedIds = new Set(checksData.map(c=>String(c.outlet_id)));
+    const unchecked = osAllOutlets.filter(o=>!checkedIds.has(String(o.id)));
+    document.getElementById('os-unchecked').innerHTML = unchecked.length===0
+      ? '<div style="color:var(--green);font-size:13px;padding:8px;font-weight:600">✅ All outlets checked this month!</div>'
+      : unchecked.map(o=>`<div class="os-row warn">
+          <div class="os-row-name">${escOs(o.name)}${o.region?` <span style="font-size:11px;color:var(--t3)">(${escOs(o.region)})</span>`:''}</div>
+          <div style="display:flex;align-items:center;gap:8px">
+            ${o.assigned_to?`<span class="os-badge" style="background:var(--green-bg);color:var(--green)">${escOs(o.assigned_to)}</span>`:'<span style="font-size:11px;color:var(--t3)">Unassigned</span>'}
+            <span style="font-size:11px;font-weight:700;color:var(--red)">NOT CHECKED</span>
+          </div>
+        </div>`).join('');
+
+    const lastVisitMap = {};
+    allChecks.forEach(c => { if (!lastVisitMap[c.outlet_id]) lastVisitMap[c.outlet_id] = {date:c.check_date, name:c.outlet_name}; });
+    const sorted = [...osAllOutlets].map(o => {
+      const last = lastVisitMap[o.id];
+      const daysSince = last ? Math.ceil((today-new Date(last.date))/86400000) : null;
+      return {...o, lastDate: last?.date||null, daysSince};
+    }).sort((a,b) => {
+      if (a.daysSince===null && b.daysSince===null) return 0;
+      if (a.daysSince===null) return -1;
+      if (b.daysSince===null) return 1;
+      return b.daysSince-a.daysSince;
+    });
+    document.getElementById('os-lastvisit').innerHTML = sorted.map((o,i) => {
+      const ds = o.daysSince;
+      const color = ds===null?'var(--red)':ds>60?'var(--red)':ds>30?'var(--amber)':'var(--green)';
+      const label = ds===null?'Never checked':`${ds} days ago`;
+      return `<div class="os-row">
+        <div style="display:flex;align-items:center;gap:10px">
+          <span style="font-size:12px;font-weight:700;color:var(--t3);width:20px">${i+1}</span>
+          <div class="os-row-name">${escOs(o.name)}${o.region?` <span style="font-size:11px;color:var(--t3)">(${escOs(o.region)})</span>`:''}</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          ${o.assigned_to?`<span class="os-badge" style="background:var(--green-bg);color:var(--green)">${escOs(o.assigned_to)}</span>`:''}
+          <span style="font-size:12px;font-weight:700;color:${color}">${label}</span>
+          ${o.lastDate?`<span style="font-size:11px;color:var(--t3)">${o.lastDate}</span>`:''}
+        </div>
+      </div>`;
+    }).join('');
+  } catch(e) {
+    console.error('Outlet stats error:', e);
+  }
+}
 </script>
 
 </head>
@@ -325,6 +471,30 @@ async function loadSalesOverview() {
     </div>
     <div style="font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:10px">👤 Individual — This Month</div>
     <div id="so-members-list"><div style="text-align:center;padding:10px;color:var(--t3);font-size:13px">Loading…</div></div>
+  </div>
+
+  <!-- OUTLET STATS (HQ only) -->
+  <div class="os-wrap" id="outlet-stats">
+    <div class="os-title">🏪 Outlet Stats — <span id="os-month-label">—</span>
+      <select id="os-month-select" onchange="loadOutletStats()"></select>
+    </div>
+    <div class="os-summary" id="os-summary"></div>
+
+    <div class="os-sub-title">👤 Agent Performance</div>
+    <div style="overflow-x:auto">
+      <table class="os-table">
+        <thead>
+          <tr><th>Agent</th><th>KPI Target</th><th>Outlets Visited</th><th>Achievement</th><th>Items Checked</th><th>🔴 Red Alerts</th></tr>
+        </thead>
+        <tbody id="os-tbody"><tr><td colspan="6" style="text-align:center;padding:14px;color:var(--t3)">Loading…</td></tr></tbody>
+      </table>
+    </div>
+
+    <div class="os-sub-title">❌ Not Checked This Month</div>
+    <div id="os-unchecked"><div style="color:var(--t3);font-size:13px;padding:8px">Loading…</div></div>
+
+    <div class="os-sub-title">🕐 Last Checked (Oldest First)</div>
+    <div id="os-lastvisit"><div style="color:var(--t3);font-size:13px;padding:8px">Loading…</div></div>
   </div>
 
   <div class="sec">
@@ -579,6 +749,8 @@ function showApp() {
   loadStats();
   document.getElementById("sales-overview").style.display = "block";
   loadSalesOverviewMembers().then(() => loadSalesOverview());
+  document.getElementById("outlet-stats").style.display = "block";
+  loadOutletStats();
 }
 
 function initHeader() {

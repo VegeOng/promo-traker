@@ -245,16 +245,7 @@
   .month-row { display: flex; gap: 8px; align-items: center; margin-bottom: 16px; }
   .month-row select { padding: 8px 12px; border: 1.5px solid var(--border); border-radius: 8px; font-size: 13px; font-family: inherit; appearance: none; }
 
-  /* HQ Stats */
-  .hqs-summary { display: grid; grid-template-columns: repeat(auto-fill,minmax(140px,1fr)); gap: 10px; margin-bottom: 20px; }
-  .hqs-card { background: white; border: 1px solid var(--border); border-radius: 10px; padding: 14px; text-align: center; }
-  .hqs-val { font-size: 24px; font-weight: 900; line-height: 1; }
-  .hqs-label { font-size: 11px; color: var(--muted); margin-top: 4px; text-transform: uppercase; letter-spacing: 0.04em; }
-  .hqs-table { width: 100%; border-collapse: collapse; font-size: 13px; }
-  .hqs-table th { text-align: center; padding: 8px 10px; font-size: 11px; text-transform: uppercase; letter-spacing: .4px; color: var(--muted); font-weight: 700; background: #f3f4f6; }
-  .hqs-table th:first-child { text-align: left; }
-  .hqs-table td { padding: 10px; border-top: 1px solid var(--border); text-align: center; font-size: 13px; }
-  .hqs-table td:first-child { text-align: left; font-weight: 600; }
+  /* Outlet Settings (assignment + KPI) */
   .assign-row { display: flex; align-items: center; gap: 10px; padding: 10px 12px; background: #f9fafb; border-radius: 8px; margin-bottom: 6px; flex-wrap: wrap; }
   .assign-row-name { flex: 1; font-weight: 500; font-size: 13px; min-width: 120px; }
   .assign-row select { padding: 6px 10px; border: 1.5px solid var(--border); border-radius: 6px; font-family: inherit; font-size: 12px; background: white; }
@@ -262,8 +253,6 @@
   .kpi-setting-row-name { flex: 1; font-weight: 500; font-size: 13px; }
   .kpi-setting-row input[type=number] { width: 70px; padding: 6px 8px; border: 1.5px solid var(--border); border-radius: 6px; font-family: inherit; font-size: 13px; text-align: center; }
   .btn-kpi-save { padding: 6px 12px; background: var(--green); color: white; border: none; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; }
-  .unchecked-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; background: #fff9f9; border: 1px solid #fca5a5; border-radius: 8px; margin-bottom: 6px; flex-wrap: wrap; gap: 6px; }
-  .lastvisit-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; background: white; border: 1px solid var(--border); border-radius: 8px; margin-bottom: 6px; flex-wrap: wrap; gap: 6px; }
 
   /* Activities */
   .act-stat-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 10px; margin-bottom: 20px; }
@@ -380,7 +369,7 @@
   <div class="tab" onclick="switchTab('daily')">📝 Daily Reports</div>
   <div class="tab" onclick="switchTab('weekly')">📅 Weekly Reports</div>
   <div class="tab" onclick="switchTab('stats')">📈 Miss Stats</div>
-  <div class="tab" onclick="switchTab('hqstats')">🏪 Outlet Stats</div>
+  <div class="tab" onclick="switchTab('hqstats')">⚙️ Outlet Settings</div>
   <div class="tab" onclick="switchTab('members')">👥 Members</div>
 </div>
 
@@ -495,47 +484,9 @@
     </div>
   </div>
 
-  <!-- OUTLET STATS -->
+  <!-- OUTLET SETTINGS -->
   <div class="section" id="sec-hqstats">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px;">
-      <div style="font-size:18px;font-weight:800;color:var(--text)">🏪 Outlet Stats</div>
-      <select id="hqstats-month" onchange="loadHQStats()" style="padding:8px 12px;border:1.5px solid var(--border);border-radius:8px;font-family:inherit;font-size:13px;"></select>
-    </div>
-
-    <!-- Summary -->
-    <div class="hqs-summary" id="hqs-summary"></div>
-
-    <!-- Agent Performance -->
-    <div class="card">
-      <div class="card-title">👤 Sales Agent Performance</div>
-      <div style="overflow-x:auto">
-        <table class="hqs-table">
-          <thead>
-            <tr>
-              <th style="text-align:left">Agent</th>
-              <th>KPI Target</th>
-              <th>Outlets Visited</th>
-              <th>Achievement</th>
-              <th>Items Checked</th>
-              <th>🔴 Red Alerts</th>
-            </tr>
-          </thead>
-          <tbody id="hqs-tbody"><tr><td colspan="6" class="loading-text">Loading…</td></tr></tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- Unchecked outlets -->
-    <div class="card">
-      <div class="card-title">❌ Outlets Not Checked This Month</div>
-      <div id="hqs-unchecked"><div class="loading-text">Loading…</div></div>
-    </div>
-
-    <!-- Last visit ranking -->
-    <div class="card">
-      <div class="card-title">🕐 Outlets by Last Check Date (Oldest First)</div>
-      <div id="hqs-lastvisit"><div class="loading-text">Loading…</div></div>
-    </div>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:16px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:10px 14px">📊 Outlet Stats（门店统计总览）已移到首页(index.html)方便查看。这里只保留门店分配与访店 KPI 设置。</div>
 
     <!-- Outlet assignment -->
     <div class="card">
@@ -812,7 +763,7 @@ function switchTab(tab) {
   else if(tab==='daily') loadDailyReports();
   else if(tab==='weekly') loadWeeklyReports();
   else if(tab==='stats') loadMissStats();
-  else if(tab==='hqstats') loadHQStats();
+  else if(tab==='hqstats') loadOutletSettings();
   else if(tab==='members') renderMembers();
 }
 
@@ -938,123 +889,15 @@ async function loadMissStats(){
 
 function countWorkDays(start,end){let count=0;const cur=new Date(start);while(cur<=end){const d=cur.getDay();if(d!==0&&d!==6)count++;cur.setDate(cur.getDate()+1);}return count;}
 
-// ===== OUTLET STATS =====
-async function loadHQStats() {
-  const sel = document.getElementById('hqstats-month');
-  if(!sel.options.length) {
-    const now = new Date();
-    for(let i=0;i<12;i++){
-      const d=new Date(now.getFullYear(),now.getMonth()-i,1);
-      const o=document.createElement('option');
-      o.value=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
-      o.textContent=d.toLocaleString('en',{year:'numeric',month:'long'});
-      sel.appendChild(o);
-    }
-  }
-  const month=sel.value;
-  const [year,mon]=month.split('-');
-  const firstDay=`${year}-${mon}-01`;
-  const lastDay=`${year}-${mon}-${new Date(year,mon,0).getDate()}`;
-  const today=new Date(); today.setHours(0,0,0,0);
-
-  // Load fresh data every time
-  const [membersData, outletsData, checks, allChecks] = await Promise.all([
+// ===== OUTLET SETTINGS (assignment + KPI only; stats view moved to index.html) =====
+async function loadOutletSettings() {
+  const [membersData, outletsData] = await Promise.all([
     db('members?select=*&order=name&active=neq.false'),
-    db('outlets?select=*&order=name.asc'),
-    db(`outlet_stock_checks?check_date=gte.${firstDay}&check_date=lte.${lastDay}&select=agent_name,outlet_id,quantity,expiry_date`),
-    db('outlet_stock_checks?select=outlet_id,outlet_name,check_date&order=check_date.desc')
+    db('outlets?select=*&order=name.asc')
   ]);
 
   hqSalesMembers = Array.isArray(membersData) ? membersData.filter(m=>(m.role||'sales')==='sales' && m.active!==false && !isReportExempt(m)) : [];
   allOutlets = Array.isArray(outletsData) ? outletsData : [];
-  const checksData = Array.isArray(checks) ? checks : [];
-
-  function daysLeft(d){ const dt=new Date(d); dt.setHours(0,0,0,0); return Math.ceil((dt-today)/86400000); }
-
-  // Per agent aggregation
-  const agentStats = {};
-  hqSalesMembers.forEach(m=>{ agentStats[m.name]={visited:new Set(),items:0,redAlerts:0,kpi:m.outlet_visit_kpi||0}; });
-  checksData.forEach(c=>{
-    const a=c.agent_name;
-    if(!agentStats[a]) agentStats[a]={visited:new Set(),items:0,redAlerts:0,kpi:0};
-    if(c.outlet_id) agentStats[a].visited.add(String(c.outlet_id));
-    agentStats[a].items+=(c.quantity||0);
-    if(c.expiry_date&&daysLeft(c.expiry_date)<=90) agentStats[a].redAlerts++;
-  });
-
-  // Summary cards
-  const totalVisited=new Set(checksData.map(c=>c.outlet_id)).size;
-  const totalRed=checksData.filter(c=>c.expiry_date&&daysLeft(c.expiry_date)<=90).length;
-  document.getElementById('hqs-summary').innerHTML=`
-    <div class="hqs-card"><div class="hqs-val" style="color:var(--green)">${hqSalesMembers.length}</div><div class="hqs-label">Sales Agents</div></div>
-    <div class="hqs-card"><div class="hqs-val" style="color:var(--green)">${allOutlets.length}</div><div class="hqs-label">Total Outlets</div></div>
-    <div class="hqs-card"><div class="hqs-val" style="color:var(--blue)">${totalVisited}</div><div class="hqs-label">Outlets Visited</div></div>
-    <div class="hqs-card"><div class="hqs-val" style="color:var(--red)">${totalRed}</div><div class="hqs-label">🔴 Red Alerts</div></div>
-  `;
-
-  // Agent performance table
-  const tbody=document.getElementById('hqs-tbody');
-  if(!hqSalesMembers.length){tbody.innerHTML='<tr><td colspan="6" class="empty-text">No sales members.</td></tr>';}
-  else {
-    tbody.innerHTML=hqSalesMembers.map(m=>{
-      const s=agentStats[m.name]||{visited:new Set(),items:0,redAlerts:0,kpi:m.outlet_visit_kpi||0};
-      const visited=s.visited.size, kpi=s.kpi;
-      const pct=kpi>0?Math.round(visited/kpi*100):null;
-      const pctColor=pct===null?'var(--muted)':pct>=100?'var(--green)':pct>=60?'var(--amber)':'var(--red)';
-      return `<tr>
-        <td>${escHtml(m.name)}</td>
-        <td>${kpi||'—'}</td>
-        <td style="font-weight:700">${visited}</td>
-        <td>${pct!==null?`<span style="font-weight:700;color:${pctColor}">${pct}%</span>`:'<span style="color:var(--muted)">—</span>'}</td>
-        <td>${s.items}</td>
-        <td>${s.redAlerts>0?`<span style="color:var(--red);font-weight:700">🔴 ${s.redAlerts}</span>`:'<span style="color:var(--green)">✓ 0</span>'}</td>
-      </tr>`;
-    }).join('');
-  }
-
-  // Unchecked outlets this month
-  const checkedIds=new Set(checksData.map(c=>String(c.outlet_id)));
-  const unchecked=allOutlets.filter(o=>!checkedIds.has(String(o.id)));
-  const uncheckedEl=document.getElementById('hqs-unchecked');
-  uncheckedEl.innerHTML=unchecked.length===0
-    ?'<div class="empty-text">✅ All outlets checked this month!</div>'
-    :unchecked.map(o=>`<div class="unchecked-row">
-        <div><span style="font-weight:600;font-size:13px">${escHtml(o.name)}</span>${o.region?` <span style="font-size:11px;color:var(--muted)">(${escHtml(o.region)})</span>`:''}</div>
-        <div style="display:flex;align-items:center;gap:8px">
-          ${o.assigned_to?`<span style="font-size:11px;background:var(--green-light);color:var(--green);padding:2px 8px;border-radius:20px;font-weight:600">${escHtml(o.assigned_to)}</span>`:'<span style="font-size:11px;color:var(--muted)">Unassigned</span>'}
-          <span style="font-size:11px;font-weight:700;color:var(--red)">NOT CHECKED</span>
-        </div>
-      </div>`).join('');
-
-  // Last visit ranking
-  const lastVisitMap={};
-  if(Array.isArray(allChecks)) allChecks.forEach(c=>{if(!lastVisitMap[c.outlet_id])lastVisitMap[c.outlet_id]={date:c.check_date,name:c.outlet_name};});
-  const sorted=[...allOutlets].map(o=>{
-    const last=lastVisitMap[o.id];
-    const daysSince=last?Math.ceil((today-new Date(last.date))/86400000):null;
-    return {...o,lastDate:last?.date||null,daysSince};
-  }).sort((a,b)=>{
-    if(a.daysSince===null&&b.daysSince===null)return 0;
-    if(a.daysSince===null)return -1;
-    if(b.daysSince===null)return -1;
-    return b.daysSince-a.daysSince;
-  });
-  document.getElementById('hqs-lastvisit').innerHTML=sorted.map((o,i)=>{
-    const ds=o.daysSince;
-    const color=ds===null?'var(--red)':ds>60?'var(--red)':ds>30?'var(--amber)':'var(--green)';
-    const label=ds===null?'Never checked':`${ds} days ago`;
-    return `<div class="lastvisit-row">
-      <div style="display:flex;align-items:center;gap:10px">
-        <span style="font-size:12px;font-weight:700;color:var(--muted);width:22px">${i+1}</span>
-        <div><span style="font-weight:600;font-size:13px">${escHtml(o.name)}</span>${o.region?` <span style="font-size:11px;color:var(--muted)">(${escHtml(o.region)})</span>`:''}</div>
-      </div>
-      <div style="display:flex;align-items:center;gap:8px">
-        ${o.assigned_to?`<span style="font-size:11px;background:var(--green-light);color:var(--green);padding:2px 8px;border-radius:20px;font-weight:600">${escHtml(o.assigned_to)}</span>`:''}
-        <span style="font-size:12px;font-weight:700;color:${color}">${label}</span>
-        ${o.lastDate?`<span style="font-size:11px;color:var(--muted)">${o.lastDate}</span>`:''}
-      </div>
-    </div>`;
-  }).join('');
 
   // Outlet assignment
   document.getElementById('hqs-assignment').innerHTML=allOutlets.length===0?'<div class="empty-text">No outlets.</div>':
@@ -1089,7 +932,7 @@ async function saveOutletKPI(memberId) {
   await fetch(SUPA_URL+'/rest/v1/members?id=eq.'+memberId,{method:'PATCH',headers:H,body:JSON.stringify({outlet_visit_kpi:val})});
   const m=hqSalesMembers.find(m=>m.id===memberId); if(m) m.outlet_visit_kpi=val;
   alert('✅ KPI saved');
-  loadHQStats();
+  loadOutletSettings();
 }
 
 // ===== MEMBERS =====
