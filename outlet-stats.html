@@ -185,7 +185,7 @@
   </div>
 
   <div class="card" id="os-card-agents">
-    <div class="card-title">👤 Sales Agent Performance</div>
+    <div class="card-title">👤 Agent Performance</div>
     <div style="overflow-x:auto">
       <table class="hqs-table">
         <thead>
@@ -269,7 +269,7 @@ async function loadOutletStats() {
       db('outlet_stock_checks?select=outlet_id,outlet_name,check_date&order=check_date.desc')
     ]);
 
-    const agents = (membersData||[]).filter(m=>(m.role||'sales')==='sales' && m.active!==false && !REPORT_EXEMPT.includes((m.name||'').toUpperCase()));
+    const agents = (membersData||[]).filter(m=>['sales','merchandiser'].includes(m.role||'sales') && m.active!==false && !REPORT_EXEMPT.includes((m.name||'').toUpperCase()));
     const allOutlets = outletsData||[];
     const checksData = checks||[];
 
@@ -288,7 +288,7 @@ async function loadOutletStats() {
     const totalVisited=new Set(checksData.map(c=>c.outlet_id)).size;
     const totalRed=checksData.filter(c=>c.expiry_date&&daysLeft(c.expiry_date)<=90).length;
     document.getElementById('os-summary').innerHTML=`
-      <div class="hqs-card clickable" onclick="jumpTo('os-card-agents')"><div class="hqs-val" style="color:var(--green)">${agents.length}</div><div class="hqs-label">Sales Agents</div></div>
+      <div class="hqs-card clickable" onclick="jumpTo('os-card-agents')"><div class="hqs-val" style="color:var(--green)">${agents.length}</div><div class="hqs-label">Agents</div></div>
       <div class="hqs-card clickable" onclick="jumpTo('os-card-lastvisit')"><div class="hqs-val" style="color:var(--green)">${allOutlets.length}</div><div class="hqs-label">Total Outlets</div></div>
       <div class="hqs-card clickable" onclick="jumpTo('os-card-agents')"><div class="hqs-val" style="color:var(--blue)">${totalVisited}</div><div class="hqs-label">Outlets Visited</div></div>
       <div class="hqs-card clickable" onclick="jumpTo('os-card-alerts', true)"><div class="hqs-val" style="color:var(--red)">${totalRed}</div><div class="hqs-label">🔴 Red Alerts</div></div>

@@ -938,7 +938,7 @@ async function loadOutletSettings() {
     db('outlets?select=*&order=name.asc')
   ]);
 
-  hqSalesMembers = Array.isArray(membersData) ? membersData.filter(m=>(m.role||'sales')==='sales' && m.active!==false && !isReportExempt(m)) : [];
+  hqSalesMembers = Array.isArray(membersData) ? membersData.filter(m=>['sales','merchandiser'].includes(m.role||'sales') && m.active!==false && !isReportExempt(m)) : [];
   allOutlets = Array.isArray(outletsData) ? outletsData : [];
 
   // Outlet assignment
