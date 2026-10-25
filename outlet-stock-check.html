@@ -130,6 +130,38 @@
   .alert-row-head { font-weight:600; color:var(--ink-muted); font-size:11px; text-transform:uppercase; letter-spacing:.4px; background:var(--surface-2); }
   .lot-tag { font-family:monospace; font-size:11px; background:var(--surface-2); padding:2px 6px; border-radius:4px; color:var(--ink-muted); }
 
+  /* HQ Dashboard */
+  .hqs-summary { display: grid; grid-template-columns: repeat(auto-fill,minmax(140px,1fr)); gap: 10px; margin-bottom: 20px; }
+  .hqs-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 14px; text-align: center; }
+  .hqs-card.clickable { cursor: pointer; transition: box-shadow .15s, border-color .15s, transform .1s; }
+  .hqs-card.clickable:hover { border-color: var(--green); box-shadow: 0 4px 12px rgba(0,0,0,.08); transform: translateY(-1px); }
+  .hqs-val { font-size: 24px; font-weight: 900; line-height: 1; }
+  .hqs-label { font-size: 11px; color: var(--ink-muted); margin-top: 4px; text-transform: uppercase; letter-spacing: 0.04em; }
+  .hqs-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .hqs-table th { text-align: center; padding: 8px 10px; font-size: 11px; text-transform: uppercase; letter-spacing: .4px; color: var(--ink-muted); font-weight: 700; background: var(--surface-2); }
+  .hqs-table th:first-child { text-align: left; }
+  .hqs-table td { padding: 10px; border-top: 1px solid var(--border); text-align: center; font-size: 13px; }
+  .hqs-table td:first-child { text-align: left; font-weight: 600; }
+  .ah-later { background:#eff6ff; color:#1e3a8a; border-color:#bfdbfe; }
+  .unchecked-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; background: #fff9f9; border: 1px solid #fca5a5; border-radius: 8px; margin-bottom: 6px; flex-wrap: wrap; gap: 6px; }
+  .lastvisit-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 6px; flex-wrap: wrap; gap: 6px; }
+  .ms-wrap { position: relative; }
+  .ms-btn { padding:6px 10px; border:1.5px solid var(--border); border-radius:8px; font-family:inherit; font-size:12px; background:var(--surface); cursor:pointer; max-width:220px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; text-align:left; }
+  .ms-btn:hover { border-color: var(--green); }
+  .ms-btn.active { border-color: var(--green); color: var(--green); font-weight:700; }
+  .ms-panel { display:none; position:absolute; top:calc(100% + 4px); left:0; z-index:50; width:280px; max-width:80vw; background:var(--surface); border:1px solid var(--border); border-radius:10px; box-shadow:0 8px 24px rgba(0,0,0,.12); padding:10px; }
+  .ms-panel.open { display:block; }
+  .ms-search { width:100%; padding:7px 10px; border:1.5px solid var(--border); border-radius:6px; font-family:inherit; font-size:12px; margin-bottom:8px; }
+  .ms-search:focus { outline:none; border-color:var(--green); }
+  .ms-actions { display:flex; align-items:center; gap:6px; margin-bottom:8px; }
+  .ms-actions button { padding:5px 10px; border:1px solid var(--border); background:var(--surface-2); border-radius:6px; font-size:11px; font-weight:600; cursor:pointer; color: var(--ink-muted); }
+  .ms-actions button:hover { border-color: var(--green); color: var(--green); }
+  .ms-list { max-height:220px; overflow-y:auto; border-top:1px solid var(--border); padding-top:6px; }
+  .ms-item { display:flex; align-items:center; gap:8px; padding:5px 4px; font-size:12.5px; cursor:pointer; border-radius:4px; }
+  .ms-item:hover { background:var(--green-light); }
+  .ms-item input { flex-shrink:0; }
+  .ms-empty { font-size:12px; color: var(--ink-muted); padding:8px 4px; text-align:center; }
+
   .btn-delete-row { background:none; border:1px solid var(--red); color:var(--red); padding:3px 8px; border-radius:4px; font-size:11px; font-weight:700; cursor:pointer; white-space:nowrap; }
   .btn-delete-row:hover { background:var(--red); color:#fff; }
   .loader { display:flex; align-items:center; justify-content:center; padding:40px; color:var(--ink-muted); font-size:13px; gap:10px; }
@@ -206,7 +238,7 @@
   <button class="tab" data-tab="overview" onclick="switchTab('overview')">🏪 Outlet Overview</button>
   <button class="tab" data-tab="stats" onclick="switchTab('stats')">📊 Return Stats</button>
   <button class="tab" data-tab="alerts" onclick="switchTab('alerts')">⚠️ Expiry Alerts <span class="tab-badge" id="alertBadge">0</span></button>
-  <button class="tab" data-tab="hqstats" onclick="switchTab('hqstats')" id="tab-hqstats-btn" style="display:none">📈 HQ Stats</button>
+  <button class="tab" data-tab="hqstats" onclick="switchTab('hqstats')" id="tab-hqstats-btn" style="display:none">📊 HQ Dashboard</button>
 </div>
 
 <!-- TAB 1: CHECK-IN FORM -->
@@ -327,32 +359,78 @@
   <div id="alertsContent"><div class="loader"><div class="spinner"></div>Loading…</div></div>
 </div>
 
-<!-- TAB 5: HQ STATS -->
+<!-- TAB 5: HQ DASHBOARD -->
 <div class="panel" id="tab-hqstats">
   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px;">
-    <div style="font-family:'DM Serif Display',serif;font-size:18px;color:var(--green)">HQ Stats</div>
-    <select id="hqstats-month" onchange="loadHQStats()" style="padding:8px 12px;border:1.5px solid var(--border);border-radius:8px;font-family:inherit;font-size:13px;background:var(--bg);"></select>
+    <div style="font-family:'DM Serif Display',serif;font-size:18px;color:var(--green)">HQ Dashboard — <span id="hq-month-label">—</span></div>
+    <select id="hq-month-select" onchange="loadHQDashboard()" style="padding:8px 12px;border:1.5px solid var(--border);border-radius:8px;font-family:inherit;font-size:13px;background:var(--bg);"></select>
   </div>
 
   <!-- Summary cards -->
-  <div id="hqstats-summary" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin-bottom:20px;"></div>
+  <div class="hqs-summary" id="hq-summary"></div>
+
+  <!-- Expiry alerts -->
+  <div class="card" id="hq-card-alerts">
+    <div class="card-title">⏰ Expiry Alerts</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">
+      <select id="hq-alert-month" onchange="renderHQAlerts()" style="padding:6px 10px;border:1.5px solid var(--border);border-radius:8px;font-family:inherit;font-size:12px;background:var(--bg);">
+        <option value="">All Months</option>
+      </select>
+      <div class="ms-wrap" id="hq-cust-wrap">
+        <button type="button" class="ms-btn" id="hq-cust-btn" onclick="toggleHQCustPanel()">All Customers ▾</button>
+        <div class="ms-panel" id="hq-cust-panel">
+          <input type="text" class="ms-search" id="hq-cust-search" placeholder="Search outlet / chain name…" oninput="renderHQCustList()">
+          <div class="ms-actions">
+            <button type="button" onclick="hqCustSelectAllFiltered()">Select All</button>
+            <button type="button" onclick="hqCustClearAll()">Clear</button>
+            <span style="flex:1"></span>
+            <button type="button" onclick="closeHQCustPanel()">Done</button>
+          </div>
+          <div class="ms-list" id="hq-cust-list"></div>
+        </div>
+      </div>
+      <select id="hq-alert-agent" onchange="renderHQAlerts()" style="padding:6px 10px;border:1.5px solid var(--border);border-radius:8px;font-family:inherit;font-size:12px;background:var(--bg);">
+        <option value="">All Agents</option>
+      </select>
+      <select id="hq-alert-state" onchange="renderHQAlerts()" style="padding:6px 10px;border:1.5px solid var(--border);border-radius:8px;font-family:inherit;font-size:12px;background:var(--bg);">
+        <option value="">All States</option>
+        <option>Perlis</option>
+        <option>Kedah</option>
+        <option>Pulau Pinang</option>
+        <option>Perak</option>
+        <option>Selangor</option>
+        <option>Negeri Sembilan</option>
+        <option>Melaka</option>
+        <option>Johor</option>
+        <option>Pahang</option>
+        <option>Terengganu</option>
+        <option>Kelantan</option>
+        <option>Sabah</option>
+        <option>Sarawak</option>
+        <option>W.P. Kuala Lumpur</option>
+        <option>W.P. Putrajaya</option>
+        <option>W.P. Labuan</option>
+      </select>
+    </div>
+    <div id="hq-alerts-content"><div class="loader"><div class="spinner"></div>Loading…</div></div>
+  </div>
 
   <!-- Per agent table -->
-  <div class="card">
-    <div class="card-title">👤 Sales Agent Performance</div>
+  <div class="card" id="hq-card-agents">
+    <div class="card-title">👤 Agent Performance</div>
     <div style="overflow-x:auto">
-      <table style="width:100%;border-collapse:collapse;font-size:13px" id="hqstats-table">
+      <table class="hqs-table">
         <thead>
-          <tr style="background:var(--surface-2)">
-            <th style="text-align:left;padding:8px 10px;font-size:11px;text-transform:uppercase;letter-spacing:.4px;color:var(--ink-muted);font-weight:600">Agent</th>
-            <th style="text-align:center;padding:8px 10px;font-size:11px;text-transform:uppercase;letter-spacing:.4px;color:var(--ink-muted);font-weight:600">KPI Target</th>
-            <th style="text-align:center;padding:8px 10px;font-size:11px;text-transform:uppercase;letter-spacing:.4px;color:var(--ink-muted);font-weight:600">Outlets Visited</th>
-            <th style="text-align:center;padding:8px 10px;font-size:11px;text-transform:uppercase;letter-spacing:.4px;color:var(--ink-muted);font-weight:600">Achievement</th>
-            <th style="text-align:center;padding:8px 10px;font-size:11px;text-transform:uppercase;letter-spacing:.4px;color:var(--ink-muted);font-weight:600">Items Checked</th>
-            <th style="text-align:center;padding:8px 10px;font-size:11px;text-transform:uppercase;letter-spacing:.4px;color:var(--ink-muted);font-weight:600">🔴 Red Alerts</th>
+          <tr>
+            <th style="text-align:left">Agent</th>
+            <th>KPI Target</th>
+            <th>Outlets Visited</th>
+            <th>Achievement</th>
+            <th>Items Checked</th>
+            <th>🔴 Red Alerts</th>
           </tr>
         </thead>
-        <tbody id="hqstats-tbody">
+        <tbody id="hq-tbody">
           <tr><td colspan="6" style="text-align:center;padding:30px;color:var(--ink-muted)">Loading…</td></tr>
         </tbody>
       </table>
@@ -362,13 +440,13 @@
   <!-- Unchecked this month -->
   <div class="card">
     <div class="card-title">❌ Outlets Not Checked This Month</div>
-    <div id="hqstats-unchecked"><div class="loader"><div class="spinner"></div>Loading…</div></div>
+    <div id="hq-unchecked"><div class="loader"><div class="spinner"></div>Loading…</div></div>
   </div>
 
   <!-- Last visited ranking -->
-  <div class="card">
+  <div class="card" id="hq-card-lastvisit">
     <div class="card-title">🕐 Outlets by Last Check Date (Oldest First)</div>
-    <div id="hqstats-lastvisit"><div class="loader"><div class="spinner"></div>Loading…</div></div>
+    <div id="hq-lastvisit"><div class="loader"><div class="spinner"></div>Loading…</div></div>
   </div>
 
   <!-- Outlet assignment -->
@@ -627,7 +705,7 @@ function switchTab(t) {
   if(t==='overview') loadOverview();
   if(t==='stats') loadStats();
   if(t==='alerts') loadAlerts(false);
-  if(t==='hqstats') loadHQStats();
+  if(t==='hqstats') { loadHQDashboard(); loadHQAlerts(); }
 }
 
 // ── Product rows ──
@@ -957,127 +1035,121 @@ async function saveNewOutlet(){
   } else { showToast('Save failed. Check database setup.', true); }
 }
 
-// ── HQ Stats ──
+// ── HQ Dashboard (full outlet-stats.html feature set, ported in) ──
 let hqMembers = [];
-async function loadHQStats() {
-  // populate month selector if empty
-  const sel = document.getElementById('hqstats-month');
-  if(!sel.options.length) {
-    const now = new Date();
-    for(let i=0;i<12;i++){
-      const d=new Date(now.getFullYear(),now.getMonth()-i,1);
-      const o=document.createElement('option');
-      o.value=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
-      o.textContent=d.toLocaleString('en',{year:'numeric',month:'long'});
-      sel.appendChild(o);
-    }
+const HQ_REPORT_EXEMPT = ['VEGE']; // 老板账号不计入门店拜访统计
+
+function populateHQMonthSelect() {
+  const sel = document.getElementById('hq-month-select');
+  if (sel.options.length) return;
+  const now = new Date();
+  for (let i=0; i<12; i++) {
+    const d = new Date(now.getFullYear(), now.getMonth()-i, 1);
+    const o = document.createElement('option');
+    o.value = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+    o.textContent = d.toLocaleString('en', {year:'numeric', month:'long'});
+    sel.appendChild(o);
   }
+}
+
+function jumpToHQ(id, resetAlertFilters){
+  if (resetAlertFilters) {
+    const m = document.getElementById('hq-alert-month'); if(m) m.value='';
+    const a = document.getElementById('hq-alert-agent'); if(a) a.value='';
+    const s = document.getElementById('hq-alert-state'); if(s) s.value='';
+    hqSelectedCustomers.clear(); updateHQCustButton();
+    renderHQAlerts();
+  }
+  const el = document.getElementById(id);
+  if (el) el.scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+async function loadHQDashboard() {
+  populateHQMonthSelect();
+  const sel = document.getElementById('hq-month-select');
   const month = sel.value;
   const [year, mon] = month.split('-');
   const firstDay = `${year}-${mon}-01`;
   const lastDay = `${year}-${mon}-${new Date(year,mon,0).getDate()}`;
+  document.getElementById('hq-month-label').textContent = sel.options[sel.selectedIndex]?.textContent || '—';
 
   // load members (sales + merchandiser — both do outlet checks)
   const membersData = await sbGet('members?select=*&order=name&active=neq.false');
   hqMembers = Array.isArray(membersData) ? membersData.filter(m=>['sales','merchandiser'].includes(m.role||'sales')) : [];
+  const hqStatsAgents = hqMembers.filter(m=>!HQ_REPORT_EXEMPT.includes((m.name||'').toUpperCase()));
+  hqMemberNames = new Set(hqMembers.map(m=>m.name).filter(Boolean));
 
   // load checks for this month
   const checks = await sbGet(`outlet_stock_checks?check_date=gte.${firstDay}&check_date=lte.${lastDay}&select=agent_name,outlet_id,quantity,expiry_date`);
-  if(!Array.isArray(checks)) return;
+  const checksData = Array.isArray(checks) ? checks : [];
 
   const today = new Date(); today.setHours(0,0,0,0);
   function daysLeft(d){ const dt=new Date(d); dt.setHours(0,0,0,0); return Math.ceil((dt-today)/86400000); }
 
   // aggregate per agent
   const agentStats = {};
-  hqMembers.forEach(m=>{ agentStats[m.name]={visited:new Set(),items:0,redAlerts:0,kpi:m.outlet_visit_kpi||0}; });
-
-  checks.forEach(c=>{
+  hqStatsAgents.forEach(m=>{ agentStats[m.name]={visited:new Set(),items:0,redAlerts:0,kpi:m.outlet_visit_kpi||0}; });
+  checksData.forEach(c=>{
     const a = c.agent_name;
     if(!agentStats[a]) agentStats[a]={visited:new Set(),items:0,redAlerts:0,kpi:0};
-    if(c.outlet_id) agentStats[a].visited.add(c.outlet_id);
+    if(c.outlet_id) agentStats[a].visited.add(String(c.outlet_id));
     agentStats[a].items += (c.quantity||0);
     if(c.expiry_date && daysLeft(c.expiry_date)<=90) agentStats[a].redAlerts++;
   });
 
   // summary
-  const totalVisited = new Set(checks.map(c=>c.outlet_id)).size;
-  const totalRed = checks.filter(c=>c.expiry_date&&daysLeft(c.expiry_date)<=90).length;
-  document.getElementById('hqstats-summary').innerHTML = `
-    <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;text-align:center">
-      <div style="font-size:22px;font-weight:700;color:var(--green)">${hqMembers.length}</div>
-      <div style="font-size:11px;color:var(--ink-muted);text-transform:uppercase;margin-top:4px">Sales Agents</div>
-    </div>
-    <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;text-align:center">
-      <div style="font-size:22px;font-weight:700;color:var(--green)">${totalVisited}</div>
-      <div style="font-size:11px;color:var(--ink-muted);text-transform:uppercase;margin-top:4px">Outlets Visited</div>
-    </div>
-    <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;text-align:center">
-      <div style="font-size:22px;font-weight:700;color:var(--red)">${totalRed}</div>
-      <div style="font-size:11px;color:var(--ink-muted);text-transform:uppercase;margin-top:4px">🔴 Red Alerts</div>
-    </div>
+  const totalVisited = new Set(checksData.map(c=>c.outlet_id)).size;
+  const totalRed = checksData.filter(c=>c.expiry_date&&daysLeft(c.expiry_date)<=90).length;
+  document.getElementById('hq-summary').innerHTML = `
+    <div class="hqs-card clickable" onclick="jumpToHQ('hq-card-agents')"><div class="hqs-val" style="color:var(--green)">${hqStatsAgents.length}</div><div class="hqs-label">Agents</div></div>
+    <div class="hqs-card clickable" onclick="jumpToHQ('hq-card-lastvisit')"><div class="hqs-val" style="color:var(--green)">${outlets.length}</div><div class="hqs-label">Total Outlets</div></div>
+    <div class="hqs-card clickable" onclick="jumpToHQ('hq-card-agents')"><div class="hqs-val" style="color:#3b82f6">${totalVisited}</div><div class="hqs-label">Outlets Visited</div></div>
+    <div class="hqs-card clickable" onclick="jumpToHQ('hq-card-alerts', true)"><div class="hqs-val" style="color:var(--red)">${totalRed}</div><div class="hqs-label">🔴 Red Alerts</div></div>
   `;
 
   // per agent table
-  const tbody = document.getElementById('hqstats-tbody');
-  if(!hqMembers.length){ tbody.innerHTML='<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--ink-muted)">No sales members found.</td></tr>'; }
+  const tbody = document.getElementById('hq-tbody');
+  if(!hqStatsAgents.length){ tbody.innerHTML='<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--ink-muted)">No sales members found.</td></tr>'; }
   else {
-    tbody.innerHTML = hqMembers.map(m=>{
+    tbody.innerHTML = hqStatsAgents.map(m=>{
       const s = agentStats[m.name]||{visited:new Set(),items:0,redAlerts:0,kpi:m.outlet_visit_kpi||0};
       const visited = s.visited.size;
       const kpi = s.kpi;
       const pct = kpi>0 ? Math.round(visited/kpi*100) : null;
       const pctColor = pct===null?'var(--ink-muted)':pct>=100?'var(--green)':pct>=60?'var(--amber)':'var(--red)';
-      return `<tr style="border-top:1px solid var(--border)">
-        <td style="padding:10px">${escH(m.name)}</td>
-        <td style="text-align:center;padding:10px">${kpi||'—'}</td>
-        <td style="text-align:center;padding:10px;font-weight:600">${visited}</td>
-        <td style="text-align:center;padding:10px">
-          ${pct!==null?`<span style="font-weight:700;color:${pctColor}">${pct}%</span>`:'<span style="color:var(--ink-muted)">—</span>'}
-        </td>
-        <td style="text-align:center;padding:10px">${s.items}</td>
-        <td style="text-align:center;padding:10px">
-          ${s.redAlerts>0?`<span style="color:var(--red);font-weight:700">🔴 ${s.redAlerts}</span>`:'<span style="color:var(--green)">✓ 0</span>'}
-        </td>
+      return `<tr>
+        <td>${escH(m.name)}</td>
+        <td>${kpi||'—'}</td>
+        <td style="font-weight:700">${visited}</td>
+        <td>${pct!==null?`<span style="font-weight:700;color:${pctColor}">${pct}%</span>`:'<span style="color:var(--ink-muted)">—</span>'}</td>
+        <td>${s.items}</td>
+        <td>${s.redAlerts>0?`<span style="color:var(--red);font-weight:700">🔴 ${s.redAlerts}</span>`:'<span style="color:var(--green)">✓ 0</span>'}</td>
       </tr>`;
     }).join('');
   }
 
-  // outlet assignment
+  // outlet assignment + KPI settings (unchanged)
   renderOutletAssignment();
   renderKPISettings();
 
   // ── Outlets not checked this month ──
-  const checkedOutletIds = new Set(checks.map(c=>String(c.outlet_id)));
+  const checkedOutletIds = new Set(checksData.map(c=>String(c.outlet_id)));
   const unchecked = outlets.filter(o=>!checkedOutletIds.has(String(o.id)));
-  const uncheckedEl = document.getElementById('hqstats-unchecked');
-  if(!unchecked.length) {
-    uncheckedEl.innerHTML='<div class="empty">✅ All outlets checked this month!</div>';
-  } else {
-    uncheckedEl.innerHTML=`<div style="display:flex;flex-direction:column;gap:6px">`+
-      unchecked.map(o=>`
-        <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:#fff9f9;border:1px solid #fca5a5;border-radius:8px;flex-wrap:wrap;gap:6px">
-          <div>
-            <span style="font-weight:600;font-size:13px">${escH(o.name)}</span>
-            ${o.region?`<span style="font-size:11px;color:var(--ink-muted);margin-left:6px">${escH(o.region)}</span>`:''}
-          </div>
-          <div style="display:flex;align-items:center;gap:8px">
-            ${o.assigned_to?`<span style="font-size:11px;background:var(--green-light);color:var(--green);padding:2px 8px;border-radius:20px;font-weight:600">${escH(o.assigned_to)}</span>`:'<span style="font-size:11px;color:var(--ink-muted)">Unassigned</span>'}
-            <span style="font-size:11px;font-weight:700;color:var(--red)">NOT CHECKED</span>
-          </div>
-        </div>`).join('')+
-      '</div>';
-  }
+  const uncheckedEl = document.getElementById('hq-unchecked');
+  uncheckedEl.innerHTML = unchecked.length===0
+    ? '<div class="empty">✅ All outlets checked this month!</div>'
+    : unchecked.map(o=>`<div class="unchecked-row">
+        <div><span style="font-weight:600;font-size:13px">${escH(o.name)}</span>${o.region?` <span style="font-size:11px;color:var(--ink-muted)">(${escH(o.region)})</span>`:''}</div>
+        <div style="display:flex;align-items:center;gap:8px">
+          ${o.assigned_to?`<span style="font-size:11px;background:var(--green-light);color:var(--green);padding:2px 8px;border-radius:20px;font-weight:600">${escH(o.assigned_to)}</span>`:'<span style="font-size:11px;color:var(--ink-muted)">Unassigned</span>'}
+          <span style="font-size:11px;font-weight:700;color:var(--red)">NOT CHECKED</span>
+        </div>
+      </div>`).join('');
 
   // ── Last visit ranking (oldest first) ──
-  // Get last check date per outlet from all-time data
   const allChecks = await sbGet('outlet_stock_checks?select=outlet_id,outlet_name,check_date&order=check_date.desc');
   const lastVisitMap = {};
-  if(Array.isArray(allChecks)) {
-    allChecks.forEach(c=>{
-      if(!lastVisitMap[c.outlet_id]) lastVisitMap[c.outlet_id]={date:c.check_date,name:c.outlet_name};
-    });
-  }
+  if(Array.isArray(allChecks)) allChecks.forEach(c=>{ if(!lastVisitMap[c.outlet_id]) lastVisitMap[c.outlet_id]={date:c.check_date,name:c.outlet_name}; });
   const today2 = new Date(); today2.setHours(0,0,0,0);
   const outletsSorted = [...outlets].map(o=>{
     const last = lastVisitMap[o.id];
@@ -1086,32 +1158,149 @@ async function loadHQStats() {
   }).sort((a,b)=>{
     if(a.daysSince===null && b.daysSince===null) return 0;
     if(a.daysSince===null) return -1;
-    if(b.daysSince===null) return -1;
+    if(b.daysSince===null) return 1;
     return b.daysSince - a.daysSince;
   });
+  document.getElementById('hq-lastvisit').innerHTML = outletsSorted.map((o,i)=>{
+    const ds = o.daysSince;
+    const color = ds===null?'var(--red)':ds>60?'var(--red)':ds>30?'var(--amber)':'var(--green)';
+    const label = ds===null?'Never checked':`${ds} days ago`;
+    return `<div class="lastvisit-row">
+      <div style="display:flex;align-items:center;gap:10px">
+        <span style="font-size:12px;font-weight:700;color:var(--ink-muted);width:22px">${i+1}</span>
+        <div><span style="font-weight:600;font-size:13px">${escH(o.name)}</span>${o.region?` <span style="font-size:11px;color:var(--ink-muted)">(${escH(o.region)})</span>`:''}</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        ${o.assigned_to?`<span style="font-size:11px;background:var(--green-light);color:var(--green);padding:2px 8px;border-radius:20px;font-weight:600">${escH(o.assigned_to)}</span>`:''}
+        <span style="font-size:12px;font-weight:700;color:${color}">${label}</span>
+        ${o.lastDate?`<span style="font-size:11px;color:var(--ink-muted)">${o.lastDate}</span>`:''}
+      </div>
+    </div>`;
+  }).join('');
 
-  const lastVisitEl = document.getElementById('hqstats-lastvisit');
-  lastVisitEl.innerHTML=`<div style="display:flex;flex-direction:column;gap:6px">`+
-    outletsSorted.map((o,i)=>{
-      const ds = o.daysSince;
-      const color = ds===null?'var(--red)':ds>60?'var(--red)':ds>30?'var(--amber)':'var(--green)';
-      const label = ds===null?'Never checked':`${ds} days ago`;
-      return `<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:var(--surface);border:1px solid var(--border);border-radius:8px;flex-wrap:wrap;gap:6px">
-        <div style="display:flex;align-items:center;gap:10px">
-          <span style="font-size:12px;font-weight:700;color:var(--ink-muted);width:22px">${i+1}</span>
-          <div>
-            <span style="font-weight:600;font-size:13px">${escH(o.name)}</span>
-            ${o.region?`<span style="font-size:11px;color:var(--ink-muted);margin-left:6px">${escH(o.region)}</span>`:''}
-          </div>
-        </div>
-        <div style="display:flex;align-items:center;gap:8px">
-          ${o.assigned_to?`<span style="font-size:11px;background:var(--green-light);color:var(--green);padding:2px 8px;border-radius:20px;font-weight:600">${escH(o.assigned_to)}</span>`:''}
-          <span style="font-size:12px;font-weight:700;color:${color}">${label}</span>
-          ${o.lastDate?`<span style="font-size:11px;color:var(--ink-muted)">${o.lastDate}</span>`:''}
-        </div>
-      </div>`;
-    }).join('')+
-  '</div>';
+  if (hqAlertData.length) { populateHQAlertFilters(); renderHQAlerts(); }
+}
+
+// ── HQ Expiry Alerts (rich version: month/customer/agent/state filters) ──
+let hqAlertData = [];
+let hqMemberNames = new Set();
+function hqMonthLabel(ym){ const [y,m]=ym.split('-'); return new Date(y,m-1,1).toLocaleString('en',{year:'numeric',month:'long'}); }
+async function loadHQAlerts() {
+  const data = await sbGet('outlet_stock_checks?expiry_date=not.is.null&select=product_name,lot_number,expiry_date,outlet_name,agent_name,check_date,region&order=expiry_date.asc');
+  if(!Array.isArray(data)) return;
+  const today=new Date(); today.setHours(0,0,0,0);
+  function days(d){ const dt=new Date(d); dt.setHours(0,0,0,0); return Math.ceil((dt-today)/86400000); }
+  hqAlertData = data.map(r=>({...r, days:days(r.expiry_date)})).sort((a,b)=>a.days-b.days);
+  populateHQAlertFilters();
+  renderHQAlerts();
+}
+let hqCustomerNames = [];
+let hqSelectedCustomers = new Set();
+function populateHQAlertFilters() {
+  const monthSel = document.getElementById('hq-alert-month');
+  const months = [...new Set(hqAlertData.map(r=>(r.expiry_date||'').slice(0,7)).filter(Boolean))].sort();
+  monthSel.innerHTML = '<option value="">All Months</option>' + months.map(m=>`<option value="${m}">${hqMonthLabel(m)}</option>`).join('');
+
+  hqCustomerNames = [...new Set(hqAlertData.map(r=>r.outlet_name).filter(Boolean))].sort();
+  hqSelectedCustomers = new Set([...hqSelectedCustomers].filter(c=>hqCustomerNames.includes(c)));
+  renderHQCustList();
+  updateHQCustButton();
+
+  const agentSel = document.getElementById('hq-alert-agent');
+  const prevAgent = agentSel.value;
+  let agentsPresent = [...new Set(hqAlertData.map(r=>r.agent_name).filter(Boolean))].sort();
+  if (hqMemberNames.size) agentsPresent = agentsPresent.filter(a=>hqMemberNames.has(a));
+  agentSel.innerHTML = '<option value="">All Agents</option>' + agentsPresent.map(a=>`<option value="${escH(a)}">${escH(a)}</option>`).join('');
+  agentSel.value = prevAgent;
+}
+
+// ----- Customer multi-select panel -----
+function toggleHQCustPanel(){
+  const panel = document.getElementById('hq-cust-panel');
+  if (panel.classList.contains('open')) { closeHQCustPanel(); return; }
+  renderHQCustList();
+  panel.classList.add('open');
+}
+function closeHQCustPanel(){
+  document.getElementById('hq-cust-panel').classList.remove('open');
+}
+document.addEventListener('click', (e) => {
+  const wrap = document.getElementById('hq-cust-wrap');
+  if (wrap && !wrap.contains(e.target)) closeHQCustPanel();
+});
+function renderHQCustList(){
+  const q = (document.getElementById('hq-cust-search').value||'').toLowerCase();
+  const filtered = q ? hqCustomerNames.filter(c=>c.toLowerCase().includes(q)) : hqCustomerNames;
+  const list = document.getElementById('hq-cust-list');
+  list.innerHTML = filtered.length ? filtered.map(c=>{
+    const id = 'hqcust-'+btoa(unescape(encodeURIComponent(c))).replace(/[^a-zA-Z0-9]/g,'');
+    const checked = hqSelectedCustomers.has(c) ? 'checked' : '';
+    return `<label class="ms-item" for="${id}">
+      <input type="checkbox" id="${id}" data-name="${escH(c)}" ${checked} onchange="toggleHQCustomer(this.dataset.name, this.checked)">
+      <span>${escH(c)}</span>
+    </label>`;
+  }).join('') : '<div class="ms-empty">No match.</div>';
+}
+function toggleHQCustomer(name, checked){
+  if (checked) hqSelectedCustomers.add(name); else hqSelectedCustomers.delete(name);
+  updateHQCustButton();
+  renderHQAlerts();
+}
+function hqCustSelectAllFiltered(){
+  const q = (document.getElementById('hq-cust-search').value||'').toLowerCase();
+  const filtered = q ? hqCustomerNames.filter(c=>c.toLowerCase().includes(q)) : hqCustomerNames;
+  filtered.forEach(c=>hqSelectedCustomers.add(c));
+  renderHQCustList();
+  updateHQCustButton();
+  renderHQAlerts();
+}
+function hqCustClearAll(){
+  hqSelectedCustomers.clear();
+  renderHQCustList();
+  updateHQCustButton();
+  renderHQAlerts();
+}
+function updateHQCustButton(){
+  const btn = document.getElementById('hq-cust-btn');
+  const n = hqSelectedCustomers.size;
+  if (n === 0) { btn.textContent = 'All Customers ▾'; btn.classList.remove('active'); }
+  else if (n <= 2) { btn.textContent = [...hqSelectedCustomers].join(', ') + ' ▾'; btn.classList.add('active'); }
+  else { btn.textContent = n + ' customers selected ▾'; btn.classList.add('active'); }
+}
+function renderHQAlerts() {
+  const month = document.getElementById('hq-alert-month')?.value || '';
+  const agent = document.getElementById('hq-alert-agent')?.value || '';
+  const state = document.getElementById('hq-alert-state')?.value || '';
+  let filtered = month
+    ? hqAlertData.filter(r=> (r.expiry_date||'').slice(0,7) === month)
+    : hqAlertData.filter(r=> r.days <= 180);
+  if(hqSelectedCustomers.size) filtered = filtered.filter(r=> hqSelectedCustomers.has(r.outlet_name));
+  if(agent) filtered = filtered.filter(r=> r.agent_name === agent);
+  if(state) filtered = filtered.filter(r=> r.region === state);
+  filtered = [...filtered].sort((a,b)=>a.days-b.days);
+  const zones={z30:[],z90:[],z120:[],z180:[],later:[]};
+  filtered.forEach(r=>{ if(r.days<=30) zones.z30.push(r); else if(r.days<=90) zones.z90.push(r); else if(r.days<=120) zones.z120.push(r); else if(r.days<=180) zones.z180.push(r); else zones.later.push(r); });
+  function renderZone(items,cls,label){
+    if(!items.length) return '';
+    return '<div class="alert-section">'
+      +'<div class="alert-header '+cls+'">'+label+' <span style="font-weight:400;font-size:12px">('+items.length+' item'+(items.length>1?'s':'')+')</span></div>'
+      +'<div class="alert-body">'
+      +'<div class="alert-row alert-row-head"><div>Product</div><div>Batch Code</div><div>Outlet</div><div>State</div><div>Expiry / Days</div></div>'
+      +items.map(r=>'<div class="alert-row">'
+        +'<div>'+escH(r.product_name||'')+'</div>'
+        +'<div><span class="lot-tag">'+escH(r.lot_number||'—')+'</span></div>'
+        +'<div>'+escH(r.outlet_name||'')+'</div>'
+        +'<div>'+escH(r.region||'—')+'</div>'
+        +'<div>'+r.expiry_date+'<br><small style="color:var(--ink-muted)">'+(r.days<=0?'Expired '+Math.abs(r.days)+'d ago':r.days+' days left')+'</small></div>'
+        +'</div>').join('')
+      +'</div></div>';
+  }
+  const html=renderZone(zones.z30,'ah-30','⛔ Critical — Expired or ≤30 days')
+    +renderZone(zones.z90,'ah-90','🔴 High — 31–90 days to expiry')
+    +renderZone(zones.z120,'ah-120','🟠 Medium — 91–120 days to expiry')
+    +renderZone(zones.z180,'ah-180','🟡 Low — 121–180 days to expiry')
+    +renderZone(zones.later,'ah-later','📅 Later — 181+ days to expiry');
+  document.getElementById('hq-alerts-content').innerHTML=html||'<div class="empty">✅ No matching products.</div>';
 }
 
 function renderOutletAssignment() {
