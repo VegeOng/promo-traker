@@ -436,6 +436,7 @@
         <thead>
           <tr>
             <th style="text-align:left">Agent</th>
+            <th>🏪 Assigned</th>
             <th>KPI Target</th>
             <th>Outlets Visited</th>
             <th>Achievement</th>
@@ -444,7 +445,7 @@
           </tr>
         </thead>
         <tbody id="hq-tbody">
-          <tr><td colspan="6" style="text-align:center;padding:30px;color:var(--ink-muted)">Loading…</td></tr>
+          <tr><td colspan="7" style="text-align:center;padding:30px;color:var(--ink-muted)">Loading…</td></tr>
         </tbody>
       </table>
     </div>
@@ -1221,16 +1222,18 @@ async function loadHQDashboard() {
 
   // per agent table
   const tbody = document.getElementById('hq-tbody');
-  if(!hqStatsAgents.length){ tbody.innerHTML='<tr><td colspan="6" style="text-align:center;padding:20px;color:var(--ink-muted)">No sales members found.</td></tr>'; }
+  if(!hqStatsAgents.length){ tbody.innerHTML='<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--ink-muted)">No sales members found.</td></tr>'; }
   else {
     tbody.innerHTML = hqStatsAgents.map(m=>{
       const s = agentStats[m.name]||{visited:new Set(),items:0,redAlerts:0,kpi:m.outlet_visit_kpi||0};
       const visited = s.visited.size;
       const kpi = s.kpi;
+      const assigned = outlets.filter(o=>o.assigned_to===m.name).length;
       const pct = kpi>0 ? Math.round(visited/kpi*100) : null;
       const pctColor = pct===null?'var(--ink-muted)':pct>=100?'var(--green)':pct>=60?'var(--amber)':'var(--red)';
       return `<tr>
         <td>${escH(m.name)}</td>
+        <td style="font-weight:700">${assigned}</td>
         <td>${kpi||'—'}</td>
         <td style="font-weight:700">${visited}</td>
         <td>${pct!==null?`<span style="font-weight:700;color:${pctColor}">${pct}%</span>`:'<span style="color:var(--ink-muted)">—</span>'}</td>
