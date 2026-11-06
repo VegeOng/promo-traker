@@ -34,35 +34,49 @@
   .page-title{font-family:'DM Serif Display',serif;font-size:1.6rem;color:var(--blue);margin-bottom:4px;}
   .page-sub{font-size:13px;color:var(--muted);margin-bottom:20px;}
 
-  .kpi-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px;margin-bottom:20px;}
-  .kpi-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;position:relative;overflow:hidden;}
+  .kpi-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px;margin-bottom:20px;}
+  .kpi-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px 18px;position:relative;overflow:hidden;transition:box-shadow .15s ease, transform .15s ease;}
+  .kpi-card:hover{box-shadow:0 6px 20px -6px rgba(16,24,40,.12);transform:translateY(-1px);}
   .kpi-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--blue);}
   .kpi-card.green::before{background:var(--green);}
   .kpi-card.red::before{background:var(--red);}
   .kpi-card.amber::before{background:var(--amber);}
-  .kpi-label{font-size:10px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;}
-  .kpi-val{font-size:24px;font-weight:800;line-height:1.1;color:var(--blue);}
+  .kpi-top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;}
+  .kpi-icon{font-size:17px;opacity:.55;line-height:1;}
+  .kpi-label{font-size:10px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;}
+  .kpi-val{font-size:25px;font-weight:800;line-height:1.15;color:var(--blue);letter-spacing:-.01em;}
   .kpi-val.green{color:var(--green);}
   .kpi-val.red{color:var(--red);}
   .kpi-val.amber{color:var(--amber);}
-  .kpi-sub{font-size:11px;color:#9ca3af;margin-top:4px;}
+  .kpi-sub{font-size:11px;color:#9ca3af;margin-top:6px;}
+  .mom-chip{display:inline-flex;align-items:center;gap:3px;font-size:11px;font-weight:800;padding:2px 8px;border-radius:20px;margin-top:8px;}
+  .mom-chip.up{background:var(--green-light);color:var(--green);}
+  .mom-chip.dn{background:var(--red-light);color:var(--red);}
+  .mom-chip.flat{background:#f3f4f6;color:#6b7280;}
 
   .grid-2{display:grid;grid-template-columns:1.4fr 1fr;gap:16px;margin-bottom:16px;}
   .grid-2b{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;}
   @media(max-width:900px){.grid-2,.grid-2b{grid-template-columns:1fr;}}
 
-  .card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px;}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:18px;transition:box-shadow .15s ease;}
+  .card:hover{box-shadow:0 6px 20px -8px rgba(16,24,40,.1);}
   .card-title{font-size:14px;font-weight:700;color:var(--text);margin-bottom:14px;display:flex;align-items:center;gap:8px;}
   .chart-box{position:relative;height:280px;}
   .chart-box.sm{height:240px;}
 
-  table{width:100%;border-collapse:collapse;font-size:13px;}
-  th{text-align:left;padding:8px 10px;font-size:11px;text-transform:uppercase;letter-spacing:.4px;color:#9ca3af;font-weight:700;border-bottom:1px solid var(--border);}
-  td{padding:9px 10px;border-bottom:1px solid #f3f4f6;}
+  .table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+  table{width:100%;border-collapse:collapse;font-size:13px;min-width:460px;}
+  th{text-align:left;padding:8px 10px;font-size:11px;text-transform:uppercase;letter-spacing:.4px;color:#9ca3af;font-weight:700;border-bottom:1px solid var(--border);white-space:nowrap;position:sticky;top:0;background:var(--card);}
+  td{padding:9px 10px;border-bottom:1px solid #f3f4f6;white-space:nowrap;}
   tr:last-child td{border-bottom:none;}
+  tbody tr:nth-child(even){background:#fafbfa;}
+  tbody tr:hover{background:#f3f6f1;}
   .num{text-align:right;font-variant-numeric:tabular-nums;}
   .pos{color:var(--green);font-weight:700;}
   .neg{color:var(--red);font-weight:700;}
+  .cell-chip{font-size:10px;font-weight:700;margin-left:6px;}
+  .cell-chip.up{color:var(--green);}
+  .cell-chip.dn{color:var(--red);}
 
   .loading{text-align:center;padding:60px 20px;color:var(--muted);font-size:14px;}
   .spinner{width:30px;height:30px;border:3px solid #e5e7eb;border-top-color:var(--blue);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 12px;}
@@ -150,15 +164,18 @@
       </div>
       <div class="card">
         <div class="card-title">🏷️ Lazada / TikTok Sub-account Comparison</div>
+        <div class="table-wrap">
         <table>
           <thead><tr><th>Sub-account</th><th class="num">Sales (RM)</th><th class="num">Ad Spend (RM)</th><th class="num">ROI</th></tr></thead>
           <tbody id="sub-account-table"></tbody>
         </table>
+        </div>
       </div>
     </div>
 
     <div class="card">
       <div class="card-title">📋 Daily Sales Detail</div>
+      <div class="table-wrap">
       <table>
         <thead><tr>
           <th>Date</th><th class="num">Shopee</th><th class="num">Lazada</th><th class="num">TikTok</th>
@@ -166,6 +183,7 @@
         </tr></thead>
         <tbody id="daily-table"></tbody>
       </table>
+      </div>
     </div>
   </div>
 </div>
@@ -187,6 +205,76 @@ const SHEET_MONTH_NAMES = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep'
 function currentSheetNameOf(date){
   const y = date.getFullYear() % 100;
   return SHEET_MONTH_NAMES[date.getMonth()] + ' ' + (y < 10 ? '0' + y : y);
+}
+
+function isCurrentRealMonth(sheetName){
+  return sheetName === currentSheetNameOf(new Date());
+}
+
+// Month-over-month comparisons are only reliable from Jan 2026 onward (the sheet column
+// layout before that isn't supported), so walking back past that boundary returns null.
+function getPrevMonthSheetName(sheetName){
+  const parts = (sheetName||'').split(' ');
+  const mon = parts[0], yy = parseInt(parts[1], 10);
+  const idx = SHEET_MONTH_NAMES.indexOf(mon);
+  if(idx < 0 || isNaN(yy)) return null;
+  let y = 2000 + yy, m = idx - 1;
+  if(m < 0){ m = 11; y -= 1; }
+  if(y < 2026) return null;
+  return SHEET_MONTH_NAMES[m] + ' ' + String(y % 100).padStart(2,'0');
+}
+
+// Today's row is still accumulating throughout the day, so any rate/comparison that
+// includes it looks artificially low. Drop it for "complete days" calculations only
+// (the raw daily table and running total still show it).
+function completeDayRows(rows, sheetName){
+  if(!isCurrentRealMonth(sheetName)) return rows;
+  const todayYmd = fmtDateInput(new Date());
+  const filtered = rows.filter(r=>r.date.ymd !== todayYmd);
+  return filtered.length ? filtered : rows;
+}
+
+async function computeMomCompare(sheetName, rows){
+  const prevName = getPrevMonthSheetName(sheetName);
+  if(!prevName) return null;
+  let prevRows;
+  try{ prevRows = await fetchSheetCached(prevName); }catch(e){ return null; }
+  if(!prevRows || !prevRows.length) return null;
+  prevRows = prevRows.slice().sort((a,b)=> a.date.ymd < b.date.ymd ? -1 : a.date.ymd > b.date.ymd ? 1 : 0);
+  // Compare like-for-like: only complete days on both sides, same count, so an
+  // in-progress today (or an in-progress final day last month) can't skew it.
+  const curComplete = completeDayRows(rows, sheetName);
+  const compareRows = isCurrentRealMonth(sheetName) ? prevRows.slice(0, curComplete.length) : prevRows;
+  if(!compareRows.length) return null;
+  const sum = (arr, fn) => arr.reduce((s,r)=>s+fn(r), 0);
+  const channelKeys = ['shopee','lazada','tiktok','website','other'];
+  const chVal = (r,k)=> k==='shopee' ? r.shopee.sales : k==='website' ? r.website.sales : k==='other' ? r.other.sales : r[k].total.sales;
+  const prevChannel = {}, curChannel = {};
+  channelKeys.forEach(k=>{
+    prevChannel[k] = sum(compareRows, r=>chVal(r,k));
+    curChannel[k] = sum(curComplete, r=>chVal(r,k));
+  });
+  return {
+    prevTotal: sum(compareRows, r=>r.channelTotal), prevChannel, prevLabel: prevName, daysCompared: compareRows.length,
+    curTotal: sum(curComplete, r=>r.channelTotal), curChannel, curDays: curComplete.length
+  };
+}
+
+function momChip(cur, prev, suffix){
+  if(prev==null || prev<=0) return '';
+  const pct = (cur - prev) / prev * 100;
+  const flat = Math.abs(pct) < 0.05;
+  const cls = flat ? 'flat' : (pct>=0 ? 'up' : 'dn');
+  const arrow = flat ? '→' : (pct>=0 ? '▲' : '▼');
+  return `<div class="mom-chip ${cls}">${arrow} ${Math.abs(pct).toFixed(1)}%${suffix||''}</div>`;
+}
+
+function momCellChip(cur, prev){
+  if(prev==null || prev<=0) return '';
+  const pct = (cur - prev) / prev * 100;
+  if(Math.abs(pct) < 0.05) return '';
+  const up = pct >= 0;
+  return `<span class="cell-chip ${up?'up':'dn'}">${up?'▲':'▼'}${Math.abs(pct).toFixed(0)}%</span>`;
 }
 
 function populateMonthSelect(){
@@ -334,7 +422,8 @@ async function loadAll(){
       if(el) el.textContent = periodLabel;
     });
 
-    render(allRows);
+    const momCompare = currentMode==='month' ? await computeMomCompare(currentSheetName, allRows) : null;
+    render(allRows, momCompare);
     document.getElementById('loading').style.display='none';
     document.getElementById('content').style.display='block';
   }catch(e){
@@ -344,12 +433,15 @@ async function loadAll(){
   }
 }
 
-function render(rows){
+function render(rows, momCompare){
   // ── KPI ──
   const totalSales = rows.reduce((s,r)=>s+r.channelTotal, 0);
   const totalAdsSpent = rows.reduce((s,r)=> s + r.shopee.adsSpent + r.lazada.total.adsSpent + r.tiktok.total.adsSpent, 0);
   const overallROI = totalAdsSpent > 0 ? (totalSales / totalAdsSpent) : null;
-  const avgDaily = totalSales / (rows.length || 1);
+  // Rate-based figures (daily average, pace, MoM) exclude an in-progress "today" so a
+  // half-finished day doesn't drag the average down.
+  const completeRows = completeDayRows(rows, currentSheetName);
+  const avgDaily = completeRows.reduce((s,r)=>s+r.channelTotal,0) / (completeRows.length || 1);
 
   // Find the top-performing channel
   const channelTotals = { shopee:0, lazada:0, tiktok:0, website:0, other:0 };
@@ -362,11 +454,35 @@ function render(rows){
   });
   const topChannel = Object.entries(channelTotals).sort((a,b)=>b[1]-a[1])[0];
 
+  let paceSub = '';
+  if(currentMode==='month' && isCurrentRealMonth(currentSheetName)){
+    const now = new Date();
+    const daysInMonth = new Date(now.getFullYear(), now.getMonth()+1, 0).getDate();
+    paceSub = ` · pace → ${fmtRM(avgDaily * daysInMonth)} by month end`;
+  }
+
   document.getElementById('kpi-grid').innerHTML = `
-    <div class="kpi-card"><div class="kpi-label"><span id="lbl-month-4">This Month</span> Total Sales</div><div class="kpi-val">${fmtRM(totalSales)}</div><div class="kpi-sub">${rows.length} days recorded</div></div>
-    <div class="kpi-card amber"><div class="kpi-label">Total Ad Spend</div><div class="kpi-val amber">${fmtRM(totalAdsSpent)}</div><div class="kpi-sub">${overallROI!==null ? `Overall ROI ${overallROI.toFixed(2)}x` : 'No data'}</div></div>
-    <div class="kpi-card green"><div class="kpi-label">Avg Daily Sales</div><div class="kpi-val green">${fmtRM(avgDaily)}</div><div class="kpi-sub"><span id="lbl-month-5">This Month</span> average</div></div>
-    <div class="kpi-card"><div class="kpi-label">Top Channel</div><div class="kpi-val">${channelLabel[topChannel[0]]}</div><div class="kpi-sub">${fmtRM(topChannel[1])}</div></div>
+    <div class="kpi-card">
+      <div class="kpi-top"><div class="kpi-label"><span id="lbl-month-4">This Month</span> Total Sales</div><span class="kpi-icon">💵</span></div>
+      <div class="kpi-val">${fmtRM(totalSales)}</div>
+      <div class="kpi-sub">${rows.length} days recorded${paceSub}</div>
+      ${momCompare ? momChip(momCompare.curTotal, momCompare.prevTotal, ` vs ${momCompare.prevLabel} (${momCompare.daysCompared}d)`) : ''}
+    </div>
+    <div class="kpi-card amber">
+      <div class="kpi-top"><div class="kpi-label">Total Ad Spend</div><span class="kpi-icon">📣</span></div>
+      <div class="kpi-val amber">${fmtRM(totalAdsSpent)}</div>
+      <div class="kpi-sub">${overallROI!==null ? `Overall ROI ${overallROI.toFixed(2)}x` : 'No data'}</div>
+    </div>
+    <div class="kpi-card green">
+      <div class="kpi-top"><div class="kpi-label">Avg Daily Sales</div><span class="kpi-icon">📊</span></div>
+      <div class="kpi-val green">${fmtRM(avgDaily)}</div>
+      <div class="kpi-sub"><span id="lbl-month-5">This Month</span> average</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-top"><div class="kpi-label">Top Channel</div><span class="kpi-icon">🏆</span></div>
+      <div class="kpi-val">${channelLabel[topChannel[0]]}</div>
+      <div class="kpi-sub">${fmtRM(topChannel[1])}</div>
+    </div>
   `;
 
   // ── Trend chart ──
@@ -394,7 +510,7 @@ function render(rows){
   document.getElementById('channel-legend').innerHTML = chKeys.map(k=>`
     <div class="legend-row">
       <span><span class="legend-dot" style="background:${channelColor[k]}"></span>${channelLabel[k]}</span>
-      <span style="font-weight:700">${fmtRM(channelTotals[k])} <span style="color:#9ca3af;font-weight:400">(${(channelTotals[k]/chSum*100).toFixed(1)}%)</span></span>
+      <span style="font-weight:700">${fmtRM(channelTotals[k])} <span style="color:#9ca3af;font-weight:400">(${(channelTotals[k]/chSum*100).toFixed(1)}%)</span>${momCompare ? momCellChip(momCompare.curChannel[k], momCompare.prevChannel[k]) : ''}</span>
     </div>`).join('');
 
   // ── Ad spend vs ROI ──
