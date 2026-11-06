@@ -1004,13 +1004,15 @@ function renderKPI() {
 }
 
 function getTotalField(r) {
+  let total = 0, ib = 0;
   for (const k of Object.keys(r)) {
     const clean = k.replace(/[^A-Za-z]/g,'').toUpperCase();
-    if (clean === 'TOTALRM') return parseFloat(r[k]) || 0;
+    if (clean === 'TOTALRM') total = parseFloat(r[k]) || 0;
+    if (clean === 'IBRM') ib = parseFloat(r[k]) || 0;
   }
-  return 0;
+  return total || ib;
 }
-function getIBField(r) { return 0; }
+function getIBField(r) { for (const k of Object.keys(r)) { if (k.replace(/[^A-Za-z]/g,'').toUpperCase()==='IBRM') return parseFloat(r[k])||0; } return 0; }
 
 function renderCharts() {
   // Monthly chart — This year (bars) vs Last year (red curve)

@@ -274,7 +274,7 @@
   function fmt(n) { return Number(n||0).toLocaleString('en-MY', { maximumFractionDigits: 0 }); }
   function fmtRM(n) { return 'RM ' + fmt(n); }
   function escHtml(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-  function getTotalField(r) { for (const k of Object.keys(r)) { const c = k.replace(/[^A-Za-z]/g,'').toUpperCase(); if (c==='TOTALRM') return parseFloat(r[k])||0; } return 0; }
+  function getTotalField(r) { let t=0,ib=0; for (const k of Object.keys(r)) { const c=k.replace(/[^A-Za-z]/g,'').toUpperCase(); if(c==='TOTALRM')t=parseFloat(r[k])||0; if(c==='IBRM')ib=parseFloat(r[k])||0; } return t||ib; }
 
   const now = new Date();
   const mNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
