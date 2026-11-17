@@ -154,7 +154,7 @@
         <div class="chart-box"><canvas id="chartTrend"></canvas></div>
       </div>
       <div class="card">
-        <div class="card-title">🏪 渠道业绩分布 <span id="lbl-channel" style="color:var(--muted);font-weight:500"></span></div>
+        <div class="card-title">🍜 SKU 占比 <span id="lbl-channel" style="color:var(--muted);font-weight:500"></span></div>
         <div class="chart-box sm"><canvas id="chartChannel"></canvas></div>
         <div id="channel-legend" style="margin-top:6px"></div>
       </div>
@@ -337,7 +337,6 @@ function parseSheetDate(raw){
   return { y, m, day, ym: `${y}-${String(m).padStart(2,'0')}`, ymd: `${y}-${String(m).padStart(2,'0')}-${String(day).padStart(2,'0')}` };
 }
 
-const CHANNEL_KEYS = ['offline'];
 const channelLabel = { offline:'线下门店' };
 const channelColor = { offline:'#d97706' };
 
@@ -575,30 +574,29 @@ function render(rows, period){
     }
   });
 
-  // ── 渠道分布 + 客户榜（基于所选期间数据）──
-  const channelTotals = { ec:0, blogger:0, offline:0 };
+  // ── SKU 占比 + 客户榜（基于所选期间数据）──
   const customerMap = {}; // name -> {revenue, orders, channel}
   curRows.forEach(r=>{
     const ch = r.channel;
-    channelTotals[ch] += r.revenue;
     if(!customerMap[r.name]) customerMap[r.name] = { revenue:0, orders:0, channel:ch };
     customerMap[r.name].revenue += r.revenue;
     customerMap[r.name].orders += 1;
   });
 
+  const productTotals = PRODUCT_COLS.map(p=>curRows.reduce((s,r)=>s+(r.products[p]||0),0));
   if(charts.channel) charts.channel.destroy();
   charts.channel = new Chart(document.getElementById('chartChannel'), {
     type:'doughnut',
-    data:{ labels:CHANNEL_KEYS.map(k=>channelLabel[k]),
-      datasets:[{ data:CHANNEL_KEYS.map(k=>channelTotals[k]), backgroundColor:CHANNEL_KEYS.map(k=>channelColor[k]), borderWidth:0 }] },
+    data:{ labels:PRODUCT_COLS,
+      datasets:[{ data:productTotals, backgroundColor:PRODUCT_COLORS, borderWidth:0 }] },
     options:{ responsive:true, maintainAspectRatio:false,
-      plugins:{ legend:{ display:false }, tooltip:{ callbacks:{ label:ctx=>`${ctx.label}: RMB ${ctx.parsed.toLocaleString('zh-CN')}` } } } }
+      plugins:{ legend:{ display:false }, tooltip:{ callbacks:{ label:ctx=>`${ctx.label}: ${ctx.parsed.toLocaleString('zh-CN')} 件` } } } }
   });
-  const channelTotalSum = CHANNEL_KEYS.reduce((s,k)=>s+channelTotals[k],0) || 1;
-  document.getElementById('channel-legend').innerHTML = CHANNEL_KEYS.map(k=>`
+  const productTotalSum = productTotals.reduce((s,v)=>s+v,0) || 1;
+  document.getElementById('channel-legend').innerHTML = PRODUCT_COLS.map((p,i)=>`
     <div class="legend-row">
-      <span><span class="legend-dot" style="background:${channelColor[k]}"></span>${channelLabel[k]}</span>
-      <span style="font-weight:700">${fmtRMB(channelTotals[k])} <span style="color:#9ca3af;font-weight:400">(${(channelTotals[k]/channelTotalSum*100).toFixed(1)}%)</span></span>
+      <span><span class="legend-dot" style="background:${PRODUCT_COLORS[i]}"></span>${p}</span>
+      <span style="font-weight:700">${productTotals[i].toLocaleString('zh-CN')} 件 <span style="color:#9ca3af;font-weight:400">(${(productTotals[i]/productTotalSum*100).toFixed(1)}%)</span></span>
     </div>`).join('');
 
   // ── TOP 15 客户/达人 ──
@@ -621,7 +619,6 @@ function render(rows, period){
   }
 
   // ── 产品销量（所选期间）──
-  const productTotals = PRODUCT_COLS.map(p=>curRows.reduce((s,r)=>s+(r.products[p]||0),0));
   if(charts.products) charts.products.destroy();
   charts.products = new Chart(document.getElementById('chartProducts'), {
     type:'bar',
