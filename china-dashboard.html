@@ -147,6 +147,7 @@
   <div id="content" style="display:none">
 
     <div class="kpi-grid" id="kpi-grid"></div>
+    <div id="kpi-channel-split" style="margin:-10px 0 20px;font-size:13px;color:var(--muted)"></div>
 
     <div class="grid-2">
       <div class="card">
@@ -496,13 +497,15 @@ function matchesPrevPeriod(period, y, ym, ymd){
 }
 
 // 顶部 4 张 KPI 卡：微信 + 抖音 + 线下 全渠道汇总（抖音取罗盘「成交概览」每日总计，避免跟订单明细重复计算）
-function crossChannelTotal(matchFn){
+// channel: 'all' | 'offline' | 'wechat' | 'douyin'
+function channelTotal(channel, matchFn){
   let total = 0;
-  (allRows||[]).forEach(r=>{ if(matchFn(r.date.y, r.date.ym, r.date.ymd)) total += Number(r.revenue)||0; });
-  (wxOrders||[]).forEach(o=>{ if(matchFn(o.y, o.ym, o.ymd)) total += Number(o.revenue)||0; });
-  (dyRows||[]).forEach(r=>{ if(r.dim==='overview' && matchFn(r.ymd.slice(0,4), r.ymd.slice(0,7), r.ymd)) total += Number(r.gmv)||0; });
+  if(channel==='all'||channel==='offline') (allRows||[]).forEach(r=>{ if(matchFn(r.date.y, r.date.ym, r.date.ymd)) total += Number(r.revenue)||0; });
+  if(channel==='all'||channel==='wechat') (wxOrders||[]).forEach(o=>{ if(matchFn(o.y, o.ym, o.ymd)) total += Number(o.revenue)||0; });
+  if(channel==='all'||channel==='douyin') (dyRows||[]).forEach(r=>{ if(r.dim==='overview' && matchFn(r.ymd.slice(0,4), r.ymd.slice(0,7), r.ymd)) total += Number(r.gmv)||0; });
   return total;
 }
+function crossChannelTotal(matchFn){ return channelTotal('all', matchFn); }
 function renderKpis(){
   if(!lastPeriod) return;
   const period = lastPeriod;
@@ -543,6 +546,13 @@ function renderKpis(){
     <div class="kpi-card amber"><div class="kpi-label">上一期业绩</div><div class="kpi-val amber">${fmtRMB(prevTotal)}</div><div class="kpi-sub">${escHtml(prevLabel)}</div></div>
     <div class="kpi-card"><div class="kpi-label">历史累计</div><div class="kpi-val">${fmtRMB(allTimeTotal)}</div><div class="kpi-sub">微信 + 抖音 + 线下 累计总业绩</div></div>
   `;
+
+  // 按渠道拆分（线下/微信/抖音），对应上面「本期业绩」那一期
+  const curOffline = channelTotal('offline', (y,ym,ymd)=>matchesPeriod(period,y,ym,ymd));
+  const curWechat = channelTotal('wechat', (y,ym,ymd)=>matchesPeriod(period,y,ym,ymd));
+  const curDouyin = channelTotal('douyin', (y,ym,ymd)=>matchesPeriod(period,y,ym,ymd));
+  document.getElementById('kpi-channel-split').innerHTML =
+    `${escHtml(curLabel)} 按渠道拆分：🏪 线下 <strong style="color:var(--text)">${fmtRMB(curOffline)}</strong> ・ 📱 微信 <strong style="color:var(--text)">${fmtRMB(curWechat)}</strong> ・ 🎵 抖音 <strong style="color:var(--text)">${fmtRMB(curDouyin)}</strong>`;
 }
 
 async function loadAll(){
