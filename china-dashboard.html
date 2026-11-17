@@ -275,10 +275,12 @@ function logout(){ lsClear(); location.href = 'index.html'; }
 document.querySelectorAll('.mv-top-date').forEach(e=>e.textContent=new Date().toLocaleDateString('zh-CN',{weekday:'short',year:'numeric',month:'short',day:'numeric'}));
 
 const CHINA_API = 'https://script.google.com/macros/s/AKfycbzxnGZQSq13c36n0NeVuGPUbxW_duPizD34lvLnxTx2rKDlxziuLtZe82dV4vifyyG5tw/exec';
+// TODO(vege): 换成「线下日常业绩」Sheet 部署出来的 Apps Script exec URL
+const OFFLINE_API = 'TODO_OFFLINE_SHEET_API_URL';
 
 // 渠道分类规则（vege 确认，2026-11-17 新增「线下」独立渠道）：
-// 优先读 Sheet 新增的「渠道」列（值：电商 / 博主 / 线下）；
-// 历史数据没填这一列时，兜底按名字判断：电商 = 微信小店 / 抖店，其余归入「博主 / 经销」
+// 「日常业绩」= 电商(微信小店/抖店) / 博主 / 经销，按名字判断；
+// 「线下日常业绩」是独立 Sheet，整表都算「线下」渠道，列结构照抄「日常业绩」
 const ECOMMERCE_NAMES = ['微信小店', '抖店'];
 const PRODUCT_COLS = ['香椿干盘面','青柠干盘面','冬阴功汤','香椿杯面','青柠杯面'];
 const MONTHLY_GOAL = 50000;   // 中国市场月度目标 RMB 5万
@@ -307,12 +309,7 @@ function parseSheetDate(raw){
   return { y, m, day, ym: `${y}-${String(m).padStart(2,'0')}`, ymd: `${y}-${String(m).padStart(2,'0')}-${String(day).padStart(2,'0')}` };
 }
 
-function classifyChannel(name, channelRaw){
-  const c = (channelRaw||'').trim();
-  if(c === '线下') return 'offline';
-  if(c === '电商') return 'ec';
-  if(c === '博主' || c === '经销') return 'blogger';
-  // 兜底：没填「渠道」列的历史数据，按名字判断
+function classifyChannel(name){
   const n = (name||'').trim();
   if(ECOMMERCE_NAMES.some(k=>n.includes(k))) return 'ec';
   return 'blogger';
@@ -321,21 +318,32 @@ const CHANNEL_KEYS = ['ec','blogger','offline'];
 const channelLabel = { ec:'电商平台', blogger:'博主 / 经销', offline:'线下门店' };
 const channelColor = { ec:'#2563eb', blogger:'#166534', offline:'#d97706' };
 
-async function fetchChinaData(){
-  const res = await fetch(CHINA_API);
-  if(!res.ok) throw new Error('HTTP ' + res.status);
-  const json = await res.json();
+function mapSheetRows(json, forceChannel){
   const rows = json.data || [];
   return rows.map(r=>{
     const date = parseSheetDate(r['日期']);
+    const name = (r['客户/达人']||'').toString().trim();
     return {
-      name: (r['客户/达人']||'').toString().trim(),
-      channelRaw: (r['渠道']||'').toString().trim(),
+      name,
+      channel: forceChannel || classifyChannel(name),
       revenue: parseFloat(r['总金额']) || 0,
       date,
       products: PRODUCT_COLS.reduce((acc,p)=>{ acc[p]=parseFloat(r[p])||0; return acc; },{}),
     };
   }).filter(r=>r.date); // 丢掉没有日期的脏数据行
+}
+
+async function fetchChinaData(){
+  const res = await fetch(CHINA_API);
+  if(!res.ok) throw new Error('HTTP ' + res.status);
+  return mapSheetRows(await res.json());
+}
+
+async function fetchOfflineData(){
+  if(!OFFLINE_API || OFFLINE_API.startsWith('TODO')) return []; // 还没配置线下 Sheet 的 API
+  const res = await fetch(OFFLINE_API);
+  if(!res.ok) throw new Error('HTTP ' + res.status);
+  return mapSheetRows(await res.json(), 'offline'); // 整表都算线下渠道，不用再判断名字
 }
 
 function monthKey(y,m){ return `${y}-${String(m).padStart(2,'0')}`; }
@@ -444,7 +452,8 @@ async function loadAll(){
   document.getElementById('content').style.display='none';
   document.getElementById('errBox').innerHTML='';
   try{
-    allRows = await fetchChinaData();
+    const [mainRows, offlineRows] = await Promise.all([fetchChinaData(), fetchOfflineData()]);
+    allRows = [...mainRows, ...offlineRows];
     if(!allRows.length){ throw new Error('No data returned from sheet'); }
     populateMonthSelect();
     populateYearSelect();
@@ -528,7 +537,7 @@ function render(rows, period){
   const channelTotals = { ec:0, blogger:0, offline:0 };
   const customerMap = {}; // name -> {revenue, orders, channel}
   curRows.forEach(r=>{
-    const ch = classifyChannel(r.name, r.channelRaw);
+    const ch = r.channel;
     channelTotals[ch] += r.revenue;
     if(!customerMap[r.name]) customerMap[r.name] = { revenue:0, orders:0, channel:ch };
     customerMap[r.name].revenue += r.revenue;
