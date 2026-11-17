@@ -83,6 +83,19 @@
   .ds-tab.active{background:var(--green);border-color:var(--green);color:#fff;}
   .ds-controls select, .ds-controls input[type=date]{padding:8px 14px;border:1.5px solid var(--border);border-radius:8px;font-family:inherit;font-size:13px;background:#fff;cursor:pointer;min-width:140px;}
   .ds-controls{display:flex;align-items:center;gap:8px;}
+
+  /* 客户钻取 modal */
+  .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:300;display:none;align-items:flex-start;justify-content:center;padding:40px 20px;overflow-y:auto;}
+  .modal-backdrop.open{display:flex;}
+  .modal{background:#fff;border-radius:14px;padding:24px;width:100%;max-width:760px;box-shadow:0 20px 60px rgba(0,0,0,.25);}
+  .modal-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;}
+  .modal-title{font-family:'DM Serif Display',serif;font-size:20px;color:var(--green);}
+  .modal-sub{font-size:12px;color:var(--muted);margin-top:2px;}
+  .modal-close{background:none;border:none;font-size:20px;color:var(--muted);cursor:pointer;line-height:1;padding:4px;}
+  .modal-section{margin-bottom:18px;}
+  .modal-section-title{font-size:13px;font-weight:700;margin-bottom:10px;}
+  tr.clickable{cursor:pointer;}
+  tr.clickable:hover{background:#f8faf8;}
 </style>
 </head>
 <body>
@@ -163,6 +176,11 @@
       </div>
     </div>
 
+    <div class="card" style="margin-bottom:16px">
+      <div class="card-title">🔀 全渠道 SKU 排行 <span id="lbl-unified-sku" style="color:var(--muted);font-weight:500"></span> <span style="color:var(--muted);font-weight:500;font-size:12px">（微信 + 抖音 + 线下，按品类对齐，不分规格）</span></div>
+      <div class="chart-box"><canvas id="chartUnifiedSku"></canvas></div>
+    </div>
+
     <div class="card" style="margin-bottom:16px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px">
       <div>
         <div style="font-size:14px;font-weight:700">🎵 抖店订单数据</div>
@@ -227,6 +245,19 @@
   <div id="errBox"></div>
 </div>
 
+<div class="modal-backdrop" id="custModal" onclick="if(event.target===this)closeCustModal()">
+  <div class="modal">
+    <div class="modal-head">
+      <div>
+        <div class="modal-title" id="custModalTitle"></div>
+        <div class="modal-sub" id="custModalSub"></div>
+      </div>
+      <button class="modal-close" onclick="closeCustModal()">✕</button>
+    </div>
+    <div id="custModalBody"></div>
+  </div>
+</div>
+
 <script>
 // ── 登录权限校验 ──
 // 只允许：HQ 管理员（userRole === 'hq'），或角色为 'china' 的 member（如 Jason）
@@ -277,7 +308,9 @@ document.querySelectorAll('.mv-top-date').forEach(e=>e.textContent=new Date().to
 // 2026-11-17 vege 确认：不再用「日常业绩」区分电商/博主，一件代发的博主也并进「线下日常业绩」了，
 // 整个中国市场业绩现在只有一个来源：「线下日常业绩」（微信小店/抖店走下面各自的实时 API，跟这里无关）
 const OFFLINE_API = 'https://script.google.com/macros/s/AKfycbxPOic1shZzwrEzwpPi0jz4x_rz6OP48me0XGDkHhoD0aAI9mabaDJy8SOh48uPNWac9Q/exec';
-const PRODUCT_COLS = ['香椿干盘面','青柠干盘面','冬阴功汤','香椿杯面','青柠杯面'];
+// 9 个统一品类，三个渠道（微信/抖音/线下）的 SKU 最终都对齐到这一层
+const PRODUCT_COLS = ['香椿干盘面','青柠干盘面','冬阴功汤','香椿杯面','青柠杯面','蔬菇汤包','陈记咖喱酱','陈记肉骨茶酱','混合装（香椿+青柠杯面）'];
+const PRODUCT_COLORS = ['#166534cc','#16a34acc','#d97706cc','#2563ebcc','#be185dcc','#0891b2cc','#ca8a04cc','#7c3aedcc','#64748bcc'];
 const MONTHLY_GOAL = 50000;   // 中国市场月度目标 RMB 5万
 const YEARLY_GOAL = 600000;   // 中国市场年度目标 RMB 60万
 
@@ -338,13 +371,18 @@ async function fetchOfflineData(){
     nameField: '商家',
     revenueField: '共(人民币)',
     forceChannel: 'offline',
-    productMap: { '香椿干盘面':'香椿干盘面（袋）', '青柠干盘面':'青柠干盘面（袋）', '冬阴功汤':'冬阴功汤', '香椿杯面':'香椿摇摇面', '青柠杯面':'青柠摇摇面' },
+    productMap: {
+      '香椿干盘面':'香椿干盘面（袋）', '青柠干盘面':'青柠干盘面（袋）', '冬阴功汤':'冬阴功汤',
+      '香椿杯面':'香椿摇摇面', '青柠杯面':'青柠摇摇面', '蔬菇汤包':'蔬菇汤包',
+      '陈记咖喱酱':'陈记咖喱酱', '陈记肉骨茶酱':'陈记肉骨茶酱', '混合装（香椿+青柠杯面）':'香椿3+青柠3',
+    },
   });
 }
 
 function monthKey(y,m){ return `${y}-${String(m).padStart(2,'0')}`; }
 
 let allRows = [];
+let lastPeriod = null; // 给全渠道 SKU 排行用，跟主日期选择器保持一致
 const mNamesZh = ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
 
 function populateMonthSelect(){
@@ -404,7 +442,7 @@ function getCurrentPeriod(){
   if(currentMode==='year'){
     const y = parseInt(document.getElementById('year-select').value, 10);
     return {
-      mode:'year',
+      mode:'year', year:y,
       curLabel: `${y}年`,
       prevLabel: `${y-1}年`,
       curRows: allRows.filter(r=>r.date.y===y),
@@ -422,7 +460,7 @@ function getCurrentPeriod(){
     const startYmd = fmtDateInput(start), endYmd = fmtDateInput(end);
     const prevStartYmd = fmtDateInput(prevStart), prevEndYmd = fmtDateInput(prevEnd);
     return {
-      mode:'range',
+      mode:'range', startYmd, endYmd,
       curLabel: `${startYmd} ~ ${endYmd}`,
       prevLabel: `${prevStartYmd} ~ ${prevEndYmd}`,
       curRows: allRows.filter(r=>r.date.ymd>=startYmd && r.date.ymd<=endYmd),
@@ -435,12 +473,20 @@ function getCurrentPeriod(){
   const lastDate = new Date(selY, selM-1, 1); lastDate.setMonth(lastDate.getMonth()-1);
   const lastYM = monthKey(lastDate.getFullYear(), lastDate.getMonth()+1);
   return {
-    mode:'month',
+    mode:'month', ym:selectedYM,
     curLabel: `${selY}年${mNamesZh[selM-1]}`,
     prevLabel: `${lastDate.getFullYear()}年${mNamesZh[lastDate.getMonth()]}`,
     curRows: allRows.filter(r=>r.date.ym===selectedYM),
     prevRows: allRows.filter(r=>r.date.ym===lastYM),
   };
+}
+
+// 用主日期选择器的 period，去过滤微信/抖音各自的订单（它们的 .y/.ym/.ymd 跟线下数据同一套格式）
+function matchesPeriod(period, y, ym, ymd){
+  if(!period) return false;
+  if(period.mode==='year') return Number(y)===period.year;
+  if(period.mode==='range') return ymd>=period.startYmd && ymd<=period.endYmd;
+  return ym===period.ym;
 }
 
 async function loadAll(){
@@ -463,6 +509,7 @@ async function loadAll(){
 }
 
 function render(rows, period){
+  lastPeriod = period;
   const { curLabel, prevLabel, curRows, prevRows } = period;
   const now = new Date();
   const periodLabel = `（${curLabel}）`;
@@ -562,9 +609,9 @@ function render(rows, period){
     tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:#9ca3af;padding:24px">${escHtml(curLabel)}暂无数据</td></tr>`;
   } else {
     tbody.innerHTML = sortedCustomers.map(([name,d],i)=>{
-      return `<tr>
+      return `<tr class="clickable" onclick="openCustModal('${name.replace(/'/g,"\\'")}')" title="点击查看月度业绩与产品构成">
         <td class="rank">${i===0?'🥇':i===1?'🥈':i===2?'🥉':i+1}</td>
-        <td><strong>${escHtml(name)}</strong></td>
+        <td><strong>${escHtml(name)}</strong> <span style="color:#2563eb;font-size:11px">🔍</span></td>
         <td><span class="pill ${d.channel}">${channelLabel[d.channel]}</span></td>
         <td class="num">${d.orders}</td>
         <td class="num">${fmtRMB(d.revenue)}</td>
@@ -578,11 +625,13 @@ function render(rows, period){
   if(charts.products) charts.products.destroy();
   charts.products = new Chart(document.getElementById('chartProducts'), {
     type:'bar',
-    data:{ labels:PRODUCT_COLS, datasets:[{ label:'销量', data:productTotals, backgroundColor:['#166534cc','#16a34acc','#d97706cc','#2563ebcc','#be185dcc'], borderWidth:0, borderRadius:6 }] },
+    data:{ labels:PRODUCT_COLS, datasets:[{ label:'销量', data:productTotals, backgroundColor:PRODUCT_COLORS, borderWidth:0, borderRadius:6 }] },
     options:{ indexAxis:'y', responsive:true, maintainAspectRatio:false,
       plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label:ctx=>ctx.parsed.x.toLocaleString('zh-CN')+' 件' } } },
       scales:{ x:{ beginAtZero:true } } }
   });
+
+  renderUnifiedSku();
 }
 
 loadAll();
@@ -599,31 +648,46 @@ let wxMode = '14d';
 // 返回 {name: SKU显示名, units: 每件总袋/杯数}
 function mapWxSku(p){
   const s = `${p.title||''} ${p.spec||''}`;
-  const packMatch = s.match(/[x×]\s*(\d+)\s*袋/) || s.match(/(\d+)\s*袋/) || s.match(/[（(]\s*(\d+)\s*[x×]/);
+  const packMatch = s.match(/[x×]\s*(\d+)\s*[袋包]/) || s.match(/(\d+)\s*[袋包]/) || s.match(/[（(]\s*(\d+)\s*[x×]/);
 
   // 混合装：香椿摇摇面 + 青柠摇摇面（独立SKU）
   if(/香椿摇摇面/.test(s) && /青柠(辣椒)?摇摇面/.test(s)){
-    return { name:'混合装（香椿杯面3+青柠杯面3）', units:6 };
+    return { name:'混合装（香椿杯面3+青柠杯面3）', category:'混合装（香椿+青柠杯面）', units:6 };
   }
   // 摇摇面 = 杯面
   if(/香椿摇摇面/.test(s)){
     const n = /6\s*[x×]/.test(s) ? 6 : 3;
-    return { name:`香椿杯面 ${n}杯装`, units:n };
+    return { name:`香椿杯面 ${n}杯装`, category:'香椿杯面', units:n };
   }
   if(/青柠(辣椒)?摇摇面/.test(s)){
     const n = /6\s*[x×]/.test(s) ? 6 : 3;
-    return { name:`青柠杯面 ${n}杯装`, units:n };
+    return { name:`青柠杯面 ${n}杯装`, category:'青柠杯面', units:n };
   }
   // 干盘面：青柠辣椒 vs 香椿（默认香椿）
   const packs = packMatch ? parseInt(packMatch[1]) : 3;
   if(/青柠(辣椒)?干盘面|泰式青柠/.test(s)){
-    return { name:`青柠干盘面 ${packs}袋装`, units:packs };
+    return { name:`青柠干盘面 ${packs}袋装`, category:'青柠干盘面', units:packs };
   }
   if(/香椿干盘面|干盘面|干拌面/.test(s)){
-    return { name:`香椿干盘面 ${packs}袋装`, units:packs };
+    return { name:`香椿干盘面 ${packs}袋装`, category:'香椿干盘面', units:packs };
   }
-  // 兜底：未识别的商品，保留原标题（不换算）
-  return { name:(p.title||'未知商品').slice(0,20), units:1 };
+  // 冬阴功汤酱包
+  if(/冬阴功/.test(s)){
+    return { name:`冬阴功汤 ${packs}包装`, category:'冬阴功汤', units:packs };
+  }
+  // 蔬菇汤包（含各经销商专属装，名字不统一，保留原标题方便识别，但归到统一品类）
+  if(/蔬菇汤包/.test(s)){
+    return { name:(p.title||'蔬菇汤包').slice(0,20), category:'蔬菇汤包', units:packs };
+  }
+  // 陈记酱料：先认肉骨茶（更具体），避免被"肉骨茶"字样的汤包误判
+  if(/陈记.*肉骨茶|肉骨茶.*陈记/.test(s)){
+    return { name:'陈记肉骨茶酱', category:'陈记肉骨茶酱', units:1 };
+  }
+  if(/陈记.*咖喱|咖喱.*陈记/.test(s)){
+    return { name:'陈记咖喱酱', category:'陈记咖喱酱', units:1 };
+  }
+  // 兜底：未识别的商品，保留原标题（不换算），归入「其他」不进统一品类统计
+  return { name:(p.title||'未知商品').slice(0,20), category:'其他', units:1 };
 }
 
 function setWxMode(mode){
@@ -684,6 +748,7 @@ async function loadWechatLive(){
       Array.from(skuSet).sort().map(s=>`<option value="${escHtml(s)}">${escHtml(s)}</option>`).join('');
 
     renderWechatLive();
+    renderUnifiedSku();
   }catch(e){
     console.error('wechat live error:', e);
     box.innerHTML = `<span style="color:var(--red)">微信数据加载失败：${escHtml(e.message)}</span>`;
@@ -827,6 +892,25 @@ loadWechatLive();
 
 // ── 抖店数据（罗盘 douyin_compass + 订单明细 douyin_orders）──
 let dyRows = [], dyOrders = [], dyMode = 'all';
+
+// 抖店内部 SKU（internal_sku/spec/title）→ 统一品类，用于全渠道 SKU 排行
+function classifyDouyinSku(raw){
+  const s = String(raw||'');
+  const isCup = /摇摇面|桶|盒/.test(s); // 杯面系列：桶装 / 混合盒装
+  if(isCup){
+    const hasC = /香椿/.test(s), hasL = /青柠/.test(s);
+    if(hasC && hasL) return '混合装（香椿+青柠杯面）';
+    if(hasL) return '青柠杯面';
+    return '香椿杯面'; // 默认香椿
+  }
+  if(/冬阴功/.test(s)) return '冬阴功汤';
+  if(/蔬菇汤包/.test(s)) return '蔬菇汤包';
+  if(/陈记.*肉骨茶|肉骨茶.*陈记/.test(s)) return '陈记肉骨茶酱';
+  if(/陈记.*咖喱|咖喱.*陈记/.test(s)) return '陈记咖喱酱';
+  if(/青柠/.test(s)) return '青柠干盘面';
+  if(/原味|香椿|干盘面|干拌面/.test(s)) return '香椿干盘面';
+  return '其他';
+}
 function setDyMode(mode){
   dyMode = mode;
   document.querySelectorAll('[data-dymode]').forEach(b=>b.classList.toggle('active', b.dataset.dymode===mode));
@@ -852,11 +936,12 @@ async function loadDouyin(){
         headers:{ apikey:SUPABASE_KEY, Authorization:'Bearer '+SUPABASE_KEY } });
       if(ro.ok){ dyOrders = (await ro.json()).map(o=>{ const d=o.pay_time?new Date(o.pay_time):null; return {...o, ymd: d? new Date(d.getTime()+8*3600000).toISOString().slice(0,10):''}; }); }
     }catch(_){}
-    if(!dyRows.length && !dyOrders.length){ box.innerHTML='还没有抖店数据。<a href="douyin-import.html" style="color:var(--green);font-weight:700">→ 去导入罗盘文件</a>'; return; }
+    if(!dyRows.length && !dyOrders.length){ box.innerHTML='还没有抖店数据。<a href="douyin-import.html" style="color:var(--green);font-weight:700">→ 去导入罗盘文件</a>'; renderUnifiedSku(); return; }
     // 月份下拉（罗盘 + 订单的月份并集）
     const yms=[...new Set([...dyRows.map(o=>o.ymd.slice(0,7)), ...dyOrders.map(o=>o.ymd.slice(0,7)).filter(Boolean)])].sort().reverse();
     document.getElementById('dy-month-select').innerHTML = yms.map(ym=>{const[y,m]=ym.split('-');return `<option value="${ym}">${y}年 ${mNamesZh[parseInt(m)-1]}</option>`;}).join('');
     renderDouyin();
+    renderUnifiedSku();
   }catch(e){ box.innerHTML=`<span style="color:var(--red)">抖店数据加载失败：${escHtml(e.message)}</span>`; }
 }
 function renderDouyin(){
@@ -988,6 +1073,174 @@ async function loadInsight(){
   }catch(e){ box.innerHTML=`<span style="color:var(--red)">客户洞察加载失败：${escHtml(e.message)}</span>`; }
 }
 loadInsight();
+
+// ── 全渠道 SKU 排行（微信 + 抖音 + 线下，按统一品类对齐，跟主日期选择器一起联动）──
+function renderUnifiedSku(){
+  if(!lastPeriod) return;
+  const canvas = document.getElementById('chartUnifiedSku');
+  if(!canvas) return;
+
+  const totals = {};
+  PRODUCT_COLS.forEach(c=>{ totals[c] = { wx:0, dy:0, offline:0 }; });
+
+  (wxOrders||[]).filter(o=>matchesPeriod(lastPeriod, o.y, o.ym, o.ymd)).forEach(o=>{
+    (o.products||[]).forEach(p=>{
+      const sku = mapWxSku(p);
+      if(totals[sku.category]) totals[sku.category].wx += Number(p.sku_cnt)||0;
+    });
+  });
+
+  // 抖店订单明细目前 pay_time 全是空的（上游同步问题），没法按期间过滤；
+  // 这种情况下退化成「全部抖音数据」参与统计，并在标题标注清楚，避免误以为抖音那期是真的 0
+  const dyHasDates = (dyOrders||[]).some(o=>o.ymd);
+  const dyFiltered = dyHasDates
+    ? (dyOrders||[]).filter(o=>o.ymd && matchesPeriod(lastPeriod, o.ymd.slice(0,4), o.ymd.slice(0,7), o.ymd))
+    : (dyOrders||[]);
+  dyFiltered.forEach(o=>{
+    (o.products||[]).forEach(p=>{
+      const cat = classifyDouyinSku(p.internal_sku || p.spec || p.title);
+      if(totals[cat]) totals[cat].dy += Number(p.qty)||0;
+    });
+  });
+
+  (lastPeriod.curRows||[]).forEach(r=>{
+    PRODUCT_COLS.forEach(c=>{ totals[c].offline += r.products[c]||0; });
+  });
+
+  const sorted = PRODUCT_COLS
+    .map(c=>({ cat:c, ...totals[c], total: totals[c].wx+totals[c].dy+totals[c].offline }))
+    .sort((a,b)=>b.total-a.total);
+
+  document.getElementById('lbl-unified-sku').textContent = dyHasDates
+    ? `（${lastPeriod.curLabel}）`
+    : `（${lastPeriod.curLabel}，⚠️ 抖音订单缺 pay_time，暂显示全部抖音历史数据）`;
+
+  if(charts.unifiedSku) charts.unifiedSku.destroy();
+  charts.unifiedSku = new Chart(canvas, {
+    type:'bar',
+    data:{
+      labels: sorted.map(x=>x.cat),
+      datasets:[
+        { label:'微信', data:sorted.map(x=>x.wx), backgroundColor:'#2563ebcc', stack:'s' },
+        { label:'抖音', data:sorted.map(x=>x.dy), backgroundColor:'#be185dcc', stack:'s' },
+        { label:'线下', data:sorted.map(x=>x.offline), backgroundColor:'#d97706cc', stack:'s' },
+      ]
+    },
+    options:{
+      indexAxis:'y', responsive:true, maintainAspectRatio:false,
+      plugins:{
+        legend:{ display:true, position:'top', labels:{ boxWidth:12, font:{size:11} } },
+        tooltip:{ callbacks:{ label:ctx=>`${ctx.dataset.label}: ${ctx.parsed.x.toLocaleString('zh-CN')} 件` } }
+      },
+      scales:{ x:{ beginAtZero:true, stacked:true }, y:{ stacked:true } }
+    }
+  });
+}
+
+// ── 线下客户钻取 modal：月度业绩走势（今年vs去年）+ 产品构成（跟随主日期选择器）──
+function openCustModal(name){
+  const mNames = ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
+  const custRows = allRows.filter(r=>r.name===name);
+  const years = [...new Set(custRows.map(r=>r.date.y))].sort();
+  const thisYear = years[years.length-1];
+  const lastYear = years.length>1 ? years[years.length-2] : null;
+
+  function monthlyTotals(year){
+    const m = Array(12).fill(0);
+    custRows.filter(r=>r.date.y===year).forEach(r=>{ m[r.date.m-1] += r.revenue; });
+    return m;
+  }
+  const thisYearData = monthlyTotals(thisYear);
+  const lastYearData = lastYear!==null ? monthlyTotals(lastYear) : null;
+
+  let lastCur = 0;
+  for(let i=0;i<12;i++) if(thisYearData[i]>0) lastCur = i+1;
+  const ytdThis = thisYearData.slice(0,lastCur||12).reduce((a,b)=>a+b,0);
+  const ytdPrev = lastYearData ? lastYearData.slice(0,lastCur||12).reduce((a,b)=>a+b,0) : 0;
+  const ytdYoy = ytdPrev>0 ? ((ytdThis-ytdPrev)/ytdPrev*100) : null;
+  const totalOrders = custRows.length;
+  const allTimeRevenue = custRows.reduce((s,r)=>s+r.revenue,0);
+
+  document.getElementById('custModalTitle').textContent = name;
+  document.getElementById('custModalSub').textContent = `${totalOrders} 笔订单 · 历史累计 ${fmtRMB(allTimeRevenue)}`;
+
+  const ytdHtml = ytdYoy!==null
+    ? `<div style="display:flex;gap:12px;flex-wrap:wrap">
+        <div style="flex:1;min-width:120px;background:var(--green-light);border-radius:10px;padding:12px 16px">
+          <div style="font-size:11px;color:var(--green);font-weight:700;margin-bottom:4px">${thisYear}年 YTD</div>
+          <div style="font-size:18px;font-weight:800;color:var(--green)">${fmtRMB(ytdThis)}</div>
+        </div>
+        <div style="flex:1;min-width:120px;background:#f8fafc;border:1px solid var(--border);border-radius:10px;padding:12px 16px">
+          <div style="font-size:11px;color:var(--muted);font-weight:700;margin-bottom:4px">${lastYear}年同期</div>
+          <div style="font-size:18px;font-weight:800">${fmtRMB(ytdPrev)}</div>
+        </div>
+        <div style="flex:1;min-width:120px;background:${ytdYoy>=0?'var(--green-light)':'var(--red-light)'};border-radius:10px;padding:12px 16px">
+          <div style="font-size:11px;font-weight:700;margin-bottom:4px;color:${ytdYoy>=0?'var(--green)':'var(--red)'}">同比</div>
+          <div style="font-size:18px;font-weight:800;color:${ytdYoy>=0?'var(--green)':'var(--red)'}">${ytdYoy>=0?'▲':'▼'} ${Math.abs(ytdYoy).toFixed(1)}%</div>
+        </div>
+      </div>`
+    : `<div style="background:var(--green-light);border-radius:10px;padding:12px 16px">
+        <div style="font-size:11px;color:var(--green);font-weight:700;margin-bottom:4px">${thisYear}年 YTD</div>
+        <div style="font-size:18px;font-weight:800;color:var(--green)">${fmtRMB(ytdThis)}</div>
+      </div>`;
+
+  const tableRows = mNames.map((mn,i)=>{
+    const ty = thisYearData[i], ly = lastYearData ? lastYearData[i] : null;
+    const diff = ly!==null ? ty-ly : null;
+    const pct = (ly!==null && ly>0) ? ((ty-ly)/ly*100).toFixed(0) : null;
+    return `<tr>
+      <td>${mn}</td>
+      <td class="num">${ty>0?fmtRMB(ty):'<span style="color:#9ca3af">—</span>'}</td>
+      ${lastYear!==null ? `<td class="num">${ly>0?fmtRMB(ly):'<span style="color:#9ca3af">—</span>'}</td>
+      <td class="num">${diff!==null && (ty>0||ly>0) ? `<span style="color:${diff>=0?'var(--green)':'var(--red)'};font-weight:700">${diff>=0?'+':''}${fmtRMB(diff)}</span>` : '—'}</td>
+      <td class="num">${pct!==null ? `<span style="color:${parseFloat(pct)>=0?'var(--green)':'var(--red)'};font-weight:700">${parseFloat(pct)>=0?'▲':'▼'}${Math.abs(pct)}%</span>` : '—'}</td>` : ''}
+    </tr>`;
+  }).join('');
+
+  // 产品构成：跟随主日期选择器当前选的期间
+  const periodRows = lastPeriod ? lastPeriod.curRows.filter(r=>r.name===name) : [];
+  const periodLabel = lastPeriod ? lastPeriod.curLabel : '';
+  const prodTotals = PRODUCT_COLS.map(c=>periodRows.reduce((s,r)=>s+(r.products[c]||0),0));
+  const prodSum = prodTotals.reduce((a,b)=>a+b,0) || 1;
+  const prodRowsHtml = PRODUCT_COLS.map((c,i)=>prodTotals[i]>0 ? { c, v:prodTotals[i] } : null).filter(Boolean)
+    .sort((a,b)=>b.v-a.v)
+    .map(({c,v})=>`<div style="display:flex;align-items:center;gap:8px;font-size:13px;margin-bottom:6px">
+      <span style="width:140px">${escHtml(c)}</span>
+      <div style="height:14px;width:${Math.round(v/prodSum*60)}%;background:var(--green);border-radius:3px"></div>
+      <span style="color:var(--muted)">${v} 件 (${(v/prodSum*100).toFixed(0)}%)</span>
+    </div>`).join('') || '<div style="color:#9ca3af">该期间暂无产品数据</div>';
+
+  document.getElementById('custModalBody').innerHTML = `
+    <div class="modal-section">${ytdHtml}</div>
+    <div class="modal-section">
+      <div class="modal-section-title">📈 月度业绩走势</div>
+      <div style="height:200px;margin-bottom:12px"><canvas id="custTrendCanvas"></canvas></div>
+      <table>
+        <thead><tr><th>月份</th><th class="num">${thisYear}</th>${lastYear!==null?`<th class="num">${lastYear}</th><th class="num">差额</th><th class="num">同比</th>`:''}</tr></thead>
+        <tbody>${tableRows}</tbody>
+      </table>
+    </div>
+    <div class="modal-section">
+      <div class="modal-section-title">🍜 产品构成 <span style="color:var(--muted);font-weight:500">（${escHtml(periodLabel)}）</span></div>
+      ${prodRowsHtml}
+    </div>`;
+
+  document.getElementById('custModal').classList.add('open');
+
+  setTimeout(()=>{
+    if(charts.custTrend) charts.custTrend.destroy();
+    const datasets = [{ type:'bar', label:String(thisYear), data:thisYearData, backgroundColor:'#166534cc', borderRadius:4 }];
+    if(lastYearData) datasets.push({ type:'line', label:String(lastYear), data:lastYearData, borderColor:'#dc2626', backgroundColor:'#dc262622', borderWidth:2, pointRadius:3, pointBackgroundColor:'#dc2626', fill:false, tension:0.3 });
+    charts.custTrend = new Chart(document.getElementById('custTrendCanvas'), {
+      data:{ labels:mNames, datasets },
+      options:{ responsive:true, maintainAspectRatio:false,
+        plugins:{ legend:{display:true,labels:{boxWidth:12,font:{size:11}}}, tooltip:{ callbacks:{ label:ctx=>ctx.dataset.label+': '+fmtRMB(ctx.parsed.y) } } },
+        scales:{ y:{ beginAtZero:true, ticks:{ callback:v=>(v/1000)+'k' } } }
+      }
+    });
+  }, 0);
+}
+function closeCustModal(){ document.getElementById('custModal').classList.remove('open'); }
 </script>
 
 </body>
