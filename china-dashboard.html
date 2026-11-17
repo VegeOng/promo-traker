@@ -147,6 +147,22 @@
       </div>
     </div>
 
+    <div class="grid-2b">
+      <div class="card">
+        <div class="card-title">🏆 客户 / 达人业绩排行榜 TOP 15 <span id="lbl-customers" style="color:var(--muted);font-weight:500"></span></div>
+        <div style="overflow-x:auto">
+          <table>
+            <thead><tr><th></th><th>客户 / 达人</th><th>类型</th><th class="num">订单数</th><th class="num">业绩 (RMB)</th><th class="num">占比</th></tr></thead>
+            <tbody id="top-customers"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">🍜 产品销量分布 <span id="lbl-products" style="color:var(--muted);font-weight:500"></span>（按数量）</div>
+        <div class="chart-box sm"><canvas id="chartProducts"></canvas></div>
+      </div>
+    </div>
+
     <div class="card" style="margin-bottom:16px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px">
       <div>
         <div style="font-size:14px;font-weight:700">🎵 抖店订单数据</div>
@@ -205,22 +221,6 @@
     <div class="card" style="margin-bottom:16px">
       <div class="card-title" style="flex-wrap:wrap">👥 客户洞察 · 微信小店 <span style="color:var(--muted);font-weight:500">（复购率 · 下单时段 · 复购客画像 · 滚动90天，每日06:30自动更新）</span></div>
       <div id="insight-live" style="font-size:13px;color:var(--muted)">加载中…</div>
-    </div>
-
-    <div class="grid-2b">
-      <div class="card">
-        <div class="card-title">🏆 客户 / 达人业绩排行榜 TOP 15 <span id="lbl-customers" style="color:var(--muted);font-weight:500"></span></div>
-        <div style="overflow-x:auto">
-          <table>
-            <thead><tr><th></th><th>客户 / 达人</th><th>类型</th><th class="num">订单数</th><th class="num">业绩 (RMB)</th><th class="num">占比</th></tr></thead>
-            <tbody id="top-customers"></tbody>
-          </table>
-        </div>
-      </div>
-      <div class="card">
-        <div class="card-title">🍜 产品销量分布 <span id="lbl-products" style="color:var(--muted);font-weight:500"></span>（按数量）</div>
-        <div class="chart-box sm"><canvas id="chartProducts"></canvas></div>
-      </div>
     </div>
 
   </div>
