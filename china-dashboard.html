@@ -64,7 +64,8 @@
   .num{text-align:right;font-variant-numeric:tabular-nums;}
   .pill{display:inline-block;padding:2px 9px;border-radius:20px;font-size:10px;font-weight:700;letter-spacing:.3px;}
   .pill.ec{background:var(--blue-light);color:var(--blue);}
-  .pill.ot{background:var(--green-light);color:var(--green);}
+  .pill.blogger{background:var(--green-light);color:var(--green);}
+  .pill.offline{background:var(--amber-light);color:var(--amber);}
 
   .loading{text-align:center;padding:60px 20px;color:var(--muted);font-size:14px;}
   .spinner{width:30px;height:30px;border:3px solid #e5e7eb;border-top-color:var(--green);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 12px;}
@@ -275,7 +276,9 @@ document.querySelectorAll('.mv-top-date').forEach(e=>e.textContent=new Date().to
 
 const CHINA_API = 'https://script.google.com/macros/s/AKfycbzxnGZQSq13c36n0NeVuGPUbxW_duPizD34lvLnxTx2rKDlxziuLtZe82dV4vifyyG5tw/exec';
 
-// 渠道分类规则（vege 确认）：电商 = 微信小店 / 抖店；其余归入「博主 / 经销 / 线下」（无独立抖音渠道）
+// 渠道分类规则（vege 确认，2026-11-17 新增「线下」独立渠道）：
+// 优先读 Sheet 新增的「渠道」列（值：电商 / 博主 / 线下）；
+// 历史数据没填这一列时，兜底按名字判断：电商 = 微信小店 / 抖店，其余归入「博主 / 经销」
 const ECOMMERCE_NAMES = ['微信小店', '抖店'];
 const PRODUCT_COLS = ['香椿干盘面','青柠干盘面','冬阴功汤','香椿杯面','青柠杯面'];
 const MONTHLY_GOAL = 50000;   // 中国市场月度目标 RMB 5万
@@ -304,13 +307,19 @@ function parseSheetDate(raw){
   return { y, m, day, ym: `${y}-${String(m).padStart(2,'0')}`, ymd: `${y}-${String(m).padStart(2,'0')}-${String(day).padStart(2,'0')}` };
 }
 
-function classifyChannel(name){
+function classifyChannel(name, channelRaw){
+  const c = (channelRaw||'').trim();
+  if(c === '线下') return 'offline';
+  if(c === '电商') return 'ec';
+  if(c === '博主' || c === '经销') return 'blogger';
+  // 兜底：没填「渠道」列的历史数据，按名字判断
   const n = (name||'').trim();
   if(ECOMMERCE_NAMES.some(k=>n.includes(k))) return 'ec';
-  return 'ot';
+  return 'blogger';
 }
-const channelLabel = { ec:'电商平台', ot:'博主 / 经销 / 线下' };
-const channelColor = { ec:'#2563eb', ot:'#166534' };
+const CHANNEL_KEYS = ['ec','blogger','offline'];
+const channelLabel = { ec:'电商平台', blogger:'博主 / 经销', offline:'线下门店' };
+const channelColor = { ec:'#2563eb', blogger:'#166534', offline:'#d97706' };
 
 async function fetchChinaData(){
   const res = await fetch(CHINA_API);
@@ -321,6 +330,7 @@ async function fetchChinaData(){
     const date = parseSheetDate(r['日期']);
     return {
       name: (r['客户/达人']||'').toString().trim(),
+      channelRaw: (r['渠道']||'').toString().trim(),
       revenue: parseFloat(r['总金额']) || 0,
       date,
       products: PRODUCT_COLS.reduce((acc,p)=>{ acc[p]=parseFloat(r[p])||0; return acc; },{}),
@@ -515,10 +525,10 @@ function render(rows, period){
   });
 
   // ── 渠道分布 + 客户榜（基于所选期间数据）──
-  const channelTotals = { ec:0, ot:0 };
+  const channelTotals = { ec:0, blogger:0, offline:0 };
   const customerMap = {}; // name -> {revenue, orders, channel}
   curRows.forEach(r=>{
-    const ch = classifyChannel(r.name);
+    const ch = classifyChannel(r.name, r.channelRaw);
     channelTotals[ch] += r.revenue;
     if(!customerMap[r.name]) customerMap[r.name] = { revenue:0, orders:0, channel:ch };
     customerMap[r.name].revenue += r.revenue;
@@ -528,13 +538,13 @@ function render(rows, period){
   if(charts.channel) charts.channel.destroy();
   charts.channel = new Chart(document.getElementById('chartChannel'), {
     type:'doughnut',
-    data:{ labels:[channelLabel.ec, channelLabel.ot],
-      datasets:[{ data:[channelTotals.ec, channelTotals.ot], backgroundColor:[channelColor.ec, channelColor.ot], borderWidth:0 }] },
+    data:{ labels:CHANNEL_KEYS.map(k=>channelLabel[k]),
+      datasets:[{ data:CHANNEL_KEYS.map(k=>channelTotals[k]), backgroundColor:CHANNEL_KEYS.map(k=>channelColor[k]), borderWidth:0 }] },
     options:{ responsive:true, maintainAspectRatio:false,
       plugins:{ legend:{ display:false }, tooltip:{ callbacks:{ label:ctx=>`${ctx.label}: RMB ${ctx.parsed.toLocaleString('zh-CN')}` } } } }
   });
-  const channelTotalSum = channelTotals.ec + channelTotals.ot || 1;
-  document.getElementById('channel-legend').innerHTML = ['ec','ot'].map(k=>`
+  const channelTotalSum = CHANNEL_KEYS.reduce((s,k)=>s+channelTotals[k],0) || 1;
+  document.getElementById('channel-legend').innerHTML = CHANNEL_KEYS.map(k=>`
     <div class="legend-row">
       <span><span class="legend-dot" style="background:${channelColor[k]}"></span>${channelLabel[k]}</span>
       <span style="font-weight:700">${fmtRMB(channelTotals[k])} <span style="color:#9ca3af;font-weight:400">(${(channelTotals[k]/channelTotalSum*100).toFixed(1)}%)</span></span>
@@ -548,11 +558,10 @@ function render(rows, period){
     tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:#9ca3af;padding:24px">${escHtml(curLabel)}暂无数据</td></tr>`;
   } else {
     tbody.innerHTML = sortedCustomers.map(([name,d],i)=>{
-      const pillClass = d.channel==='ec'?'ec':'ot';
       return `<tr>
         <td class="rank">${i===0?'🥇':i===1?'🥈':i===2?'🥉':i+1}</td>
         <td><strong>${escHtml(name)}</strong></td>
-        <td><span class="pill ${pillClass}">${channelLabel[d.channel]}</span></td>
+        <td><span class="pill ${d.channel}">${channelLabel[d.channel]}</span></td>
         <td class="num">${d.orders}</td>
         <td class="num">${fmtRMB(d.revenue)}</td>
         <td class="num">${(d.revenue/grandTotal*100).toFixed(1)}%</td>
