@@ -109,7 +109,7 @@
 
 <div class="wrap">
   <div class="page-title">中国市场仪表板</div>
-  <div class="page-sub">数据来源：Google Sheet「日常业绩」· 妈子素 China Operations · 自动汇总电商 / 博主代发 / 线下渠道业绩</div>
+  <div class="page-sub">数据来源：Google Sheet「线下日常业绩」· 妈子素 China Operations · 自动汇总线下渠道业绩（含一件代发博主）</div>
 
   <div class="date-selector">
     <div class="ds-tabs">
@@ -274,13 +274,9 @@ function logout(){ lsClear(); location.href = 'index.html'; }
 
 document.querySelectorAll('.mv-top-date').forEach(e=>e.textContent=new Date().toLocaleDateString('zh-CN',{weekday:'short',year:'numeric',month:'short',day:'numeric'}));
 
-const CHINA_API = 'https://script.google.com/macros/s/AKfycbzxnGZQSq13c36n0NeVuGPUbxW_duPizD34lvLnxTx2rKDlxziuLtZe82dV4vifyyG5tw/exec';
+// 2026-11-17 vege 确认：不再用「日常业绩」区分电商/博主，一件代发的博主也并进「线下日常业绩」了，
+// 整个中国市场业绩现在只有一个来源：「线下日常业绩」（微信小店/抖店走下面各自的实时 API，跟这里无关）
 const OFFLINE_API = 'https://script.google.com/macros/s/AKfycbxPOic1shZzwrEzwpPi0jz4x_rz6OP48me0XGDkHhoD0aAI9mabaDJy8SOh48uPNWac9Q/exec';
-
-// 渠道分类规则（vege 确认，2026-11-17 新增「线下」独立渠道）：
-// 「日常业绩」= 电商(微信小店/抖店) / 博主 / 经销，按名字判断；
-// 「线下日常业绩」是独立 Sheet，整表都算「线下」渠道，列结构照抄「日常业绩」
-const ECOMMERCE_NAMES = ['微信小店', '抖店'];
 const PRODUCT_COLS = ['香椿干盘面','青柠干盘面','冬阴功汤','香椿杯面','青柠杯面'];
 const MONTHLY_GOAL = 50000;   // 中国市场月度目标 RMB 5万
 const YEARLY_GOAL = 600000;   // 中国市场年度目标 RMB 60万
@@ -308,14 +304,9 @@ function parseSheetDate(raw){
   return { y, m, day, ym: `${y}-${String(m).padStart(2,'0')}`, ymd: `${y}-${String(m).padStart(2,'0')}-${String(day).padStart(2,'0')}` };
 }
 
-function classifyChannel(name){
-  const n = (name||'').trim();
-  if(ECOMMERCE_NAMES.some(k=>n.includes(k))) return 'ec';
-  return 'blogger';
-}
-const CHANNEL_KEYS = ['ec','blogger','offline'];
-const channelLabel = { ec:'电商平台', blogger:'博主 / 经销', offline:'线下门店' };
-const channelColor = { ec:'#2563eb', blogger:'#166534', offline:'#d97706' };
+const CHANNEL_KEYS = ['offline'];
+const channelLabel = { offline:'线下门店' };
+const channelColor = { offline:'#d97706' };
 
 function mapSheetRows(json, opts){
   opts = opts || {};
@@ -328,7 +319,7 @@ function mapSheetRows(json, opts){
     const name = (r[nameField]||'').toString().trim();
     return {
       name,
-      channel: opts.forceChannel || classifyChannel(name),
+      channel: opts.forceChannel || 'offline',
       revenue: parseFloat(r[revenueField]) || 0,
       date,
       products: PRODUCT_COLS.reduce((acc,p)=>{ acc[p]=parseFloat(r[productMap ? productMap[p] : p])||0; return acc; },{}),
@@ -336,13 +327,7 @@ function mapSheetRows(json, opts){
   }).filter(r=>r.date); // 丢掉没有日期的脏数据行
 }
 
-async function fetchChinaData(){
-  const res = await fetch(CHINA_API);
-  if(!res.ok) throw new Error('HTTP ' + res.status);
-  return mapSheetRows(await res.json());
-}
-
-// 「线下日常业绩」表结构跟「日常业绩」不一样：
+// 「线下日常业绩」表结构跟原本「日常业绩」不一样：
 // 名字用「商家」(经销商，如 茹素一生/优乐/素本道/三漫陀) 而不是「客户/达人」(那是个人收货人，不适合拿来排行)；
 // 金额列叫「共(人民币)」；产品列用「摇摇面」命名，对应主表的「杯面」
 async function fetchOfflineData(){
@@ -463,23 +448,13 @@ async function loadAll(){
   document.getElementById('content').style.display='none';
   document.getElementById('errBox').innerHTML='';
   try{
-    // 两个 Sheet 来源各自独立容错：一个挂了不影响另一个照常显示
-    const [mainResult, offlineResult] = await Promise.allSettled([fetchChinaData(), fetchOfflineData()]);
-    const warnings = [];
-    if(mainResult.status==='rejected'){ console.error('日常业绩加载失败:', mainResult.reason); warnings.push(`「日常业绩」：${mainResult.reason.message}`); }
-    if(offlineResult.status==='rejected'){ console.error('线下日常业绩加载失败:', offlineResult.reason); warnings.push(`「线下日常业绩」：${offlineResult.reason.message}`); }
-    allRows = [
-      ...(mainResult.status==='fulfilled' ? mainResult.value : []),
-      ...(offlineResult.status==='fulfilled' ? offlineResult.value : []),
-    ];
+    allRows = await fetchOfflineData();
     if(!allRows.length){ throw new Error('No data returned from sheet'); }
     populateMonthSelect();
     populateYearSelect();
     render(allRows, getCurrentPeriod());
     document.getElementById('loading').style.display='none';
     document.getElementById('content').style.display='block';
-    document.getElementById('errBox').innerHTML = warnings.length
-      ? `<div class="err">⚠ 部分数据源加载失败，以下数据暂缺：<br>${warnings.map(escHtml).join('<br>')}</div>` : '';
   }catch(e){
     console.error(e);
     document.getElementById('loading').style.display='none';
