@@ -441,7 +441,7 @@ function getCurrentPeriod(){
   if(currentMode==='year'){
     const y = parseInt(document.getElementById('year-select').value, 10);
     return {
-      mode:'year', year:y,
+      mode:'year', year:y, prevYear:y-1,
       curLabel: `${y}年`,
       prevLabel: `${y-1}年`,
       curRows: allRows.filter(r=>r.date.y===y),
@@ -459,7 +459,7 @@ function getCurrentPeriod(){
     const startYmd = fmtDateInput(start), endYmd = fmtDateInput(end);
     const prevStartYmd = fmtDateInput(prevStart), prevEndYmd = fmtDateInput(prevEnd);
     return {
-      mode:'range', startYmd, endYmd,
+      mode:'range', startYmd, endYmd, prevStartYmd, prevEndYmd,
       curLabel: `${startYmd} ~ ${endYmd}`,
       prevLabel: `${prevStartYmd} ~ ${prevEndYmd}`,
       curRows: allRows.filter(r=>r.date.ymd>=startYmd && r.date.ymd<=endYmd),
@@ -472,7 +472,7 @@ function getCurrentPeriod(){
   const lastDate = new Date(selY, selM-1, 1); lastDate.setMonth(lastDate.getMonth()-1);
   const lastYM = monthKey(lastDate.getFullYear(), lastDate.getMonth()+1);
   return {
-    mode:'month', ym:selectedYM,
+    mode:'month', ym:selectedYM, prevYm:lastYM,
     curLabel: `${selY}年${mNamesZh[selM-1]}`,
     prevLabel: `${lastDate.getFullYear()}年${mNamesZh[lastDate.getMonth()]}`,
     curRows: allRows.filter(r=>r.date.ym===selectedYM),
@@ -486,6 +486,63 @@ function matchesPeriod(period, y, ym, ymd){
   if(period.mode==='year') return Number(y)===period.year;
   if(period.mode==='range') return ymd>=period.startYmd && ymd<=period.endYmd;
   return ym===period.ym;
+}
+// 同上，但匹配「上一期」
+function matchesPrevPeriod(period, y, ym, ymd){
+  if(!period) return false;
+  if(period.mode==='year') return Number(y)===period.prevYear;
+  if(period.mode==='range') return ymd>=period.prevStartYmd && ymd<=period.prevEndYmd;
+  return ym===period.prevYm;
+}
+
+// 顶部 4 张 KPI 卡：微信 + 抖音 + 线下 全渠道汇总（抖音取罗盘「成交概览」每日总计，避免跟订单明细重复计算）
+function crossChannelTotal(matchFn){
+  let total = 0;
+  (allRows||[]).forEach(r=>{ if(matchFn(r.date.y, r.date.ym, r.date.ymd)) total += Number(r.revenue)||0; });
+  (wxOrders||[]).forEach(o=>{ if(matchFn(o.y, o.ym, o.ymd)) total += Number(o.revenue)||0; });
+  (dyRows||[]).forEach(r=>{ if(r.dim==='overview' && matchFn(r.ymd.slice(0,4), r.ymd.slice(0,7), r.ymd)) total += Number(r.gmv)||0; });
+  return total;
+}
+function renderKpis(){
+  if(!lastPeriod) return;
+  const period = lastPeriod;
+  const { curLabel, prevLabel } = period;
+  const now = new Date();
+
+  const curTotal = crossChannelTotal((y,ym,ymd)=>matchesPeriod(period,y,ym,ymd));
+  const prevTotal = crossChannelTotal((y,ym,ymd)=>matchesPrevPeriod(period,y,ym,ymd));
+  const momPct = prevTotal > 0 ? ((curTotal - prevTotal) / prevTotal * 100) : null;
+  const allTimeTotal = crossChannelTotal(()=>true);
+
+  // 本周业绩（周一为起点，与所选期间无关，始终对应今天所在的周）
+  const day = now.getDay();
+  const mondayOffset = (day===0 ? -6 : 1-day);
+  const monday = new Date(now.getFullYear(), now.getMonth(), now.getDate()+mondayOffset);
+  const mondayStr = `${monday.getFullYear()}-${String(monday.getMonth()+1).padStart(2,'0')}-${String(monday.getDate()).padStart(2,'0')}`;
+  const weekTotal = crossChannelTotal((y,ym,ymd)=>ymd>=mondayStr);
+
+  const momHtml = momPct===null
+    ? `<span style="color:#9ca3af">环比：无上一期数据</span>`
+    : `<span style="color:${momPct>=0?'var(--green)':'var(--red)'};font-weight:700">${momPct>=0?'▲':'▼'} ${Math.abs(momPct).toFixed(1)}%</span> vs 上一期`;
+
+  // 月度 / 年度目标达成进度（仅在「按月」「按年」模式下显示，自定义范围不设目标）
+  let goalSub = momHtml;
+  if(period.mode==='month'){
+    const monthGoalPct = (curTotal / MONTHLY_GOAL * 100);
+    const monthGoalColor = monthGoalPct >= 100 ? 'var(--green)' : (monthGoalPct >= 60 ? '#d97706' : 'var(--red)');
+    goalSub = `${momHtml}<br><span style="color:${monthGoalColor};font-weight:700">月度目标达成 ${monthGoalPct.toFixed(1)}%</span>（目标 RMB ${MONTHLY_GOAL.toLocaleString('zh-CN')}）${progressBarHtml(monthGoalPct, monthGoalColor)}`;
+  } else if(period.mode==='year'){
+    const yearGoalPct = (curTotal / YEARLY_GOAL * 100);
+    const yearGoalColor = yearGoalPct >= 100 ? 'var(--green)' : (yearGoalPct >= 60 ? '#d97706' : 'var(--red)');
+    goalSub = `${momHtml}<br><span style="color:${yearGoalColor};font-weight:700">年度目标达成 ${yearGoalPct.toFixed(1)}%</span>（目标 RMB ${YEARLY_GOAL.toLocaleString('zh-CN')}）${progressBarHtml(yearGoalPct, yearGoalColor)}`;
+  }
+
+  document.getElementById('kpi-grid').innerHTML = `
+    <div class="kpi-card"><div class="kpi-label">${escHtml(curLabel)} 业绩 <span style="color:#9ca3af;font-weight:500">（全渠道）</span></div><div class="kpi-val">${fmtRMB(curTotal)}</div><div class="kpi-sub">${goalSub}</div></div>
+    <div class="kpi-card blue"><div class="kpi-label">本周业绩（实时）</div><div class="kpi-val blue">${fmtRMB(weekTotal)}</div><div class="kpi-sub">本周一至今，与所选期间无关</div></div>
+    <div class="kpi-card amber"><div class="kpi-label">上一期业绩</div><div class="kpi-val amber">${fmtRMB(prevTotal)}</div><div class="kpi-sub">${escHtml(prevLabel)}</div></div>
+    <div class="kpi-card"><div class="kpi-label">历史累计</div><div class="kpi-val">${fmtRMB(allTimeTotal)}</div><div class="kpi-sub">微信 + 抖音 + 线下 累计总业绩</div></div>
+  `;
 }
 
 async function loadAll(){
@@ -517,42 +574,7 @@ function render(rows, period){
   document.getElementById('lbl-customers').textContent = periodLabel;
   document.getElementById('lbl-products').textContent = periodLabel;
 
-  // ── 本期 / 上一期汇总 ──
-  const curTotal = curRows.reduce((s,r)=>s+r.revenue,0);
-  const prevTotal = prevRows.reduce((s,r)=>s+r.revenue,0);
-  const momPct = prevTotal > 0 ? ((curTotal - prevTotal) / prevTotal * 100) : null;
-  const allTimeTotal = rows.reduce((s,r)=>s+r.revenue,0);
-
-  // 本周业绩（周一为起点，与所选期间无关，始终对应今天所在的周）
-  const day = now.getDay();
-  const mondayOffset = (day===0 ? -6 : 1-day);
-  const monday = new Date(now.getFullYear(), now.getMonth(), now.getDate()+mondayOffset);
-  const mondayStr = `${monday.getFullYear()}-${String(monday.getMonth()+1).padStart(2,'0')}-${String(monday.getDate()).padStart(2,'0')}`;
-  const weekTotal = rows.filter(r=> r.date.ymd >= mondayStr).reduce((s,r)=>s+r.revenue,0);
-
-  // ── KPI cards ──
-  const momHtml = momPct===null
-    ? `<span style="color:#9ca3af">环比：无上一期数据</span>`
-    : `<span style="color:${momPct>=0?'var(--green)':'var(--red)'};font-weight:700">${momPct>=0?'▲':'▼'} ${Math.abs(momPct).toFixed(1)}%</span> vs 上一期`;
-
-  // 月度 / 年度目标达成进度（仅在「按月」「按年」模式下显示，自定义范围不设目标）
-  let goalSub = momHtml;
-  if(period.mode==='month'){
-    const monthGoalPct = (curTotal / MONTHLY_GOAL * 100);
-    const monthGoalColor = monthGoalPct >= 100 ? 'var(--green)' : (monthGoalPct >= 60 ? '#d97706' : 'var(--red)');
-    goalSub = `${momHtml}<br><span style="color:${monthGoalColor};font-weight:700">月度目标达成 ${monthGoalPct.toFixed(1)}%</span>（目标 RMB ${MONTHLY_GOAL.toLocaleString('zh-CN')}）${progressBarHtml(monthGoalPct, monthGoalColor)}`;
-  } else if(period.mode==='year'){
-    const yearGoalPct = (curTotal / YEARLY_GOAL * 100);
-    const yearGoalColor = yearGoalPct >= 100 ? 'var(--green)' : (yearGoalPct >= 60 ? '#d97706' : 'var(--red)');
-    goalSub = `${momHtml}<br><span style="color:${yearGoalColor};font-weight:700">年度目标达成 ${yearGoalPct.toFixed(1)}%</span>（目标 RMB ${YEARLY_GOAL.toLocaleString('zh-CN')}）${progressBarHtml(yearGoalPct, yearGoalColor)}`;
-  }
-
-  document.getElementById('kpi-grid').innerHTML = `
-    <div class="kpi-card"><div class="kpi-label">${escHtml(curLabel)} 业绩</div><div class="kpi-val">${fmtRMB(curTotal)}</div><div class="kpi-sub">${goalSub}</div></div>
-    <div class="kpi-card blue"><div class="kpi-label">本周业绩（实时）</div><div class="kpi-val blue">${fmtRMB(weekTotal)}</div><div class="kpi-sub">本周一至今，与所选期间无关</div></div>
-    <div class="kpi-card amber"><div class="kpi-label">上一期业绩</div><div class="kpi-val amber">${fmtRMB(prevTotal)}</div><div class="kpi-sub">${escHtml(prevLabel)}</div></div>
-    <div class="kpi-card"><div class="kpi-label">历史累计</div><div class="kpi-val">${fmtRMB(allTimeTotal)}</div><div class="kpi-sub">中国市场累计总业绩</div></div>
-  `;
+  renderKpis();
 
   // ── 趋势图：始终显示近12个月（以今天为基准）──
   const monthMap = {}; // ym -> revenue
@@ -746,6 +768,7 @@ async function loadWechatLive(){
 
     renderWechatLive();
     renderUnifiedSku();
+    renderKpis();
   }catch(e){
     console.error('wechat live error:', e);
     box.innerHTML = `<span style="color:var(--red)">微信数据加载失败：${escHtml(e.message)}</span>`;
@@ -933,12 +956,13 @@ async function loadDouyin(){
         headers:{ apikey:SUPABASE_KEY, Authorization:'Bearer '+SUPABASE_KEY } });
       if(ro.ok){ dyOrders = (await ro.json()).map(o=>{ const d=o.pay_time?new Date(o.pay_time):null; return {...o, ymd: d? new Date(d.getTime()+8*3600000).toISOString().slice(0,10):''}; }); }
     }catch(_){}
-    if(!dyRows.length && !dyOrders.length){ box.innerHTML='还没有抖店数据。<a href="douyin-import.html" style="color:var(--green);font-weight:700">→ 去导入罗盘文件</a>'; renderUnifiedSku(); return; }
+    if(!dyRows.length && !dyOrders.length){ box.innerHTML='还没有抖店数据。<a href="douyin-import.html" style="color:var(--green);font-weight:700">→ 去导入罗盘文件</a>'; renderUnifiedSku(); renderKpis(); return; }
     // 月份下拉（罗盘 + 订单的月份并集）
     const yms=[...new Set([...dyRows.map(o=>o.ymd.slice(0,7)), ...dyOrders.map(o=>o.ymd.slice(0,7)).filter(Boolean)])].sort().reverse();
     document.getElementById('dy-month-select').innerHTML = yms.map(ym=>{const[y,m]=ym.split('-');return `<option value="${ym}">${y}年 ${mNamesZh[parseInt(m)-1]}</option>`;}).join('');
     renderDouyin();
     renderUnifiedSku();
+    renderKpis();
   }catch(e){ box.innerHTML=`<span style="color:var(--red)">抖店数据加载失败：${escHtml(e.message)}</span>`; }
 }
 function renderDouyin(){
