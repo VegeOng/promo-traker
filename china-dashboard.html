@@ -865,11 +865,7 @@ function renderWechatLive(){
       <div><span style="font-size:11px;color:#9ca3af;font-weight:700;text-transform:uppercase">${escHtml(periodLabel)}</span><div style="font-size:22px;font-weight:800;color:var(--blue)">${fmtRMB(total)}</div></div>
       <div><span style="font-size:11px;color:#9ca3af;font-weight:700;text-transform:uppercase">有效订单</span><div style="font-size:22px;font-weight:800;color:var(--text)">${valid.length} 单</div></div>
     </div>
-    <div style="display:grid;grid-template-columns:1fr 1.4fr 1fr;gap:16px" class="wx-grid">
-      <div style="overflow-x:auto"><table>
-        <thead><tr><th>日期</th><th class="num">订单数</th><th class="num">实付 (RMB)</th></tr></thead>
-        <tbody>${days.map(d=>`<tr><td>${d}</td><td class="num">${daily[d].orders}</td><td class="num">${Number(daily[d].revenue).toLocaleString('zh-CN',{maximumFractionDigits:0})}</td></tr>`).join('')}</tbody>
-      </table></div>
+    <div style="display:grid;grid-template-columns:1.4fr 1fr;gap:16px" class="wx-grid">
       <div style="overflow-x:auto"><table>
         <thead><tr><th>产品（内部SKU）</th><th class="num">出单数</th><th class="num">袋/杯数</th><th class="num">销售额 (RMB)</th></tr></thead>
         <tbody>${skus.length ? skus.map(([t,d])=>`<tr><td style="max-width:320px">${escHtml(t)}</td><td class="num">${d.items}</td><td class="num">${d.units}</td><td class="num">${Number(d.revenue).toLocaleString('zh-CN',{maximumFractionDigits:0})}</td></tr>`).join('') : '<tr><td colspan="4" style="text-align:center;color:#9ca3af">暂无商品明细</td></tr>'}</tbody>
@@ -886,6 +882,10 @@ function renderWechatLive(){
         <tbody>${srcRows || '<tr><td colspan="5" style="text-align:center;color:#9ca3af">暂无来源数据（需先补跑同步）</td></tr>'}</tbody>
       </table></div>
     </div>
+    <details style="margin-top:12px"><summary style="cursor:pointer;font-size:12px;color:var(--muted)">展开每日明细（${days.length} 天）</summary>
+      <div style="overflow-x:auto;margin-top:8px"><table><thead><tr><th>日期</th><th class="num">订单数</th><th class="num">实付 (RMB)</th></tr></thead>
+      <tbody>${days.map(d=>`<tr><td>${d}</td><td class="num">${daily[d].orders}</td><td class="num">${Number(daily[d].revenue).toLocaleString('zh-CN',{maximumFractionDigits:0})}</td></tr>`).join('')}</tbody></table></div>
+    </details>
     <style>@media(max-width:900px){.wx-grid{grid-template-columns:1fr !important}}</style>`;
 }
 loadWechatLive();
