@@ -327,6 +327,19 @@ async function loadSalesOverview() {
     <div id="so-members-list"><div style="text-align:center;padding:10px;color:var(--t3);font-size:13px">Loading…</div></div>
   </div>
 
+  <!-- 2027 Strategy — HQ only. Links open the private claude.ai pages (need vege's claude.ai login). -->
+  <div class="sec" id="sec-strategy-2027">
+    <div class="sec-header"><span class="sec-title">2027 Strategy</span><div class="sec-line"></div><span class="sec-tag" style="background:#f0fdf4;color:#166534;border:1px solid #bbf7d0;">HQ ONLY</span></div>
+    <div class="grid">
+      <a class="tool live" href="https://claude.ai/artifact/8A9dtBYSzp3xQ5Bhsg3HvW" target="_blank" rel="noopener" style="--tc:#166534;border-color:#bbf7d0;">
+        <div class="tool-icon">🗺️</div><div class="tool-name">2027 商业模式</div><span class="tbadge" style="background:#f0fdf4;color:#166534;border:1px solid #bbf7d0;">HQ ONLY</span>
+      </a>
+      <a class="tool live" href="https://claude.ai/artifact/QWyGdBzS9Hm5dS5h6dEYj6" target="_blank" rel="noopener" style="--tc:#166534;border-color:#bbf7d0;">
+        <div class="tool-icon">📋</div><div class="tool-name">2027 执行重点</div><span class="tbadge" style="background:#f0fdf4;color:#166534;border:1px solid #bbf7d0;">HQ ONLY</span>
+      </a>
+    </div>
+  </div>
+
   <div class="sec">
     <div class="sec-header"><span class="sec-title">Dashboards</span><div class="sec-line"></div><span class="sec-tag">4 live</span></div>
     <div class="grid">
@@ -574,6 +587,8 @@ function showApp() {
     if (taskTool) taskTool.style.display = "none";
     const aiTool = document.getElementById("tool-ai-team");
     if (aiTool) aiTool.style.display = "none";
+    const stratSec = document.getElementById("sec-strategy-2027");
+    if (stratSec) stratSec.style.display = "none";
   }
   initHeader();
   loadStats();
