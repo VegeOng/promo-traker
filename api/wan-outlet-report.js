@@ -81,7 +81,8 @@ function buildReport({ checks, dateLabel, mtdVisited, kpi }) {
 
   const outletNames = Object.keys(byOutlet);
   const totalItems = checks.reduce((s, c) => s + (c.quantity || 0), 0);
-  const nearExpiry = checks.filter(c => c.expiry_date && daysLeft(c.expiry_date) <= 90);
+  const expiring30 = checks.filter(c => c.expiry_date && daysLeft(c.expiry_date) <= 30);
+  const expiring60 = checks.filter(c => c.expiry_date && daysLeft(c.expiry_date) > 30 && daysLeft(c.expiry_date) <= 60);
   const needReturn = checks.filter(c => c.need_return);
 
   let msg = `vege，顺顺跟你汇报 WAN 昨天（${dateLabel}）的巡店情况：\n\n`;
@@ -94,17 +95,26 @@ function buildReport({ checks, dateLabel, mtdVisited, kpi }) {
 
   msg += `\n📊 ${kpiLine}\n`;
 
-  if (nearExpiry.length > 0) {
-    msg += `\n🔴 *过期预警（≤90天，共 ${nearExpiry.length} 项）：*\n`;
-    nearExpiry.slice(0, 10).forEach(c => {
+  if (expiring60.length > 0) {
+    msg += `\n🟠 *少于60天到期（共 ${expiring60.length} 项）：*\n`;
+    expiring60.slice(0, 10).forEach(c => {
+      const d = daysLeft(c.expiry_date);
+      msg += `- ${c.outlet_name} — ${c.product_name || '—'}（${c.expiry_date}，${d} 天后到期）\n`;
+    });
+    if (expiring60.length > 10) msg += `…还有 ${expiring60.length - 10} 项\n`;
+  }
+
+  if (expiring30.length > 0) {
+    msg += `\n🔴 *少于30天到期 — 请准备退货（共 ${expiring30.length} 项）：*\n`;
+    expiring30.slice(0, 10).forEach(c => {
       const d = daysLeft(c.expiry_date);
       msg += `- ${c.outlet_name} — ${c.product_name || '—'}（${c.expiry_date}，${d <= 0 ? '已过期 ' + Math.abs(d) + ' 天' : d + ' 天后到期'}）\n`;
     });
-    if (nearExpiry.length > 10) msg += `…还有 ${nearExpiry.length - 10} 项\n`;
+    if (expiring30.length > 10) msg += `…还有 ${expiring30.length - 10} 项\n`;
   }
 
   if (needReturn.length > 0) {
-    msg += `\n↩️ *需要退货（共 ${needReturn.length} 项）：*\n`;
+    msg += `\n↩️ *WAN 打卡时已标记退货（共 ${needReturn.length} 项）：*\n`;
     needReturn.slice(0, 10).forEach(c => {
       msg += `- ${c.outlet_name} — ${c.product_name || '—'}（${c.return_quantity || 0} 件）\n`;
     });
