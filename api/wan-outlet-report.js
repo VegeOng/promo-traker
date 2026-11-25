@@ -1,6 +1,6 @@
 // /api/wan-outlet-report.js
-// Vercel Cron Job — 每天早上 8:00 AM (马来西亚时间 = UTC+8)
-// Vercel Cron 用 UTC，所以 8:00 AM MYT = 00:00 UTC
+// Vercel Cron Job — 每天早上 7:00 AM (马来西亚时间 = UTC+8)
+// Vercel Cron 用 UTC，所以 7:00 AM MYT = 23:00 UTC(前一天)
 // 顺顺(运营总监)汇报 WAN 前一天(MYT)巡店打卡的门店、检查到的商品、本月进度 vs 访店 KPI
 
 const SUPABASE_URL = 'https://wjhgezvrxlhpexocfsea.supabase.co';
